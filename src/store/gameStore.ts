@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, PlayerStats, MarketType, Tier } from '../types/game';
 import { HUSTLES } from '../config/hustles/base';
-import { PROGRESSION_ORDER } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
 import { MARKET_CONFIGS } from '../config/marketConfig';
+import { FLEX_ASSETS } from '../config/flexAssets';
 import { calculateHustleMath } from '../engine/mathEngine';
 import { advanceMonth } from '../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../config/deathMessages';
@@ -197,6 +198,121 @@ export const useGameStore = create<GameState>()(
         });
 
         return { success, netChange: newBag - state.pl.bag, message: '' };
+      },
+
+      // Upgrade a hustle to the next level
+      upgradeHustle: (hustleId: string) => {
+        const state = get();
+        const hustle = HUSTLES[hustleId];
+
+        if (!hustle) return false;
+
+        const currentLevel = state.pl.hustleLevels[hustleId] || 1;
+        const nextLevelData = hustle.levels.find(l => l.level === currentLevel + 1);
+
+        if (!nextLevelData) return false;
+
+        // Check requirements
+        if (state.pl.bag < nextLevelData.cost) return false;
+        if (state.pl.clout < nextLevelData.cloutReq) return false;
+        if (state.pl.aura < nextLevelData.auraReq) return false;
+
+        // Apply upgrade
+        set({
+          pl: {
+            ...state.pl,
+            bag: state.pl.bag - nextLevelData.cost,
+            hustleLevels: {
+              ...state.pl.hustleLevels,
+              [hustleId]: currentLevel + 1
+            },
+            hustleNodeIds: {
+              ...state.pl.hustleNodeIds,
+              [hustleId]: `l${currentLevel + 1}`
+            }
+          },
+          news: [`⬆️ Upgraded ${hustle.name} to Level ${currentLevel + 1}`, ...state.news.slice(0, 49)]
+        });
+
+        return true;
+      },
+
+      // Advance to next tier
+      advanceTier: () => {
+        const state = get();
+        const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
+        const nextTier = PROGRESSION_ORDER[currentIndex + 1];
+
+        if (!nextTier) return false;
+
+        const req = TIER_REQUIREMENTS[nextTier];
+
+        if (state.pl.bag >= req.cash &&
+            state.pl.clout >= req.clout &&
+            state.pl.aura >= req.aura) {
+
+          // Check if player can afford the fee
+          if (state.pl.bag < req.fee) {
+            set({
+              news: [`❌ Cannot advance to ${nextTier}: Need $${req.fee.toLocaleString()} for filing fees`, ...state.news.slice(0, 49)]
+            });
+            return false;
+          }
+
+          set({
+            pl: {
+              ...state.pl,
+              bag: state.pl.bag - req.fee,
+              currentTier: nextTier,
+            },
+            activeTab: nextTier,
+            news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
+          });
+
+          return true;
+        }
+
+        // Show what's missing
+        const missing = [];
+        if (state.pl.bag < req.cash) missing.push(`$${req.cash.toLocaleString()} cash`);
+        if (state.pl.clout < req.clout) missing.push(`${req.clout} clout`);
+        if (state.pl.aura < req.aura) missing.push(`${req.aura} aura`);
+
+        set({
+          news: [`❌ Cannot advance to ${nextTier}: Need ${missing.join(', ')}`, ...state.news.slice(0, 49)]
+        });
+
+        return false;
+      },
+
+      // Purchase a flex asset
+      purchaseFlexAsset: (assetId: string) => {
+        const state = get();
+        const asset = FLEX_ASSETS.find(a => a.id === assetId);
+
+        if (!asset) return false;
+        if (state.pl.bag < asset.cost) return false;
+
+        const newCount = (state.pl.flexAssets[assetId] || 0) + 1;
+
+        set({
+          pl: {
+            ...state.pl,
+            bag: state.pl.bag - asset.cost,
+            flexAssets: {
+              ...state.pl.flexAssets,
+              [assetId]: newCount
+            }
+          },
+          news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
+        });
+
+        return true;
+      },
+
+      // Set the game phase (for death/reset)
+      setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => {
+        set({ ph });
       },
     }),
     {

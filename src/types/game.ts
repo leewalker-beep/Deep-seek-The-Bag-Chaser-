@@ -43,4 +43,8 @@ export interface GameState {
   setActiveHustleView: (hustleId: string | null) => void;
   dismissNarrative: () => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => { success: boolean; netChange: number; message: string };
+  upgradeHustle: (hustleId: string) => boolean;
+  advanceTier: () => boolean;
+  purchaseFlexAsset: (assetId: string) => boolean;
+  setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
 }
