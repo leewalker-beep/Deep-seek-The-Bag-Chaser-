@@ -1,0 +1,60 @@
+import type { HustleLevel } from '../config/hustles/base';
+
+export interface MathResult {
+  cost: number;
+  yieldCash: number;
+  yieldClout: number;
+  yieldAura: number;
+  mentalHit: number;
+  heatHit: number;
+}
+
+const LEVEL_MULTIPLIERS: Record<number, number> = {
+  1: 1,
+  2: 2.0,
+  3: 3.5,
+};
+
+export function calculateHustleMath(
+  levelData: HustleLevel,
+  currentLevel: number,
+  marketExpenseMult: number,
+  marketYieldMult: number,
+  minigameMult: number,
+  isSuccess: boolean
+): MathResult {
+  const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
+
+  let cost = levelData.cost * levelMult * marketExpenseMult;
+  let yieldCash = levelData.yieldCash * levelMult * marketYieldMult * minigameMult;
+  let yieldClout = levelData.yieldClout * levelMult * marketYieldMult;
+  let yieldAura = levelData.yieldAura * levelMult * marketYieldMult;
+  let mentalHit = levelData.mentalHit * levelMult;
+  let heatHit = 5;
+
+  if (!isSuccess) {
+    yieldCash = Math.floor(yieldCash * 0.3);
+    yieldClout = Math.floor(yieldClout * 0.3);
+    yieldAura = Math.floor(yieldAura * 0.3);
+    mentalHit = mentalHit * 2;
+    heatHit = heatHit * 2;
+  }
+
+  // Safety: ensure profit on success
+  if (isSuccess && yieldCash <= cost && yieldCash > 0) {
+    console.warn(`Profit fix: ${yieldCash} → ${Math.floor(cost * 1.5)}`);
+    yieldCash = Math.floor(cost * 1.5);
+  }
+
+  return { cost, yieldCash, yieldClout, yieldAura, mentalHit, heatHit };
+}
+
+export function calculatePassiveIncome(
+  _flexAssets: Record<string, number>,
+  _treePassives: Record<string, number>
+): number {
+  let total = 0;
+  // Flex assets passive will be added later
+  // Tree passives will be added later
+  return total;
+}
