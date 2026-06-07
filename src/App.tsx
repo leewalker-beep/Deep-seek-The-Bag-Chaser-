@@ -3,6 +3,7 @@ import { useGameStore } from './store/gameStore';
 import { StatsPanel } from './components/StatsPanel';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
+import { BranchChoice } from './components/BranchChoice';
 import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
@@ -137,21 +138,38 @@ function App() {
 
         {/* Hustle Cards */}
         {!showFlexMarket &&
-          hustles.map((hustle) => (
-            <HustleCard
-              key={hustle.id}
-              hustle={hustle}
-              player={pl}
-              onExecute={() => executeHustle(hustle.id)}
-              onUpgrade={(branchId) => {
-                if (hustle.branches && branchId) {
-                  executeBranch(hustle.id, branchId);
-                } else {
-                  upgradeHustle(hustle.id, branchId);
-                }
-              }}
-            />
-          ))}
+          hustles.map((hustle) => {
+            const currentBranchId = pl.hustleBranchIds[hustle.id] || hustle.startBranchId;
+            const hasBranches = !!hustle.branches && !!currentBranchId;
+            const currentBranch = hasBranches ? hustle.branches![currentBranchId] : null;
+            const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
+
+            return (
+              <div key={hustle.id}>
+                <HustleCard
+                  hustle={hustle}
+                  player={pl}
+                  onExecute={() => executeHustle(hustle.id)}
+                  onUpgrade={(branchId) => {
+                    if (hustle.branches && branchId) {
+                      executeBranch(hustle.id, branchId);
+                    } else {
+                      upgradeHustle(hustle.id, branchId);
+                    }
+                  }}
+                />
+                {hasNextBranches && (
+                  <div className="px-4 mb-8 -mt-2">
+                    <BranchChoice
+                      hustle={hustle}
+                      currentBranchId={currentBranchId!}
+                      onSelectBranch={(branchId) => executeBranch(hustle.id, branchId)}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
         {/* No hustles message */}
         {!showFlexMarket && hustles.length === 0 && (
