@@ -144,30 +144,32 @@ function App() {
             const currentBranch = hasBranches ? hustle.branches![currentBranchId] : null;
             const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
 
-            return (
-              <div key={hustle.id}>
-                <HustleCard
+            if (hasNextBranches) {
+              return (
+                <BranchChoice
+                  key={hustle.id}
                   hustle={hustle}
-                  player={pl}
+                  currentBranchId={currentBranchId!}
+                  onSelectBranch={(branchId) => executeBranch(hustle.id, branchId)}
                   onExecute={() => executeHustle(hustle.id)}
-                  onUpgrade={(branchId) => {
-                    if (hustle.branches && branchId) {
-                      executeBranch(hustle.id, branchId);
-                    } else {
-                      upgradeHustle(hustle.id, branchId);
-                    }
-                  }}
                 />
-                {hasNextBranches && (
-                  <div className="px-4 mb-8 -mt-2">
-                    <BranchChoice
-                      hustle={hustle}
-                      currentBranchId={currentBranchId!}
-                      onSelectBranch={(branchId) => executeBranch(hustle.id, branchId)}
-                    />
-                  </div>
-                )}
-              </div>
+              );
+            }
+
+            return (
+              <HustleCard
+                key={hustle.id}
+                hustle={hustle}
+                player={pl}
+                onExecute={() => executeHustle(hustle.id)}
+                onUpgrade={(branchId) => {
+                  if (hustle.branches && branchId) {
+                    executeBranch(hustle.id, branchId);
+                  } else {
+                    upgradeHustle(hustle.id, branchId);
+                  }
+                }}
+              />
             );
           })}
 

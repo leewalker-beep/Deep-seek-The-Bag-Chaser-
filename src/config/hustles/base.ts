@@ -144,7 +144,9 @@ HUSTLES.r_pr_campaign = {
   description: 'Build your reputation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 2000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 2000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Viral Stunt', cost: 10000, yieldCash: 0, yieldClout: 150, yieldAura: 50, mentalHit: -10, cloutReq: 40, auraReq: 20, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Nationwide Tour', cost: 50000, yieldCash: 0, yieldClout: 500, yieldAura: 200, mentalHit: -20, cloutReq: 100, auraReq: 50 },
   },
 };
 
@@ -156,7 +158,9 @@ HUSTLES.r_ghost_mode = {
   description: 'Low-heat operations',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5 },
+    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'VPN Farm', cost: 5000, yieldCash: 4000, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 20, auraReq: 10, heatHit: -10, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Darkweb Proxy', cost: 25000, yieldCash: 20000, yieldClout: 0, yieldAura: 25, mentalHit: -10, cloutReq: 60, auraReq: 40, heatHit: -20 },
   },
 };
 
@@ -168,7 +172,9 @@ HUSTLES.r_scrap = {
   description: 'Salvage and sell',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Scrap Metal', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Scrap Metal', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Copper Mining', cost: 1000, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -10, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Industrial Salvage', cost: 5000, yieldCash: 10000, yieldClout: 5, yieldAura: 2, mentalHit: -15, cloutReq: 40, auraReq: 20 },
   },
 };
 
@@ -180,7 +186,9 @@ HUSTLES.r_flyers = {
   description: 'Promote local businesses',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Flyers', cost: 100, yieldCash: 300, yieldClout: 1, yieldAura: 0, mentalHit: -3, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Flyers', cost: 100, yieldCash: 300, yieldClout: 1, yieldAura: 0, mentalHit: -3, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Door-to-door', cost: 500, yieldCash: 1500, yieldClout: 5, yieldAura: 2, mentalHit: -6, cloutReq: 20, auraReq: 10, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Billboard Placement', cost: 2500, yieldCash: 8000, yieldClout: 20, yieldAura: 10, mentalHit: -12, cloutReq: 60, auraReq: 30 },
   },
 };
 
@@ -192,7 +200,9 @@ HUSTLES.r_sleep = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Power Nap', cost: 200, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 35, cloutReq: 10, auraReq: 10, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Vacation', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 80, cloutReq: 50, auraReq: 50 },
   },
 };
 
@@ -243,6 +253,72 @@ HUSTLES.vintage = {
   ]
 };
 
+HUSTLES.techFlip = {
+  id: 'techFlip',
+  name: 'Tech Flipping',
+  tier: 'STREET',
+  icon: '💻',
+  description: 'Refurbish and resell electronics',
+  levels: [
+    { level: 1, id: 'l1', cost: 1500, yieldCash: 3500, yieldClout: 10, yieldAura: 5, mentalHit: -9, cloutReq: 25, auraReq: 15 },
+  ]
+};
+
+HUSTLES.audio = {
+  id: 'audio',
+  name: 'Music Production',
+  tier: 'STREET',
+  icon: '🎹',
+  description: 'Selling beats and engineering',
+  levels: [
+    { level: 1, id: 'l1', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30 },
+  ]
+};
+
+HUSTLES.sw = {
+  id: 'sw',
+  name: 'Streetwear',
+  tier: 'STREET',
+  icon: '👕',
+  description: 'Limited runs and hype',
+  levels: [
+    { level: 1, id: 'l1', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40 },
+  ]
+};
+
+HUSTLES.smm = {
+  id: 'smm',
+  name: 'SMM Agency',
+  tier: 'STREET',
+  icon: '📈',
+  description: 'Social Media Management',
+  levels: [
+    { level: 1, id: 'l1', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20 },
+  ]
+};
+
+HUSTLES.gig = {
+  id: 'gig',
+  name: 'Runner Fleet',
+  tier: 'STREET',
+  icon: '🏃',
+  description: 'Dispatch localized delivery workers',
+  levels: [
+    { level: 1, id: 'l1', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500 },
+  ]
+};
+
+HUSTLES.meme = {
+  id: 'meme',
+  name: 'Meme Coins',
+  tier: 'STREET',
+  icon: '🐕',
+  description: 'High risk, high reward moonshots',
+  levels: [
+    { level: 1, id: 'l1', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50 },
+  ]
+};
+
 // STARTUP Tier Hustles
 HUSTLES.saas_mvp = {
   id: 'saas_mvp',
@@ -253,6 +329,61 @@ HUSTLES.saas_mvp = {
   levels: [
     { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 1000 },
     { level: 2, id: 'l2', cost: 50000, yieldCash: 10000, yieldClout: 120, yieldAura: 50, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 5000 },
+  ]
+};
+
+HUSTLES.agency_scale = {
+  id: 'agency_scale',
+  name: 'Agency Scale',
+  tier: 'STARTUP',
+  icon: '🏢',
+  description: 'High-ticket service fulfillment',
+  levels: [
+    { level: 1, id: 'l1', cost: 25000, yieldCash: 15000, yieldClout: 80, yieldAura: 40, mentalHit: -20, cloutReq: 80, auraReq: 60, passiveYield: 3000 },
+  ]
+};
+
+HUSTLES.ecom_brand = {
+  id: 'ecom_brand',
+  name: 'E-com Brand',
+  tier: 'STARTUP',
+  icon: '🛒',
+  description: 'Private label consumer goods',
+  levels: [
+    { level: 1, id: 'l1', cost: 40000, yieldCash: 25000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 100, auraReq: 80, passiveYield: 8000 },
+  ]
+};
+
+HUSTLES.data_analytics = {
+  id: 'data_analytics',
+  name: 'Data Analytics',
+  tier: 'STARTUP',
+  icon: '📊',
+  description: 'Sell insights to corporations',
+  levels: [
+    { level: 1, id: 'l1', cost: 60000, yieldCash: 45000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 12000 },
+  ]
+};
+
+HUSTLES.crypto_mining = {
+  id: 'crypto_mining',
+  name: 'Crypto Mining',
+  tier: 'STARTUP',
+  icon: '⛏️',
+  description: 'Secure the network, secure the bag',
+  levels: [
+    { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 100, auraReq: 150, passiveYield: 25000 },
+  ]
+};
+
+HUSTLES.virtual_assistant_agency = {
+  id: 'virtual_assistant_agency',
+  name: 'VA Agency',
+  tier: 'STARTUP',
+  icon: '🤝',
+  description: 'Arbitrage global labor',
+  levels: [
+    { level: 1, id: 'l1', cost: 20000, yieldCash: 12000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 60, auraReq: 40, passiveYield: 4000 },
   ]
 };
 
@@ -291,6 +422,17 @@ HUSTLES.real_estate_empire = {
   ]
 };
 
+HUSTLES.venture_capital = {
+  id: 'venture_capital',
+  name: 'Venture Capital',
+  tier: 'ELITE',
+  icon: '💼',
+  description: 'Invest in the next unicorn',
+  levels: [
+    { level: 1, id: 'l1', cost: 10000000, yieldCash: 50000000, yieldClout: 800, yieldAura: 400, mentalHit: -25, cloutReq: 400, auraReq: 300 },
+  ]
+};
+
 // MOGUL Tier Hustles
 HUSTLES.film_studio = {
   id: 'film_studio',
@@ -303,7 +445,73 @@ HUSTLES.film_studio = {
   ]
 };
 
+HUSTLES.fight_promoter = {
+  id: 'fight_promoter',
+  name: 'Fight Promoter',
+  tier: 'MOGUL',
+  icon: '🥊',
+  description: 'The biggest cards in history',
+  levels: [
+    { level: 1, id: 'l1', cost: 15000000, yieldCash: 40000000, yieldClout: 1500, yieldAura: 800, mentalHit: -40, cloutReq: 800, auraReq: 600 },
+  ]
+};
+
+HUSTLES.space_investment = {
+  id: 'space_investment',
+  name: 'Space Investment',
+  tier: 'MOGUL',
+  icon: '🚀',
+  description: 'Mining asteroids and orbital tourism',
+  levels: [
+    { level: 1, id: 'l1', cost: 100000000, yieldCash: 0, yieldClout: 2000, yieldAura: 1500, mentalHit: -30, cloutReq: 1000, auraReq: 1000, passiveYield: 10000000 },
+  ]
+};
+
+HUSTLES.philanthropy_empire = {
+  id: 'philanthropy_empire',
+  name: 'Philanthropy Empire',
+  tier: 'MOGUL',
+  icon: '🤝',
+  description: 'Solve world hunger for the tax break',
+  levels: [
+    { level: 1, id: 'l1', cost: 50000000, yieldCash: 0, yieldClout: 1000, yieldAura: 5000, mentalHit: 50, cloutReq: 1500, auraReq: 1000 },
+  ]
+};
+
 // PRESIDENT Tier Hustles
+HUSTLES.data_monopoly = {
+  id: 'data_monopoly',
+  name: 'Data Monopoly',
+  tier: 'PRESIDENT',
+  icon: '🔒',
+  description: 'Own every byte of personal information',
+  levels: [
+    { level: 1, id: 'l1', cost: 500000000, yieldCash: 100000000, yieldClout: 3000, yieldAura: 1000, mentalHit: -60, cloutReq: 2000, auraReq: 1500, passiveYield: 50000000 },
+  ]
+};
+
+HUSTLES.central_bank_play = {
+  id: 'central_bank_play',
+  name: 'Central Bank Play',
+  tier: 'PRESIDENT',
+  icon: '🏦',
+  description: 'Influence interest rates for profit',
+  levels: [
+    { level: 1, id: 'l1', cost: 1000000000, yieldCash: 500000000, yieldClout: 4000, yieldAura: 2000, mentalHit: -70, cloutReq: 3000, auraReq: 2000 },
+  ]
+};
+
+HUSTLES.legacy_fund = {
+  id: 'legacy_fund',
+  name: 'Legacy Fund',
+  tier: 'PRESIDENT',
+  icon: '🏛️',
+  description: 'Ensuring your name lasts forever',
+  levels: [
+    { level: 1, id: 'l1', cost: 2000000000, yieldCash: 0, yieldClout: 5000, yieldAura: 10000, mentalHit: 100, cloutReq: 5000, auraReq: 5000 },
+  ]
+};
+
 HUSTLES.the_campaign = {
   id: 'the_campaign',
   name: 'The Campaign',
