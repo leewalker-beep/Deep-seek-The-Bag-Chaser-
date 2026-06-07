@@ -9,6 +9,7 @@ export interface HustleLevel {
   mentalHit: number;
   cloutReq: number;
   auraReq: number;
+  heatHit?: number;
   passiveYield?: number;
   nextBranches?: string[];
   isRepeatable?: boolean;
@@ -135,4 +136,64 @@ HUSTLES.r_plasma = {
   levels: [
     { level: 1, cost: 0, yieldCash: 500, yieldClout: 0, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0 },
   ]
+};
+
+HUSTLES.r_pr_campaign = {
+  id: 'r_pr_campaign',
+  name: 'PR Campaign',
+  tier: 'MUD',
+  icon: '📢',
+  description: 'Build your reputation',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 2000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0 },
+  },
+};
+
+HUSTLES.r_ghost_mode = {
+  id: 'r_ghost_mode',
+  name: 'Ghost Mode',
+  tier: 'MUD',
+  icon: '👻',
+  description: 'Low-heat operations',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5 },
+  },
+};
+
+HUSTLES.r_scrap = {
+  id: 'r_scrap',
+  name: 'Scrap Metal',
+  tier: 'MUD',
+  icon: '🔧',
+  description: 'Salvage and sell',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Scrap Metal', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0 },
+  },
+};
+
+HUSTLES.r_flyers = {
+  id: 'r_flyers',
+  name: 'Flyer Distribution',
+  tier: 'MUD',
+  icon: '📄',
+  description: 'Promote local businesses',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Flyers', cost: 100, yieldCash: 300, yieldClout: 1, yieldAura: 0, mentalHit: -3, cloutReq: 0, auraReq: 0 },
+  },
+};
+
+HUSTLES.r_sleep = {
+  id: 'r_sleep',
+  name: 'Rest & Recover',
+  tier: 'MUD',
+  icon: '😴',
+  description: 'Regain mental health',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0 },
+  },
 };
