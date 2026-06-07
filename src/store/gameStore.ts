@@ -56,17 +56,23 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
 };
 
 const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
-  const allMud = ['r_labor', 'r_delivery', 'r_plasma', 'r_survey', 'r_scrap', 'r_flyers'];
+  const allMud = [
+    'r_labor',
+    'r_delivery',
+    'r_plasma',
+    'r_pr_campaign',
+    'r_ghost_mode',
+    'r_scrap',
+    'r_flyers',
+    'r_sleep',
+  ];
 
   if (difficulty === 1) {
     // Trust Fund: all hustles unlocked
     return Object.keys(HUSTLES).reduce((acc, id) => ({ ...acc, [id]: true }), {});
-  } else if (difficulty === 2) {
-    // Middle Grind: all MUD hustles
-    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {});
   } else {
-    // Grinder: only 5 MUD hustles (no r_flyers)
-    return allMud.filter(id => id !== 'r_flyers').reduce((acc, id) => ({ ...acc, [id]: true }), {});
+    // Both Middle Grind and Grinder now get all MUD hustles
+    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {});
   }
 };
 
