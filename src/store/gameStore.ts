@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, PlayerStats, MarketType, Tier } from '../types/game';
-import { HUSTLES } from '../config/hustles/base';
+import { HUSTLES, type HustleLevel } from '../config/hustles/base';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { FLEX_ASSETS } from '../config/flexAssets';
@@ -18,6 +18,9 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     hustleNodeIds: {},
     flexAssets: {},
     unlockedAchievements: [],
+    rentalCount: 0,
+    flipCount: 0,
+    passiveLaborYield: 0,
     stats: {
       totalHustles: 0,
       successfulHustles: 0,
@@ -138,8 +141,15 @@ export const useGameStore = create<GameState>()(
         }
 
         // Get current level data
+        let levelData;
         const currentLevel = state.pl.hustleLevels[hustleId] || 1;
-        const levelData = hustle.levels.find(l => l.level === currentLevel);
+
+        if (hustle.branches) {
+          const nodeId = state.pl.hustleNodeIds[hustleId] || hustle.startBranchId;
+          levelData = nodeId ? hustle.branches[nodeId] : undefined;
+        } else if (hustle.levels) {
+          levelData = hustle.levels.find(l => l.level === currentLevel);
+        }
 
         if (!levelData) {
           return { success: false, netChange: 0, message: 'Level data missing' };
@@ -236,37 +246,79 @@ export const useGameStore = create<GameState>()(
       },
 
       // Upgrade a hustle to the next level
-      upgradeHustle: (hustleId: string) => {
+      upgradeHustle: (hustleId: string, branchId?: string) => {
         const state = get();
         const hustle = HUSTLES[hustleId];
 
         if (!hustle) return false;
 
-        const currentLevel = state.pl.hustleLevels[hustleId] || 1;
-        const nextLevelData = hustle.levels.find(l => l.level === currentLevel + 1);
+        let targetNodeData: HustleLevel | undefined;
+        let isRepeat = false;
 
-        if (!nextLevelData) return false;
+        if (hustle.branches) {
+          const currentNodeId = state.pl.hustleNodeIds[hustleId] || hustle.startBranchId;
+          const currentNode = currentNodeId ? hustle.branches[currentNodeId] : undefined;
+
+          if (branchId) {
+            // Check if it's a valid next branch
+            if (currentNode?.nextBranches?.includes(branchId)) {
+              targetNodeData = hustle.branches[branchId];
+            }
+            // Check if it's a repeat
+            else if (branchId === currentNodeId && currentNode?.isRepeatable) {
+              const currentCount = branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0);
+              if (!currentNode.maxRepeat || currentCount < currentNode.maxRepeat) {
+                targetNodeData = currentNode;
+                isRepeat = true;
+              }
+            }
+          }
+        } else if (hustle.levels) {
+          const currentLevel = state.pl.hustleLevels[hustleId] || 1;
+          targetNodeData = hustle.levels.find(l => l.level === currentLevel + 1);
+        }
+
+        if (!targetNodeData) return false;
 
         // Check requirements
-        if (state.pl.bag < nextLevelData.cost) return false;
-        if (state.pl.clout < nextLevelData.cloutReq) return false;
-        if (state.pl.aura < nextLevelData.auraReq) return false;
+        if (state.pl.bag < targetNodeData.cost) return false;
+        if (state.pl.clout < targetNodeData.cloutReq) return false;
+        if (state.pl.aura < targetNodeData.auraReq) return false;
 
         // Apply upgrade
+        const newPl = {
+          ...state.pl,
+          bag: state.pl.bag - targetNodeData.cost,
+        };
+
+        if (hustle.branches && (branchId || targetNodeData.id)) {
+          const nodeId = branchId || targetNodeData.id!;
+          newPl.hustleNodeIds = {
+            ...state.pl.hustleNodeIds,
+            [hustleId]: nodeId
+          };
+          newPl.hustleLevels = {
+            ...state.pl.hustleLevels,
+            [hustleId]: targetNodeData.level
+          };
+
+          // Stats tracking
+          if (nodeId === 'l2a') newPl.flipCount += 1;
+          if (nodeId === 'l2b') newPl.rentalCount += 1;
+
+          if (targetNodeData.passiveYield) {
+            newPl.passiveLaborYield += targetNodeData.passiveYield;
+          }
+        } else {
+          newPl.hustleLevels = {
+            ...state.pl.hustleLevels,
+            [hustleId]: targetNodeData.level
+          };
+        }
+
         set({
-          pl: {
-            ...state.pl,
-            bag: state.pl.bag - nextLevelData.cost,
-            hustleLevels: {
-              ...state.pl.hustleLevels,
-              [hustleId]: currentLevel + 1
-            },
-            hustleNodeIds: {
-              ...state.pl.hustleNodeIds,
-              [hustleId]: `l${currentLevel + 1}`
-            }
-          },
-          news: [`⬆️ Upgraded ${hustle.name} to Level ${currentLevel + 1}`, ...state.news.slice(0, 49)]
+          pl: newPl,
+          news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name}`, ...state.news.slice(0, 49)]
         });
 
         return true;

@@ -1,29 +1,40 @@
 import React from 'react';
-import type { Hustle } from '../config/hustles/base';
+import type { Hustle, HustleLevel } from '../config/hustles/base';
+import type { PlayerStats } from '../types/game';
 
 interface HustleCardProps {
   hustle: Hustle;
-  currentLevel: number;
-  canAfford: boolean;
-  canUpgrade: boolean;
-  upgradeCost?: number;
+  player: PlayerStats;
   onExecute: () => void;
-  onUpgrade: () => void;
+  onUpgrade: (branchId?: string) => void;
 }
 
 export const HustleCard: React.FC<HustleCardProps> = ({
   hustle,
-  currentLevel,
-  canAfford,
-  canUpgrade,
-  upgradeCost,
+  player,
   onExecute,
   onUpgrade,
 }) => {
-  const levelData = hustle.levels.find((l) => l.level === currentLevel);
-  const nextLevelData = hustle.levels.find((l) => l.level === currentLevel + 1);
+  const currentLevel = player.hustleLevels[hustle.id] || 1;
+  let levelData: HustleLevel | undefined;
+  let nextBranches: HustleLevel[] = [];
+
+  if (hustle.branches) {
+    const currentNodeId = player.hustleNodeIds[hustle.id] || hustle.startBranchId;
+    levelData = currentNodeId ? hustle.branches[currentNodeId] : undefined;
+
+    if (levelData?.nextBranches) {
+      nextBranches = levelData.nextBranches.map(id => hustle.branches![id]);
+    }
+  } else if (hustle.levels) {
+    levelData = hustle.levels.find((l) => l.level === currentLevel);
+    const nextLevel = hustle.levels.find((l) => l.level === currentLevel + 1);
+    if (nextLevel) nextBranches = [nextLevel];
+  }
 
   if (!levelData) return null;
+
+  const canAfford = player.bag >= levelData.cost;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
@@ -59,10 +70,10 @@ export const HustleCard: React.FC<HustleCardProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         <button
           onClick={onExecute}
-          className={`flex-grow py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+          className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
             canAfford
               ? 'bg-emerald-600 text-white hover:bg-emerald-500'
               : 'bg-slate-800 text-slate-600 cursor-not-allowed'
@@ -71,21 +82,49 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           {levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'}
         </button>
 
-        {nextLevelData && (
-          <button
-            onClick={onUpgrade}
-            disabled={!canUpgrade}
-            className={`px-4 py-3 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
-              canUpgrade
-                ? 'border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
-                : 'border-slate-800 text-slate-700 cursor-not-allowed'
-            }`}
-          >
-            Upgrade
-            <br />
-            {upgradeCost ? `$${upgradeCost.toLocaleString()}` : 'MAX'}
-          </button>
-        )}
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {/* Repeatable Logic */}
+          {levelData.isRepeatable && (
+            <button
+              onClick={() => onUpgrade(player.hustleNodeIds[hustle.id] || hustle.startBranchId)}
+              disabled={
+                player.bag < levelData!.cost ||
+                (levelData!.maxRepeat !== undefined &&
+                  (levelData!.id === 'l2a' ? player.flipCount : player.rentalCount) >= levelData!.maxRepeat)
+              }
+              className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
+            >
+              Repeat {levelData.name}
+              <br />
+              ${levelData.cost.toLocaleString()} ({levelData.id === 'l2a' ? player.flipCount : player.rentalCount}/{levelData.maxRepeat})
+            </button>
+          )}
+
+          {/* Next Branches / Upgrades */}
+          {nextBranches.map(branch => {
+            const canUpgradeBranch =
+              player.bag >= branch.cost &&
+              player.clout >= branch.cloutReq &&
+              player.aura >= branch.auraReq;
+
+            return (
+              <button
+                key={branch.id || branch.level}
+                onClick={() => onUpgrade(branch.id)}
+                disabled={!canUpgradeBranch}
+                className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
+                  canUpgradeBranch
+                    ? 'border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
+                    : 'border-slate-800 text-slate-700 cursor-not-allowed'
+                }`}
+              >
+                {branch.name ? `Unlock ${branch.name}` : 'Upgrade'}
+                <br />
+                ${branch.cost.toLocaleString()}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

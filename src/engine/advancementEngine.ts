@@ -34,8 +34,8 @@ export function advanceMonth(
   const marketMult = MARKET_CONFIGS[currentMarket].expenseMultiplier;
   const totalRent = rent * marketMult;
 
-  // Calculate passive income from flex assets
-  let passiveIncome = 0;
+  // Calculate passive income from flex assets and labor empire
+  let passiveIncome = newPl.passiveLaborYield || 0;
   FLEX_ASSETS.forEach(asset => {
     const count = newPl.flexAssets[asset.id] || 0;
     passiveIncome += asset.passiveYield * count;
