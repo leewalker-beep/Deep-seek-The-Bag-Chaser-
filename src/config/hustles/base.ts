@@ -58,16 +58,14 @@ HUSTLES.r_labor = {
       level: 2,
       id: 'l2a',
       name: 'House Flip',
-      cost: 15000,
-      yieldCash: 25000,
-      yieldClout: 20,
-      yieldAura: 0,
+      cost: 50000,
+      yieldCash: 75000,
+      yieldClout: 25,
+      yieldAura: 10,
       mentalHit: -15,
       cloutReq: 40,
-      auraReq: 0,
+      auraReq: 20,
       nextBranches: ['l3a'],
-      isRepeatable: true,
-      maxRepeat: 5
     },
     l2b: {
       level: 2,
@@ -92,7 +90,7 @@ HUSTLES.r_labor = {
       cost: 500000,
       yieldCash: 0,
       yieldClout: 50,
-      yieldAura: 20,
+      yieldAura: 25,
       mentalHit: -20,
       cloutReq: 200,
       auraReq: 100,
@@ -203,13 +201,12 @@ HUSTLES.cc = {
   id: 'cc',
   name: 'Content Creation',
   tier: 'STREET',
-  icon: '📸',
-  description: 'Build a following on social media',
-  levels: [
-    { level: 1, id: 'l1', cost: 500, yieldCash: 200, yieldClout: 10, yieldAura: 2, mentalHit: -5, cloutReq: 20, auraReq: 10 },
-    { level: 2, id: 'l2', cost: 2500, yieldCash: 1200, yieldClout: 25, yieldAura: 5, mentalHit: -10, cloutReq: 50, auraReq: 20 },
-    { level: 3, id: 'l3', cost: 10000, yieldCash: 5000, yieldClout: 60, yieldAura: 15, mentalHit: -15, cloutReq: 100, auraReq: 50 },
-  ]
+  icon: '📱',
+  description: 'Build your audience',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0 },
+  },
 };
 
 HUSTLES.pod = {
@@ -217,11 +214,11 @@ HUSTLES.pod = {
   name: 'Podcast',
   tier: 'STREET',
   icon: '🎙️',
-  description: 'Talk your way to the top',
-  levels: [
-    { level: 1, id: 'l1', cost: 1000, yieldCash: 0, yieldClout: 20, yieldAura: 10, mentalHit: -4, cloutReq: 30, auraReq: 15 },
-    { level: 2, id: 'l2', cost: 5000, yieldCash: 2500, yieldClout: 40, yieldAura: 20, mentalHit: -8, cloutReq: 80, auraReq: 40 },
-  ]
+  description: 'Find your voice',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0 },
+  },
 };
 
 HUSTLES.drop = {

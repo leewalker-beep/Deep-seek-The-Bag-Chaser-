@@ -76,6 +76,26 @@ const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
   }
 };
 
+const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
+  let maxClout = 50;
+  let maxAura = 50;
+  let maxMental = 100;
+
+  if (pl.currentTier === 'STREET') { maxClout = 100; maxAura = 100; }
+  if (pl.currentTier === 'STARTUP') { maxClout = 200; maxAura = 200; }
+  if (pl.currentTier === 'CORPORATE') { maxClout = 500; maxAura = 500; }
+  if (pl.currentTier === 'ELITE') { maxClout = 1000; maxAura = 1000; }
+  if (pl.currentTier === 'MOGUL') { maxClout = 2000; maxAura = 2000; }
+  if (pl.currentTier === 'PRESIDENT') { maxClout = 5000; maxAura = 5000; }
+
+  return {
+    ...pl,
+    clout: Math.min(pl.clout, maxClout),
+    aura: Math.min(pl.aura, maxAura),
+    mentalHealth: Math.min(pl.mentalHealth, maxMental),
+  };
+};
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
@@ -169,18 +189,20 @@ export const useGameStore = create<GameState>()(
           newPassiveYield += branch.passiveYield;
         }
 
+        const nextPl = enforceStatCaps({
+          ...state.pl,
+          bag: newBag,
+          clout: newClout,
+          aura: newAura,
+          mentalHealth: newMental,
+          rentalCount: newRentalCount,
+          flipCount: newFlipCount,
+          passiveLaborYield: newPassiveYield,
+          hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
+        });
+
         set({
-          pl: {
-            ...state.pl,
-            bag: newBag,
-            clout: newClout,
-            aura: newAura,
-            mentalHealth: newMental,
-            rentalCount: newRentalCount,
-            flipCount: newFlipCount,
-            passiveLaborYield: newPassiveYield,
-            hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
-          },
+          pl: nextPl,
           news: [`${branch.name}: +$${branch.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
         });
 
@@ -261,15 +283,19 @@ export const useGameStore = create<GameState>()(
         if (success) newStats.successfulHustles += 1;
         newStats.lifetimeEarnings += result.yieldCash;
 
+        const hustleResultPl = enforceStatCaps({
+          ...state.pl,
+          bag: newBag,
+          clout: newClout,
+          aura: newAura,
+          mentalHealth: newMental,
+          heat: newHeat,
+        });
+
         // Update player state
         set({
           pl: {
-            ...state.pl,
-            bag: newBag,
-            clout: newClout,
-            aura: newAura,
-            mentalHealth: newMental,
-            heat: newHeat,
+            ...hustleResultPl,
             stats: newStats,
             lastExecutedHustleId: hustleId,
             streak: success ? (state.pl.streak || 0) + 1 : 0,
@@ -279,17 +305,19 @@ export const useGameStore = create<GameState>()(
 
         // Advance month
         const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
-          { ...get().pl, bag: newBag, clout: newClout, aura: newAura, mentalHealth: newMental, heat: newHeat },
+          { ...get().pl },
           get().currentMarket
         );
 
+        const cappedPl = enforceStatCaps(newPl);
+
         // Handle death
         if (shouldDie) {
-          const lastHustleId = newPl.lastExecutedHustleId || 'DEFAULT';
+          const lastHustleId = cappedPl.lastExecutedHustleId || 'DEFAULT';
           const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
 
           set({
-            pl: newPl,
+            pl: cappedPl,
             currentMarket: newMarket,
             news: [...monthNews, ...get().news.slice(0, 45)],
             ph: 'POST_MORTEM',
@@ -301,7 +329,7 @@ export const useGameStore = create<GameState>()(
         }
 
         set({
-          pl: newPl,
+          pl: cappedPl,
           currentMarket: newMarket,
           news: [...monthNews, ...get().news.slice(0, 45)],
         });
