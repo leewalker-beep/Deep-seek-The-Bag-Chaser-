@@ -420,6 +420,9 @@ export const useGameStore = create<GameState>()(
             news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
           });
 
+          // Force refresh of the active tab
+          get().setActiveTab(nextTier);
+
           return true;
         }
 
