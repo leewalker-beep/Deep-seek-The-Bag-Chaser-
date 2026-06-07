@@ -23,9 +23,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     const currentNodeId = player.hustleBranchIds[hustle.id] || hustle.startBranchId;
     levelData = currentNodeId ? hustle.branches[currentNodeId] : undefined;
 
-    if (levelData?.nextBranches) {
-      nextBranches = levelData.nextBranches.map(id => hustle.branches![id]);
-    }
+    // Next branches for branch-based hustles are handled by BranchChoice component in App.tsx
   } else if (hustle.levels) {
     levelData = hustle.levels.find((l) => l.level === currentLevel);
     const nextLevel = hustle.levels.find((l) => l.level === currentLevel + 1);
