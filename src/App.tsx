@@ -48,7 +48,14 @@ function App() {
 
   // Prologue screen
   if (ph === 'PROLOGUE') {
-    return <PrologueScreen onStart={(name, _difficulty) => setPlayerName(name)} />;
+    return (
+      <PrologueScreen
+        onStart={(name, difficulty) => {
+          resetGame(difficulty);
+          setPlayerName(name);
+        }}
+      />
+    );
   }
 
   // Death screen

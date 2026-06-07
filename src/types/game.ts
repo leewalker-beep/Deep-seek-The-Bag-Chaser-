@@ -35,9 +35,10 @@ export interface GameState {
   activeNarrative?: string | null;
   deathBadge: string | null;
   fatalCause: string | null;
+  difficulty: 1 | 2 | 3;
 
   // Actions
-  resetGame: () => void;
+  resetGame: (difficulty?: 1 | 2 | 3) => void;
   setPlayerName: (name: string) => void;
   setActiveTab: (tab: Tier | 'FLEX') => void;
   setActiveHustleView: (hustleId: string | null) => void;

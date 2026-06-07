@@ -9,56 +9,91 @@ import { calculateHustleMath } from '../engine/mathEngine';
 import { advanceMonth } from '../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../config/deathMessages';
 
-const INITIAL_STATS: PlayerStats = {
-  bag: 1000,
-  clout: 0,
-  aura: 0,
-  mentalHealth: 100,
-  heat: 0,
-  month: 0,
-  currentTier: 'MUD',
-  hustleLevels: {},
-  hustleNodeIds: {},
-  flexAssets: {},
-  unlockedAchievements: [],
-  stats: {
-    totalHustles: 0,
-    successfulHustles: 0,
-    lifetimeEarnings: 0,
-  },
+const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
+  const baseStats = {
+    mentalHealth: 100,
+    heat: 0,
+    month: 0,
+    hustleLevels: {},
+    hustleNodeIds: {},
+    flexAssets: {},
+    unlockedAchievements: [],
+    stats: {
+      totalHustles: 0,
+      successfulHustles: 0,
+      lifetimeEarnings: 0,
+    },
+  };
+
+  if (difficulty === 1) { // Trust Fund
+    return {
+      ...baseStats,
+      bag: 25000,
+      clout: 30,
+      aura: 30,
+      currentTier: 'STREET',
+    };
+  } else if (difficulty === 2) { // Middle Grind
+    return {
+      ...baseStats,
+      bag: 5000,
+      clout: 15,
+      aura: 15,
+      currentTier: 'MUD',
+    };
+  } else { // Grinder (default)
+    return {
+      ...baseStats,
+      bag: 1000,
+      clout: 5,
+      aura: 5,
+      currentTier: 'MUD',
+    };
+  }
 };
 
-const INITIAL_UNLOCKED: Record<string, boolean> = {
-  r_labor: true,
-  r_delivery: true,
-  r_plasma: true,
+const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
+  const allMud = ['r_labor', 'r_delivery', 'r_plasma', 'r_survey', 'r_scrap', 'r_flyers'];
+
+  if (difficulty === 1) {
+    // Trust Fund: all hustles unlocked
+    return Object.keys(HUSTLES).reduce((acc, id) => ({ ...acc, [id]: true }), {});
+  } else if (difficulty === 2) {
+    // Middle Grind: all MUD hustles
+    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {});
+  } else {
+    // Grinder: only 5 MUD hustles (no r_flyers)
+    return allMud.filter(id => id !== 'r_flyers').reduce((acc, id) => ({ ...acc, [id]: true }), {});
+  }
 };
 
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
-      pl: INITIAL_STATS,
+      pl: getInitialStats(3),
       ph: 'PROLOGUE',
       currentMarket: 'NORMAL' as MarketType,
       news: ['Welcome to Bag Chaser. The grind begins now.'],
-      unlockedHustles: INITIAL_UNLOCKED,
+      unlockedHustles: getUnlockedHustles(3),
       activeTab: 'MUD' as Tier,
       activeHustleView: null,
       deathBadge: null,
       fatalCause: null,
+      difficulty: 3 as 1 | 2 | 3,
 
       // Reset game
-      resetGame: () => {
+      resetGame: (difficulty: 1 | 2 | 3 = 3) => {
         set({
-          pl: INITIAL_STATS,
+          pl: getInitialStats(difficulty),
           ph: 'PROLOGUE',
           currentMarket: 'NORMAL',
           news: ['Game reset. Welcome back.'],
-          unlockedHustles: INITIAL_UNLOCKED,
-          activeTab: 'MUD',
+          unlockedHustles: getUnlockedHustles(difficulty),
+          activeTab: difficulty === 1 ? 'STREET' : 'MUD',
           activeHustleView: null,
           deathBadge: null,
           fatalCause: null,
+          difficulty,
         });
       },
 
@@ -322,6 +357,7 @@ export const useGameStore = create<GameState>()(
         currentMarket: state.currentMarket,
         unlockedHustles: state.unlockedHustles,
         activeTab: state.activeTab,
+        difficulty: state.difficulty,
       }),
     }
   )
