@@ -21,6 +21,7 @@ function App() {
     deathBadge,
     fatalCause,
     executeHustle,
+    executeBranch,
     upgradeHustle,
     advanceTier,
     setActiveTab,
@@ -138,7 +139,13 @@ function App() {
               hustle={hustle}
               player={pl}
               onExecute={() => executeHustle(hustle.id)}
-              onUpgrade={(branchId) => upgradeHustle(hustle.id, branchId)}
+                onUpgrade={(branchId) => {
+                  if (hustle.branches && branchId) {
+                    executeBranch(hustle.id, branchId);
+                  } else {
+                    upgradeHustle(hustle.id, branchId);
+                  }
+                }}
             />
           );
         })}

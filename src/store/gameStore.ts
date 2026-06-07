@@ -15,7 +15,7 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     heat: 0,
     month: 0,
     hustleLevels: {},
-    hustleNodeIds: {},
+    hustleBranchIds: {},
     flexAssets: {},
     unlockedAchievements: [],
     rentalCount: 0,
@@ -123,6 +123,64 @@ export const useGameStore = create<GameState>()(
         set({ activeNarrative: null });
       },
 
+      executeBranch: (hustleId: string, branchId: string) => {
+        const state = get();
+        const hustle = HUSTLES[hustleId];
+        const branch = hustle?.branches?.[branchId];
+
+        if (!branch) return { success: false, message: 'Branch not found' };
+
+        // Check requirements
+        if (state.pl.bag < branch.cost) return { success: false, message: `Need $${branch.cost.toLocaleString()}` };
+        if (state.pl.clout < branch.cloutReq) return { success: false, message: `Need ${branch.cloutReq} clout` };
+        if (state.pl.aura < branch.auraReq) return { success: false, message: `Need ${branch.auraReq} aura` };
+
+        // Check repeatable limit
+        if (branch.isRepeatable) {
+          const currentCount = branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount;
+          if (branch.maxRepeat !== undefined && currentCount >= branch.maxRepeat) {
+            return { success: false, message: `Maximum ${branch.maxRepeat} reached` };
+          }
+        }
+
+        // Apply cost and one-time yield
+        let newBag = state.pl.bag - branch.cost + branch.yieldCash;
+        let newClout = Math.min(1000, state.pl.clout + branch.yieldClout);
+        let newAura = Math.min(1000, state.pl.aura + branch.yieldAura);
+        let newMental = Math.max(0, state.pl.mentalHealth + branch.mentalHit);
+
+        // Apply passive income
+        let newPassiveYield = state.pl.passiveLaborYield || 0;
+        let newRentalCount = state.pl.rentalCount || 0;
+        let newFlipCount = state.pl.flipCount || 0;
+
+        if (branch.id === 'l2a') {
+          newFlipCount++;
+        } else if (branch.id === 'l2b') {
+          newRentalCount++;
+          newPassiveYield += branch.passiveYield || 0;
+        } else if (branch.passiveYield) {
+          newPassiveYield += branch.passiveYield;
+        }
+
+        set({
+          pl: {
+            ...state.pl,
+            bag: newBag,
+            clout: newClout,
+            aura: newAura,
+            mentalHealth: newMental,
+            rentalCount: newRentalCount,
+            flipCount: newFlipCount,
+            passiveLaborYield: newPassiveYield,
+            hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
+          },
+          news: [`${branch.name}: +$${branch.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
+        });
+
+        return { success: true, message: '' };
+      },
+
       // Execute a hustle
       executeHustle: (hustleId: string, minigameMultiplier: number = 1, forceSuccess?: boolean) => {
         const state = get();
@@ -145,7 +203,7 @@ export const useGameStore = create<GameState>()(
         const currentLevel = state.pl.hustleLevels[hustleId] || 1;
 
         if (hustle.branches) {
-          const nodeId = state.pl.hustleNodeIds[hustleId] || hustle.startBranchId;
+          const nodeId = state.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
           levelData = nodeId ? hustle.branches[nodeId] : undefined;
         } else if (hustle.levels) {
           levelData = hustle.levels.find(l => l.level === currentLevel);
@@ -256,7 +314,7 @@ export const useGameStore = create<GameState>()(
         let isRepeat = false;
 
         if (hustle.branches) {
-          const currentNodeId = state.pl.hustleNodeIds[hustleId] || hustle.startBranchId;
+          const currentNodeId = state.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
           const currentNode = currentNodeId ? hustle.branches[currentNodeId] : undefined;
 
           if (branchId) {
@@ -293,8 +351,8 @@ export const useGameStore = create<GameState>()(
 
         if (hustle.branches && (branchId || targetNodeData.id)) {
           const nodeId = branchId || targetNodeData.id!;
-          newPl.hustleNodeIds = {
-            ...state.pl.hustleNodeIds,
+          newPl.hustleBranchIds = {
+            ...state.pl.hustleBranchIds,
             [hustleId]: nodeId
           };
           newPl.hustleLevels = {

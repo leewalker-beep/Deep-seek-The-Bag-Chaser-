@@ -20,7 +20,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   let nextBranches: HustleLevel[] = [];
 
   if (hustle.branches) {
-    const currentNodeId = player.hustleNodeIds[hustle.id] || hustle.startBranchId;
+    const currentNodeId = player.hustleBranchIds[hustle.id] || hustle.startBranchId;
     levelData = currentNodeId ? hustle.branches[currentNodeId] : undefined;
 
     if (levelData?.nextBranches) {
@@ -86,7 +86,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           {/* Repeatable Logic */}
           {levelData.isRepeatable && (
             <button
-              onClick={() => onUpgrade(player.hustleNodeIds[hustle.id] || hustle.startBranchId)}
+              onClick={() => onUpgrade(player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
               disabled={
                 player.bag < levelData!.cost ||
                 (levelData!.maxRepeat !== undefined &&

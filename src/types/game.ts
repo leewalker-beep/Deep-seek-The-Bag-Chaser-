@@ -12,7 +12,7 @@ export interface PlayerStats {
   month: number;
   currentTier: Tier;
   hustleLevels: Record<string, number>;
-  hustleNodeIds: Record<string, string>;
+  hustleBranchIds: Record<string, string>;
   flexAssets: Record<string, number>;
   unlockedAchievements: string[];
   lastExecutedHustleId?: string;
@@ -47,6 +47,7 @@ export interface GameState {
   setActiveHustleView: (hustleId: string | null) => void;
   dismissNarrative: () => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => { success: boolean; netChange: number; message: string };
+  executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
