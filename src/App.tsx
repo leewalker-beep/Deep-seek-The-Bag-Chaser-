@@ -9,6 +9,7 @@ import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
 import { HUSTLES } from './config/hustles/base';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
+import type { Tier } from './types/game';
 
 function App() {
   const {
@@ -17,7 +18,6 @@ function App() {
     currentMarket,
     news,
     activeTab,
-    unlockedHustles,
     deathBadge,
     fatalCause,
     executeHustle,
@@ -86,7 +86,14 @@ function App() {
   // Get hustles for current tab
   const getHustlesForTab = () => {
     if (activeTab === 'FLEX') return [];
-    return Object.values(HUSTLES).filter(h => h.tier === activeTab);
+
+    // Show hustles whose tier matches the active tab
+    // AND whose tier is <= current player tier
+    return Object.values(HUSTLES).filter(h => {
+      const hustleTierIndex = PROGRESSION_ORDER.indexOf(h.tier as Tier);
+      const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
+      return h.tier === activeTab && hustleTierIndex <= currentTierIndex;
+    });
   };
 
   const hustles = getHustlesForTab();
@@ -129,26 +136,22 @@ function App() {
         {showFlexMarket && <FlexMarket />}
 
         {/* Hustle Cards */}
-        {!showFlexMarket && hustles.map(hustle => {
-          const isUnlocked = unlockedHustles[hustle.id];
-          if (!isUnlocked) return null;
-
-          return (
+        {!showFlexMarket &&
+          hustles.map((hustle) => (
             <HustleCard
               key={hustle.id}
               hustle={hustle}
               player={pl}
               onExecute={() => executeHustle(hustle.id)}
-                onUpgrade={(branchId) => {
-                  if (hustle.branches && branchId) {
-                    executeBranch(hustle.id, branchId);
-                  } else {
-                    upgradeHustle(hustle.id, branchId);
-                  }
-                }}
+              onUpgrade={(branchId) => {
+                if (hustle.branches && branchId) {
+                  executeBranch(hustle.id, branchId);
+                } else {
+                  upgradeHustle(hustle.id, branchId);
+                }
+              }}
             />
-          );
-        })}
+          ))}
 
         {/* No hustles message */}
         {!showFlexMarket && hustles.length === 0 && (
