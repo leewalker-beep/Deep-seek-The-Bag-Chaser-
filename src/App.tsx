@@ -132,27 +132,13 @@ function App() {
           const isUnlocked = unlockedHustles[hustle.id];
           if (!isUnlocked) return null;
 
-          const currentLevel = pl.hustleLevels[hustle.id] || 1;
-          const levelData = hustle.levels.find(l => l.level === currentLevel);
-          const nextLevelData = hustle.levels.find(l => l.level === currentLevel + 1);
-
-          const canAfford = levelData ? pl.bag >= levelData.cost : false;
-          const canUpgrade = nextLevelData ? (
-            pl.bag >= nextLevelData.cost &&
-            pl.clout >= nextLevelData.cloutReq &&
-            pl.aura >= nextLevelData.auraReq
-          ) : false;
-
           return (
             <HustleCard
               key={hustle.id}
               hustle={hustle}
-              currentLevel={currentLevel}
-              canAfford={canAfford}
-              canUpgrade={canUpgrade}
-              upgradeCost={nextLevelData?.cost}
+              player={pl}
               onExecute={() => executeHustle(hustle.id)}
-              onUpgrade={() => upgradeHustle(hustle.id)}
+              onUpgrade={(branchId) => upgradeHustle(hustle.id, branchId)}
             />
           );
         })}
