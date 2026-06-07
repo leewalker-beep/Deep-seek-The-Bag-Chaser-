@@ -8,15 +8,28 @@ interface StatsPanelProps {
   market: MarketType;
 }
 
+const getTierMax = (tier: string): { clout: number; aura: number } => {
+  switch (tier) {
+    case 'MUD': return { clout: 50, aura: 50 };
+    case 'STREET': return { clout: 100, aura: 100 };
+    case 'STARTUP': return { clout: 200, aura: 200 };
+    case 'CORPORATE': return { clout: 500, aura: 500 };
+    case 'ELITE': return { clout: 1000, aura: 1000 };
+    case 'MOGUL': return { clout: 2000, aura: 2000 };
+    case 'PRESIDENT': return { clout: 5000, aura: 5000 };
+    default: return { clout: 50, aura: 50 };
+  }
+};
+
 export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
   const currentIndex = PROGRESSION_ORDER.indexOf(stats.currentTier);
   const nextTier = PROGRESSION_ORDER[currentIndex + 1];
   const nextRequirements = nextTier ? TIER_REQUIREMENTS[nextTier] : null;
 
-  const progressToNext = nextRequirements ? {
+  const progressToNext = nextRequirements && nextTier ? {
     cash: Math.min(100, (stats.bag / nextRequirements.cash) * 100),
-    clout: Math.min(100, (stats.clout / nextRequirements.clout) * 100),
-    aura: Math.min(100, (stats.aura / nextRequirements.aura) * 100),
+    clout: Math.min(100, (stats.clout / getTierMax(nextTier).clout) * 100),
+    aura: Math.min(100, (stats.aura / getTierMax(nextTier).aura) * 100),
   } : null;
 
   return (
@@ -39,11 +52,15 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
       <div className="grid grid-cols-4 gap-2 mb-4 text-center">
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">CLOUT</div>
-          <div className="text-sm font-bold text-blue-400">{stats.clout}</div>
+          <div className="text-[10px] font-bold text-blue-400">
+            {stats.clout} / {getTierMax(stats.currentTier).clout}
+          </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">AURA</div>
-          <div className="text-sm font-bold text-purple-400">{stats.aura}</div>
+          <div className="text-[10px] font-bold text-purple-400">
+            {stats.aura} / {getTierMax(stats.currentTier).aura}
+          </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">MENTAL</div>
@@ -96,7 +113,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Clout</span>
                 <span className={stats.clout >= nextRequirements.clout ? 'text-blue-400' : 'text-slate-400'}>
-                  {stats.clout} / {nextRequirements.clout}
+                  {stats.clout} / {getTierMax(nextTier).clout}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -107,7 +124,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Aura</span>
                 <span className={stats.aura >= nextRequirements.aura ? 'text-purple-400' : 'text-slate-400'}>
-                  {stats.aura} / {nextRequirements.aura}
+                  {stats.aura} / {getTierMax(nextTier).aura}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
