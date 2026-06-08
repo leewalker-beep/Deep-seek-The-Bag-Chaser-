@@ -40,12 +40,7 @@ export function advanceMonth(
   // Vending machine logic
   const vendingCount = newPl.vendingCount || 0;
   if (vendingCount > 0) {
-    let vendingIncome = 0;
-    for (let i = 0; i < vendingCount; i++) {
-      if (Math.random() > 0.05) { // 5% chance of $0
-        vendingIncome += 250;
-      }
-    }
+    let vendingIncome = vendingCount * 250;
     if (vendingCount >= 10) {
       vendingIncome += 500;
     }

@@ -97,7 +97,12 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
             {MARKET_CONFIGS[market].name}
           </span>
         </div>
-        <div className="text-[8px] text-slate-600 mt-0.5">{MARKET_CONFIGS[market].description}</div>
+        <div className="flex gap-2 mt-1">
+          <span className="text-[8px] bg-slate-800 px-1 rounded text-slate-400">Yield: {MARKET_CONFIGS[market].yieldMultiplier}x</span>
+          <span className="text-[8px] bg-slate-800 px-1 rounded text-slate-400">Exp: {MARKET_CONFIGS[market].expenseMultiplier}x</span>
+          <span className="text-[8px] bg-slate-800 px-1 rounded text-slate-400">Heat: {MARKET_CONFIGS[market].heatMultiplier}x</span>
+        </div>
+        <div className="text-[8px] text-slate-600 mt-1">{MARKET_CONFIGS[market].description}</div>
       </div>
 
       {/* Next Tier Progress */}

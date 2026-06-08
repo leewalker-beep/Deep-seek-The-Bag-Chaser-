@@ -24,7 +24,12 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-emerald-400">📋 THE RECEIPTS</h2>
+          <h2
+            className="text-2xl font-black text-emerald-400 cursor-pointer select-none"
+            onDoubleClick={() => setShowDebug(!showDebug)}
+          >
+            📋 THE RECEIPTS
+          </h2>
           <button onClick={onClose} className="text-slate-400 text-2xl">✕</button>
         </div>
 
@@ -94,6 +99,11 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   {action.netCash >= 0 ? '+' : ''}{action.netCash.toLocaleString()}
                 </span>
               </div>
+              {showDebug && action.marketMult && (
+                <div className="text-[8px] text-slate-500 mt-1 bg-slate-950 p-1 rounded font-mono">
+                  MKT ({action.marketName || 'NORMAL'}): [Y:{action.marketMult.yield} E:{action.marketMult.expense} H:{action.marketMult.heat}] | VAR: {action.variation || 0}
+                </div>
+              )}
               {action.passiveAdded ? (
                 <div className="text-[9px] text-blue-400 mt-1">+${action.passiveAdded}/mo passive</div>
               ) : null}
