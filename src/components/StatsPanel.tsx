@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { PlayerStats, MarketType } from '../types/game';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
+import { useGameStore } from '../store/gameStore';
 
 interface StatsPanelProps {
   stats: PlayerStats;
@@ -23,6 +24,45 @@ const getTierMax = (tier: string): { clout: number; aura: number } => {
 };
 
 export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenReceipts }) => {
+  const { addTickerMessage } = useGameStore();
+
+  useEffect(() => {
+    if (stats.mentalHealth <= 25) {
+      document.getElementById('mental-stat')?.classList.add('flash-red');
+      addTickerMessage('Your mind is fracturing. One more hit could end you.', 'text-red-500');
+    } else {
+      document.getElementById('mental-stat')?.classList.remove('flash-red');
+    }
+
+    if (stats.clout <= 10) {
+      document.getElementById('clout-stat')?.classList.add('flash-blue');
+      addTickerMessage('Your influence is fading. The streets are forgetting you.', 'text-blue-400');
+    } else {
+      document.getElementById('clout-stat')?.classList.remove('flash-blue');
+    }
+
+    if (stats.aura <= 10) {
+      document.getElementById('aura-stat')?.classList.add('flash-purple');
+      addTickerMessage('Your mystique is gone. You are becoming invisible.', 'text-purple-400');
+    } else {
+      document.getElementById('aura-stat')?.classList.remove('flash-purple');
+    }
+
+    if (stats.heat >= 80) {
+      document.getElementById('heat-stat')?.classList.add('flash-orange');
+      addTickerMessage('The feds are circling. One wrong move and you are done.', 'text-orange-400');
+    } else {
+      document.getElementById('heat-stat')?.classList.remove('flash-orange');
+    }
+
+    if (stats.bag <= 1000) {
+      document.getElementById('bag-amount')?.classList.add('flash-red-border');
+      addTickerMessage('Your funds are critically low. One bad month ends everything.', 'text-red-500');
+    } else {
+      document.getElementById('bag-amount')?.classList.remove('flash-red-border');
+    }
+  }, [stats, addTickerMessage]);
+
   const currentIndex = PROGRESSION_ORDER.indexOf(stats.currentTier);
   const nextTier = PROGRESSION_ORDER[currentIndex + 1];
   const nextRequirements = nextTier ? TIER_REQUIREMENTS[nextTier] : null;

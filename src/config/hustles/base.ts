@@ -236,7 +236,9 @@ HUSTLES.cc = {
   description: 'Build your audience',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 2000, yieldClout: 300, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200 },
   },
 };
 
@@ -248,7 +250,9 @@ HUSTLES.pod = {
   description: 'Find your voice',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 4000, yieldCash: 5000, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 80, auraReq: 40, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 30000, yieldCash: 25000, yieldClout: 500, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 150 }
   },
 };
 
@@ -258,9 +262,13 @@ HUSTLES.drop = {
   tier: 'STREET',
   icon: '📦',
   description: 'Middleman your way to wealth',
-  levels: [
-    { level: 1, id: 'l1', cost: 2000, yieldCash: 4000, yieldClout: 5, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10 },
-  ]
+  miniGame: 'SwipeOrder',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 2000, yieldCash: 4000, yieldClout: 5, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 15000, yieldCash: 12000, yieldClout: 30, yieldAura: 10, mentalHit: -18, cloutReq: 40, auraReq: 20, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 50000, yieldCash: 45000, yieldClout: 80, yieldAura: 30, mentalHit: -25, cloutReq: 80, auraReq: 40 }
+  }
 };
 
 HUSTLES.vintage = {
@@ -269,9 +277,12 @@ HUSTLES.vintage = {
   tier: 'STREET',
   icon: '🧥',
   description: 'Thrift flips and archival pieces',
-  levels: [
-    { level: 1, id: 'l1', cost: 1000, yieldCash: 3000, yieldClout: 15, yieldAura: 10, mentalHit: -8, cloutReq: 30, auraReq: 20 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Thrift Flip', cost: 1000, yieldCash: 3000, yieldClout: 15, yieldAura: 10, mentalHit: -8, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Showroom Space', cost: 12000, yieldCash: 10000, yieldClout: 50, yieldAura: 40, mentalHit: -15, cloutReq: 60, auraReq: 40, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Archival Gallery', cost: 45000, yieldCash: 40000, yieldClout: 150, yieldAura: 120, mentalHit: -22, cloutReq: 120, auraReq: 80 }
+  }
 };
 
 HUSTLES.techFlip = {
@@ -280,9 +291,12 @@ HUSTLES.techFlip = {
   tier: 'STREET',
   icon: '💻',
   description: 'Refurbish and resell electronics',
-  levels: [
-    { level: 1, id: 'l1', cost: 1500, yieldCash: 3500, yieldClout: 10, yieldAura: 5, mentalHit: -9, cloutReq: 25, auraReq: 15 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Basic Refurb', cost: 1500, yieldCash: 3500, yieldClout: 10, yieldAura: 5, mentalHit: -9, cloutReq: 25, auraReq: 15, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Bulk Repair Shop', cost: 18000, yieldCash: 15000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 50, auraReq: 30, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Hardware Customization', cost: 55000, yieldCash: 50000, yieldClout: 120, yieldAura: 60, mentalHit: -25, cloutReq: 100, auraReq: 60 }
+  }
 };
 
 HUSTLES.audio = {
@@ -291,9 +305,13 @@ HUSTLES.audio = {
   tier: 'STREET',
   icon: '🎹',
   description: 'Selling beats and engineering',
-  levels: [
-    { level: 1, id: 'l1', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30 },
-  ]
+  miniGame: 'TapRhythm',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Home Studio', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Studio Session', cost: 10000, yieldCash: 2000, yieldClout: 80, yieldAura: 40, mentalHit: -15, cloutReq: 50, auraReq: 30, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Record Deal', cost: 40000, yieldCash: 10000, yieldClout: 200, yieldAura: 100, mentalHit: -25, cloutReq: 100, auraReq: 60 }
+  }
 };
 
 HUSTLES.sw = {
@@ -302,9 +320,12 @@ HUSTLES.sw = {
   tier: 'STREET',
   icon: '👕',
   description: 'Limited runs and hype',
-  levels: [
-    { level: 1, id: 'l1', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Full Collection', cost: 20000, yieldCash: 18000, yieldClout: 120, yieldAura: 60, mentalHit: -20, cloutReq: 100, auraReq: 80, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Flagship Store', cost: 80000, yieldCash: 60000, yieldClout: 300, yieldAura: 150, mentalHit: -30, cloutReq: 250, auraReq: 150 }
+  }
 };
 
 HUSTLES.smm = {
@@ -313,9 +334,12 @@ HUSTLES.smm = {
   tier: 'STREET',
   icon: '📈',
   description: 'Social Media Management',
-  levels: [
-    { level: 1, id: 'l1', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Freelance SMM', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Agency Partner', cost: 8000, yieldCash: 12000, yieldClout: 60, yieldAura: 30, mentalHit: -15, cloutReq: 80, auraReq: 40, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Full Scale Agency', cost: 35000, yieldCash: 30000, yieldClout: 150, yieldAura: 80, mentalHit: -22, cloutReq: 150, auraReq: 100 }
+  }
 };
 
 HUSTLES.gig = {
@@ -324,9 +348,12 @@ HUSTLES.gig = {
   tier: 'STREET',
   icon: '🏃',
   description: 'Dispatch localized delivery workers',
-  levels: [
-    { level: 1, id: 'l1', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'City Dispatch', cost: 25000, yieldCash: 10000, yieldClout: 40, yieldAura: 15, mentalHit: -15, cloutReq: 100, auraReq: 50, passiveYield: 2500, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Logistics Hub', cost: 100000, yieldCash: 40000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 250, auraReq: 120, passiveYield: 10000 }
+  }
 };
 
 HUSTLES.meme = {
@@ -335,9 +362,12 @@ HUSTLES.meme = {
   tier: 'STREET',
   icon: '🐕',
   description: 'High risk, high reward moonshots',
-  levels: [
-    { level: 1, id: 'l1', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Influencer Launch', cost: 15000, yieldCash: 50000, yieldClout: 100, yieldAura: 150, mentalHit: -40, cloutReq: 100, auraReq: 100, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Exchange Listing', cost: 100000, yieldCash: 500000, yieldClout: 500, yieldAura: 500, mentalHit: -60, cloutReq: 500, auraReq: 300 }
+  }
 };
 
 // STARTUP Tier Hustles

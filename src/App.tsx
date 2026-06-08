@@ -8,12 +8,17 @@ import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
 import { TheReceipts } from './components/TheReceipts';
+import { StatsPanel } from './components/StatsPanel';
+import { SwipeOrder } from './components/minigames/SwipeOrder';
+import { TapRhythm } from './components/minigames/TapRhythm';
 import { HUSTLES } from './config/hustles/base';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier } from './types/game';
 
 function App() {
+  const [showMinigame, setShowMinigame] = useState(false);
+
   const {
     pl,
     ph,
@@ -107,8 +112,15 @@ function App() {
   const ageYears = 18 + Math.floor(pl.month / 12);
   const ageMonths = pl.month % 12;
 
+  const tierClass = `${pl.currentTier.toLowerCase()}-tier`;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white pb-16">
+    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000`}>
+      {/* Hidden StatsPanel to run its side effects (warning system) */}
+      <div className="hidden">
+        <StatsPanel stats={pl} market={currentMarket} />
+      </div>
+
       {/* Cash Splash Animation */}
       {cashSplash && (
         <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
@@ -136,7 +148,7 @@ function App() {
       <div className="sticky top-[33px] z-20 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800/50 px-4 py-3">
         <div className="max-w-md mx-auto">
           <div className="flex justify-between items-end mb-1">
-            <div className="text-2xl font-black text-emerald-400 font-mono leading-none">
+            <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
               ${pl.bag.toLocaleString()}
             </div>
             <button
@@ -149,25 +161,25 @@ function App() {
           <div className="grid grid-cols-4 gap-1 text-center">
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Clout</span>
-              <span className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
+              <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
                 {pl.clout}{pl.clout < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Mental</span>
-              <span className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
+              <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
                 {pl.mentalHealth}%
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Aura</span>
-              <span className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
+              <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
                 {pl.aura}{pl.aura < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Heat</span>
-              <span className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
+              <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
                 {pl.heat}%
               </span>
             </div>
@@ -176,7 +188,14 @@ function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <NavTabs activeTab={activeTab} currentTier={pl.currentTier} onTabChange={setActiveTab} />
+      <NavTabs
+        activeTab={activeTab}
+        currentTier={pl.currentTier}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setShowMinigame(false);
+        }}
+      />
 
       {/* Main Content */}
       <div className="max-w-md mx-auto px-4 py-4 pb-24">
@@ -201,7 +220,10 @@ function App() {
                 {hustles.map((hustle) => (
                   <button
                     key={hustle.id}
-                    onClick={() => setActiveHustleView(hustle.id)}
+                    onClick={() => {
+                      setActiveHustleView(hustle.id);
+                      setShowMinigame(false);
+                    }}
                     className="bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all hover:border-slate-700 active:scale-95"
                   >
                     <div className="text-4xl mb-2">{hustle.icon}</div>
@@ -224,7 +246,10 @@ function App() {
         ) : (
           <div className="mt-4 animate-in fade-in zoom-in duration-200">
             <button
-              onClick={() => setActiveHustleView(null)}
+              onClick={() => {
+                setActiveHustleView(null);
+                setShowMinigame(false);
+              }}
               className="mb-3 text-[10px] font-bold text-slate-400 hover:text-white flex items-center gap-1"
             >
               ← Back to {activeTab} hustles
@@ -237,6 +262,17 @@ function App() {
               const currentBranch = hasBranches ? hustle.branches![currentBranchId] : null;
               const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
 
+              if (showMinigame && hustle.miniGame) {
+                const onComplete = (multiplier: number) => {
+                  executeHustle(hustle.id, multiplier);
+                  setActiveHustleView(null);
+                  setShowMinigame(false);
+                };
+
+                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
+                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
+              }
+
               if (hasNextBranches) {
                 return (
                   <BranchChoice
@@ -244,12 +280,17 @@ function App() {
                     currentBranchId={currentBranchId!}
                     onSelectBranch={(branchId) => executeBranch(hustle.id, branchId)}
                     onExecute={() => {
-                      executeHustle(hustle.id);
-                      setActiveHustleView(null);
+                      if (hustle.miniGame) {
+                        setShowMinigame(true);
+                      } else {
+                        executeHustle(hustle.id);
+                        setActiveHustleView(null);
+                      }
                     }}
                   />
                 );
               }
+
 
               return (
                 <HustleCard
@@ -257,8 +298,12 @@ function App() {
                   player={pl}
                   currentBranchId={currentBranchId}
                   onExecute={() => {
-                    executeHustle(hustle.id);
-                    setActiveHustleView(null);
+                    if (hustle.miniGame) {
+                      setShowMinigame(true);
+                    } else {
+                      executeHustle(hustle.id);
+                      setActiveHustleView(null);
+                    }
                   }}
                   onUpgrade={(branchId) => {
                     if (hustle.branches && branchId) {

@@ -60,11 +60,16 @@ export interface PlayerStats {
   };
 }
 
+export interface TickerMessage {
+  text: string;
+  colorClass?: string;
+}
+
 export interface GameState {
   pl: PlayerStats;
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE';
   currentMarket: MarketType;
-  news: string[];
+  news: (string | TickerMessage)[];
   unlockedHustles: Record<string, boolean>;
   activeTab: Tier | 'FLEX';
   activeHustleView: string | null;
@@ -84,6 +89,7 @@ export interface GameState {
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
+  addTickerMessage: (text: string, colorClass?: string) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;

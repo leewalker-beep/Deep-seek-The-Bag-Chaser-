@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --mud-bg: #0f0f0f;
+  --mud-accent: #4ade80;
+  --street-bg: #0a0a2a;
+  --street-accent: #3b82f6;
+  --startup-bg: #0f172a;
+  --startup-accent: #fbbf24;
+}
+
+.mud-tier { background: var(--mud-bg); transition: background 1s ease; }
+.street-tier { background: var(--street-bg); transition: background 1s ease; }
+.startup-tier { background: var(--startup-bg); transition: background 1s ease; }
+
+@keyframes flash-red {
+  0%, 100% { color: inherit; }
+  50% { color: #ef4444; }
+}
+@keyframes flash-blue {
+  0%, 100% { color: inherit; }
+  50% { color: #3b82f6; }
+}
+@keyframes flash-purple {
+  0%, 100% { color: inherit; }
+  50% { color: #a855f7; }
+}
+@keyframes flash-orange {
+  0%, 100% { color: inherit; }
+  50% { color: #f97316; }
+}
+@keyframes flash-red-border {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: #ef4444; }
+}
+
+.flash-red { animation: flash-red 1s infinite; }
+.flash-blue { animation: flash-blue 1s infinite; }
+.flash-purple { animation: flash-purple 1s infinite; }
+.flash-orange { animation: flash-orange 1s infinite; }
+.flash-red-border { animation: flash-red-border 1s infinite; border-width: 2px; }
