@@ -26,7 +26,7 @@ export function calculateHustleMath(
 ): MathResult {
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
 
-  let cost = levelData.cost * levelMult * marketExpenseMult;
+  const cost = levelData.cost * levelMult * marketExpenseMult;
   let yieldCash = levelData.yieldCash * levelMult * marketYieldMult * minigameMult;
   let yieldClout = levelData.yieldClout * levelMult * marketYieldMult;
   let yieldAura = levelData.yieldAura * levelMult * marketYieldMult;
@@ -56,7 +56,7 @@ export function calculatePassiveIncome(
   _flexAssets: Record<string, number>,
   _treePassives: Record<string, number>
 ): number {
-  let total = 0;
+  const total = 0;
   // Flex assets passive will be added later
   // Tree passives will be added later
   return total;

@@ -83,7 +83,7 @@ const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
 const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
   let maxClout = 50;
   let maxAura = 50;
-  let maxMental = 100;
+  const maxMental = 100;
 
   if (pl.currentTier === 'STREET') { maxClout = 100; maxAura = 100; }
   if (pl.currentTier === 'STARTUP') { maxClout = 200; maxAura = 200; }
@@ -180,12 +180,9 @@ export const useGameStore = create<GameState>()(
 
         // Check repeatable limit
         if (branch.isRepeatable) {
-          let currentCount = 0;
-          if (hustleId === 'r_vending') {
-            currentCount = state.pl.vendingCount;
-          } else {
-            currentCount = branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount;
-          }
+          const currentCount = (hustleId === 'r_vending')
+            ? state.pl.vendingCount
+            : (branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount);
 
           if (branch.maxRepeat !== undefined && currentCount >= branch.maxRepeat) {
             return { success: false, message: `Maximum ${branch.maxRepeat} reached` };
@@ -193,11 +190,11 @@ export const useGameStore = create<GameState>()(
         }
 
         // Apply cost and one-time yield
-        let newBag = state.pl.bag - result.cost + result.yieldCash;
-        let newClout = Math.min(1000, state.pl.clout + result.yieldClout);
-        let newAura = Math.min(1000, state.pl.aura + result.yieldAura);
-        let newMental = Math.max(0, state.pl.mentalHealth + result.mentalHit);
-        let newHeat = Math.min(100, state.pl.heat + result.heatHit);
+        const newBag = state.pl.bag - result.cost + result.yieldCash;
+        const newClout = Math.min(1000, state.pl.clout + result.yieldClout);
+        const newAura = Math.min(1000, state.pl.aura + result.yieldAura);
+        const newMental = Math.max(0, state.pl.mentalHealth + result.mentalHit);
+        const newHeat = Math.min(100, state.pl.heat + result.heatHit);
 
         // Apply passive income
         let newPassiveYield = state.pl.passiveLaborYield || 0;
@@ -432,12 +429,9 @@ export const useGameStore = create<GameState>()(
             }
             // Check if it's a repeat
             else if (branchId === currentNodeId && currentNode?.isRepeatable) {
-              let currentCount = 0;
-              if (hustleId === 'r_vending') {
-                currentCount = state.pl.vendingCount;
-              } else {
-                currentCount = branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0);
-              }
+              const currentCount = (hustleId === 'r_vending')
+                ? state.pl.vendingCount
+                : (branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0));
 
               if (!currentNode.maxRepeat || currentCount < currentNode.maxRepeat) {
                 targetNodeData = currentNode;
@@ -471,7 +465,7 @@ export const useGameStore = create<GameState>()(
         if (state.pl.aura < targetNodeData.auraReq) return false;
 
         // Apply upgrade
-        let newPl = enforceStatCaps({
+        const newPl = enforceStatCaps({
           ...state.pl,
           bag: state.pl.bag - result.cost,
           clout: Math.min(1000, state.pl.clout + result.yieldClout),
