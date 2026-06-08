@@ -19,6 +19,7 @@ export interface PlayerStats {
   streak?: number;
   rentalCount: number;
   flipCount: number;
+  vendingCount: number;
   passiveLaborYield: number;
   stats?: {
     totalHustles: number;

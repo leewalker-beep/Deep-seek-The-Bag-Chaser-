@@ -58,8 +58,8 @@ HUSTLES.r_labor = {
       level: 2,
       id: 'l2a',
       name: 'House Flip',
-      cost: 50000,
-      yieldCash: 75000,
+      cost: 15000,
+      yieldCash: 22000,
       yieldClout: 25,
       yieldAura: 10,
       mentalHit: -15,
@@ -71,15 +71,15 @@ HUSTLES.r_labor = {
       level: 2,
       id: 'l2b',
       name: 'Rent Portfolio',
-      cost: 5000,
-      yieldCash: 8000,
+      cost: 50000,
+      yieldCash: 5000,
       yieldClout: 10,
-      yieldAura: 0,
-      mentalHit: -10,
-      cloutReq: 30,
-      auraReq: 0,
-      passiveYield: 5000,
-      nextBranches: ['l3c'],
+      yieldAura: 5,
+      mentalHit: -5,
+      cloutReq: 50,
+      auraReq: 25,
+      passiveYield: 1500,
+      nextBranches: ['l3a'],
       isRepeatable: true,
       maxRepeat: 10
     },
@@ -87,27 +87,14 @@ HUSTLES.r_labor = {
       level: 3,
       id: 'l3a',
       name: 'Commercial Real Estate',
-      cost: 500000,
+      cost: 250000,
       yieldCash: 0,
       yieldClout: 50,
       yieldAura: 25,
       mentalHit: -20,
       cloutReq: 200,
       auraReq: 100,
-      passiveYield: 40000,
-    },
-    l3c: {
-      level: 3,
-      id: 'l3c',
-      name: 'Construction Firm',
-      cost: 50000,
-      yieldCash: 100000,
-      yieldClout: 30,
-      yieldAura: 15,
-      mentalHit: -25,
-      cloutReq: 100,
-      auraReq: 50,
-      passiveYield: 10000,
+      passiveYield: 15000,
     },
   },
 };
@@ -121,8 +108,8 @@ HUSTLES.r_delivery = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 15000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -15, cloutReq: 40, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 85000, yieldCash: 35000, yieldClout: 20, yieldAura: 0, mentalHit: -20, cloutReq: 100, auraReq: 50 },
+    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 8000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0 },
   }
 };
 
@@ -146,7 +133,7 @@ HUSTLES.r_vending = {
   description: 'Passive income from snacks',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Vending Machine', cost: 5000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0, passiveYield: 1000 }
+    l1: { level: 1, id: 'l1', name: 'Vending Machine', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0, passiveYield: 250, isRepeatable: true, maxRepeat: 10 }
   }
 };
 
@@ -159,8 +146,8 @@ HUSTLES.r_pr_campaign = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 2000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 8000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 30000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40 },
+    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40 },
   },
 };
 
@@ -173,8 +160,8 @@ HUSTLES.r_ghost_mode = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 5000, yieldCash: 2000, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -10, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 20000, yieldCash: 5000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -15 }
+    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12 }
   },
 };
 
@@ -187,8 +174,8 @@ HUSTLES.r_scrap = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Scrap Metal', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Industrial Scrap', cost: 5000, yieldCash: 2000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 25000, yieldCash: 10000, yieldClout: 15, yieldAura: 5, mentalHit: -15, cloutReq: 50, auraReq: 20 },
+    l2: { level: 2, id: 'l2', name: 'Industrial Scrap', cost: 3000, yieldCash: 2000, yieldClout: 5, yieldAura: 0, mentalHit: -8, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 8000, yieldClout: 15, yieldAura: 5, mentalHit: -12, cloutReq: 50, auraReq: 20 },
   },
 };
 
@@ -201,8 +188,8 @@ HUSTLES.r_flyers = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Flyers', cost: 100, yieldCash: 300, yieldClout: 1, yieldAura: 0, mentalHit: -3, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Digital Flyers', cost: 2000, yieldCash: 1000, yieldClout: 5, yieldAura: 0, mentalHit: -6, cloutReq: 15, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'National Campaign', cost: 10000, yieldCash: 5000, yieldClout: 20, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 15 },
+    l2: { level: 2, id: 'l2', name: 'Digital Flyers', cost: 1500, yieldCash: 1000, yieldClout: 5, yieldAura: 0, mentalHit: -6, cloutReq: 15, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'National Campaign', cost: 8000, yieldCash: 4000, yieldClout: 20, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 15 },
   },
 };
 
@@ -215,8 +202,8 @@ HUSTLES.r_sleep = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 0, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
+    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 300, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 1000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
 };
 
