@@ -8,6 +8,7 @@ import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
+import { TheReceipts } from './components/TheReceipts';
 import { HUSTLES } from './config/hustles/base';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import type { Tier } from './types/game';
@@ -32,6 +33,7 @@ function App() {
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
+  const [showReceipts, setShowReceipts] = useState(false);
 
   // Animate cash changes
   useEffect(() => {
@@ -115,7 +117,11 @@ function App() {
 
       {/* Stats Panel */}
       <div className="max-w-md mx-auto px-4 pt-4">
-        <StatsPanel stats={pl} market={currentMarket} />
+        <StatsPanel
+          stats={pl}
+          market={currentMarket}
+          onOpenReceipts={() => setShowReceipts(true)}
+        />
       </div>
 
       {/* Navigation Tabs */}
@@ -181,6 +187,11 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Receipts Modal */}
+      {showReceipts && (
+        <TheReceipts onClose={() => setShowReceipts(false)} />
+      )}
 
       {/* News Ticker */}
       <NewsTicker news={news} />

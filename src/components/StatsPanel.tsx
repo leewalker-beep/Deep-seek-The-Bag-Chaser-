@@ -6,6 +6,7 @@ import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
 interface StatsPanelProps {
   stats: PlayerStats;
   market: MarketType;
+  onOpenReceipts?: () => void;
 }
 
 const getTierMax = (tier: string): { clout: number; aura: number } => {
@@ -21,7 +22,7 @@ const getTierMax = (tier: string): { clout: number; aura: number } => {
   }
 };
 
-export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
+export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenReceipts }) => {
   const currentIndex = PROGRESSION_ORDER.indexOf(stats.currentTier);
   const nextTier = PROGRESSION_ORDER[currentIndex + 1];
   const nextRequirements = nextTier ? TIER_REQUIREMENTS[nextTier] : null;
@@ -37,7 +38,15 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market }) => {
       {/* Tier Badge */}
       <div className="flex justify-between items-center mb-3">
         <span className="text-[10px] text-slate-500 uppercase tracking-wider">CURRENT TIER</span>
-        <span className="text-emerald-400 font-bold text-sm">{stats.currentTier}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenReceipts}
+            className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-bold transition-colors"
+          >
+            📋 RECEIPTS
+          </button>
+          <span className="text-emerald-400 font-bold text-sm">{stats.currentTier}</span>
+        </div>
       </div>
 
       {/* Bag Amount */}

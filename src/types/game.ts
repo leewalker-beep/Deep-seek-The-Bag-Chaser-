@@ -2,6 +2,33 @@ export type Tier = 'MUD' | 'STREET' | 'STARTUP' | 'CORPORATE' | 'ELITE' | 'MOGUL
 export type MarketType = 'NORMAL' | 'RECESSION' | 'BULL_MARKET' | 'CRACKDOWN';
 export type CrisisType = 'shadowban' | 'blacklist' | 'strike' | 'frozen';
 
+export interface GameAction {
+  id: string;
+  timestamp: number;
+  month: number;
+  tier: string;
+  hustleId: string;
+  hustleName: string;
+  level: number;
+  branchId: string;
+  branchName: string;
+  cost: number;
+  yieldCash: number;
+  yieldClout: number;
+  yieldAura: number;
+  netCash: number;
+  success: boolean;
+  passiveAdded?: number;
+}
+
+export interface Milestone {
+  id: string;
+  name: string;
+  description: string;
+  achievedAtMonth: number;
+  tier: string;
+}
+
 export interface PlayerStats {
   name?: string;
   bag: number;
@@ -21,6 +48,8 @@ export interface PlayerStats {
   flipCount: number;
   vendingCount: number;
   passiveLaborYield: number;
+  actionLog: GameAction[];
+  milestones: Milestone[];
   stats?: {
     totalHustles: number;
     successfulHustles: number;
@@ -53,4 +82,6 @@ export interface GameState {
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
+  logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
+  checkMilestones: () => void;
 }
