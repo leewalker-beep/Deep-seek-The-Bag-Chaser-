@@ -22,6 +22,8 @@ export interface Hustle {
   tier: string;
   icon: string;
   description: string;
+  isPassive?: boolean;
+  isRepeatable?: boolean;
   levels?: HustleLevel[];
   branches?: Record<string, HustleLevel>;
   startBranchId?: string;
@@ -127,14 +129,28 @@ HUSTLES.r_plasma = {
 
 HUSTLES.r_vending = {
   id: 'r_vending',
-  name: 'Vending Machines',
+  name: 'Vending Machine',
   tier: 'MUD',
   icon: '🥤',
-  description: 'Passive income from snacks',
+  description: 'Passive income. Buy once, get $250/month forever.',
+  isPassive: true,
+  isRepeatable: false,
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Vending Machine', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0, passiveYield: 250, isRepeatable: true, maxRepeat: 10 }
-  }
+    l1: {
+      level: 1,
+      id: 'l1',
+      name: 'Buy Vending Machine',
+      cost: 2000,
+      yieldCash: 0,
+      yieldClout: 0,
+      yieldAura: 0,
+      mentalHit: 0,
+      cloutReq: 0,
+      auraReq: 0,
+      passiveYield: 250,
+    },
+  },
 };
 
 HUSTLES.r_pr_campaign = {
@@ -145,7 +161,7 @@ HUSTLES.r_pr_campaign = {
   description: 'Build your reputation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 2000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 1000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
     l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
     l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40 },
   },
@@ -202,7 +218,7 @@ HUSTLES.r_sleep = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 300, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
+    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
     l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 1000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
 };
