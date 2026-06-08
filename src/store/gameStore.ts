@@ -164,6 +164,7 @@ export const useGameStore = create<GameState>()(
         const isVending = hustleId === 'r_vending';
 
         const result = calculateHustleMath(
+          hustleId,
           branch,
           branch.level,
           isVending ? 1 : market.expenseMultiplier,
@@ -303,6 +304,7 @@ export const useGameStore = create<GameState>()(
         const isVending = hustleId === 'r_vending';
 
         const result = calculateHustleMath(
+          hustleId,
           levelData,
           currentLevel,
           isVending ? 1 : market.expenseMultiplier,
@@ -450,6 +452,7 @@ export const useGameStore = create<GameState>()(
         const isVending = hustleId === 'r_vending';
 
         const result = calculateHustleMath(
+          hustleId,
           targetNodeData,
           targetNodeData.level,
           isVending ? 1 : market.expenseMultiplier,

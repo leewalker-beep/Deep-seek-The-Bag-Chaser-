@@ -41,6 +41,8 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   }
 
   const canAfford = player.bag >= levelData.cost;
+  const isVending = hustle.id === 'r_vending';
+  const isVendingOwned = isVending && player.vendingCount > 0;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
@@ -52,9 +54,11 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           <div>
             <h3 className="font-bold text-white text-lg leading-tight">{hustle.name}</h3>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded uppercase font-bold tracking-wider">
-                Level {currentLevel}
-              </span>
+              {!isVending && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded uppercase font-bold tracking-wider">
+                  Level {currentLevel}
+                </span>
+              )}
               <span className="text-[10px] text-slate-500 italic">{hustle.description}</span>
             </div>
           </div>
@@ -77,20 +81,39 @@ export const HustleCard: React.FC<HustleCardProps> = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <button
-          onClick={onExecute}
-          className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
-            canAfford
-              ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-              : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-          }`}
-        >
-          {levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'}
-        </button>
+        {isVending ? (
+          isVendingOwned ? (
+            <div className="w-full py-3 rounded-xl font-black text-sm text-center bg-slate-800 text-emerald-400 border border-emerald-500/30">
+              OWNED (+$250/month)
+            </div>
+          ) : (
+            <button
+              onClick={() => onUpgrade('l1')}
+              className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+                canAfford
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                  : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              BUY MACHINE ($2,000)
+            </button>
+          )
+        ) : (
+          <button
+            onClick={onExecute}
+            className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+              canAfford
+                ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+            }`}
+          >
+            {levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'}
+          </button>
+        )}
 
         <div className="flex gap-2 overflow-x-auto pb-1">
           {/* Repeatable Logic */}
-          {levelData.isRepeatable && (
+          {levelData.isRepeatable && !isVending && (
             <button
               onClick={() => onUpgrade(player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
               disabled={

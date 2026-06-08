@@ -16,6 +16,7 @@ const LEVEL_MULTIPLIERS: Record<number, number> = {
 };
 
 export function calculateHustleMath(
+  hustleId: string,
   levelData: HustleLevel,
   currentLevel: number,
   marketExpenseMult: number,
@@ -43,10 +44,10 @@ export function calculateHustleMath(
     heatHit = heatHit < 0 ? 5 : heatHit * 2;
   }
 
-  // Safety: ensure profit on success
-  if (isSuccess && yieldCash <= cost && yieldCash > 0) {
-    console.warn(`Profit fix: ${yieldCash} → ${Math.floor(cost * 1.5)}`);
-    yieldCash = Math.floor(cost * 1.5);
+  // Profit safety net
+  if (isSuccess && yieldCash < cost && cost > 0) {
+    console.warn(`Profit safety applied to ${hustleId}`);
+    yieldCash = Math.floor(cost * 1.3);
   }
 
   return { cost, yieldCash, yieldClout, yieldAura, mentalHit, heatHit };
