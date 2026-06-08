@@ -1,7 +1,17 @@
-import type { PlayerStats, MarketType } from '../types/game';
+import type { PlayerStats, MarketType, Tier } from '../types/game';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { MARKET_CONFIGS } from '../config/marketConfig';
-import { PROGRESSION_ORDER } from '../config/tiers';
+
+const rentByTier: Record<Tier, number> = {
+  MUD: 200,
+  STREET: 300,
+  STARTUP: 800,
+  CORPORATE: 2000,
+  ELITE: 5000,
+  MOGUL: 10000,
+  PRESIDENT: 20000,
+  OPEN: 0,
+};
 
 export interface AdvancementResult {
   newPl: PlayerStats;
@@ -20,16 +30,7 @@ export function advanceMonth(
   let newMarket = currentMarket;
 
   // Calculate rent based on tier
-  let rent = 500;
-  const tierIndex = PROGRESSION_ORDER.indexOf(newPl.currentTier);
-
-  if (tierIndex >= 1) rent = 1200;   // STREET
-  if (tierIndex >= 2) rent = 3500;   // STARTUP
-  if (tierIndex >= 3) rent = 10000;  // CORPORATE
-  if (tierIndex >= 4) rent = 25000;  // ELITE
-  if (tierIndex >= 5) rent = 50000;  // MOGUL
-  if (tierIndex >= 6) rent = 100000; // PRESIDENT
-  if (tierIndex >= 7) rent = 0;      // OPEN
+  const rent = rentByTier[newPl.currentTier];
 
   const marketMult = MARKET_CONFIGS[currentMarket].expenseMultiplier;
   const totalRent = rent * marketMult;
