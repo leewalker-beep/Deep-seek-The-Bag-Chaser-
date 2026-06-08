@@ -160,8 +160,21 @@ export const useGameStore = create<GameState>()(
 
         if (!branch) return { success: false, message: 'Branch not found' };
 
+        const market = MARKET_CONFIGS[state.currentMarket];
+        const isVending = hustleId === 'r_vending';
+
+        const result = calculateHustleMath(
+          branch,
+          branch.level,
+          isVending ? 1 : market.expenseMultiplier,
+          market.yieldMultiplier,
+          market.heatMultiplier,
+          1,
+          true
+        );
+
         // Check requirements
-        if (state.pl.bag < branch.cost) return { success: false, message: `Need $${branch.cost.toLocaleString()}` };
+        if (state.pl.bag < result.cost) return { success: false, message: `Need $${result.cost.toLocaleString()}` };
         if (state.pl.clout < branch.cloutReq) return { success: false, message: `Need ${branch.cloutReq} clout` };
         if (state.pl.aura < branch.auraReq) return { success: false, message: `Need ${branch.auraReq} aura` };
 
@@ -180,10 +193,11 @@ export const useGameStore = create<GameState>()(
         }
 
         // Apply cost and one-time yield
-        let newBag = state.pl.bag - branch.cost + branch.yieldCash;
-        let newClout = Math.min(1000, state.pl.clout + branch.yieldClout);
-        let newAura = Math.min(1000, state.pl.aura + branch.yieldAura);
-        let newMental = Math.max(0, state.pl.mentalHealth + branch.mentalHit);
+        let newBag = state.pl.bag - result.cost + result.yieldCash;
+        let newClout = Math.min(1000, state.pl.clout + result.yieldClout);
+        let newAura = Math.min(1000, state.pl.aura + result.yieldAura);
+        let newMental = Math.max(0, state.pl.mentalHealth + result.mentalHit);
+        let newHeat = Math.min(100, state.pl.heat + result.heatHit);
 
         // Apply passive income
         let newPassiveYield = state.pl.passiveLaborYield || 0;
@@ -209,6 +223,7 @@ export const useGameStore = create<GameState>()(
           clout: newClout,
           aura: newAura,
           mentalHealth: newMental,
+          heat: newHeat,
           rentalCount: newRentalCount,
           flipCount: newFlipCount,
           vendingCount: newVendingCount,
@@ -218,7 +233,7 @@ export const useGameStore = create<GameState>()(
 
         set({
           pl: nextPl,
-          news: [`${branch.name}: +$${branch.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
+          news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
         });
 
         get().logAction({
@@ -229,13 +244,16 @@ export const useGameStore = create<GameState>()(
           level: branch.level,
           branchId,
           branchName: branch.name || hustle.name,
-          cost: branch.cost,
-          yieldCash: branch.yieldCash,
-          yieldClout: branch.yieldClout,
-          yieldAura: branch.yieldAura,
-          netCash: branch.yieldCash - branch.cost,
+          cost: result.cost,
+          yieldCash: result.yieldCash,
+          yieldClout: result.yieldClout,
+          yieldAura: result.yieldAura,
+          netCash: result.yieldCash - result.cost,
           success: true,
           passiveAdded: branch.passiveYield || 0,
+          marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
+          marketName: market.name,
+          variation: 0
         });
         get().checkMilestones();
 
@@ -285,12 +303,14 @@ export const useGameStore = create<GameState>()(
 
         const market = MARKET_CONFIGS[state.currentMarket];
         const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
+        const isVending = hustleId === 'r_vending';
 
         const result = calculateHustleMath(
           levelData,
           currentLevel,
-          market.expenseMultiplier,
+          isVending ? 1 : market.expenseMultiplier,
           market.yieldMultiplier,
+          market.heatMultiplier,
           minigameMultiplier,
           success
         );
@@ -351,6 +371,9 @@ export const useGameStore = create<GameState>()(
           netCash: result.yieldCash - result.cost,
           success: success,
           passiveAdded: levelData.passiveYield || 0,
+          marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
+          marketName: market.name,
+          variation: 0
         });
         get().checkMilestones();
 
@@ -429,16 +452,33 @@ export const useGameStore = create<GameState>()(
 
         if (!targetNodeData) return false;
 
+        const market = MARKET_CONFIGS[state.currentMarket];
+        const isVending = hustleId === 'r_vending';
+
+        const result = calculateHustleMath(
+          targetNodeData,
+          targetNodeData.level,
+          isVending ? 1 : market.expenseMultiplier,
+          market.yieldMultiplier,
+          market.heatMultiplier,
+          1,
+          true
+        );
+
         // Check requirements
-        if (state.pl.bag < targetNodeData.cost) return false;
+        if (state.pl.bag < result.cost) return false;
         if (state.pl.clout < targetNodeData.cloutReq) return false;
         if (state.pl.aura < targetNodeData.auraReq) return false;
 
         // Apply upgrade
-        const newPl = {
+        let newPl = enforceStatCaps({
           ...state.pl,
-          bag: state.pl.bag - targetNodeData.cost,
-        };
+          bag: state.pl.bag - result.cost,
+          clout: Math.min(1000, state.pl.clout + result.yieldClout),
+          aura: Math.min(1000, state.pl.aura + result.yieldAura),
+          mentalHealth: Math.max(0, state.pl.mentalHealth + result.mentalHit),
+          heat: Math.min(100, state.pl.heat + result.heatHit),
+        });
 
         if (hustle.branches && (branchId || targetNodeData.id)) {
           const nodeId = branchId || targetNodeData.id!;
@@ -474,6 +514,27 @@ export const useGameStore = create<GameState>()(
           pl: newPl,
           news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name}`, ...state.news.slice(0, 49)]
         });
+
+        get().logAction({
+          month: state.pl.month,
+          tier: state.pl.currentTier,
+          hustleId,
+          hustleName: hustle.name,
+          level: targetNodeData.level,
+          branchId: targetNodeData.id || '',
+          branchName: targetNodeData.name || hustle.name,
+          cost: result.cost,
+          yieldCash: result.yieldCash,
+          yieldClout: result.yieldClout,
+          yieldAura: result.yieldAura,
+          netCash: result.yieldCash - result.cost,
+          success: true,
+          passiveAdded: targetNodeData.passiveYield || 0,
+          marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
+          marketName: market.name,
+          variation: 0
+        });
+        get().checkMilestones();
 
         return true;
       },

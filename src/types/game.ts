@@ -19,6 +19,9 @@ export interface GameAction {
   netCash: number;
   success: boolean;
   passiveAdded?: number;
+  marketMult?: { yield: number; expense: number; heat: number };
+  marketName?: string;
+  variation?: number;
 }
 
 export interface Milestone {

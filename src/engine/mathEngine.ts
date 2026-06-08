@@ -20,6 +20,7 @@ export function calculateHustleMath(
   currentLevel: number,
   marketExpenseMult: number,
   marketYieldMult: number,
+  marketHeatMult: number,
   minigameMult: number,
   isSuccess: boolean
 ): MathResult {
@@ -30,13 +31,14 @@ export function calculateHustleMath(
   let yieldClout = levelData.yieldClout * levelMult * marketYieldMult;
   let yieldAura = levelData.yieldAura * levelMult * marketYieldMult;
   let mentalHit = levelData.mentalHit * levelMult;
-  let heatHit = levelData.heatHit !== undefined ? levelData.heatHit : 5;
+  let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
 
   if (!isSuccess) {
     yieldCash = Math.floor(yieldCash * 0.3);
     yieldClout = Math.floor(yieldClout * 0.3);
     yieldAura = Math.floor(yieldAura * 0.3);
-    mentalHit = mentalHit * 2;
+    // If mentalHit is positive (gain), reduce it on failure. If negative (penalty), double it.
+    mentalHit = mentalHit > 0 ? Math.floor(mentalHit * 0.3) : mentalHit * 2;
     // If heatHit was negative (reduction), on failure it should probably be a penalty instead of double reduction
     heatHit = heatHit < 0 ? 5 : heatHit * 2;
   }

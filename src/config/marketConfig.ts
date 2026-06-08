@@ -30,7 +30,7 @@ export const MARKET_CONFIGS: Record<MarketType, {
   },
   CRACKDOWN: {
     name: 'Crackdown',
-    expenseMultiplier: 1.2,
+    expenseMultiplier: 1,
     yieldMultiplier: 0.8,
     heatMultiplier: 2,
     description: 'Feds are watching. Heat accumulates faster.'
