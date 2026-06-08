@@ -36,6 +36,22 @@ export function advanceMonth(
 
   // Calculate passive income from flex assets and labor empire
   let passiveIncome = newPl.passiveLaborYield || 0;
+
+  // Vending machine logic
+  const vendingCount = newPl.vendingCount || 0;
+  if (vendingCount > 0) {
+    let vendingIncome = 0;
+    for (let i = 0; i < vendingCount; i++) {
+      if (Math.random() > 0.05) { // 5% chance of $0
+        vendingIncome += 250;
+      }
+    }
+    if (vendingCount >= 10) {
+      vendingIncome += 500;
+    }
+    passiveIncome += vendingIncome;
+  }
+
   FLEX_ASSETS.forEach(asset => {
     const count = newPl.flexAssets[asset.id] || 0;
     passiveIncome += asset.passiveYield * count;

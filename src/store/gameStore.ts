@@ -20,6 +20,7 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     unlockedAchievements: [],
     rentalCount: 0,
     flipCount: 0,
+    vendingCount: 0,
     passiveLaborYield: 0,
     stats: {
       totalHustles: 0,
@@ -164,7 +165,13 @@ export const useGameStore = create<GameState>()(
 
         // Check repeatable limit
         if (branch.isRepeatable) {
-          const currentCount = branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount;
+          let currentCount = 0;
+          if (hustleId === 'r_vending') {
+            currentCount = state.pl.vendingCount;
+          } else {
+            currentCount = branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount;
+          }
+
           if (branch.maxRepeat !== undefined && currentCount >= branch.maxRepeat) {
             return { success: false, message: `Maximum ${branch.maxRepeat} reached` };
           }
@@ -180,8 +187,12 @@ export const useGameStore = create<GameState>()(
         let newPassiveYield = state.pl.passiveLaborYield || 0;
         let newRentalCount = state.pl.rentalCount || 0;
         let newFlipCount = state.pl.flipCount || 0;
+        let newVendingCount = state.pl.vendingCount || 0;
 
-        if (branch.id === 'l2a') {
+        if (hustleId === 'r_vending') {
+          newVendingCount++;
+          // We don't add to newPassiveYield here because vending is handled dynamically in advancementEngine
+        } else if (branch.id === 'l2a') {
           newFlipCount++;
         } else if (branch.id === 'l2b') {
           newRentalCount++;
@@ -198,6 +209,7 @@ export const useGameStore = create<GameState>()(
           mentalHealth: newMental,
           rentalCount: newRentalCount,
           flipCount: newFlipCount,
+          vendingCount: newVendingCount,
           passiveLaborYield: newPassiveYield,
           hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
         });
@@ -359,7 +371,13 @@ export const useGameStore = create<GameState>()(
             }
             // Check if it's a repeat
             else if (branchId === currentNodeId && currentNode?.isRepeatable) {
-              const currentCount = branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0);
+              let currentCount = 0;
+              if (hustleId === 'r_vending') {
+                currentCount = state.pl.vendingCount;
+              } else {
+                currentCount = branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0);
+              }
+
               if (!currentNode.maxRepeat || currentCount < currentNode.maxRepeat) {
                 targetNodeData = currentNode;
                 isRepeat = true;
@@ -396,11 +414,16 @@ export const useGameStore = create<GameState>()(
           };
 
           // Stats tracking
-          if (nodeId === 'l2a') newPl.flipCount += 1;
-          if (nodeId === 'l2b') newPl.rentalCount += 1;
+          if (hustleId === 'r_vending') {
+            newPl.vendingCount += 1;
+            // No passiveLaborYield update for vending
+          } else {
+            if (nodeId === 'l2a') newPl.flipCount += 1;
+            if (nodeId === 'l2b') newPl.rentalCount += 1;
 
-          if (targetNodeData.passiveYield) {
-            newPl.passiveLaborYield += targetNodeData.passiveYield;
+            if (targetNodeData.passiveYield) {
+              newPl.passiveLaborYield += targetNodeData.passiveYield;
+            }
           }
         } else {
           newPl.hustleLevels = {

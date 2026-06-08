@@ -24,6 +24,9 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
   if (!currentBranch) return null;
 
   const canAffordExecute = pl.bag >= currentBranch.cost;
+  const isRepeatable = currentBranch.isRepeatable;
+  const currentCount = hustle.id === 'r_vending' ? pl.vendingCount : (currentBranch.id === 'l2a' ? pl.flipCount : pl.rentalCount);
+  const canRepeat = isRepeatable && pl.bag >= currentBranch.cost && (!currentBranch.maxRepeat || currentCount < currentBranch.maxRepeat);
 
   // Show branch choices
   return (
@@ -60,16 +63,34 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
         </div>
       </div>
 
-      <button
-        onClick={onExecute}
-        className={`w-full py-3 mb-4 rounded-xl font-black text-sm transition-all active:scale-95 ${
-          canAffordExecute
-            ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-            : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-        }`}
-      >
-        {currentBranch.cost > 0 ? `RUN IT (-$${currentBranch.cost.toLocaleString()})` : 'EXECUTE'}
-      </button>
+      <div className="flex flex-col gap-2 mb-4">
+        <button
+          onClick={onExecute}
+          className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+            canAffordExecute
+              ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+              : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+          }`}
+        >
+          {currentBranch.cost > 0 ? `RUN IT (-$${currentBranch.cost.toLocaleString()})` : 'EXECUTE'}
+        </button>
+
+        {isRepeatable && (
+          <button
+            onClick={() => onSelectBranch(currentBranchId)}
+            disabled={!canRepeat}
+            className={`w-full py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
+              canRepeat
+                ? 'border-blue-500/50 text-blue-400 hover:bg-blue-500/10'
+                : 'border-slate-800 text-slate-700 cursor-not-allowed'
+            }`}
+          >
+            Repeat {currentBranch.name}
+            <br />
+            ${currentBranch.cost.toLocaleString()} ({currentCount}/{currentBranch.maxRepeat})
+          </button>
+        )}
+      </div>
 
       {availableBranches.length > 0 && (
         <div className="space-y-2 mt-2 border-t border-slate-800 pt-4">

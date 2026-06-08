@@ -88,13 +88,13 @@ export const HustleCard: React.FC<HustleCardProps> = ({
               disabled={
                 player.bag < levelData!.cost ||
                 (levelData!.maxRepeat !== undefined &&
-                  (levelData!.id === 'l2a' ? player.flipCount : player.rentalCount) >= levelData!.maxRepeat)
+                  (hustle.id === 'r_vending' ? player.vendingCount : (levelData!.id === 'l2a' ? player.flipCount : player.rentalCount)) >= levelData!.maxRepeat)
               }
               className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
             >
               Repeat {levelData.name}
               <br />
-              ${levelData.cost.toLocaleString()} ({levelData.id === 'l2a' ? player.flipCount : player.rentalCount}/{levelData.maxRepeat})
+              ${levelData.cost.toLocaleString()} ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentalCount)}/{levelData.maxRepeat})
             </button>
           )}
 
