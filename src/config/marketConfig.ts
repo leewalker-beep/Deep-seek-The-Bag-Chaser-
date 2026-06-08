@@ -2,6 +2,7 @@ import type { MarketType } from '../types/game';
 
 export const MARKET_CONFIGS: Record<MarketType, {
   name: string;
+  icon: string;
   expenseMultiplier: number;
   yieldMultiplier: number;
   heatMultiplier: number;
@@ -9,6 +10,7 @@ export const MARKET_CONFIGS: Record<MarketType, {
 }> = {
   NORMAL: {
     name: 'Normal Economy',
+    icon: '⚖️',
     expenseMultiplier: 1,
     yieldMultiplier: 1,
     heatMultiplier: 1,
@@ -16,6 +18,7 @@ export const MARKET_CONFIGS: Record<MarketType, {
   },
   RECESSION: {
     name: 'Recession',
+    icon: '📉',
     expenseMultiplier: 1.5,
     yieldMultiplier: 0.5,
     heatMultiplier: 1,
@@ -23,6 +26,7 @@ export const MARKET_CONFIGS: Record<MarketType, {
   },
   BULL_MARKET: {
     name: 'Bull Market',
+    icon: '📈',
     expenseMultiplier: 1,
     yieldMultiplier: 1.5,
     heatMultiplier: 1,
@@ -30,6 +34,7 @@ export const MARKET_CONFIGS: Record<MarketType, {
   },
   CRACKDOWN: {
     name: 'Crackdown',
+    icon: '🚔',
     expenseMultiplier: 1,
     yieldMultiplier: 0.8,
     heatMultiplier: 2,
