@@ -42,7 +42,6 @@ export const HustleCard: React.FC<HustleCardProps> = ({
 
   const canAfford = player.bag >= levelData.cost;
   const isVending = hustle.id === 'r_vending';
-  const isVendingOwned = isVending && player.vendingCount > 0;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
@@ -82,22 +81,18 @@ export const HustleCard: React.FC<HustleCardProps> = ({
 
       <div className="flex flex-col gap-2">
         {isVending ? (
-          isVendingOwned ? (
-            <div className="w-full py-3 rounded-xl font-black text-sm text-center bg-slate-800 text-emerald-400 border border-emerald-500/30">
-              OWNED (+$250/month)
+          <div className="space-y-2">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase">Current owned: {player.vendingCount}</span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * 250}/month</span>
             </div>
-          ) : (
             <button
               onClick={() => onUpgrade('l1')}
-              className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
-                canAfford
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-                  : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-              }`}
+              className="w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 bg-emerald-600 text-white hover:bg-emerald-500"
             >
               BUY MACHINE ($2,000)
             </button>
-          )
+          </div>
         ) : (
           <button
             onClick={onExecute}

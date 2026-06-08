@@ -24,6 +24,7 @@ export interface Hustle {
   description: string;
   isPassive?: boolean;
   isRepeatable?: boolean;
+  maxRepeat?: number;
   levels?: HustleLevel[];
   branches?: Record<string, HustleLevel>;
   startBranchId?: string;
@@ -132,9 +133,10 @@ HUSTLES.r_vending = {
   name: 'Vending Machine',
   tier: 'MUD',
   icon: '🥤',
-  description: 'Passive income. Buy once, get $250/month forever.',
+  description: 'Passive income. Buy machines, get $250/month each.',
   isPassive: true,
-  isRepeatable: false,
+  isRepeatable: true,
+  maxRepeat: Infinity,
   startBranchId: 'l1',
   branches: {
     l1: {
@@ -149,6 +151,8 @@ HUSTLES.r_vending = {
       cloutReq: 0,
       auraReq: 0,
       passiveYield: 250,
+      isRepeatable: true,
+      maxRepeat: Infinity,
     },
   },
 };
