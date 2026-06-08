@@ -180,60 +180,58 @@ function App() {
 
       {/* Main Content */}
       <div className="max-w-md mx-auto px-4 py-4 pb-24">
-        {/* Advance Tier Button */}
-        {canAdvance && activeTab !== 'FLEX' && (
-          <button
-            onClick={() => advanceTier()}
-            className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
-          >
-            ⚡ ADVANCE TO NEXT TIER ⚡
-          </button>
-        )}
-
-        {/* Flex Market */}
-        {showFlexMarket && <FlexMarket />}
-
-        {/* Hustle Grid */}
-        {!showFlexMarket && (
-          <div className="grid grid-cols-2 gap-3">
-            {hustles.map((hustle) => (
+        {!activeHustleView ? (
+          <>
+            {/* Advance Tier Button */}
+            {canAdvance && activeTab !== 'FLEX' && (
               <button
-                key={hustle.id}
-                onClick={() => setActiveHustleView(hustle.id)}
-                className="bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all hover:border-slate-700 active:scale-95"
+                onClick={() => advanceTier()}
+                className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
               >
-                <div className="text-4xl mb-2">{hustle.icon}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
-                  {hustle.name}
-                </div>
+                ⚡ ADVANCE TO NEXT TIER ⚡
               </button>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* No hustles message */}
-        {!showFlexMarket && hustles.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-slate-600 text-sm">No hustles available in {activeTab} tier yet.</div>
-            <div className="text-slate-700 text-xs mt-2">Advance from lower tiers to unlock more.</div>
-          </div>
-        )}
-      </div>
+            {/* Flex Market */}
+            {showFlexMarket && <FlexMarket />}
 
-      {/* Detailed Hustle Panel */}
-      {activeHustleView && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col p-6 animate-in fade-in zoom-in duration-200">
-          <div className="max-w-md mx-auto w-full flex-1 flex flex-col justify-center">
+            {/* Hustle Grid */}
+            {!showFlexMarket && (
+              <div className="grid grid-cols-2 gap-3">
+                {hustles.map((hustle) => (
+                  <button
+                    key={hustle.id}
+                    onClick={() => setActiveHustleView(hustle.id)}
+                    className="bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all hover:border-slate-700 active:scale-95"
+                  >
+                    <div className="text-4xl mb-2">{hustle.icon}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
+                      {hustle.name}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* No hustles message */}
+            {!showFlexMarket && hustles.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-slate-600 text-sm">No hustles available in {activeTab} tier yet.</div>
+                <div className="text-slate-700 text-xs mt-2">Advance from lower tiers to unlock more.</div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="mt-4 animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setActiveHustleView(null)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl"
+              className="mb-3 text-[10px] font-bold text-slate-400 hover:text-white flex items-center gap-1"
             >
-              ✕
+              ← Back to {activeTab} hustles
             </button>
             {(() => {
               const hustle = HUSTLES[activeHustleView];
               if (!hustle) return null;
-
               const currentBranchId = pl.hustleBranchIds[hustle.id] || hustle.startBranchId;
               const hasBranches = !!hustle.branches && !!currentBranchId;
               const currentBranch = hasBranches ? hustle.branches![currentBranchId] : null;
@@ -273,8 +271,8 @@ function App() {
               );
             })()}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Receipts Modal */}
       {showReceipts && (
