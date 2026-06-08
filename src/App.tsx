@@ -42,6 +42,10 @@ function App() {
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
   const [showReceipts, setShowReceipts] = useState(false);
 
+  useEffect(() => {
+    document.body.className = pl.currentTier.toLowerCase();
+  }, [pl.currentTier]);
+
   // Animate cash changes
   useEffect(() => {
     if (pl?.bag !== undefined && pl.bag !== displayedCash) {

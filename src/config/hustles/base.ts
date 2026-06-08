@@ -317,9 +317,9 @@ HUSTLES.audio = {
 HUSTLES.sw = {
   id: 'sw',
   name: 'Streetwear',
-  tier: 'STREET',
+  tier: 'STARTUP',
   icon: '👕',
-  description: 'Limited runs and hype',
+  description: 'Building a global hype brand',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
@@ -331,9 +331,9 @@ HUSTLES.sw = {
 HUSTLES.smm = {
   id: 'smm',
   name: 'SMM Agency',
-  tier: 'STREET',
+  tier: 'STARTUP',
   icon: '📈',
-  description: 'Social Media Management',
+  description: 'Scale your agency with high-ticket clients',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Freelance SMM', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
@@ -345,9 +345,9 @@ HUSTLES.smm = {
 HUSTLES.gig = {
   id: 'gig',
   name: 'Runner Fleet',
-  tier: 'STREET',
-  icon: '🏃',
-  description: 'Dispatch localized delivery workers',
+  tier: 'STARTUP',
+  icon: '🚚',
+  description: 'Scale your logistics and fleet management',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
@@ -359,9 +359,9 @@ HUSTLES.gig = {
 HUSTLES.meme = {
   id: 'meme',
   name: 'Meme Coins',
-  tier: 'STREET',
-  icon: '🐕',
-  description: 'High risk, high reward moonshots',
+  tier: 'STARTUP',
+  icon: '🪙',
+  description: 'Manipulate the markets for high-tier gains',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
