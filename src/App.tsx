@@ -167,6 +167,7 @@ function App() {
                 key={hustle.id}
                 hustle={hustle}
                 player={pl}
+                currentBranchId={currentBranchId}
                 onExecute={() => executeHustle(hustle.id)}
                 onUpgrade={(branchId) => {
                   if (hustle.branches && branchId) {

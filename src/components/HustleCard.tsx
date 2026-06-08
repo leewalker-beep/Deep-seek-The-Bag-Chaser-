@@ -7,6 +7,7 @@ interface HustleCardProps {
   player: PlayerStats;
   onExecute: () => void;
   onUpgrade: (branchId?: string) => void;
+  currentBranchId?: string;
 }
 
 export const HustleCard: React.FC<HustleCardProps> = ({
@@ -14,13 +15,14 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   player,
   onExecute,
   onUpgrade,
+  currentBranchId,
 }) => {
   const currentLevel = player.hustleLevels[hustle.id] || 1;
   let levelData: HustleLevel | undefined;
   let nextBranches: HustleLevel[] = [];
 
   if (hustle.branches) {
-    const currentNodeId = player.hustleBranchIds[hustle.id] || hustle.startBranchId;
+    const currentNodeId = currentBranchId || player.hustleBranchIds[hustle.id] || hustle.startBranchId;
     levelData = currentNodeId ? hustle.branches[currentNodeId] : undefined;
 
     // Next branches for branch-based hustles are handled by BranchChoice component in App.tsx
@@ -30,7 +32,13 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     if (nextLevel) nextBranches = [nextLevel];
   }
 
-  if (!levelData) return null;
+  if (!levelData) {
+    return (
+      <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+        <div className="text-red-400 text-xs">No data available for this branch</div>
+      </div>
+    );
+  }
 
   const canAfford = player.bag >= levelData.cost;
 

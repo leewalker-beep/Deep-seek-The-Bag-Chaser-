@@ -21,7 +21,13 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
     .map(id => hustle.branches![id])
     .filter((b): b is HustleLevel => b !== undefined);
 
-  if (!currentBranch) return null;
+  if (!currentBranch) {
+    return (
+      <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4">
+        <div className="text-red-400 text-xs">No data available for branch: {currentBranchId}</div>
+      </div>
+    );
+  }
 
   const canAffordExecute = pl.bag >= currentBranch.cost;
   const isRepeatable = currentBranch.isRepeatable;
