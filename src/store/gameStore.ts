@@ -22,6 +22,8 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     flipCount: 0,
     vendingCount: 0,
     passiveLaborYield: 0,
+    actionLog: [],
+    milestones: [],
     stats: {
       totalHustles: 0,
       successfulHustles: 0,
@@ -219,6 +221,24 @@ export const useGameStore = create<GameState>()(
           news: [`${branch.name}: +$${branch.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
         });
 
+        get().logAction({
+          month: state.pl.month,
+          tier: state.pl.currentTier,
+          hustleId,
+          hustleName: hustle.name,
+          level: branch.level,
+          branchId,
+          branchName: branch.name || hustle.name,
+          cost: branch.cost,
+          yieldCash: branch.yieldCash,
+          yieldClout: branch.yieldClout,
+          yieldAura: branch.yieldAura,
+          netCash: branch.yieldCash - branch.cost,
+          success: true,
+          passiveAdded: branch.passiveYield || 0,
+        });
+        get().checkMilestones();
+
         return { success: true, message: '' };
       },
 
@@ -315,6 +335,24 @@ export const useGameStore = create<GameState>()(
           },
           news: [`${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 49)],
         });
+
+        get().logAction({
+          month: state.pl.month,
+          tier: state.pl.currentTier,
+          hustleId,
+          hustleName: hustle.name,
+          level: currentLevel,
+          branchId: levelData.id || '',
+          branchName: levelData.name || hustle.name,
+          cost: result.cost,
+          yieldCash: result.yieldCash,
+          yieldClout: result.yieldClout,
+          yieldAura: result.yieldAura,
+          netCash: result.yieldCash - result.cost,
+          success: success,
+          passiveAdded: levelData.passiveYield || 0,
+        });
+        get().checkMilestones();
 
         // Advance month
         const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
@@ -519,6 +557,60 @@ export const useGameStore = create<GameState>()(
       // Set the game phase (for death/reset)
       setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => {
         set({ ph });
+      },
+
+      logAction: (action) => {
+        const state = get();
+        const newAction = {
+          ...action,
+          id: Math.random().toString(36).substring(7),
+          timestamp: Date.now(),
+        };
+        set({
+          pl: {
+            ...state.pl,
+            actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, 500),
+          },
+        });
+      },
+
+      checkMilestones: () => {
+        const state = get();
+        const actions = state.pl.actionLog || [];
+        const newMilestones = [];
+
+        // Count actions by type
+        const vendingCount = actions.filter(a => a.hustleId === 'r_vending').length;
+        const houseFlips = actions.filter(a => a.branchId === 'l2a').length;
+        const rentals = actions.filter(a => a.branchId === 'l2b').length;
+        const totalProfit = actions.reduce((sum, a) => sum + a.netCash, 0);
+
+        // Milestone definitions
+        if (vendingCount >= 10 && !state.pl.milestones?.some(m => m.id === 'VENDING_KING')) {
+          newMilestones.push({ id: 'VENDING_KING', name: 'Vending King', description: 'Own 10 vending machines', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+        if (houseFlips >= 5 && !state.pl.milestones?.some(m => m.id === 'FLIP_MASTER')) {
+          newMilestones.push({ id: 'FLIP_MASTER', name: 'Flip Master', description: 'Flip 5 houses', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+        if (rentals >= 5 && !state.pl.milestones?.some(m => m.id === 'LANDLORD')) {
+          newMilestones.push({ id: 'LANDLORD', name: 'Landlord', description: 'Own 5 rental properties', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+        if (totalProfit >= 100000 && !state.pl.milestones?.some(m => m.id === 'SIX_FIGURES')) {
+          newMilestones.push({ id: 'SIX_FIGURES', name: 'Six Figures', description: 'Earn $100,000 total profit', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+        if (totalProfit >= 1000000 && !state.pl.milestones?.some(m => m.id === 'MILLIONAIRE')) {
+          newMilestones.push({ id: 'MILLIONAIRE', name: 'Millionaire', description: 'Earn $1,000,000 total profit', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+
+        if (newMilestones.length > 0) {
+          set({
+            pl: {
+              ...state.pl,
+              milestones: [...(state.pl.milestones || []), ...newMilestones],
+            },
+            news: [`🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`, ...state.news],
+          });
+        }
       },
     }),
     {
