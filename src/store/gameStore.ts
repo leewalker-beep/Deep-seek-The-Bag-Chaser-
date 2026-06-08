@@ -536,6 +536,12 @@ export const useGameStore = create<GameState>()(
         return true;
       },
 
+      addTickerMessage: (text: string, colorClass?: string) => {
+        set((state) => ({
+          news: [{ text, colorClass }, ...state.news.slice(0, 49)]
+        }));
+      },
+
       // Advance to next tier
       advanceTier: () => {
         const state = get();
