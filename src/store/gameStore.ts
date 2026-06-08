@@ -65,6 +65,7 @@ const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
     'r_scrap',
     'r_flyers',
     'r_sleep',
+    'r_vending',
   ];
 
   if (difficulty === 1) {
