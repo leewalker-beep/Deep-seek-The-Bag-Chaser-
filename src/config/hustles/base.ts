@@ -157,20 +157,6 @@ HUSTLES.r_vending = {
   },
 };
 
-HUSTLES.r_pr_campaign = {
-  id: 'r_pr_campaign',
-  name: 'PR Campaign',
-  tier: 'MUD',
-  icon: '📢',
-  description: 'Build your reputation',
-  startBranchId: 'l1',
-  branches: {
-    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 1000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40 },
-  },
-};
-
 HUSTLES.r_ghost_mode = {
   id: 'r_ghost_mode',
   name: 'Ghost Mode',
@@ -314,6 +300,32 @@ HUSTLES.audio = {
   }
 };
 
+HUSTLES.r_pr_campaign = {
+  id: 'r_pr_campaign',
+  name: 'PR Campaign',
+  tier: 'STREET',
+  icon: '📢',
+  description: 'Build your reputation',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 1000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40 },
+  },
+};
+
+HUSTLES.power_nap = {
+  id: 'power_nap',
+  name: 'Power Nap',
+  tier: 'STREET',
+  icon: '😴',
+  description: 'Regain mental health',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Power Nap', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0 },
+  },
+};
+
 HUSTLES.sw = {
   id: 'sw',
   name: 'Streetwear',
@@ -405,37 +417,16 @@ HUSTLES.ecom_brand = {
   ]
 };
 
-HUSTLES.data_analytics = {
-  id: 'data_analytics',
-  name: 'Data Analytics',
+HUSTLES.therapy_session = {
+  id: 'therapy_session',
+  name: 'Therapy Session',
   tier: 'STARTUP',
-  icon: '📊',
-  description: 'Sell insights to corporations',
-  levels: [
-    { level: 1, id: 'l1', cost: 60000, yieldCash: 45000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 12000 },
-  ]
-};
-
-HUSTLES.crypto_mining = {
-  id: 'crypto_mining',
-  name: 'Crypto Mining',
-  tier: 'STARTUP',
-  icon: '⛏️',
-  description: 'Secure the network, secure the bag',
-  levels: [
-    { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 100, auraReq: 150, passiveYield: 25000 },
-  ]
-};
-
-HUSTLES.virtual_assistant_agency = {
-  id: 'virtual_assistant_agency',
-  name: 'VA Agency',
-  tier: 'STARTUP',
-  icon: '🤝',
-  description: 'Arbitrage global labor',
-  levels: [
-    { level: 1, id: 'l1', cost: 20000, yieldCash: 12000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 60, auraReq: 40, passiveYield: 4000 },
-  ]
+  icon: '🛋️',
+  description: 'Regain mental health',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0 },
+  },
 };
 
 // CORPORATE Tier Hustles
@@ -459,6 +450,51 @@ HUSTLES.global_franchise = {
   levels: [
     { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 40000 },
   ]
+};
+
+HUSTLES.data_analytics = {
+  id: 'data_analytics',
+  name: 'Data Analytics',
+  tier: 'CORPORATE',
+  icon: '📊',
+  description: 'Sell insights to corporations',
+  levels: [
+    { level: 1, id: 'l1', cost: 60000, yieldCash: 45000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 12000 },
+  ]
+};
+
+HUSTLES.crypto_mining = {
+  id: 'crypto_mining',
+  name: 'Crypto Mining',
+  tier: 'CORPORATE',
+  icon: '⛏️',
+  description: 'Secure the network, secure the bag',
+  levels: [
+    { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 100, auraReq: 150, passiveYield: 25000 },
+  ]
+};
+
+HUSTLES.virtual_assistant_agency = {
+  id: 'virtual_assistant_agency',
+  name: 'VA Agency',
+  tier: 'CORPORATE',
+  icon: '🤝',
+  description: 'Arbitrage global labor',
+  levels: [
+    { level: 1, id: 'l1', cost: 20000, yieldCash: 12000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 60, auraReq: 40, passiveYield: 4000 },
+  ]
+};
+
+HUSTLES.wellness_retreat = {
+  id: 'wellness_retreat',
+  name: 'Wellness Retreat',
+  tier: 'CORPORATE',
+  icon: '🧘',
+  description: 'Regain mental health',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0 },
+  },
 };
 
 // ELITE Tier Hustles

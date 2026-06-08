@@ -63,7 +63,6 @@ const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
     'r_labor',
     'r_delivery',
     'r_plasma',
-    'r_pr_campaign',
     'r_ghost_mode',
     'r_scrap',
     'r_flyers',
