@@ -84,6 +84,11 @@ export function advanceMonth(
   // Decay heat (cool down over time)
   newPl.heat = Math.max(0, newPl.heat - 10);
 
+  // Decrement mental shield
+  if (newPl.mentalShieldTurns > 0) {
+    newPl.mentalShieldTurns--;
+  }
+
   // Random market shift (15% chance)
   if (Math.random() < 0.15) {
     const markets: MarketType[] = ['NORMAL', 'RECESSION', 'BULL_MARKET', 'CRACKDOWN'];

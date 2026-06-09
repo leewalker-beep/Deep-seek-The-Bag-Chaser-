@@ -7,6 +7,7 @@ export interface MathResult {
   yieldAura: number;
   mentalHit: number;
   heatHit: number;
+  shieldTurns: number;
 }
 
 export const LEVEL_MULTIPLIERS: Record<number, number> = {
@@ -24,7 +25,8 @@ export function calculateHustleMath(
   marketYieldMult: number,
   marketHeatMult: number,
   minigameMult: number,
-  isSuccess: boolean
+  isSuccess: boolean,
+  mentalShieldTurns: number = 0
 ): MathResult {
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
 
@@ -34,6 +36,11 @@ export function calculateHustleMath(
   let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
   let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? minigameMult : 1);
   let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
+
+  // Mental Shield Logic
+  if (mentalShieldTurns > 0 && mentalHit < 0) {
+    mentalHit = 0;
+  }
 
   if (!isSuccess) {
     yieldCash = Math.floor(yieldCash * 0.3);
@@ -55,7 +62,7 @@ export function calculateHustleMath(
     yieldCash = Math.floor(cost * 1.3);
   }
 
-  return { cost, yieldCash, yieldClout, yieldAura, mentalHit, heatHit };
+  return { cost, yieldCash, yieldClout, yieldAura, mentalHit, heatHit, shieldTurns: levelData.shieldTurns || 0 };
 }
 
 export function calculatePassiveIncome(

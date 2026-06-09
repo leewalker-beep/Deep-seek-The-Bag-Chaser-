@@ -15,12 +15,12 @@ export const HoldHype: React.FC<HoldHypeProps> = ({ onComplete }) => {
     startTimeRef.current = Date.now();
     timerRef.current = window.setInterval(() => {
       const elapsed = Date.now() - (startTimeRef.current || 0);
-      const newProgress = Math.min(100, (elapsed / 2000) * 100);
+      const newProgress = Math.min(100, (elapsed / 3000) * 100);
       setProgress(newProgress);
 
       if (newProgress >= 100) {
         // Automatically release if held too long
-        handleRelease(2000);
+        handleRelease(3000);
       }
     }, 20);
   };
@@ -33,12 +33,12 @@ export const HoldHype: React.FC<HoldHypeProps> = ({ onComplete }) => {
     setIsHolding(false);
 
     // Target is exactly 2000ms (2 seconds)
-    const diff = Math.abs(2000 - elapsed);
+    // Perfect range: 1.8s (1800ms) to 2.2s (2200ms)
     let multiplier = 0.5;
 
-    if (diff < 100) multiplier = 2.0; // Perfect (within 0.1s)
-    else if (diff < 300) multiplier = 1.5; // Great (within 0.3s)
-    else if (diff < 600) multiplier = 1.0; // Good (within 0.6s)
+    if (elapsed >= 1800 && elapsed <= 2200) {
+      multiplier = 2.0;
+    }
 
     onComplete(multiplier);
   };
