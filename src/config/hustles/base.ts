@@ -332,6 +332,7 @@ HUSTLES.sw = {
   tier: 'STARTUP',
   icon: '👕',
   description: 'Building a global hype brand',
+  miniGame: 'HoldHype',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
@@ -389,6 +390,7 @@ HUSTLES.saas_mvp = {
   tier: 'STARTUP',
   icon: '💻',
   description: 'Software as a Service',
+  miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 1000, nextBranches: ['l2'] },
@@ -403,6 +405,7 @@ HUSTLES.agency_scale = {
   tier: 'STARTUP',
   icon: '🏢',
   description: 'High-ticket service fulfillment',
+  miniGame: 'TapAssign',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', cost: 25000, yieldCash: 15000, yieldClout: 80, yieldAura: 40, mentalHit: -20, cloutReq: 80, auraReq: 60, passiveYield: 3000, nextBranches: ['l2'] },

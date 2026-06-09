@@ -28,10 +28,10 @@ export function calculateHustleMath(
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
 
   const cost = levelData.cost * levelMult * marketExpenseMult;
-  let yieldCash = levelData.yieldCash * levelMult * marketYieldMult * minigameMult;
-  let yieldClout = levelData.yieldClout * levelMult * marketYieldMult;
-  let yieldAura = levelData.yieldAura * levelMult * marketYieldMult;
-  let mentalHit = levelData.mentalHit * levelMult;
+  let yieldCash = Math.floor(levelData.yieldCash * levelMult * marketYieldMult * minigameMult);
+  let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult);
+  let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
+  let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? minigameMult : 1);
   let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
 
   if (!isSuccess) {
