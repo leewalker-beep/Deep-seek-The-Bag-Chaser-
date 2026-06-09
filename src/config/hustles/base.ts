@@ -457,6 +457,8 @@ HUSTLES.festival = {
   tier: 'CORPORATE',
   icon: '🎸',
   description: 'Organize a massive event',
+  hasPanel: true,
+  panelType: 'FESTIVAL',
   levels: [
     { level: 1, id: 'l1', cost: 200000, yieldCash: 350000, yieldClout: 200, yieldAura: 100, mentalHit: -40, cloutReq: 100, auraReq: 100 },
   ]
@@ -482,8 +484,12 @@ HUSTLES.data_analytics = {
   tier: 'CORPORATE',
   icon: '📊',
   description: 'Sell insights to corporations',
+  hasPanel: true,
+  panelType: 'DATA_ANALYTICS',
   levels: [
     { level: 1, id: 'l1', cost: 60000, yieldCash: 45000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 12000 },
+    { level: 2, id: 'l2', cost: 120000, yieldCash: 90000, yieldClout: 250, yieldAura: 160, mentalHit: -35, cloutReq: 250, auraReq: 150, passiveYield: 25000 },
+    { level: 3, id: 'l3', cost: 250000, yieldCash: 200000, yieldClout: 500, yieldAura: 350, mentalHit: -50, cloutReq: 500, auraReq: 300, passiveYield: 60000 },
   ]
 };
 
@@ -493,8 +499,12 @@ HUSTLES.crypto_mining = {
   tier: 'CORPORATE',
   icon: '⛏️',
   description: 'Secure the network, secure the bag',
+  hasPanel: true,
+  panelType: 'CRYPTO_MINING',
   levels: [
     { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 100, auraReq: 150, passiveYield: 25000 },
+    { level: 2, id: 'l2', cost: 300000, yieldCash: 0, yieldClout: 120, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 300, passiveYield: 75000 },
+    { level: 3, id: 'l3', cost: 1000000, yieldCash: 0, yieldClout: 300, yieldAura: 600, mentalHit: -40, cloutReq: 600, auraReq: 600, passiveYield: 200000 },
   ]
 };
 
@@ -504,6 +514,8 @@ HUSTLES.virtual_assistant_agency = {
   tier: 'CORPORATE',
   icon: '🤝',
   description: 'Arbitrage global labor',
+  hasPanel: true,
+  panelType: 'VA_AGENCY',
   levels: [
     { level: 1, id: 'l1', cost: 20000, yieldCash: 12000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 60, auraReq: 40, passiveYield: 4000 },
   ]
