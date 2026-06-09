@@ -23,6 +23,7 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     vendingCount: 0,
     passiveLaborYield: 0,
     mentalShieldTurns: 0,
+    artistRoster: [],
     actionLog: [],
     milestones: [],
     stats: {
@@ -534,6 +535,56 @@ export const useGameStore = create<GameState>()(
         get().checkMilestones();
 
         return true;
+      },
+
+      scoutArtist: () => {
+        const state = get();
+        const scoutCost = 5000;
+        const cloutReq = 50;
+
+        if (state.pl.bag < scoutCost) return { success: false, message: `Need $${scoutCost.toLocaleString()} to scout` };
+        if (state.pl.clout < cloutReq) return { success: false, message: `Need ${cloutReq} clout to scout artists` };
+
+        const firstNames = ['Lil', 'Yung', 'Big', 'MC', 'DJ', 'The', 'Kid', 'Bad', 'Rich'];
+        const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul'];
+        const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+
+        const talent = Math.floor(Math.random() * 80) + 20;
+        const hype = Math.floor(Math.random() * 30) + 10;
+        const earnings = Math.floor((talent * hype) / 2);
+
+        const newArtist = {
+          id: Math.random().toString(36).substring(7),
+          name,
+          talent,
+          hype,
+          monthlyEarnings: earnings,
+        };
+
+        set({
+          pl: {
+            ...state.pl,
+            bag: state.pl.bag - scoutCost,
+            artistRoster: [...state.pl.artistRoster, newArtist],
+          },
+          news: [`🎤 Scouted new artist: ${name}`, ...state.news.slice(0, 49)]
+        });
+
+        return { success: true, artist: newArtist, message: 'Success' };
+      },
+
+      dropArtist: (artistId: string) => {
+        const state = get();
+        const artist = state.pl.artistRoster.find(a => a.id === artistId);
+        if (!artist) return;
+
+        set({
+          pl: {
+            ...state.pl,
+            artistRoster: state.pl.artistRoster.filter(a => a.id !== artistId),
+          },
+          news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
+        });
       },
 
       addTickerMessage: (text: string, colorClass?: string) => {

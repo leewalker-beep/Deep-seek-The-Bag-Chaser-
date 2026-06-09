@@ -102,7 +102,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            {hustle.miniGame ? 'PLAY' : (levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE')}
+            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (hustle.miniGame ? 'PLAY' : (levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'))}
           </button>
         )}
 

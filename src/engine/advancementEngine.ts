@@ -53,6 +53,28 @@ export function advanceMonth(
     passiveIncome += asset.passiveYield * count;
   });
 
+  // Music roster passive income
+  const rosterIncome = newPl.artistRoster.reduce((sum, artist) => sum + artist.monthlyEarnings, 0);
+  passiveIncome += rosterIncome;
+
+  // Grammy Awards Logic (Every December)
+  if (newPl.month % 12 === 0 && newPl.artistRoster.length > 0) {
+    const totalTalent = newPl.artistRoster.reduce((sum, a) => sum + a.talent, 0);
+    const totalHype = newPl.artistRoster.reduce((sum, a) => sum + a.hype, 0);
+
+    // 5% base chance + bonus for talent and hype
+    const grammyChance = 0.05 + (totalTalent / 500) + (totalHype / 1000);
+
+    if (Math.random() < grammyChance) {
+      const winnerIndex = Math.floor(Math.random() * newPl.artistRoster.length);
+      newPl.artistRoster[winnerIndex].isGrammyWinner = true;
+      newPl.artistRoster[winnerIndex].monthlyEarnings *= 3; // Massive boost
+      newPl.clout += 500;
+      newPl.aura += 300;
+      news.push(`🏆 GRAMMY WINNER! ${newPl.artistRoster[winnerIndex].name} won a Grammy! +500 Clout / +300 Aura`);
+    }
+  }
+
   // Apply financial changes
   newPl.bag = newPl.bag + passiveIncome - totalRent;
   newPl.month += 1;

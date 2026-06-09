@@ -14,7 +14,11 @@ import { TapRhythm } from './components/minigames/TapRhythm';
 import { DragScale } from './components/minigames/DragScale';
 import { TapAssign } from './components/minigames/TapAssign';
 import { HoldHype } from './components/minigames/HoldHype';
+import { MagneticSweep } from './components/minigames/MagneticSweep';
+import { BigWinCelebration } from './components/effects/BigWinCelebration';
+import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { HUSTLES } from './config/hustles/base';
+import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier } from './types/game';
@@ -44,6 +48,7 @@ function App() {
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
   const [showReceipts, setShowReceipts] = useState(false);
+  const [bigWin, setBigWin] = useState<{ amount: number } | null>(null);
 
   useEffect(() => {
     document.body.className = pl.currentTier.toLowerCase();
@@ -127,6 +132,14 @@ function App() {
       <div className="hidden">
         <StatsPanel stats={pl} market={currentMarket} />
       </div>
+
+      {/* Big Win Celebration */}
+      {bigWin && (
+        <BigWinCelebration
+          amount={bigWin.amount}
+          onComplete={() => setBigWin(null)}
+        />
+      )}
 
       {/* Cash Splash Animation */}
       {cashSplash && (
@@ -287,6 +300,35 @@ function App() {
                 if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
                 if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
                 if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
+                if (hustle.miniGame === 'MagneticSweep') {
+                  return (
+                    <MagneticSweep
+                      onComplete={(multiplier, isRare) => {
+                        const finalMultiplier = isRare ? multiplier * 50 : multiplier;
+                        if (isRare) {
+                          // Calculate approximate win for celebration
+                          // This is a bit of a hack since executeHustle does its own math
+                          const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                          if (levelData) {
+                            setBigWin({ amount: Math.floor(levelData.yieldCash * (LEVEL_MULTIPLIERS[levelData.level] || 1) * finalMultiplier) });
+                          }
+                        }
+                        onComplete(finalMultiplier);
+                      }}
+                    />
+                  );
+                }
+              }
+
+              if (hustle.hasPanel && hustle.panelType === 'MUSIC_PRODUCTION') {
+                return (
+                  <MusicProductionPanel
+                    hustle={hustle}
+                    onExecute={() => {
+                      setShowMinigame(true);
+                    }}
+                  />
+                );
               }
 
               if (hasNextBranches) {

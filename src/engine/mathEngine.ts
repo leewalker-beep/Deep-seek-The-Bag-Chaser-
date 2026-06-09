@@ -9,10 +9,11 @@ export interface MathResult {
   heatHit: number;
 }
 
-const LEVEL_MULTIPLIERS: Record<number, number> = {
+export const LEVEL_MULTIPLIERS: Record<number, number> = {
   1: 1,
   2: 2.0,
   3: 3.5,
+  4: 5.0,
 };
 
 export function calculateHustleMath(

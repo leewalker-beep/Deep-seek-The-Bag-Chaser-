@@ -177,11 +177,13 @@ HUSTLES.r_scrap = {
   tier: 'MUD',
   icon: '🔧',
   description: 'Salvage and sell',
+  miniGame: 'MagneticSweep',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Scrap Metal', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Industrial Scrap', cost: 3000, yieldCash: 2000, yieldClout: 5, yieldAura: 0, mentalHit: -8, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 8000, yieldClout: 15, yieldAura: 5, mentalHit: -12, cloutReq: 50, auraReq: 20 },
+    l1: { level: 1, id: 'l1', name: 'Scavenger', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Yard Owner', cost: 3000, yieldCash: 2000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 8000, yieldClout: 15, yieldAura: 5, mentalHit: -15, cloutReq: 50, auraReq: 20, nextBranches: ['l4'] },
+    l4: { level: 4, id: 'l4', name: 'Industrial Network', cost: 50000, yieldCash: 25000, yieldClout: 40, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50 }
   },
 };
 
@@ -290,13 +292,16 @@ HUSTLES.audio = {
   name: 'Music Production',
   tier: 'STREET',
   icon: '🎹',
-  description: 'Selling beats and engineering',
+  description: 'Manage a roster and hunt for Grammys',
   miniGame: 'TapRhythm',
+  hasPanel: true,
+  panelType: 'MUSIC_PRODUCTION',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Home Studio', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Studio Session', cost: 10000, yieldCash: 2000, yieldClout: 80, yieldAura: 40, mentalHit: -15, cloutReq: 50, auraReq: 30, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Record Deal', cost: 40000, yieldCash: 10000, yieldClout: 200, yieldAura: 100, mentalHit: -25, cloutReq: 100, auraReq: 60 }
+    l1: { level: 1, id: 'l1', name: 'Bedroom Producer', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Independent Label', cost: 10000, yieldCash: 2000, yieldClout: 80, yieldAura: 40, mentalHit: -15, cloutReq: 80, auraReq: 50, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Major Distribution', cost: 75000, yieldCash: 15000, yieldClout: 250, yieldAura: 150, mentalHit: -25, cloutReq: 250, auraReq: 150, nextBranches: ['l4'] },
+    l4: { level: 4, id: 'l4', name: 'Global Records', cost: 250000, yieldCash: 60000, yieldClout: 800, yieldAura: 400, mentalHit: -40, cloutReq: 600, auraReq: 400 }
   }
 };
 
