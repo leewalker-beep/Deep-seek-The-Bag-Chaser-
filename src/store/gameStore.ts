@@ -130,21 +130,16 @@ export const useGameStore = create<GameState>()(
         const newHeat = state.pl.heat + result.heatHit;
 
         // Apply passive income
-        let newPassiveYield = state.pl.passiveLaborYield || 0;
         let newRentalCount = state.pl.rentalCount || 0;
         let newFlipCount = state.pl.flipCount || 0;
         let newVendingCount = state.pl.vendingCount || 0;
 
         if (hustleId === 'r_vending') {
           newVendingCount++;
-          // We don't add to newPassiveYield here because vending is handled dynamically in advancementEngine
         } else if (branch.id === 'l2a') {
           newFlipCount++;
         } else if (branch.id === 'l2b') {
           newRentalCount++;
-          newPassiveYield += branch.passiveYield || 0;
-        } else if (branch.passiveYield) {
-          newPassiveYield += branch.passiveYield;
         }
 
         const nextPl = enforceStatCaps({
@@ -158,8 +153,8 @@ export const useGameStore = create<GameState>()(
           rentalCount: newRentalCount,
           flipCount: newFlipCount,
           vendingCount: newVendingCount,
-          passiveLaborYield: newPassiveYield,
           hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
+          hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
         });
 
         set({
@@ -248,6 +243,10 @@ export const useGameStore = create<GameState>()(
           state.pl.mentalShieldTurns
         );
 
+        const bigWinMsg = (result.isBigWin && result.bigWinMessage)
+          ? { text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }
+          : null;
+
         // Check if player can afford
         if (state.pl.bag < result.cost) {
           return { success: false, netChange: 0, message: `Need $${result.cost.toLocaleString()}` };
@@ -280,6 +279,14 @@ export const useGameStore = create<GameState>()(
           stats: newStats,
           lastExecutedHustleId: hustleId,
           streak: success ? (state.pl.streak || 0) + 1 : 0,
+          hustleLevels: {
+            ...state.pl.hustleLevels,
+            [hustleId]: currentLevel
+          },
+          hustleBranchIds: hustle.branches ? {
+            ...state.pl.hustleBranchIds,
+            [hustleId]: state.pl.hustleBranchIds[hustleId] || hustle.startBranchId || ''
+          } : state.pl.hustleBranchIds,
         });
 
         get().logAction({
@@ -314,6 +321,14 @@ export const useGameStore = create<GameState>()(
 
         const cappedPl = enforceStatCaps(newPl);
 
+        const executionNews = ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`;
+        const finalNews = [
+          ...monthNews,
+          ...(bigWinMsg ? [bigWinMsg] : []),
+          executionNews,
+          ...state.news
+        ].slice(0, 50);
+
         // Handle death
         if (shouldDie) {
           const lastHustleId = cappedPl.lastExecutedHustleId || 'DEFAULT';
@@ -322,7 +337,7 @@ export const useGameStore = create<GameState>()(
           set({
             pl: cappedPl,
             currentMarket: newMarket,
-            news: [...monthNews, ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 45)],
+            news: finalNews,
             ph: 'POST_MORTEM',
             deathBadge: deathInfo.badge,
             fatalCause: deathCause,
@@ -334,7 +349,7 @@ export const useGameStore = create<GameState>()(
         set({
           pl: cappedPl,
           currentMarket: newMarket,
-          news: [...monthNews, ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 45)],
+          news: finalNews,
         });
 
         return { success, netChange: newBag - state.pl.bag, message: '' };
@@ -423,14 +438,9 @@ export const useGameStore = create<GameState>()(
           // Stats tracking
           if (hustleId === 'r_vending') {
             newPl.vendingCount += 1;
-            // No passiveLaborYield update for vending
           } else {
             if (nodeId === 'l2a') newPl.flipCount += 1;
             if (nodeId === 'l2b') newPl.rentalCount += 1;
-
-            if (targetNodeData.passiveYield) {
-              newPl.passiveLaborYield += targetNodeData.passiveYield;
-            }
           }
         } else {
           newPl.hustleLevels = {
@@ -604,18 +614,47 @@ export const useGameStore = create<GameState>()(
         if (state.pl.bag < asset.cost) return false;
 
         const newCount = (state.pl.flexAssets[assetId] || 0) + 1;
+        const isVending = assetId === 'vending';
 
-        set({
-          pl: {
-            ...state.pl,
-            bag: state.pl.bag - asset.cost,
-            flexAssets: {
-              ...state.pl.flexAssets,
-              [assetId]: newCount
-            }
+        const plAfterPurchase = {
+          ...state.pl,
+          bag: state.pl.bag - asset.cost,
+          flexAssets: {
+            ...state.pl.flexAssets,
+            [assetId]: newCount
           },
-          news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
-        });
+          vendingCount: isVending ? (state.pl.vendingCount + 1) : state.pl.vendingCount
+        };
+
+        if (isVending) {
+          const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
+            plAfterPurchase,
+            state.currentMarket
+          );
+
+          const cappedPl = enforceStatCaps(newPl);
+
+          if (shouldDie) {
+            set({
+              pl: cappedPl,
+              currentMarket: newMarket,
+              news: [...monthNews, `💎 Purchased ${asset.name}`, ...state.news.slice(0, 45)],
+              ph: 'POST_MORTEM',
+              fatalCause: deathCause,
+            });
+          } else {
+            set({
+              pl: cappedPl,
+              currentMarket: newMarket,
+              news: [...monthNews, `💎 Purchased ${asset.name}`, ...state.news.slice(0, 45)]
+            });
+          }
+        } else {
+          set({
+            pl: enforceStatCaps(plAfterPurchase),
+            news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
+          });
+        }
 
         return true;
       },
@@ -691,3 +730,7 @@ export const useGameStore = create<GameState>()(
     }
   )
 );
+
+if (typeof window !== 'undefined') {
+  (window as any).useGameStore = useGameStore;
+}

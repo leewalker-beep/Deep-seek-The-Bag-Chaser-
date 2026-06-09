@@ -8,6 +8,8 @@ export interface MathResult {
   mentalHit: number;
   heatHit: number;
   shieldTurns: number;
+  isBigWin?: boolean;
+  bigWinMessage?: string;
 }
 
 export const LEVEL_MULTIPLIERS: Record<number, number> = {
@@ -39,6 +41,29 @@ export function calculateHustleMath(
   let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? mentalMinigameMult : 1);
   let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
 
+  let isBigWin = false;
+  let bigWinMessage = '';
+
+  // Big Win Logic
+  if (isSuccess) {
+    if (hustleId === 'drop' && Math.random() < 0.05) {
+      isBigWin = true;
+      yieldCash *= 5;
+      bigWinMessage = 'VIRAL PRODUCT! 5x sales boost!';
+    } else if (hustleId === 'meme' && Math.random() < 0.10) {
+      isBigWin = true;
+      yieldCash *= 10;
+      bigWinMessage = 'TO THE MOON! Meme coin pumps 10x!';
+    } else if (hustleId === 'festival' && Math.random() < 0.08) {
+      const profit = yieldCash - cost;
+      if (profit > 0) {
+        isBigWin = true;
+        yieldCash = cost + (profit * 3);
+        bigWinMessage = 'SELLOUT! Festival attendance doubles profit!';
+      }
+    }
+  }
+
   // Mental Shield Logic
   if (mentalShieldTurns > 0 && mentalHit < 0) {
     mentalHit = 0;
@@ -64,7 +89,17 @@ export function calculateHustleMath(
     yieldCash = Math.floor(cost * 1.3);
   }
 
-  return { cost, yieldCash, yieldClout, yieldAura, mentalHit, heatHit, shieldTurns: levelData.shieldTurns || 0 };
+  return {
+    cost,
+    yieldCash,
+    yieldClout,
+    yieldAura,
+    mentalHit,
+    heatHit,
+    shieldTurns: levelData.shieldTurns || 0,
+    isBigWin,
+    bigWinMessage
+  };
 }
 
 export function calculatePassiveIncome(

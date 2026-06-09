@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
+import { useGameStore } from '../store/gameStore';
 
 interface HustleCardProps {
   hustle: Hustle;
@@ -40,6 +41,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     );
   }
 
+  const { purchaseFlexAsset } = useGameStore();
   const canAfford = player.bag >= levelData.cost;
   const isVending = hustle.id === 'r_vending';
 
@@ -87,7 +89,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
               <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * 250}/month</span>
             </div>
             <button
-              onClick={() => onUpgrade('l1')}
+              onClick={() => purchaseFlexAsset('vending')}
               className="w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 bg-emerald-600 text-white hover:bg-emerald-500"
             >
               BUY MACHINE ($2,000)
