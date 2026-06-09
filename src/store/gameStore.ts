@@ -8,80 +8,7 @@ import { FLEX_ASSETS } from '../config/flexAssets';
 import { calculateHustleMath } from '../engine/mathEngine';
 import { advanceMonth } from '../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../config/deathMessages';
-
-const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
-  const baseStats = {
-    mentalHealth: 100,
-    heat: 0,
-    month: 0,
-    hustleLevels: {},
-    hustleBranchIds: {},
-    flexAssets: {},
-    unlockedAchievements: [],
-    rentalCount: 0,
-    flipCount: 0,
-    vendingCount: 0,
-    passiveLaborYield: 0,
-    mentalShieldTurns: 0,
-    artists: [],
-    grammyCount: 0,
-    recordLabelLevel: 1,
-    actionLog: [],
-    milestones: [],
-    stats: {
-      totalHustles: 0,
-      successfulHustles: 0,
-      lifetimeEarnings: 0,
-    },
-  };
-
-  if (difficulty === 1) { // Trust Fund
-    return {
-      ...baseStats,
-      bag: 25000,
-      clout: 30,
-      aura: 30,
-      currentTier: 'STREET',
-    };
-  } else if (difficulty === 2) { // Middle Grind
-    return {
-      ...baseStats,
-      bag: 5000,
-      clout: 15,
-      aura: 15,
-      currentTier: 'MUD',
-    };
-  } else { // Grinder (default)
-    return {
-      ...baseStats,
-      bag: 1000,
-      clout: 5,
-      aura: 5,
-      currentTier: 'MUD',
-    };
-  }
-};
-
-const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
-  const allMud = [
-    'r_labor',
-    'r_delivery',
-    'r_plasma',
-    'r_ghost_mode',
-    'r_scrap',
-    'r_flyers',
-    'r_sleep',
-    'r_vending',
-  ];
-
-  if (difficulty === 1) {
-    // Trust Fund: all hustles unlocked
-    return Object.keys(HUSTLES).reduce((acc, id) => ({ ...acc, [id]: true }), {});
-  } else {
-    // Both Middle Grind and Grinder now get all MUD hustles
-    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {});
-  }
-};
+import { getInitialStats, getUnlockedHustles } from './initialState';
 
 const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
   const { clout: maxClout, aura: maxAura } = getTierMax(pl.currentTier);
@@ -100,6 +27,7 @@ const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
     aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
     mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),
     heat: Math.floor(Math.max(0, Math.min(pl.heat, maxHeat))),
+    mentalShieldTurns: Math.floor(Math.max(0, pl.mentalShieldTurns || 0)),
   };
 };
 
@@ -174,7 +102,8 @@ export const useGameStore = create<GameState>()(
           market.yieldMultiplier,
           market.heatMultiplier,
           1,
-          true
+          true,
+          state.pl.mentalShieldTurns
         );
 
         // Check requirements
@@ -225,6 +154,7 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
+          mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
           rentalCount: newRentalCount,
           flipCount: newFlipCount,
           vendingCount: newVendingCount,
@@ -314,7 +244,8 @@ export const useGameStore = create<GameState>()(
           market.yieldMultiplier,
           market.heatMultiplier,
           minigameMultiplier,
-          success
+          success,
+          state.pl.mentalShieldTurns
         );
 
         // Check if player can afford
@@ -345,6 +276,7 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
+          // We don't add result.shieldTurns here because we want it to survive advanceMonth below
           stats: newStats,
           lastExecutedHustleId: hustleId,
           streak: success ? (state.pl.streak || 0) + 1 : 0,
@@ -376,6 +308,9 @@ export const useGameStore = create<GameState>()(
           hustleResultPl,
           state.currentMarket
         );
+
+        // Apply shield turns AFTER advanceMonth so they aren't immediately decremented
+        newPl.mentalShieldTurns += result.shieldTurns;
 
         const cappedPl = enforceStatCaps(newPl);
 
@@ -454,7 +389,8 @@ export const useGameStore = create<GameState>()(
           market.yieldMultiplier,
           market.heatMultiplier,
           1,
-          true
+          true,
+          state.pl.mentalShieldTurns
         );
 
         // Check requirements
@@ -470,6 +406,7 @@ export const useGameStore = create<GameState>()(
           aura: state.pl.aura + result.yieldAura,
           mentalHealth: state.pl.mentalHealth + result.mentalHit,
           heat: state.pl.heat + result.heatHit,
+          mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
         });
 
         if (hustle.branches && (branchId || targetNodeData.id)) {

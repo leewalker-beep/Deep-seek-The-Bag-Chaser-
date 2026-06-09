@@ -1,6 +1,12 @@
-# React + TypeScript + Vite
+# BAG CHASER
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Escape the mud. Build the empire. Don't lose your soul.
+
+## Backlog
+- Vending machine aging fix (advance month on purchase)
+
+## Tech Stack
+- React + TypeScript + Vite
 
 Currently, two official plugins are available:
 

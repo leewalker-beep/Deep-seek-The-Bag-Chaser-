@@ -102,6 +102,9 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
           <div className="text-[8px] text-slate-500 uppercase">MENTAL</div>
           <div className={`text-sm font-bold ${stats.mentalHealth < 30 ? 'text-red-400' : 'text-white'}`}>
             {Math.floor(stats.mentalHealth)}%
+            {stats.mentalShieldTurns > 0 && (
+              <span className="text-blue-400 ml-1 text-[10px]">🛡️{stats.mentalShieldTurns}</span>
+            )}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">

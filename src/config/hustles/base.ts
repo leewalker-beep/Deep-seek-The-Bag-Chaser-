@@ -11,6 +11,7 @@ export interface HustleLevel {
   auraReq: number;
   heatHit?: number;
   passiveYield?: number;
+  shieldTurns?: number;
   nextBranches?: string[];
   isRepeatable?: boolean;
   maxRepeat?: number;
@@ -209,7 +210,7 @@ HUSTLES.r_sleep = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 1, nextBranches: ['l2'] },
     l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
     l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 1000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
@@ -327,7 +328,7 @@ HUSTLES.power_nap = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Power Nap', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Power Nap', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 2 },
   },
 };
 
@@ -338,6 +339,8 @@ HUSTLES.sw = {
   icon: '👕',
   description: 'Building a global hype brand',
   miniGame: 'HoldHype',
+  hasPanel: true,
+  panelType: 'STREETWEAR',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
@@ -441,7 +444,7 @@ HUSTLES.therapy_session = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
   },
 };
 
@@ -509,7 +512,7 @@ HUSTLES.wellness_retreat = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0, shieldTurns: 4 },
   },
 };
 

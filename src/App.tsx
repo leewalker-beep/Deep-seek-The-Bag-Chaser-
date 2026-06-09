@@ -18,6 +18,7 @@ import { MagneticSweep } from './components/minigames/MagneticSweep';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
+import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -198,6 +199,9 @@ function App() {
               <span className="text-[8px] text-slate-500 uppercase">Mental</span>
               <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
                 {Math.floor(pl.mentalHealth)}%
+                {pl.mentalShieldTurns > 0 && (
+                  <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
+                )}
               </span>
             </div>
             <div className="flex flex-col">
@@ -342,15 +346,27 @@ function App() {
                 }
               }
 
-              if (hustle.hasPanel && hustle.panelType === 'MUSIC_PRODUCTION') {
-                return (
-                  <MusicProductionPanel
-                    hustle={hustle}
-                    onExecute={() => {
-                      setShowMinigame(true);
-                    }}
-                  />
-                );
+              if (hustle.hasPanel) {
+                if (hustle.panelType === 'MUSIC_PRODUCTION') {
+                  return (
+                    <MusicProductionPanel
+                      hustle={hustle}
+                      onExecute={() => {
+                        setShowMinigame(true);
+                      }}
+                    />
+                  );
+                }
+                if (hustle.panelType === 'STREETWEAR') {
+                  return (
+                    <StreetwearPanel
+                      hustle={hustle}
+                      onComplete={() => {
+                        setActiveHustleView(null);
+                      }}
+                    />
+                  );
+                }
               }
 
               if (hasNextBranches) {
