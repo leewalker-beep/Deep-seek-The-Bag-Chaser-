@@ -24,6 +24,15 @@ export interface GameAction {
   variation?: number;
 }
 
+export interface Artist {
+  id: string;
+  name: string;
+  talent: number;
+  hype: number;
+  monthlyEarnings: number;
+  isGrammyWinner?: boolean;
+}
+
 export interface Milestone {
   id: string;
   name: string;
@@ -52,6 +61,7 @@ export interface PlayerStats {
   vendingCount: number;
   passiveLaborYield: number;
   mentalShieldTurns: number;
+  artistRoster: Artist[];
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {
@@ -90,6 +100,8 @@ export interface GameState {
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
+  scoutArtist: () => { success: boolean; artist?: Artist; message: string };
+  dropArtist: (artistId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
