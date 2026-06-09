@@ -335,8 +335,8 @@ HUSTLES.sw = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Full Collection', cost: 20000, yieldCash: 18000, yieldClout: 120, yieldAura: 60, mentalHit: -20, cloutReq: 100, auraReq: 80, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Flagship Store', cost: 80000, yieldCash: 60000, yieldClout: 300, yieldAura: 150, mentalHit: -30, cloutReq: 250, auraReq: 150 }
+    l2: { id: 'l2', name: 'Pop-Up Tour', level: 2, cost: 25000, yieldCash: 15000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 45, auraReq: 20, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Flagship Store', level: 3, cost: 75000, yieldCash: 45000, yieldClout: 120, yieldAura: 60, mentalHit: -22, cloutReq: 90, auraReq: 45 }
   }
 };
 
@@ -389,10 +389,12 @@ HUSTLES.saas_mvp = {
   tier: 'STARTUP',
   icon: '💻',
   description: 'Software as a Service',
-  levels: [
-    { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 1000 },
-    { level: 2, id: 'l2', cost: 50000, yieldCash: 10000, yieldClout: 120, yieldAura: 50, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 5000 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 1000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Series A', level: 2, cost: 50000, yieldCash: 15000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 60, auraReq: 30, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Unicorn', level: 3, cost: 200000, yieldCash: 60000, yieldClout: 250, yieldAura: 100, mentalHit: -30, cloutReq: 120, auraReq: 60 }
+  }
 };
 
 HUSTLES.agency_scale = {
@@ -401,9 +403,12 @@ HUSTLES.agency_scale = {
   tier: 'STARTUP',
   icon: '🏢',
   description: 'High-ticket service fulfillment',
-  levels: [
-    { level: 1, id: 'l1', cost: 25000, yieldCash: 15000, yieldClout: 80, yieldAura: 40, mentalHit: -20, cloutReq: 80, auraReq: 60, passiveYield: 3000 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', cost: 25000, yieldCash: 15000, yieldClout: 80, yieldAura: 40, mentalHit: -20, cloutReq: 80, auraReq: 60, passiveYield: 3000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Regional Agency', level: 2, cost: 30000, yieldCash: 20000, yieldClout: 80, yieldAura: 30, mentalHit: -18, cloutReq: 50, auraReq: 25, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'National Network', level: 3, cost: 100000, yieldCash: 75000, yieldClout: 200, yieldAura: 80, mentalHit: -25, cloutReq: 100, auraReq: 50 }
+  }
 };
 
 HUSTLES.ecom_brand = {
@@ -412,9 +417,12 @@ HUSTLES.ecom_brand = {
   tier: 'STARTUP',
   icon: '🛒',
   description: 'Private label consumer goods',
-  levels: [
-    { level: 1, id: 'l1', cost: 40000, yieldCash: 25000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 100, auraReq: 80, passiveYield: 8000 },
-  ]
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', cost: 40000, yieldCash: 25000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 100, auraReq: 80, passiveYield: 8000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Warehouse Automation', level: 2, cost: 80000, yieldCash: 40000, yieldClout: 60, yieldAura: 20, mentalHit: -22, cloutReq: 70, auraReq: 35, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Global Fulfillment', level: 3, cost: 250000, yieldCash: 120000, yieldClout: 150, yieldAura: 60, mentalHit: -30, cloutReq: 140, auraReq: 70 }
+  }
 };
 
 HUSTLES.therapy_session = {

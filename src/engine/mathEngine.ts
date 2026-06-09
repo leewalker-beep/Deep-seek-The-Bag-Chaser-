@@ -44,6 +44,9 @@ export function calculateHustleMath(
     heatHit = heatHit < 0 ? 5 : heatHit * 2;
   }
 
+  yieldClout = Math.floor(yieldClout);
+  yieldAura = Math.floor(yieldAura);
+
   // Profit safety net
   if (isSuccess && yieldCash < cost && cost > 0) {
     console.warn(`Profit safety applied to ${hustleId}`);

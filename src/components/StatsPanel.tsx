@@ -102,13 +102,13 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">CLOUT</div>
           <div className="text-[10px] font-bold text-blue-400">
-            {stats.clout} / {getTierMax(stats.currentTier).clout}
+            {Math.round(stats.clout)} / {getTierMax(stats.currentTier).clout}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">AURA</div>
           <div className="text-[10px] font-bold text-purple-400">
-            {stats.aura} / {getTierMax(stats.currentTier).aura}
+            {Math.round(stats.aura)} / {getTierMax(stats.currentTier).aura}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
@@ -167,7 +167,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Clout</span>
                 <span className={stats.clout >= nextRequirements.clout ? 'text-blue-400' : 'text-slate-400'}>
-                  {stats.clout} / {getTierMax(nextTier).clout}
+                  {Math.round(stats.clout)} / {getTierMax(nextTier).clout}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -178,7 +178,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Aura</span>
                 <span className={stats.aura >= nextRequirements.aura ? 'text-purple-400' : 'text-slate-400'}>
-                  {stats.aura} / {getTierMax(nextTier).aura}
+                  {Math.round(stats.aura)} / {getTierMax(nextTier).aura}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
