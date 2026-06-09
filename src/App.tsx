@@ -182,25 +182,25 @@ function App() {
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Clout</span>
               <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
-                {Math.round(pl.clout)}{pl.clout < 5 && '!'}
+                {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Mental</span>
               <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
-                {pl.mentalHealth}%
+                {Math.floor(pl.mentalHealth)}%
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Aura</span>
               <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
-                {Math.round(pl.aura)}{pl.aura < 5 && '!'}
+                {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Heat</span>
               <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
-                {pl.heat}%
+                {Math.floor(pl.heat)}%
               </span>
             </div>
           </div>

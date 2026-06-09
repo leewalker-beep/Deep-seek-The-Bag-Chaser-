@@ -69,8 +69,8 @@ export function advanceMonth(
   newPl.artists.forEach(artist => {
     if (artist.hasReleased && Math.random() < (0.02 / 12)) {
       newPl.bag += 500000;
-      newPl.clout += 100;
-      newPl.aura += 50;
+      newPl.clout = Math.floor(newPl.clout + 100);
+      newPl.aura = Math.floor(newPl.aura + 50);
       newPl.grammyCount = (newPl.grammyCount || 0) + 1;
       artist.isGrammyWinner = true;
       news.push(`🏆 GRAMMY AWARD: ${artist.name} won a Grammy! +$500k | +100 Clout | +50 Aura`);

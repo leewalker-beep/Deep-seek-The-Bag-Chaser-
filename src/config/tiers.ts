@@ -12,3 +12,16 @@ export const TIER_REQUIREMENTS: Record<Tier, { cash: number; clout: number; aura
 };
 
 export const PROGRESSION_ORDER: Tier[] = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'];
+
+export const getTierMax = (tier: string): { clout: number; aura: number } => {
+  switch (tier) {
+    case 'MUD': return { clout: 50, aura: 50 };
+    case 'STREET': return { clout: 100, aura: 100 };
+    case 'STARTUP': return { clout: 200, aura: 200 };
+    case 'CORPORATE': return { clout: 500, aura: 500 };
+    case 'ELITE': return { clout: 1000, aura: 1000 };
+    case 'MOGUL': return { clout: 2000, aura: 2000 };
+    case 'PRESIDENT': return { clout: 5000, aura: 5000 };
+    default: return { clout: 50, aura: 50 };
+  }
+};
