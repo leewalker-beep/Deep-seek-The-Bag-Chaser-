@@ -11,6 +11,9 @@ import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import { SwipeOrder } from './components/minigames/SwipeOrder';
 import { TapRhythm } from './components/minigames/TapRhythm';
+import { DragScale } from './components/minigames/DragScale';
+import { TapAssign } from './components/minigames/TapAssign';
+import { HoldHype } from './components/minigames/HoldHype';
 import { HUSTLES } from './config/hustles/base';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
@@ -166,7 +169,7 @@ function App() {
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Clout</span>
               <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
-                {pl.clout}{pl.clout < 5 && '!'}
+                {Math.round(pl.clout)}{pl.clout < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
@@ -178,7 +181,7 @@ function App() {
             <div className="flex flex-col">
               <span className="text-[8px] text-slate-500 uppercase">Aura</span>
               <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
-                {pl.aura}{pl.aura < 5 && '!'}
+                {Math.round(pl.aura)}{pl.aura < 5 && '!'}
               </span>
             </div>
             <div className="flex flex-col">
@@ -268,13 +271,22 @@ function App() {
 
               if (showMinigame && hustle.miniGame) {
                 const onComplete = (multiplier: number) => {
-                  executeHustle(hustle.id, multiplier);
-                  setActiveHustleView(null);
-                  setShowMinigame(false);
+                  try {
+                    executeHustle(hustle.id, multiplier);
+                  } catch (err) {
+                    console.error('Minigame execution failed, falling back to standard', err);
+                    executeHustle(hustle.id);
+                  } finally {
+                    setActiveHustleView(null);
+                    setShowMinigame(false);
+                  }
                 };
 
                 if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
                 if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
+                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
+                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
+                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
               }
 
               if (hasNextBranches) {

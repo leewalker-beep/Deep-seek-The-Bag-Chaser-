@@ -51,6 +51,7 @@ export interface PlayerStats {
   flipCount: number;
   vendingCount: number;
   passiveLaborYield: number;
+  mentalShieldTurns: number;
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {

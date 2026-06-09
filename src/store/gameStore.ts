@@ -22,6 +22,7 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     flipCount: 0,
     vendingCount: 0,
     passiveLaborYield: 0,
+    mentalShieldTurns: 0,
     actionLog: [],
     milestones: [],
     stats: {
