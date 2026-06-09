@@ -1,8 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 
+interface MagneticSweepResult {
+  multiplier: number;
+  isRare: boolean;
+  speedMult: number;
+  outcomeMult: number;
+  isSuccess: boolean;
+}
+
 interface MagneticSweepProps {
-  onComplete: (multiplier: number, isRare: boolean) => void;
+  onComplete: (result: MagneticSweepResult) => void;
 }
 
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
@@ -12,6 +20,14 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
   const [rareFound, setRareFound] = useState(false);
   const [lastTime, setLastTime] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Determine outcome at start to sync visual feedback with final payout
+  const [outcome] = useState(() => {
+    const rand = Math.random();
+    if (rand < 0.10) return 'RARE';
+    if (rand < 0.60) return 'WIN';
+    return 'LOSS';
+  });
 
   const handleStart = (e: React.TouchEvent | React.MouseEvent) => {
     const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
@@ -35,9 +51,10 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
     setCurrentX(x);
     setLastTime(now);
 
-    // Rare metal chance (5% during sweep)
-    if (!rareFound && Math.random() < 0.001) {
+    // Rare metal visual trigger (only if outcome is RARE)
+    if (outcome === 'RARE' && !rareFound && Math.random() < 0.05) {
       setRareFound(true);
+      console.log("💎 RARE METAL DISCOVERED!");
     }
   };
 
@@ -45,25 +62,43 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    // Calculate speed multiplier: slow=0.5x, medium=1.0x, fast=2.0x
-    // v is px/ms. Let's say 0.5 is slow, 2 is medium, 5+ is fast
-    let multiplier = 1.0;
-    if (velocity < 1) multiplier = 0.5;
-    else if (velocity > 4) multiplier = 2.0;
-    else multiplier = 1.0 + (velocity - 1) / 3;
+    // Speed multiplier: 0.5x to 2.0x
+    let speedMult = 1.0;
+    if (velocity < 1) speedMult = 0.5;
+    else if (velocity > 4) speedMult = 2.0;
+    else speedMult = 1.0 + (velocity - 1) / 3;
+    speedMult = Math.min(2.0, Math.max(0.5, speedMult));
 
-    multiplier = Math.min(2.0, Math.max(0.5, multiplier));
+    // Payout based on pre-determined outcome
+    let outcomeMult = 0.75;
+    let isRare = false;
+    let isSuccess = true;
 
-    // Rare metal logic
-    const finalRare = rareFound || Math.random() < 0.05;
+    if (outcome === 'RARE') {
+      outcomeMult = 30.0;
+      isRare = true;
+    } else if (outcome === 'WIN') {
+      outcomeMult = 0.75;
+    } else {
+      outcomeMult = -0.05;
+      isSuccess = false;
+    }
 
-    onComplete(multiplier, finalRare);
+    const finalMultiplier = outcomeMult * speedMult;
+
+    onComplete({
+      multiplier: finalMultiplier,
+      isRare,
+      speedMult,
+      outcomeMult,
+      isSuccess
+    });
   };
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center touch-none select-none"
+      className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center touch-none select-none overflow-hidden"
       onMouseDown={handleStart}
       onMouseMove={handleMove}
       onMouseUp={handleEnd}
@@ -71,22 +106,34 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
       onTouchMove={handleMove}
       onTouchEnd={handleEnd}
     >
-      <div className="absolute top-12 text-center px-6">
-        <h2 className="text-3xl font-black text-slate-100 mb-2">MAGNETIC SWEEP</h2>
-        <p className="text-slate-400">Drag your magnet across the scrap yard!</p>
+      {/* Gold Flash Effect when rare found */}
+      {rareFound && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className="absolute inset-0 bg-yellow-500/10 pointer-events-none z-0"
+        />
+      )}
+
+      <div className="absolute top-12 text-center px-6 z-10">
+        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter">MAGNETIC SWEEP</h2>
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Drag your magnet across the yard!</p>
       </div>
 
       {/* Visual Magnet/Scanner */}
       <motion.div
-        className="w-32 h-32 border-4 border-cyan-500 rounded-full flex items-center justify-center relative shadow-[0_0_30px_rgba(6,182,212,0.5)]"
+        className="w-40 h-40 border-4 border-cyan-500 rounded-full flex items-center justify-center relative z-10"
         style={{ x: currentX - (window.innerWidth / 2) }}
         animate={{
           scale: isDragging ? 1.2 : 1,
           borderColor: rareFound ? '#fbbf24' : '#06b6d4',
-          boxShadow: rareFound ? '0 0 50px rgba(251,191,36,0.8)' : '0 0 30px rgba(6,182,212,0.5)'
+          boxShadow: rareFound
+            ? '0 0 60px rgba(251,191,36,0.8), inset 0 0 20px rgba(251,191,36,0.4)'
+            : '0 0 30px rgba(6,182,212,0.5)'
         }}
       >
-        <div className="text-5xl">🧲</div>
+        <div className="text-6xl">🧲</div>
         {isDragging && (
           <motion.div
             className="absolute inset-[-20px] rounded-full border-2 border-dashed border-cyan-400/30"
@@ -97,23 +144,25 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
       </motion.div>
 
       {/* Speed Indicator */}
-      <div className="absolute bottom-24 w-64 h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+      <div className="absolute bottom-24 w-64 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700 z-10">
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-500 via-green-500 to-red-500"
+          className="h-full bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500"
           style={{ width: `${Math.min(100, (velocity / 6) * 100)}%` }}
         />
       </div>
-      <p className="absolute bottom-16 text-slate-500 font-bold uppercase tracking-widest text-xs">
-        Collection Speed: {velocity > 4 ? 'MAX' : velocity > 1 ? 'OPTIMAL' : 'SLOW'}
+      <p className="absolute bottom-16 text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] z-10">
+        Collection Speed: <span className={velocity > 4 ? 'text-amber-400' : velocity > 1 ? 'text-emerald-400' : 'text-blue-400'}>
+          {velocity > 4 ? 'MAXIMUM' : velocity > 1 ? 'OPTIMAL' : 'SLOW'}
+        </span>
       </p>
 
       {rareFound && (
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute top-1/3 text-amber-400 text-4xl font-black italic drop-shadow-lg"
+          initial={{ scale: 0, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          className="absolute top-1/4 text-amber-400 text-4xl font-black italic drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] z-10 text-center px-4"
         >
-          RARE METAL DETECTED!
+          💎 RARE METAL DETECTED!
         </motion.div>
       )}
     </div>

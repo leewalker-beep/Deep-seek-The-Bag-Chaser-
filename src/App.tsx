@@ -16,6 +16,7 @@ import { TapAssign } from './components/minigames/TapAssign';
 import { HoldHype } from './components/minigames/HoldHype';
 import { MagneticSweep } from './components/minigames/MagneticSweep';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
+import { RewardCard } from './components/effects/RewardCard';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
@@ -49,6 +50,14 @@ function App() {
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
   const [showReceipts, setShowReceipts] = useState(false);
   const [bigWin, setBigWin] = useState<{ amount: number } | null>(null);
+  const [magneticSweepResult, setMagneticSweepResult] = useState<{
+    hustleId: string;
+    earned: number;
+    speedMult: number;
+    outcomeMult: number;
+    isRare: boolean;
+    baseYield: number;
+  } | null>(null);
 
   useEffect(() => {
     document.body.className = pl.currentTier.toLowerCase();
@@ -303,17 +312,30 @@ function App() {
                 if (hustle.miniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
-                      onComplete={(multiplier, isRare) => {
-                        const finalMultiplier = isRare ? multiplier * 50 : multiplier;
-                        if (isRare) {
-                          // Calculate approximate win for celebration
-                          // This is a bit of a hack since executeHustle does its own math
-                          const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
-                          if (levelData) {
-                            setBigWin({ amount: Math.floor(levelData.yieldCash * (LEVEL_MULTIPLIERS[levelData.level] || 1) * finalMultiplier) });
-                          }
+                      onComplete={(result) => {
+                        const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                        const levelMult = LEVEL_MULTIPLIERS[levelData?.level || 1] || 1;
+                        const market = MARKET_CONFIGS[currentMarket];
+
+                        // Trigger the hustle execution
+                        // We use forceSuccess: true because the minigame outcome logic (win/loss/rare)
+                        // is already handled within MagneticSweep and passed via result.multiplier
+                        const execution = executeHustle(hustle.id, result.multiplier, true);
+
+                        if (result.isRare) {
+                          setBigWin({ amount: execution.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier });
                         }
-                        onComplete(finalMultiplier);
+
+                        setMagneticSweepResult({
+                          hustleId: hustle.id,
+                          earned: execution.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier,
+                          speedMult: result.speedMult,
+                          outcomeMult: result.outcomeMult,
+                          isRare: result.isRare,
+                          baseYield: (levelData?.yieldCash || 0) * levelMult * market.yieldMultiplier
+                        });
+
+                        setShowMinigame(false);
                       }}
                     />
                   );
@@ -380,6 +402,29 @@ function App() {
       {/* Receipts Modal */}
       {showReceipts && (
         <TheReceipts onClose={() => setShowReceipts(false)} />
+      )}
+
+      {/* Magnetic Sweep Reward Card */}
+      {magneticSweepResult && (
+        <RewardCard
+          title={magneticSweepResult.isRare ? "💎 RARE METAL!" : "📦 SCRAP COLLECTED"}
+          subtitle="Magnetic Sweep Results"
+          isRare={magneticSweepResult.isRare}
+          stats={[
+            { label: 'Scrap Value', value: magneticSweepResult.baseYield },
+            { label: 'Speed Mult', value: `x${magneticSweepResult.speedMult.toFixed(2)}`, colorClass: 'text-blue-400' },
+            {
+              label: magneticSweepResult.isRare ? 'Rare Bonus' : 'Outcome',
+              value: magneticSweepResult.isRare ? 'x30.00' : `x${magneticSweepResult.outcomeMult.toFixed(2)}`,
+              colorClass: magneticSweepResult.outcomeMult > 0 ? 'text-emerald-400' : 'text-red-400'
+            },
+            { label: 'Total Earned', value: magneticSweepResult.earned, colorClass: 'text-emerald-400' },
+          ]}
+          onDismiss={() => {
+            setMagneticSweepResult(null);
+            setActiveHustleView(null);
+          }}
+        />
       )}
 
       {/* News Ticker */}
