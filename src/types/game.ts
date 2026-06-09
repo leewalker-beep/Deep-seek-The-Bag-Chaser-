@@ -65,6 +65,17 @@ export interface PlayerStats {
   artists: Artist[];
   grammyCount: number;
   recordLabelLevel: number;
+  festivalChoices?: {
+    headliner: 'budget' | 'premium' | 'luxury';
+    venue: 'small' | 'medium' | 'large';
+    marketing: 'basic' | 'standard' | 'aggressive';
+    insurance: boolean;
+  };
+  dataAnalyticsChoice?: 'consumer' | 'financial' | 'social' | 'all';
+  cryptoStrategy?: 'solo' | 'pool' | 'cloud' | 'asic';
+  vaStaff?: 5 | 10 | 20;
+  vaTraining?: 'none' | 'basic' | 'advanced';
+  vaClient?: 'small' | 'medium' | 'large';
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {
@@ -106,6 +117,10 @@ export interface GameState {
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
   dropArtist: (artistId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
+  setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;
+  setDataAnalyticsChoice: (choice: PlayerStats['dataAnalyticsChoice']) => void;
+  setCryptoStrategy: (strategy: PlayerStats['cryptoStrategy']) => void;
+  setVASettings: (staff: PlayerStats['vaStaff'], training: PlayerStats['vaTraining'], client: PlayerStats['vaClient']) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;

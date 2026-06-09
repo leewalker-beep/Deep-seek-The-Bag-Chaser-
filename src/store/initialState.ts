@@ -22,6 +22,17 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     artists: [],
     grammyCount: 0,
     recordLabelLevel: 1,
+    festivalChoices: {
+      headliner: 'budget',
+      venue: 'small',
+      marketing: 'basic',
+      insurance: false,
+    },
+    dataAnalyticsChoice: 'consumer',
+    cryptoStrategy: 'solo',
+    vaStaff: 5,
+    vaTraining: 'none',
+    vaClient: 'small',
     actionLog: [],
     milestones: [],
     stats: {

@@ -231,7 +231,7 @@ export const useGameStore = create<GameState>()(
         const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
         const isVending = hustleId === 'r_vending';
 
-        const result = calculateHustleMath(
+        let result = calculateHustleMath(
           hustleId,
           levelData,
           currentLevel,
@@ -242,6 +242,98 @@ export const useGameStore = create<GameState>()(
           success,
           state.pl.mentalShieldTurns
         );
+
+        // --- Strategic Choice Logic ---
+        if (hustleId === 'festival') {
+          const choices = state.pl.festivalChoices || { headliner: 'budget', venue: 'small', marketing: 'basic', insurance: false };
+          const headlinerMult = { budget: 1.0, premium: 1.5, luxury: 2.5 }[choices.headliner];
+          const venueCap = { small: 5000, medium: 20000, large: 50000 }[choices.venue];
+          const marketingMult = { basic: 1.0, standard: 1.5, aggressive: 2.5 }[choices.marketing];
+
+          const headlinerCost = { budget: 50000, premium: 200000, luxury: 500000 }[choices.headliner];
+          const marketingCost = { basic: 10000, standard: 50000, aggressive: 100000 }[choices.marketing];
+          const insuranceCost = choices.insurance ? 50000 : 0;
+          const totalCost = (headlinerCost + marketingCost + insuranceCost) * market.expenseMultiplier;
+
+          const ticketPrice = 50;
+          let attendanceMult = marketingMult;
+          if (Math.random() < 0.15) { // Rain event
+            if (!choices.insurance) {
+              attendanceMult *= 0.5;
+              get().addTickerMessage('⛈️ RAIN EVENT! Attendance slashed by 50% without insurance!', 'text-red-400');
+            } else {
+              get().addTickerMessage('⛈️ RAIN EVENT! Insurance covered the losses!', 'text-blue-400');
+            }
+          }
+
+          const yieldCash = Math.floor((ticketPrice * venueCap * headlinerMult * attendanceMult) * market.yieldMultiplier);
+          result = { ...result, cost: totalCost, yieldCash };
+        }
+        else if (hustleId === 'data_analytics') {
+          const choice = state.pl.dataAnalyticsChoice || 'consumer';
+          let yieldCash = 0, yieldClout = 0, yieldAura = 0, heatHit = 5;
+
+          if (choice === 'consumer') { yieldCash = 100000; yieldClout = 50; }
+          else if (choice === 'financial') { yieldCash = 500000; heatHit = 10; }
+          else if (choice === 'social') { yieldCash = 50000; yieldAura = 100; }
+          else if (choice === 'all' && currentLevel >= 3) {
+            yieldCash = 1000000; yieldClout = 150; yieldAura = 150; heatHit = 30;
+            if (Math.random() < 0.10) { // Data breach
+              heatHit += 50; yieldClout -= 100;
+              get().addTickerMessage('🚨 DATA BREACH! Massive heat spike and clout loss!', 'text-red-500 font-bold');
+            }
+          }
+
+          result = {
+            ...result,
+            yieldCash: yieldCash * market.yieldMultiplier,
+            yieldClout,
+            yieldAura,
+            heatHit: heatHit * market.heatMultiplier
+          };
+        }
+        else if (hustleId === 'crypto_mining') {
+          const strategy = state.pl.cryptoStrategy || 'solo';
+          let yieldCash = 0, heatHit = 5, risk = 0;
+
+          if (strategy === 'solo') { yieldCash = 50000; }
+          else if (strategy === 'pool') { yieldCash = 200000; heatHit = 10; risk = 0.05; }
+          else if (strategy === 'cloud') { yieldCash = 500000; heatHit = 20; risk = 0.20; }
+          else if (strategy === 'asic' && currentLevel >= 3) { yieldCash = 2000000; heatHit = 30; risk = 0.10; }
+
+          if (Math.random() < risk) {
+            yieldCash = 0;
+            const msg = strategy === 'cloud' ? 'Scammed by cloud provider!' : 'Mining failure!';
+            get().addTickerMessage(`❌ ${msg} Yield is 0.`, 'text-red-400');
+          }
+
+          result = {
+            ...result,
+            yieldCash: yieldCash * market.yieldMultiplier,
+            heatHit: heatHit * market.heatMultiplier
+          };
+        }
+        else if (hustleId === 'virtual_assistant_agency') {
+          const staff = state.pl.vaStaff || 5;
+          const training = state.pl.vaTraining || 'none';
+          const client = state.pl.vaClient || 'small';
+
+          const cost = { 5: 10000, 10: 25000, 20: 50000 }[staff];
+          const trainingMult = { none: 1.0, basic: 1.3, advanced: 1.6 }[training];
+          const baseYield = { small: 50000, medium: 200000, large: 1000000 }[client];
+
+          const successChance = (staff / 20) * trainingMult;
+          let yieldCash = baseYield * market.yieldMultiplier;
+          let yieldClout = result.yieldClout;
+
+          if (Math.random() > successChance) {
+            yieldCash = 0;
+            yieldClout -= 10;
+            get().addTickerMessage('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
+          }
+
+          result = { ...result, cost: cost * market.expenseMultiplier, yieldCash, yieldClout };
+        }
 
         const bigWinMsg = (result.isBigWin && result.bigWinMessage)
           ? { text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }
@@ -546,6 +638,29 @@ export const useGameStore = create<GameState>()(
           },
           news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
         });
+      },
+
+      setFestivalChoices: (choices) => {
+        set((state) => ({ pl: { ...state.pl, festivalChoices: choices } }));
+      },
+
+      setDataAnalyticsChoice: (choice) => {
+        set((state) => ({ pl: { ...state.pl, dataAnalyticsChoice: choice } }));
+      },
+
+      setCryptoStrategy: (strategy) => {
+        set((state) => ({ pl: { ...state.pl, cryptoStrategy: strategy } }));
+      },
+
+      setVASettings: (staff, training, client) => {
+        set((state) => ({
+          pl: {
+            ...state.pl,
+            vaStaff: staff,
+            vaTraining: training,
+            vaClient: client
+          }
+        }));
       },
 
       addTickerMessage: (text: string, colorClass?: string) => {

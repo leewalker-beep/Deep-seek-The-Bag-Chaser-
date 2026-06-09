@@ -19,6 +19,10 @@ import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
+import { FestivalPanel } from './components/hustles/panels/FestivalPanel';
+import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPanel';
+import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
+import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -366,6 +370,18 @@ function App() {
                       }}
                     />
                   );
+                }
+                if (hustle.panelType === 'FESTIVAL') {
+                  return <FestivalPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'DATA_ANALYTICS') {
+                  return <DataAnalyticsPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'CRYPTO_MINING') {
+                  return <CryptoMiningPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'VA_AGENCY') {
+                  return <VAAgencyPanel hustle={hustle} />;
                 }
               }
 
