@@ -521,6 +521,34 @@ HUSTLES.virtual_assistant_agency = {
   ]
 };
 
+HUSTLES.lobbying = {
+  id: 'lobbying',
+  name: 'Lobbying Firm',
+  tier: 'CORPORATE',
+  icon: '🏛️',
+  description: 'Influence politics, reduce negative events',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 150, auraReq: 75, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'National Reach', cost: 10000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 250, auraReq: 125, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Global Influence', cost: 20000000, yieldCash: 0, yieldClout: 400, yieldAura: 200, mentalHit: -20, cloutReq: 400, auraReq: 200 },
+  },
+};
+
+HUSTLES.disaster = {
+  id: 'disaster',
+  name: 'Disaster Recovery',
+  tier: 'CORPORATE',
+  icon: '🛡️',
+  description: 'Insurance and crisis management',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 120, auraReq: 60, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Crisis Team', cost: 10000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -12, cloutReq: 200, auraReq: 100, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'PR Empire', cost: 20000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 350, auraReq: 175 },
+  },
+};
+
 HUSTLES.wellness_retreat = {
   id: 'wellness_retreat',
   name: 'Wellness Retreat',
