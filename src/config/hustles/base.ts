@@ -239,9 +239,10 @@ HUSTLES.pod = {
   description: 'Find your voice',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 4000, yieldCash: 5000, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 80, auraReq: 40, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 30000, yieldCash: 25000, yieldClout: 500, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 150 }
+    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 2000, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 4000, yieldCash: 5000, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 80, auraReq: 40, passiveYield: 5000, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 30000, yieldCash: 25000, yieldClout: 500, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 10000, nextBranches: ['l4'] },
+    l4: { level: 4, id: 'l4', name: 'Global Network', cost: 120000, yieldCash: 80000, yieldClout: 1500, yieldAura: 800, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 20000 }
   },
 };
 
@@ -401,9 +402,10 @@ HUSTLES.saas_mvp = {
   miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 1000, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Series A', level: 2, cost: 50000, yieldCash: 15000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 60, auraReq: 30, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Unicorn', level: 3, cost: 200000, yieldCash: 60000, yieldClout: 250, yieldAura: 100, mentalHit: -30, cloutReq: 120, auraReq: 60 }
+    l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 5000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Series A', level: 2, cost: 50000, yieldCash: 15000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 60, auraReq: 30, passiveYield: 15000, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Unicorn', level: 3, cost: 200000, yieldCash: 60000, yieldClout: 250, yieldAura: 100, mentalHit: -30, cloutReq: 120, auraReq: 60, passiveYield: 30000, nextBranches: ['l4'] },
+    l4: { id: 'l4', name: 'Tech Hegemony', level: 4, cost: 800000, yieldCash: 250000, yieldClout: 800, yieldAura: 400, mentalHit: -45, cloutReq: 400, auraReq: 200, passiveYield: 60000 }
   }
 };
 
@@ -467,7 +469,10 @@ HUSTLES.global_franchise = {
   icon: '🍔',
   description: 'Scalable standardized success',
   levels: [
-    { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 40000 },
+    { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 15000 },
+    { level: 2, id: 'l2', cost: 2000000, yieldCash: 500000, yieldClout: 300, yieldAura: 150, mentalHit: -40, cloutReq: 300, auraReq: 200, passiveYield: 40000 },
+    { level: 3, id: 'l3', cost: 8000000, yieldCash: 1500000, yieldClout: 800, yieldAura: 400, mentalHit: -50, cloutReq: 800, auraReq: 500, passiveYield: 80000 },
+    { level: 4, id: 'l4', cost: 25000000, yieldCash: 5000000, yieldClout: 2000, yieldAura: 1000, mentalHit: -65, cloutReq: 2000, auraReq: 1200, passiveYield: 150000 },
   ]
 };
 

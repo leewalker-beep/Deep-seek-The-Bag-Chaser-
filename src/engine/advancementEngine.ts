@@ -1,6 +1,7 @@
 import type { PlayerStats, MarketType, Tier } from '../types/game';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { MARKET_CONFIGS } from '../config/marketConfig';
+import { HUSTLES } from '../config/hustles/base';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -35,23 +36,51 @@ export function advanceMonth(
   const marketMult = MARKET_CONFIGS[currentMarket].expenseMultiplier;
   const totalRent = rent * marketMult;
 
-  // Calculate passive income from flex assets and labor empire
-  let passiveIncome = newPl.passiveLaborYield || 0;
+  // Calculate passive income dynamically from all sources
+  let passiveIncome = 0;
 
-  // Vending machine logic
-  const vendingCount = newPl.vendingCount || 0;
-  if (vendingCount > 0) {
-    let vendingIncome = vendingCount * 250;
-    if (vendingCount >= 10) {
-      vendingIncome += 500;
+  // 1. Dynamic Hustle Passives (SaaS, Podcast, Franchise, etc.)
+  const activeHustleIds = new Set([
+    ...Object.keys(newPl.hustleLevels),
+    ...Object.keys(newPl.hustleBranchIds)
+  ]);
+
+  activeHustleIds.forEach(hustleId => {
+    const level = newPl.hustleLevels[hustleId];
+    const hustle = HUSTLES[hustleId];
+    if (!hustle) return;
+
+    let levelData;
+    if (hustle.branches) {
+      const branchId = newPl.hustleBranchIds[hustleId] || (hustle.startBranchId);
+      levelData = branchId ? hustle.branches[branchId] : null;
+    } else if (hustle.levels) {
+      levelData = hustle.levels.find(l => l.level === (level || 1));
     }
-    passiveIncome += vendingIncome;
-  }
 
+    if (levelData?.passiveYield) {
+      let multiplier = 1;
+      // Handle repeatable hustle multipliers
+      if (hustleId === 'r_labor' && newPl.hustleBranchIds[hustleId] === 'l2b') {
+        multiplier = newPl.rentalCount || 1;
+      }
+      // Note: Vending is handled via FLEX_ASSETS below
+
+      passiveIncome += levelData.passiveYield * multiplier;
+    }
+  });
+
+  // 2. Flex Assets (including Vending Machines)
   FLEX_ASSETS.forEach(asset => {
     const count = newPl.flexAssets[asset.id] || 0;
     passiveIncome += asset.passiveYield * count;
   });
+
+  // 3. Vending Machine Bonus (from old logic)
+  const vendingCount = newPl.flexAssets['vending'] || 0;
+  if (vendingCount >= 10) {
+    passiveIncome += 500;
+  }
 
   // Music roster passive income (Royalties)
   let totalRoyalties = 0;
