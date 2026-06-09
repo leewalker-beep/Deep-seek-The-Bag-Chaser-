@@ -27,9 +27,10 @@ export interface GameAction {
 export interface Artist {
   id: string;
   name: string;
-  talent: number;
-  hype: number;
-  monthlyEarnings: number;
+  tier: 'local' | 'regional' | 'global';
+  royaltyRate: number;
+  monthsActive: number;
+  hasReleased: boolean;
   isGrammyWinner?: boolean;
 }
 
@@ -61,7 +62,9 @@ export interface PlayerStats {
   vendingCount: number;
   passiveLaborYield: number;
   mentalShieldTurns: number;
-  artistRoster: Artist[];
+  artists: Artist[];
+  grammyCount: number;
+  recordLabelLevel: number;
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {
@@ -100,7 +103,7 @@ export interface GameState {
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
-  scoutArtist: () => { success: boolean; artist?: Artist; message: string };
+  scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
   dropArtist: (artistId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;

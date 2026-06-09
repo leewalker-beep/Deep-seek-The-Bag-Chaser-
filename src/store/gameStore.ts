@@ -23,7 +23,9 @@ const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     vendingCount: 0,
     passiveLaborYield: 0,
     mentalShieldTurns: 0,
-    artistRoster: [],
+    artists: [],
+    grammyCount: 0,
+    recordLabelLevel: 1,
     actionLog: [],
     milestones: [],
     stats: {
@@ -537,37 +539,54 @@ export const useGameStore = create<GameState>()(
         return true;
       },
 
-      scoutArtist: () => {
+      scoutArtist: (tier: 'local' | 'regional' | 'global') => {
         const state = get();
-        const scoutCost = 5000;
-        const cloutReq = 50;
 
-        if (state.pl.bag < scoutCost) return { success: false, message: `Need $${scoutCost.toLocaleString()} to scout` };
-        if (state.pl.clout < cloutReq) return { success: false, message: `Need ${cloutReq} clout to scout artists` };
+        if (state.pl.artists.length >= 10) {
+          return { success: false, message: 'Maximum 10 artists allowed in roster' };
+        }
 
-        const firstNames = ['Lil', 'Yung', 'Big', 'MC', 'DJ', 'The', 'Kid', 'Bad', 'Rich'];
-        const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul'];
+        const config = {
+          local: { cost: 10000, successRate: 0.8, royalty: 2000 },
+          regional: { cost: 50000, successRate: 0.5, royalty: 10000 },
+          global: { cost: 200000, successRate: 0.2, royalty: 50000 }
+        };
+
+        const { cost, successRate, royalty } = config[tier];
+
+        if (state.pl.bag < cost) {
+          return { success: false, message: `Need $${cost.toLocaleString()} to scout ${tier} talent` };
+        }
+
+        // Deduct cost immediately
+        set({ pl: { ...state.pl, bag: state.pl.bag - cost } });
+
+        const isSuccess = Math.random() < successRate;
+
+        if (!isSuccess) {
+          set({ news: [`❌ Scouting failed: No ${tier} talent found this month`, ...get().news.slice(0, 49)] });
+          return { success: false, message: 'Scouting failed' };
+        }
+
+        const firstNames = ['Lil', 'Yung', 'Big', 'MC', 'DJ', 'The', 'Kid', 'Bad', 'Rich', 'Ice', 'A$AP', 'Cardi', 'Megan'];
+        const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul', 'Star', 'Flow', 'Beat'];
         const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
-
-        const talent = Math.floor(Math.random() * 80) + 20;
-        const hype = Math.floor(Math.random() * 30) + 10;
-        const earnings = Math.floor((talent * hype) / 2);
 
         const newArtist = {
           id: Math.random().toString(36).substring(7),
           name,
-          talent,
-          hype,
-          monthlyEarnings: earnings,
+          tier,
+          royaltyRate: royalty,
+          monthsActive: 0,
+          hasReleased: false,
         };
 
         set({
           pl: {
-            ...state.pl,
-            bag: state.pl.bag - scoutCost,
-            artistRoster: [...state.pl.artistRoster, newArtist],
+            ...get().pl,
+            artists: [...get().pl.artists, newArtist],
           },
-          news: [`🎤 Scouted new artist: ${name}`, ...state.news.slice(0, 49)]
+          news: [`🎤 SUCCESS! Signed ${tier} artist: ${name}`, ...get().news.slice(0, 49)]
         });
 
         return { success: true, artist: newArtist, message: 'Success' };
@@ -575,13 +594,13 @@ export const useGameStore = create<GameState>()(
 
       dropArtist: (artistId: string) => {
         const state = get();
-        const artist = state.pl.artistRoster.find(a => a.id === artistId);
+        const artist = state.pl.artists.find(a => a.id === artistId);
         if (!artist) return;
 
         set({
           pl: {
             ...state.pl,
-            artistRoster: state.pl.artistRoster.filter(a => a.id !== artistId),
+            artists: state.pl.artists.filter(a => a.id !== artistId),
           },
           news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
         });

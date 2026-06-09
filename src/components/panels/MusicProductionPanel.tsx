@@ -7,15 +7,25 @@ interface MusicProductionPanelProps {
   onExecute: () => void;
 }
 
-export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ onExecute }) => {
-  const { pl, scoutArtist, dropArtist } = useGameStore();
+export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hustle, onExecute }) => {
+  const { pl, scoutArtist, dropArtist, executeBranch } = useGameStore();
+  const currentLevel = pl.hustleLevels[hustle.id] || 1;
 
-  const handleScout = () => {
-    const result = scoutArtist();
-    if (!result.success) {
+  const currentBranchId = pl.hustleBranchIds[hustle.id] || hustle.startBranchId;
+  const currentBranch = hustle.branches?.[currentBranchId!];
+  const nextBranches = currentBranch?.nextBranches || [];
+  const availableBranches = nextBranches
+    .map(id => hustle.branches![id])
+    .filter(b => b !== undefined);
+
+  const handleScout = (tier: 'local' | 'regional' | 'global') => {
+    const result = scoutArtist(tier);
+    if (!result.success && result.message !== 'Scouting failed') {
       alert(result.message);
     }
   };
+
+  const totalRoyalties = pl.artists.reduce((sum, a) => sum + a.royaltyRate, 0);
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
@@ -25,44 +35,69 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ onEx
             🎹
           </div>
           <div>
-            <h3 className="font-bold text-white text-lg leading-tight">Music Roster</h3>
-            <p className="text-[10px] text-slate-500 italic uppercase tracking-widest">Global Label Management</p>
+            <h3 className="font-bold text-white text-lg leading-tight">Music Roster ({pl.artists.length}/10)</h3>
+            <p className="text-[10px] text-slate-500 italic uppercase tracking-widest">Total Royalties: ${totalRoyalties.toLocaleString()}/mo</p>
           </div>
         </div>
-        <button
-          onClick={handleScout}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20"
-        >
-          SCOUT ARTIST (-$5,000)
-        </button>
       </div>
 
+      {currentLevel >= 2 ? (
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <button
+            onClick={() => handleScout('local')}
+            className="bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black py-2 rounded-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20"
+          >
+            LOCAL (-$10k)
+          </button>
+          <button
+            onClick={() => handleScout('regional')}
+            className="bg-purple-600 hover:bg-purple-500 text-white text-[9px] font-black py-2 rounded-lg transition-all active:scale-95 shadow-lg shadow-purple-900/20"
+          >
+            REGIONAL (-$50k)
+          </button>
+          <button
+            onClick={() => handleScout('global')}
+            className="bg-yellow-600 hover:bg-yellow-500 text-white text-[9px] font-black py-2 rounded-lg transition-all active:scale-95 shadow-lg shadow-yellow-900/20"
+          >
+            GLOBAL (-$200k)
+          </button>
+        </div>
+      ) : (
+        <div className="mb-6 py-3 px-4 bg-slate-800/50 rounded-xl border border-slate-700 text-center">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Reach Level 2 to scout talent</p>
+        </div>
+      )}
+
       <div className="space-y-3 mb-6 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-        {pl.artistRoster.length === 0 ? (
+        {pl.artists.length === 0 ? (
           <div className="text-center py-8 bg-slate-950/50 rounded-xl border border-dashed border-slate-800">
             <div className="text-2xl mb-2 opacity-30">🎙️</div>
             <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">No artists signed yet</div>
           </div>
         ) : (
-          pl.artistRoster.map(artist => (
+          pl.artists.map(artist => (
             <div key={artist.id} className="bg-slate-950/80 rounded-xl p-3 border border-slate-800/50 flex justify-between items-center group">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-bold text-white text-sm">{artist.name}</span>
+                  <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase font-black ${
+                    artist.tier === 'global' ? 'bg-yellow-500 text-black' :
+                    artist.tier === 'regional' ? 'bg-purple-500 text-white' : 'bg-blue-500 text-white'
+                  }`}>
+                    {artist.tier}
+                  </span>
                   {artist.isGrammyWinner && <span className="text-[10px]">🏆</span>}
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <div className="flex flex-col">
-                    <span className="text-[8px] text-slate-600 uppercase font-bold">Talent</span>
-                    <span className="text-[10px] text-blue-400 font-mono font-bold">{artist.talent}</span>
+                    <span className="text-[8px] text-slate-600 uppercase font-bold">Royalties</span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-bold">${artist.royaltyRate.toLocaleString()}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] text-slate-600 uppercase font-bold">Hype</span>
-                    <span className="text-[10px] text-purple-400 font-mono font-bold">{artist.hype}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[8px] text-slate-600 uppercase font-bold">Monthly</span>
-                    <span className="text-[10px] text-emerald-400 font-mono font-bold">${artist.monthlyEarnings.toLocaleString()}</span>
+                    <span className="text-[8px] text-slate-600 uppercase font-bold">Status</span>
+                    <span className={`text-[10px] font-bold uppercase ${artist.hasReleased ? 'text-blue-400' : 'text-slate-600'}`}>
+                      {artist.hasReleased ? 'Active' : 'In Studio'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -77,15 +112,44 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ onEx
         )}
       </div>
 
-      <div className="border-t border-slate-800 pt-6">
-        <div className="text-[10px] text-slate-500 mb-3 font-bold uppercase tracking-widest text-center">Studio Session</div>
+      <div className="border-t border-slate-800 pt-6 space-y-4">
+        <div className="text-[10px] text-slate-500 mb-1 font-bold uppercase tracking-widest text-center">Studio Session</div>
         <button
           onClick={onExecute}
           className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl transition-all active:scale-95 shadow-lg shadow-emerald-900/20 flex flex-col items-center justify-center gap-1"
         >
-          <span className="text-sm">DROP A SINGLE</span>
+          <span className="text-sm">PRODUCE TRACK</span>
           <span className="text-[9px] opacity-70">TRIGGERS RHYTHM MINIGAME</span>
         </button>
+
+        {availableBranches.length > 0 && (
+          <div className="pt-2">
+            <div className="text-[10px] text-slate-500 mb-3 font-bold uppercase tracking-widest text-center">Label Upgrades</div>
+            <div className="space-y-2">
+              {availableBranches.map(branch => {
+                const canAfford = pl.bag >= branch.cost && pl.clout >= branch.cloutReq && pl.aura >= branch.auraReq;
+                return (
+                  <button
+                    key={branch.id}
+                    onClick={() => executeBranch(hustle.id, branch.id!)}
+                    disabled={!canAfford}
+                    className={`w-full p-3 rounded-xl border flex justify-between items-center transition-all ${
+                      canAfford
+                        ? 'bg-slate-800 border-purple-500/50 hover:bg-slate-700'
+                        : 'bg-slate-900 border-slate-800 opacity-50 grayscale cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-white uppercase">{branch.name}</div>
+                      <div className="text-[9px] text-slate-400">Req: {branch.cloutReq} Clout / {branch.auraReq} Aura</div>
+                    </div>
+                    <div className="text-purple-400 font-mono font-bold text-xs">-${branch.cost.toLocaleString()}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

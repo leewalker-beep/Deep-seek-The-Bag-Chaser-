@@ -8,38 +8,72 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
   const [hits, setHits] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [beats, setBeats] = useState<{ id: number; offset: number }[]>([]);
+  const [isGameOver, setIsGameOver] = useState(false);
   const nextId = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const TOTAL_BEATS = 8;
+  const MAX_DURATION = 30000; // 30 seconds
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBeats(prev => [...prev, { id: nextId.current++, offset: 100 }]);
-    }, 1500);
+    // Generate beats with some random spacing but ensuring exactly TOTAL_BEATS
+    const intervals = [1500, 3000, 4500, 6000, 7500, 9000, 10500, 12000];
 
-    return () => clearInterval(interval);
-  }, []);
+    const timers = intervals.map((ms) => {
+      return setTimeout(() => {
+        if (!isGameOver) {
+          setBeats(prev => [...prev, { id: nextId.current++, offset: 100 }]);
+        }
+      }, ms);
+    });
+
+    const timeoutTimer = setTimeout(() => {
+      if (!isGameOver) {
+        handleGameOver(hits, totalAttempts);
+      }
+    }, MAX_DURATION);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(timeoutTimer);
+    };
+  }, [isGameOver, hits, totalAttempts]);
 
   useEffect(() => {
     const moveInterval = setInterval(() => {
       setBeats(prev => {
-        const next = prev.map(b => ({ ...b, offset: b.offset - 2 }));
+        const next = prev.map(b => ({ ...b, offset: b.offset - 1.5 }));
         const missed = next.filter(b => b.offset < 0);
+
         if (missed.length > 0) {
-          setTotalAttempts(t => t + missed.length);
-          if (totalAttempts + missed.length >= 10) {
-            // End game after 10 beats
-            const accuracy = hits / (totalAttempts + missed.length);
-            onComplete(accuracy >= 0.9 ? 2.0 : (accuracy >= 0.7 ? 1.5 : 1.0));
+          const newTotal = totalAttempts + missed.length;
+          setTotalAttempts(newTotal);
+          if (newTotal >= TOTAL_BEATS) {
+            handleGameOver(hits, newTotal);
           }
         }
+
         return next.filter(b => b.offset >= 0);
       });
     }, 20);
 
     return () => clearInterval(moveInterval);
-  }, [hits, totalAttempts, onComplete]);
+  }, [hits, totalAttempts, isGameOver]);
+
+  const handleGameOver = (finalHits: number, finalAttempts: number) => {
+    if (isGameOver) return;
+    setIsGameOver(true);
+
+    // Accuracy affects track quality (90%+ = 2x yield, 70-89% = 1.5x, below = 0.8x)
+    const accuracy = finalAttempts > 0 ? finalHits / finalAttempts : 0;
+    let multiplier = 0.8;
+    if (accuracy >= 0.9) multiplier = 2.0;
+    else if (accuracy >= 0.7) multiplier = 1.5;
+
+    onComplete(multiplier);
+  };
 
   const handleTap = () => {
+    if (isGameOver) return;
+
     const targetRange = [10, 25]; // Target is between 10% and 25% from left
     const hitIndex = beats.findIndex(b => b.offset >= targetRange[0] && b.offset <= targetRange[1]);
 
@@ -47,22 +81,22 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
       setHits(h => h + 1);
       setBeats(prev => prev.filter((_, i) => i !== hitIndex));
     }
-    setTotalAttempts(t => t + 1);
 
-    if (totalAttempts + 1 >= 10) {
-      const accuracy = (hitIndex !== -1 ? hits + 1 : hits) / (totalAttempts + 1);
-      onComplete(accuracy >= 0.9 ? 2.0 : (accuracy >= 0.7 ? 1.5 : 1.0));
+    const newTotal = totalAttempts + 1;
+    setTotalAttempts(newTotal);
+
+    if (newTotal >= TOTAL_BEATS) {
+      handleGameOver(hitIndex !== -1 ? hits + 1 : hits, newTotal);
     }
   };
 
   return (
     <div
-      ref={containerRef}
       onClick={handleTap}
       className="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center select-none touch-none h-64 flex flex-col justify-center items-center relative overflow-hidden"
     >
       <div className="text-[10px] text-slate-500 uppercase font-bold mb-8">
-        TAP ON THE BEAT ({hits}/{totalAttempts})
+        8-BEAT SESSION ({hits}/{TOTAL_BEATS})
       </div>
 
       <div className="w-full h-12 bg-slate-800 relative rounded-full border border-slate-700">
@@ -80,11 +114,11 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
       </div>
 
       <div className="mt-8 text-[10px] text-blue-400 font-mono">
-        HIT 90% FOR 2X YIELD
+        90%+ ACCURACY = 2X YIELD | 70%+ = 1.5X
       </div>
 
       <div className="absolute bottom-4 text-[8px] text-slate-600 font-bold uppercase">
-        TAP ANYWHERE TO CAPTURE THE BEAT
+        TAP ON THE BEAT
       </div>
     </div>
   );
