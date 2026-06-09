@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import type { PlayerStats, MarketType } from '../types/game';
 import { MARKET_CONFIGS } from '../config/marketConfig';
-import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS, getTierMax } from '../config/tiers';
 import { useGameStore } from '../store/gameStore';
 
 interface StatsPanelProps {
@@ -9,19 +9,6 @@ interface StatsPanelProps {
   market: MarketType;
   onOpenReceipts?: () => void;
 }
-
-const getTierMax = (tier: string): { clout: number; aura: number } => {
-  switch (tier) {
-    case 'MUD': return { clout: 50, aura: 50 };
-    case 'STREET': return { clout: 100, aura: 100 };
-    case 'STARTUP': return { clout: 200, aura: 200 };
-    case 'CORPORATE': return { clout: 500, aura: 500 };
-    case 'ELITE': return { clout: 1000, aura: 1000 };
-    case 'MOGUL': return { clout: 2000, aura: 2000 };
-    case 'PRESIDENT': return { clout: 5000, aura: 5000 };
-    default: return { clout: 50, aura: 50 };
-  }
-};
 
 export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenReceipts }) => {
   const { addTickerMessage } = useGameStore();
@@ -102,25 +89,25 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">CLOUT</div>
           <div className="text-[10px] font-bold text-blue-400">
-            {Math.round(stats.clout)} / {getTierMax(stats.currentTier).clout}
+            {Math.floor(stats.clout)} / {getTierMax(stats.currentTier).clout}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">AURA</div>
           <div className="text-[10px] font-bold text-purple-400">
-            {Math.round(stats.aura)} / {getTierMax(stats.currentTier).aura}
+            {Math.floor(stats.aura)} / {getTierMax(stats.currentTier).aura}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">MENTAL</div>
           <div className={`text-sm font-bold ${stats.mentalHealth < 30 ? 'text-red-400' : 'text-white'}`}>
-            {stats.mentalHealth}%
+            {Math.floor(stats.mentalHealth)}%
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">HEAT</div>
           <div className={`text-sm font-bold ${stats.heat > 70 ? 'text-orange-400' : 'text-white'}`}>
-            {stats.heat}%
+            {Math.floor(stats.heat)}%
           </div>
         </div>
       </div>
@@ -167,7 +154,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Clout</span>
                 <span className={stats.clout >= nextRequirements.clout ? 'text-blue-400' : 'text-slate-400'}>
-                  {Math.round(stats.clout)} / {getTierMax(nextTier).clout}
+                  {Math.floor(stats.clout)} / {getTierMax(nextTier).clout}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -178,7 +165,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
               <div className="flex justify-between text-[8px] mb-0.5">
                 <span className="text-slate-500">Aura</span>
                 <span className={stats.aura >= nextRequirements.aura ? 'text-purple-400' : 'text-slate-400'}>
-                  {Math.round(stats.aura)} / {getTierMax(nextTier).aura}
+                  {Math.floor(stats.aura)} / {getTierMax(nextTier).aura}
                 </span>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">

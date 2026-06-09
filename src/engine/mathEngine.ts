@@ -45,8 +45,9 @@ export function calculateHustleMath(
     heatHit = heatHit < 0 ? 5 : heatHit * 2;
   }
 
-  yieldClout = Math.floor(yieldClout);
-  yieldAura = Math.floor(yieldAura);
+  yieldClout = Math.floor(Math.max(0, Math.min(1000, yieldClout)));
+  yieldAura = Math.floor(Math.max(0, Math.min(1000, yieldAura)));
+  mentalHit = Math.max(-100, Math.min(100, mentalHit));
 
   // Profit safety net
   if (isSuccess && yieldCash < cost && cost > 0) {

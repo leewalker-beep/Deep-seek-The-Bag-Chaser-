@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, PlayerStats, MarketType, Tier } from '../types/game';
 import { HUSTLES, type HustleLevel } from '../config/hustles/base';
-import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS, getTierMax } from '../config/tiers';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { calculateHustleMath } from '../engine/mathEngine';
@@ -84,22 +84,22 @@ const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
 };
 
 const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
-  let maxClout = 50;
-  let maxAura = 50;
+  const { clout: maxClout, aura: maxAura } = getTierMax(pl.currentTier);
   const maxMental = 100;
+  const maxHeat = 100;
 
-  if (pl.currentTier === 'STREET') { maxClout = 100; maxAura = 100; }
-  if (pl.currentTier === 'STARTUP') { maxClout = 200; maxAura = 200; }
-  if (pl.currentTier === 'CORPORATE') { maxClout = 500; maxAura = 500; }
-  if (pl.currentTier === 'ELITE') { maxClout = 1000; maxAura = 1000; }
-  if (pl.currentTier === 'MOGUL') { maxClout = 2000; maxAura = 2000; }
-  if (pl.currentTier === 'PRESIDENT') { maxClout = 5000; maxAura = 5000; }
+  // Emergency recovery for corrupted aura
+  let currentAura = pl.aura;
+  if (currentAura > 10000) {
+    currentAura = maxAura;
+  }
 
   return {
     ...pl,
-    clout: Math.min(pl.clout, maxClout),
-    aura: Math.min(pl.aura, maxAura),
-    mentalHealth: Math.min(pl.mentalHealth, maxMental),
+    clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
+    aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
+    mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),
+    heat: Math.floor(Math.max(0, Math.min(pl.heat, maxHeat))),
   };
 };
 
@@ -195,10 +195,10 @@ export const useGameStore = create<GameState>()(
 
         // Apply cost and one-time yield
         const newBag = state.pl.bag - result.cost + result.yieldCash;
-        const newClout = Math.min(1000, state.pl.clout + result.yieldClout);
-        const newAura = Math.min(1000, state.pl.aura + result.yieldAura);
-        const newMental = Math.max(0, state.pl.mentalHealth + result.mentalHit);
-        const newHeat = Math.min(100, state.pl.heat + result.heatHit);
+        const newClout = state.pl.clout + result.yieldClout;
+        const newAura = state.pl.aura + result.yieldAura;
+        const newMental = state.pl.mentalHealth + result.mentalHit;
+        const newHeat = state.pl.heat + result.heatHit;
 
         // Apply passive income
         let newPassiveYield = state.pl.passiveLaborYield || 0;
@@ -324,10 +324,10 @@ export const useGameStore = create<GameState>()(
 
         // Apply results
         const newBag = state.pl.bag - result.cost + result.yieldCash;
-        const newClout = Math.min(1000, state.pl.clout + result.yieldClout);
-        const newAura = Math.min(1000, state.pl.aura + result.yieldAura);
-        const newMental = Math.max(0, state.pl.mentalHealth + result.mentalHit);
-        const newHeat = Math.min(100, state.pl.heat + result.heatHit);
+        const newClout = state.pl.clout + result.yieldClout;
+        const newAura = state.pl.aura + result.yieldAura;
+        const newMental = state.pl.mentalHealth + result.mentalHit;
+        const newHeat = state.pl.heat + result.heatHit;
 
         // Update stats tracking
         const newStats = state.pl.stats
@@ -345,17 +345,9 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
-        });
-
-        // Update player state
-        set({
-          pl: {
-            ...hustleResultPl,
-            stats: newStats,
-            lastExecutedHustleId: hustleId,
-            streak: success ? (state.pl.streak || 0) + 1 : 0,
-          },
-          news: [`${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 49)],
+          stats: newStats,
+          lastExecutedHustleId: hustleId,
+          streak: success ? (state.pl.streak || 0) + 1 : 0,
         });
 
         get().logAction({
@@ -379,10 +371,10 @@ export const useGameStore = create<GameState>()(
         });
         get().checkMilestones();
 
-        // Advance month
+        // Advance month using the result of the hustle
         const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
-          { ...get().pl },
-          get().currentMarket
+          hustleResultPl,
+          state.currentMarket
         );
 
         const cappedPl = enforceStatCaps(newPl);
@@ -395,7 +387,7 @@ export const useGameStore = create<GameState>()(
           set({
             pl: cappedPl,
             currentMarket: newMarket,
-            news: [...monthNews, ...get().news.slice(0, 45)],
+            news: [...monthNews, ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 45)],
             ph: 'POST_MORTEM',
             deathBadge: deathInfo.badge,
             fatalCause: deathCause,
@@ -407,7 +399,7 @@ export const useGameStore = create<GameState>()(
         set({
           pl: cappedPl,
           currentMarket: newMarket,
-          news: [...monthNews, ...get().news.slice(0, 45)],
+          news: [...monthNews, ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, ...state.news.slice(0, 45)],
         });
 
         return { success, netChange: newBag - state.pl.bag, message: '' };
@@ -474,10 +466,10 @@ export const useGameStore = create<GameState>()(
         const newPl = enforceStatCaps({
           ...state.pl,
           bag: state.pl.bag - result.cost,
-          clout: Math.min(1000, state.pl.clout + result.yieldClout),
-          aura: Math.min(1000, state.pl.aura + result.yieldAura),
-          mentalHealth: Math.max(0, state.pl.mentalHealth + result.mentalHit),
-          heat: Math.min(100, state.pl.heat + result.heatHit),
+          clout: state.pl.clout + result.yieldClout,
+          aura: state.pl.aura + result.yieldAura,
+          mentalHealth: state.pl.mentalHealth + result.mentalHit,
+          heat: state.pl.heat + result.heatHit,
         });
 
         if (hustle.branches && (branchId || targetNodeData.id)) {
@@ -558,13 +550,16 @@ export const useGameStore = create<GameState>()(
           return { success: false, message: `Need $${cost.toLocaleString()} to scout ${tier} talent` };
         }
 
-        // Deduct cost immediately
-        set({ pl: { ...state.pl, bag: state.pl.bag - cost } });
+        // Apply cost
+        const plAfterCost = enforceStatCaps({ ...state.pl, bag: state.pl.bag - cost });
 
         const isSuccess = Math.random() < successRate;
 
         if (!isSuccess) {
-          set({ news: [`❌ Scouting failed: No ${tier} talent found this month`, ...get().news.slice(0, 49)] });
+          set({
+            pl: plAfterCost,
+            news: [`❌ Scouting failed: No ${tier} talent found this month`, ...state.news.slice(0, 49)]
+          });
           return { success: false, message: 'Scouting failed' };
         }
 
@@ -582,11 +577,11 @@ export const useGameStore = create<GameState>()(
         };
 
         set({
-          pl: {
-            ...get().pl,
-            artists: [...get().pl.artists, newArtist],
-          },
-          news: [`🎤 SUCCESS! Signed ${tier} artist: ${name}`, ...get().news.slice(0, 49)]
+          pl: enforceStatCaps({
+            ...plAfterCost,
+            artists: [...plAfterCost.artists, newArtist],
+          }),
+          news: [`🎤 SUCCESS! Signed ${tier} artist: ${name}`, ...state.news.slice(0, 49)]
         });
 
         return { success: true, artist: newArtist, message: 'Success' };
@@ -635,11 +630,11 @@ export const useGameStore = create<GameState>()(
           }
 
           set({
-            pl: {
+            pl: enforceStatCaps({
               ...state.pl,
               bag: state.pl.bag - req.fee,
               currentTier: nextTier,
-            },
+            }),
             activeTab: nextTier,
             news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
           });
