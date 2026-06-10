@@ -60,13 +60,17 @@ function App() {
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
   const [showReceipts, setShowReceipts] = useState(false);
   const [bigWin, setBigWin] = useState<{ amount: number } | null>(null);
-  const [magneticSweepResult, setMagneticSweepResult] = useState<{
+
+  const [activeHustleResult, setActiveHustleResult] = useState<{
     hustleId: string;
-    earned: number;
-    speedMult: number;
-    outcomeMult: number;
-    isRare: boolean;
-    baseYield: number;
+    success: boolean;
+    netChange: number;
+    cost: number;
+    yieldCash: number;
+    yieldClout: number;
+    yieldAura: number;
+    mentalHit: number;
+    heatHit: number;
   } | null>(null);
 
   useEffect(() => {
@@ -307,12 +311,19 @@ function App() {
               if (showMinigame && hustle.miniGame) {
                 const onComplete = (multiplier: number) => {
                   try {
-                    executeHustle(hustle.id, multiplier);
+                    const result = executeHustle(hustle.id, multiplier);
+                    setActiveHustleResult({
+                      hustleId: hustle.id,
+                      ...result
+                    });
                   } catch (err) {
                     console.error('Minigame execution failed, falling back to standard', err);
-                    executeHustle(hustle.id);
+                    const result = executeHustle(hustle.id);
+                    setActiveHustleResult({
+                      hustleId: hustle.id,
+                      ...result
+                    });
                   } finally {
-                    setActiveHustleView(null);
                     setShowMinigame(false);
                   }
                 };
@@ -342,13 +353,9 @@ function App() {
                           setBigWin({ amount: execution.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier });
                         }
 
-                        setMagneticSweepResult({
+                        setActiveHustleResult({
                           hustleId: hustle.id,
-                          earned: execution.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier,
-                          speedMult: result.speedMult,
-                          outcomeMult: result.outcomeMult,
-                          isRare: result.isRare,
-                          baseYield: (levelData?.yieldCash || 0) * levelMult * market.yieldMultiplier
+                          ...execution
                         });
 
                         setShowMinigame(false);
@@ -450,24 +457,29 @@ function App() {
         <TheReceipts onClose={() => setShowReceipts(false)} />
       )}
 
-      {/* Magnetic Sweep Reward Card */}
-      {magneticSweepResult && (
+
+      {/* Generic Hustle Reward Card */}
+      {activeHustleResult && (
         <RewardCard
-          title={magneticSweepResult.isRare ? "💎 RARE METAL!" : "📦 SCRAP COLLECTED"}
-          subtitle="Magnetic Sweep Results"
-          isRare={magneticSweepResult.isRare}
+          title={activeHustleResult.success ? "HUSTLE SUCCESS" : "HUSTLE FAILURE"}
+          subtitle={HUSTLES[activeHustleResult.hustleId]?.name || "Hustle Results"}
+          isRare={activeHustleResult.yieldCash > (HUSTLES[activeHustleResult.hustleId]?.levels?.[0]?.yieldCash || 0) * 5}
           stats={[
-            { label: 'Scrap Value', value: magneticSweepResult.baseYield },
-            { label: 'Speed Mult', value: `x${magneticSweepResult.speedMult.toFixed(2)}`, colorClass: 'text-blue-400' },
             {
-              label: magneticSweepResult.isRare ? 'Rare Bonus' : 'Outcome',
-              value: magneticSweepResult.isRare ? 'x30.00' : `x${magneticSweepResult.outcomeMult.toFixed(2)}`,
-              colorClass: magneticSweepResult.outcomeMult > 0 ? 'text-emerald-400' : 'text-red-400'
+              label: 'Cash Flow',
+              value: activeHustleResult.yieldCash - activeHustleResult.cost,
+              colorClass: (activeHustleResult.yieldCash - activeHustleResult.cost) >= 0 ? 'text-emerald-400' : 'text-red-400'
             },
-            { label: 'Total Earned', value: magneticSweepResult.earned, colorClass: 'text-emerald-400' },
-          ]}
+            { label: 'Clout', value: activeHustleResult.yieldClout, colorClass: 'text-blue-400' },
+            { label: 'Aura', value: activeHustleResult.yieldAura, colorClass: 'text-purple-400' },
+            {
+              label: 'Mental Health',
+              value: activeHustleResult.mentalHit,
+              colorClass: activeHustleResult.mentalHit >= 0 ? 'text-emerald-400' : 'text-red-400'
+            },
+          ].filter(s => s.value !== 0)}
           onDismiss={() => {
-            setMagneticSweepResult(null);
+            setActiveHustleResult(null);
             setActiveHustleView(null);
           }}
         />

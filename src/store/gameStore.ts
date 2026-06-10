@@ -197,7 +197,10 @@ export const useGameStore = create<GameState>()(
         };
 
         if (!hustle) {
-          return { success: false, netChange: 0, message: 'Hustle not found' };
+          return {
+            success: false, netChange: 0, message: 'Hustle not found',
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         const isRecovery = (hustleId === 'psychiatrist' || hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session' || hustleId === 'wellness_retreat');
@@ -208,7 +211,10 @@ export const useGameStore = create<GameState>()(
         const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as Tier);
 
         if (hustleTierIndex > currentTierIndex) {
-          return { success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.` };
+          return {
+            success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.`,
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         // Get current level data
@@ -223,7 +229,10 @@ export const useGameStore = create<GameState>()(
         }
 
         if (!levelData && !isStrategic) {
-          return { success: false, netChange: 0, message: 'Level data missing' };
+          return {
+            success: false, netChange: 0, message: 'Level data missing',
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         // Mock levelData for strategic hustles that don't use it for core yield
@@ -232,20 +241,29 @@ export const useGameStore = create<GameState>()(
         }
 
         if (!levelData) {
-          return { success: false, netChange: 0, message: 'Level data missing' };
+          return {
+            success: false, netChange: 0, message: 'Level data missing',
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         // Check clout/aura requirements
         if (state.pl.clout < levelData.cloutReq) {
-          return { success: false, netChange: 0, message: `Need ${levelData.cloutReq} clout` };
+          return {
+            success: false, netChange: 0, message: `Need ${levelData.cloutReq} clout`,
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         if (state.pl.aura < levelData.auraReq) {
-          return { success: false, netChange: 0, message: `Need ${levelData.auraReq} aura` };
+          return {
+            success: false, netChange: 0, message: `Need ${levelData.auraReq} aura`,
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         const market = MARKET_CONFIGS[state.currentMarket];
-        const success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
+        let success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
         const isVending = hustleId === 'r_vending';
 
         let result = calculateHustleMath(
@@ -344,9 +362,12 @@ export const useGameStore = create<GameState>()(
           let yieldClout = result.yieldClout;
 
           if (Math.random() > successChance) {
+            success = false;
             yieldCash = 0;
             yieldClout -= 10;
             addLocalTicker('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
+          } else {
+            success = true;
           }
 
           result = { ...result, cost: cost * market.expenseMultiplier, yieldCash, yieldClout };
@@ -362,6 +383,7 @@ export const useGameStore = create<GameState>()(
           else if (intensity === 4) { yieldCash = 50000000; heatHit = 40; successRate = 0.1; label = 'violent'; }
 
           const isLobbySuccess = Math.random() < successRate;
+          success = isLobbySuccess;
           if (isLobbySuccess) addLocalTicker(`✅ Influence successful (${label})! +$${yieldCash.toLocaleString()}`, 'text-emerald-400');
           else addLocalTicker(`❌ Influence failed (${label})! Investment lost and heat increased.`, 'text-red-400');
 
@@ -389,7 +411,7 @@ export const useGameStore = create<GameState>()(
         }
         else if (hustleId === 'global_franchise') {
           const angle = minigameMultiplier; // 0-180
-          let cost = 5000000, passive = 500000, risk = 0.05;
+          let cost, passive, risk;
 
           if (angle < 45) { cost = 5000000; passive = 500000; risk = 0.05; }
           else if (angle < 90) { cost = 10000000; passive = 1500000; risk = 0.15; }
@@ -397,6 +419,7 @@ export const useGameStore = create<GameState>()(
           else { cost = 40000000; passive = 5000000; risk = 0.50; }
 
           const isExpansionSuccess = Math.random() > risk;
+          success = isExpansionSuccess;
           if (!isExpansionSuccess) {
              addLocalTicker('❌ Global expansion failed! Investment lost.', 'text-red-400');
              result = { ...result, cost: cost * market.expenseMultiplier, yieldCash: 0, yieldClout: 0, yieldAura: 0 };
@@ -441,7 +464,10 @@ export const useGameStore = create<GameState>()(
           const investment = state.pl.vcInvestment * 1000000; // in millions
 
           if (state.pl.bag < investment) {
-            return { success: false, netChange: 0, message: `Need $${investment.toLocaleString()} for investment` };
+            return {
+              success: false, netChange: 0, message: `Need $${investment.toLocaleString()} for investment`,
+              cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+            };
           }
 
           const stageData = {
@@ -457,8 +483,9 @@ export const useGameStore = create<GameState>()(
           const outcomeRoll = Math.random();
 
           if (outcomeRoll > stageData.failRate) {
+            success = true;
             const successTypeRoll = Math.random();
-            let exitMult = 1;
+            let exitMult;
             if (successTypeRoll < 0.25) { // IPO
               exitMult = stageData.multRange[1];
               addLocalTicker(`🚀 UNICORN IPO! ${sector.toUpperCase()} exit at ${exitMult}x!`, 'text-emerald-400 font-black animate-bounce');
@@ -468,6 +495,7 @@ export const useGameStore = create<GameState>()(
             }
             yieldCash = investment * exitMult * sectorMult * market.yieldMultiplier;
           } else {
+            success = false;
             addLocalTicker(`📉 STARTUP FAILED. ${sector.toUpperCase()} investment lost.`, 'text-red-400');
           }
 
@@ -480,7 +508,10 @@ export const useGameStore = create<GameState>()(
 
         // Check if player can afford
         if (state.pl.bag < result.cost) {
-          return { success: false, netChange: 0, message: `Need $${result.cost.toLocaleString()}` };
+          return {
+            success: false, netChange: 0, message: `Need $${result.cost.toLocaleString()}`,
+            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+          };
         }
 
         // Apply results
@@ -581,7 +612,17 @@ export const useGameStore = create<GameState>()(
             fatalCause: deathCause,
           });
 
-          return { success, netChange: newBag - state.pl.bag, message: 'GAME OVER' };
+          return {
+            success,
+            netChange: newBag - state.pl.bag,
+            message: 'GAME OVER',
+            cost: result.cost,
+            yieldCash: result.yieldCash,
+            yieldClout: result.yieldClout,
+            yieldAura: result.yieldAura,
+            mentalHit: result.mentalHit,
+            heatHit: result.heatHit
+          };
         }
 
         set({
@@ -590,7 +631,17 @@ export const useGameStore = create<GameState>()(
           news: finalNews,
         });
 
-        return { success, netChange: newBag - state.pl.bag, message: '' };
+        return {
+          success,
+          netChange: newBag - state.pl.bag,
+          message: '',
+          cost: result.cost,
+          yieldCash: result.yieldCash,
+          yieldClout: result.yieldClout,
+          yieldAura: result.yieldAura,
+          mentalHit: result.mentalHit,
+          heatHit: result.heatHit
+        };
       },
 
       // Upgrade a hustle to the next level
@@ -843,18 +894,19 @@ export const useGameStore = create<GameState>()(
         const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
         const nextTier = PROGRESSION_ORDER[currentIndex + 1];
 
-        if (!nextTier) return false;
+        if (!nextTier || nextTier === 'OPEN') return false;
 
         const req = TIER_REQUIREMENTS[nextTier];
+        const totalFee = (req.fee * 4) + (state.pl.bag * 0.4);
 
         if (state.pl.bag >= req.cash &&
             state.pl.clout >= req.clout &&
             state.pl.aura >= req.aura) {
 
           // Check if player can afford the fee
-          if (state.pl.bag < req.fee) {
+          if (state.pl.bag < totalFee) {
             set({
-              news: [`❌ Cannot advance to ${nextTier}: Need $${req.fee.toLocaleString()} for filing fees`, ...state.news.slice(0, 49)]
+              news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees and institutional buy-in`, ...state.news.slice(0, 49)]
             });
             return false;
           }
@@ -862,7 +914,7 @@ export const useGameStore = create<GameState>()(
           set({
             pl: enforceStatCaps({
               ...state.pl,
-              bag: state.pl.bag - req.fee,
+              bag: state.pl.bag - totalFee,
               currentTier: nextTier,
             }),
             activeTab: nextTier,
@@ -1005,6 +1057,7 @@ export const useGameStore = create<GameState>()(
       name: 'bag-chaser-save',
       partialize: (state) => ({
         pl: state.pl,
+        ph: state.ph,
         currentMarket: state.currentMarket,
         unlockedHustles: state.unlockedHustles,
         activeTab: state.activeTab,
