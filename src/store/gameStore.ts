@@ -894,10 +894,10 @@ export const useGameStore = create<GameState>()(
         const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
         const nextTier = PROGRESSION_ORDER[currentIndex + 1];
 
-        if (!nextTier || nextTier === 'OPEN') return false;
+        if (!nextTier) return false;
 
         const req = TIER_REQUIREMENTS[nextTier];
-        const totalFee = (req.fee * 4) + (state.pl.bag * 0.4);
+        const totalFee = req.fee;
 
         if (state.pl.bag >= req.cash &&
             state.pl.clout >= req.clout &&
@@ -915,6 +915,8 @@ export const useGameStore = create<GameState>()(
             pl: enforceStatCaps({
               ...state.pl,
               bag: state.pl.bag - totalFee,
+              clout: Math.floor(state.pl.clout * 0.6),
+              aura: Math.floor(state.pl.aura * 0.6),
               currentTier: nextTier,
             }),
             activeTab: nextTier,
