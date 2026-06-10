@@ -470,6 +470,7 @@ HUSTLES.global_franchise = {
   tier: 'CORPORATE',
   icon: '🍔',
   description: 'Scalable standardized success',
+  miniGame: 'RotateToScale',
   levels: [
     { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 15000 },
     { level: 2, id: 'l2', cost: 2000000, yieldCash: 500000, yieldClout: 300, yieldAura: 150, mentalHit: -40, cloutReq: 300, auraReq: 200, passiveYield: 40000 },
@@ -527,6 +528,7 @@ HUSTLES.lobbying = {
   tier: 'CORPORATE',
   icon: '🏛️',
   description: 'Influence politics, reduce negative events',
+  miniGame: 'ShakeToInfluence',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 150, auraReq: 75, nextBranches: ['l2'] },
@@ -541,6 +543,7 @@ HUSTLES.disaster = {
   tier: 'CORPORATE',
   icon: '🛡️',
   description: 'Insurance and crisis management',
+  miniGame: 'PinchToZoom',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 120, auraReq: 60, nextBranches: ['l2'] },

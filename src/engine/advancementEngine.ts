@@ -104,6 +104,11 @@ export function advanceMonth(
   });
   passiveIncome += totalRoyalties;
 
+  // Add dynamic passives
+  Object.values(newPl.dynamicPassives || {}).forEach(val => {
+    passiveIncome += val;
+  });
+
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly
   newPl.artists.forEach(artist => {

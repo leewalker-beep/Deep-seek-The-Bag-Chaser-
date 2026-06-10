@@ -1,20 +1,20 @@
 import React from 'react';
 import { useGameStore } from '../../../store/gameStore';
 import type { Hustle } from '../../../config/hustles/base';
-import { MARKET_CONFIGS } from '../../../config/marketConfig';
+// import { MARKET_CONFIGS } from '../../../config/marketConfig';
 
 interface VCPanelProps {
   hustle: Hustle;
 }
 
 export const VCPanel: React.FC<VCPanelProps> = ({ hustle }) => {
-  const { pl, currentMarket, setVCChoices, executeHustle, setActiveHustleView } = useGameStore();
+  const { pl, setVCChoices, executeHustle, setActiveHustleView } = useGameStore();
 
   const stage = pl.vcStage;
   const sector = pl.vcSector;
   const investment = pl.vcInvestment;
 
-  const market = MARKET_CONFIGS[currentMarket];
+  // const market = MARKET_CONFIGS[currentMarket];
   const sectorCycle = pl.marketCycle.vc[sector];
   const sectorMult = sectorCycle === 'boom' ? 1.4 : (sectorCycle === 'bust' ? 0.7 : 1.0);
 

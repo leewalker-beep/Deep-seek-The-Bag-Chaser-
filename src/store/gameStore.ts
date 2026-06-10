@@ -231,6 +231,10 @@ export const useGameStore = create<GameState>()(
           levelData = { level: 1, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0 };
         }
 
+        if (!levelData) {
+          return { success: false, netChange: 0, message: 'Level data missing' };
+        }
+
         // Check clout/aura requirements
         if (state.pl.clout < levelData.cloutReq) {
           return { success: false, netChange: 0, message: `Need ${levelData.cloutReq} clout` };
@@ -347,6 +351,67 @@ export const useGameStore = create<GameState>()(
 
           result = { ...result, cost: cost * market.expenseMultiplier, yieldCash, yieldClout };
         }
+        else if (hustleId === 'lobbying') {
+          const intensity = Math.floor(minigameMultiplier); // 1, 2, 3, or 4
+          let yieldCash = 0, heatHit = 5, successRate = 0.5;
+          let label = 'gentle';
+
+          if (intensity === 1) { yieldCash = 500000; heatHit = 5; successRate = 0.5; label = 'gentle'; }
+          else if (intensity === 2) { yieldCash = 2000000; heatHit = 10; successRate = 0.7; label = 'medium'; }
+          else if (intensity === 3) { yieldCash = 10000000; heatHit = 20; successRate = 0.3; label = 'hard'; }
+          else if (intensity === 4) { yieldCash = 50000000; heatHit = 40; successRate = 0.1; label = 'violent'; }
+
+          const isLobbySuccess = Math.random() < successRate;
+          if (isLobbySuccess) addLocalTicker(`✅ Influence successful (${label})! +$${yieldCash.toLocaleString()}`, 'text-emerald-400');
+          else addLocalTicker(`❌ Influence failed (${label})! Investment lost and heat increased.`, 'text-red-400');
+
+          result = {
+            ...result,
+            yieldCash: isLobbySuccess ? yieldCash : 0,
+            yieldClout: isLobbySuccess ? 100 : -50,
+            heatHit: isLobbySuccess ? heatHit : (heatHit * 2),
+          };
+        }
+        else if (hustleId === 'disaster') {
+          const accuracy = minigameMultiplier; // 0.0 to 1.0
+          let costMult = 2.0;
+          if (accuracy >= 0.9) { costMult = 0.5; addLocalTicker('🎯 Precise assessment! Costs reduced by 50%.', 'text-emerald-400'); }
+          else if (accuracy >= 0.8) { costMult = 0.75; addLocalTicker('✅ Good assessment! Costs reduced by 25%.', 'text-blue-400'); }
+          else { addLocalTicker('❌ Poor assessment! Costs doubled.', 'text-red-400'); }
+
+
+          result = {
+            ...result,
+            cost: result.cost * costMult,
+            yieldClout: 50,
+            yieldAura: 25,
+          };
+        }
+        else if (hustleId === 'global_franchise') {
+          const angle = minigameMultiplier; // 0-180
+          let cost = 5000000, passive = 500000, risk = 0.05;
+
+          if (angle < 45) { cost = 5000000; passive = 500000; risk = 0.05; }
+          else if (angle < 90) { cost = 10000000; passive = 1500000; risk = 0.15; }
+          else if (angle < 135) { cost = 20000000; passive = 3000000; risk = 0.30; }
+          else { cost = 40000000; passive = 5000000; risk = 0.50; }
+
+          const isExpansionSuccess = Math.random() > risk;
+          if (!isExpansionSuccess) {
+             addLocalTicker('❌ Global expansion failed! Investment lost.', 'text-red-400');
+             result = { ...result, cost: cost * market.expenseMultiplier, yieldCash: 0, yieldClout: 0, yieldAura: 0 };
+          } else {
+             addLocalTicker(`🌎 Global expansion successful! Passive income boosted.`, 'text-emerald-400');
+             result = {
+               ...result,
+               cost: cost * market.expenseMultiplier,
+               yieldCash: 0,
+               yieldClout: 200,
+               yieldAura: 100,
+               passiveAdded: (levelData.passiveYield || 0) + passive
+             };
+          }
+        }
         else if (hustleId === 'real_estate_empire') {
           const type = state.pl.realEstateType;
           const leverage = state.pl.realEstateLeverage;
@@ -420,6 +485,10 @@ export const useGameStore = create<GameState>()(
 
         // Apply results
         const newBag = state.pl.bag - result.cost + result.yieldCash;
+        const newDynamicPassives = { ...state.pl.dynamicPassives };
+        if (hustleId === 'global_franchise' && result.passiveAdded !== undefined) {
+           newDynamicPassives[hustleId] = (newDynamicPassives[hustleId] || 0) + (result.passiveAdded - (levelData.passiveYield || 0));
+        }
         const newClout = state.pl.clout + result.yieldClout;
         const newAura = state.pl.aura + result.yieldAura;
         const newMental = state.pl.mentalHealth + result.mentalHit;

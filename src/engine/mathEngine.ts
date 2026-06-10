@@ -8,6 +8,7 @@ export interface MathResult {
   mentalHit: number;
   heatHit: number;
   shieldTurns: number;
+  passiveAdded?: number;
   isBigWin?: boolean;
   bigWinMessage?: string;
 }

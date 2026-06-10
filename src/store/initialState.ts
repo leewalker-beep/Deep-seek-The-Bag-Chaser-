@@ -48,6 +48,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
       },
     },
     monthsSinceCycleChange: 0,
+    dynamicPassives: {},
     actionLog: [],
     milestones: [],
     stats: {

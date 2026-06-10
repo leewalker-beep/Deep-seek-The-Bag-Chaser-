@@ -15,6 +15,9 @@ import { DragScale } from './components/minigames/DragScale';
 import { TapAssign } from './components/minigames/TapAssign';
 import { HoldHype } from './components/minigames/HoldHype';
 import { MagneticSweep } from './components/minigames/MagneticSweep';
+import { ShakeToInfluence } from './components/minigames/ShakeToInfluence';
+import { PinchToZoom } from './components/minigames/PinchToZoom';
+import { RotateToScale } from './components/minigames/RotateToScale';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
@@ -319,6 +322,9 @@ function App() {
                 if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
                 if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
                 if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
+                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
+                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
+                if (hustle.miniGame === 'RotateToScale') return <RotateToScale onComplete={onComplete} />;
                 if (hustle.miniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
