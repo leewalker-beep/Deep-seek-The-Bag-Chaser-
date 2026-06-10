@@ -54,6 +54,7 @@ function App() {
     setActiveHustleView,
     setPlayerName,
     resetGame,
+    applyPendingUpdate,
   } = useGameStore();
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
@@ -311,7 +312,8 @@ function App() {
               if (showMinigame && hustle.miniGame) {
                 const onComplete = (multiplier: number) => {
                   try {
-                    const result = executeHustle(hustle.id, multiplier);
+                    const isDeferred = hustle.id === 'lobbying' || hustle.id === 'disaster';
+                    const result = executeHustle(hustle.id, multiplier, false, isDeferred);
                     setActiveHustleResult({
                       hustleId: hustle.id,
                       ...result
@@ -479,6 +481,10 @@ function App() {
             },
           ].filter(s => s.value !== 0)}
           onDismiss={() => {
+            const isDeferred = activeHustleResult.hustleId === 'lobbying' || activeHustleResult.hustleId === 'disaster';
+            if (isDeferred) {
+              applyPendingUpdate();
+            }
             setActiveHustleResult(null);
             setActiveHustleView(null);
           }}
