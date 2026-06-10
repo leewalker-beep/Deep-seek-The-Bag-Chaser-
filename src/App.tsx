@@ -23,6 +23,8 @@ import { FestivalPanel } from './components/hustles/panels/FestivalPanel';
 import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPanel';
 import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
 import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
+import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
+import { VCPanel } from './components/hustles/panels/VCPanel';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -382,6 +384,12 @@ function App() {
                 }
                 if (hustle.panelType === 'VA_AGENCY') {
                   return <VAAgencyPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'REAL_ESTATE') {
+                  return <RealEstatePanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'VENTURE_CAPITAL') {
+                  return <VCPanel hustle={hustle} />;
                 }
               }
 

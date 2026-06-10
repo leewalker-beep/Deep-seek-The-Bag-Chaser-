@@ -53,7 +53,7 @@ export const useGameStore = create<GameState>()(
           currentMarket: 'NORMAL',
           news: ['Game reset. Welcome back.'],
           unlockedHustles: getUnlockedHustles(difficulty),
-          activeTab: difficulty === 1 ? 'STREET' : 'MUD',
+          activeTab: difficulty === 1 ? 'ELITE' : 'MUD',
           activeHustleView: null,
           deathBadge: null,
           fatalCause: null,
@@ -190,10 +190,18 @@ export const useGameStore = create<GameState>()(
       executeHustle: (hustleId: string, minigameMultiplier: number = 1, forceSuccess?: boolean) => {
         const state = get();
         const hustle = HUSTLES[hustleId];
+        const pendingNews: (string | { text: string; colorClass: string })[] = [];
+
+        const addLocalTicker = (text: string, colorClass?: string) => {
+          pendingNews.push(colorClass ? { text, colorClass } : text);
+        };
 
         if (!hustle) {
           return { success: false, netChange: 0, message: 'Hustle not found' };
         }
+
+        const isRecovery = (hustleId === 'psychiatrist' || hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session' || hustleId === 'wellness_retreat');
+        const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency');
 
         // Check if tier is unlocked
         const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
@@ -214,8 +222,13 @@ export const useGameStore = create<GameState>()(
           levelData = hustle.levels.find(l => l.level === currentLevel);
         }
 
-        if (!levelData) {
+        if (!levelData && !isStrategic) {
           return { success: false, netChange: 0, message: 'Level data missing' };
+        }
+
+        // Mock levelData for strategic hustles that don't use it for core yield
+        if (!levelData && isStrategic) {
+          levelData = { level: 1, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0 };
         }
 
         // Check clout/aura requirements
@@ -228,7 +241,7 @@ export const useGameStore = create<GameState>()(
         }
 
         const market = MARKET_CONFIGS[state.currentMarket];
-        const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
+        const success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
         const isVending = hustleId === 'r_vending';
 
         let result = calculateHustleMath(
@@ -260,9 +273,9 @@ export const useGameStore = create<GameState>()(
           if (Math.random() < 0.15) { // Rain event
             if (!choices.insurance) {
               attendanceMult *= 0.5;
-              get().addTickerMessage('⛈️ RAIN EVENT! Attendance slashed by 50% without insurance!', 'text-red-400');
+              addLocalTicker('⛈️ RAIN EVENT! Attendance slashed by 50% without insurance!', 'text-red-400');
             } else {
-              get().addTickerMessage('⛈️ RAIN EVENT! Insurance covered the losses!', 'text-blue-400');
+              addLocalTicker('⛈️ RAIN EVENT! Insurance covered the losses!', 'text-blue-400');
             }
           }
 
@@ -280,7 +293,7 @@ export const useGameStore = create<GameState>()(
             yieldCash = 1000000; yieldClout = 150; yieldAura = 150; heatHit = 30;
             if (Math.random() < 0.10) { // Data breach
               heatHit += 50; yieldClout -= 100;
-              get().addTickerMessage('🚨 DATA BREACH! Massive heat spike and clout loss!', 'text-red-500 font-bold');
+              addLocalTicker('🚨 DATA BREACH! Massive heat spike and clout loss!', 'text-red-500 font-bold');
             }
           }
 
@@ -304,7 +317,7 @@ export const useGameStore = create<GameState>()(
           if (Math.random() < risk) {
             yieldCash = 0;
             const msg = strategy === 'cloud' ? 'Scammed by cloud provider!' : 'Mining failure!';
-            get().addTickerMessage(`❌ ${msg} Yield is 0.`, 'text-red-400');
+            addLocalTicker(`❌ ${msg} Yield is 0.`, 'text-red-400');
           }
 
           result = {
@@ -329,10 +342,71 @@ export const useGameStore = create<GameState>()(
           if (Math.random() > successChance) {
             yieldCash = 0;
             yieldClout -= 10;
-            get().addTickerMessage('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
+            addLocalTicker('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
           }
 
           result = { ...result, cost: cost * market.expenseMultiplier, yieldCash, yieldClout };
+        }
+        else if (hustleId === 'real_estate_empire') {
+          const type = state.pl.realEstateType;
+          const leverage = state.pl.realEstateLeverage;
+          const strategy = state.pl.realEstateStrategy;
+
+          const typeMult = { residential: 1.0, commercial: 1.5, industrial: 2.0 }[type];
+          const leverageMult = leverage === 0 ? 1.0 : (leverage === 50 ? 1.5 : 2.5);
+
+          const cycle = state.pl.marketCycle.realEstate;
+          const cycleMult = cycle === 'boom' ? 1.5 : (cycle === 'bust' ? 0.6 : 1.0);
+
+          const baseYield = 1000000; // Base profit per unit
+          let yieldCash = baseYield * typeMult * leverageMult * cycleMult * market.yieldMultiplier;
+
+          if (strategy === 'hold') {
+            yieldCash = 0;
+            addLocalTicker(`🏙️ Property acquired for HOLD. Passive income updated.`, 'text-blue-400');
+          } else {
+            addLocalTicker(`🏙️ Property FLIPPED for $${Math.floor(yieldCash).toLocaleString()}!`, 'text-emerald-400');
+          }
+
+          result = { ...result, yieldCash: Math.floor(yieldCash) };
+        }
+        else if (hustleId === 'venture_capital') {
+          const stage = state.pl.vcStage;
+          const sector = state.pl.vcSector;
+          const investment = state.pl.vcInvestment * 1000000; // in millions
+
+          if (state.pl.bag < investment) {
+            return { success: false, netChange: 0, message: `Need $${investment.toLocaleString()} for investment` };
+          }
+
+          const stageData = {
+            seed: { multRange: [10, 50], failRate: 0.7 },
+            seriesA: { multRange: [5, 20], failRate: 0.5 },
+            growth: { multRange: [2, 5], failRate: 0.3 },
+          }[stage as 'seed' | 'seriesA' | 'growth'];
+
+          const sectorCycle = state.pl.marketCycle.vc[sector];
+          const sectorMult = sectorCycle === 'boom' ? 1.4 : (sectorCycle === 'bust' ? 0.7 : 1.0);
+
+          let yieldCash = 0;
+          const outcomeRoll = Math.random();
+
+          if (outcomeRoll > stageData.failRate) {
+            const successTypeRoll = Math.random();
+            let exitMult = 1;
+            if (successTypeRoll < 0.25) { // IPO
+              exitMult = stageData.multRange[1];
+              addLocalTicker(`🚀 UNICORN IPO! ${sector.toUpperCase()} exit at ${exitMult}x!`, 'text-emerald-400 font-black animate-bounce');
+            } else { // Acquisition
+              exitMult = Math.random() * (stageData.multRange[1] - stageData.multRange[0]) + stageData.multRange[0];
+              addLocalTicker(`💰 ACQUISITION! ${sector.toUpperCase()} company sold at ${exitMult.toFixed(1)}x.`, 'text-emerald-400');
+            }
+            yieldCash = investment * exitMult * sectorMult * market.yieldMultiplier;
+          } else {
+            addLocalTicker(`📉 STARTUP FAILED. ${sector.toUpperCase()} investment lost.`, 'text-red-400');
+          }
+
+          result = { ...result, cost: investment, yieldCash: Math.floor(yieldCash) };
         }
 
         const bigWinMsg = (result.isBigWin && result.bigWinMessage)
@@ -367,6 +441,8 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
+          rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
+          flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
           // We don't add result.shieldTurns here because we want it to survive advanceMonth below
           stats: newStats,
           lastExecutedHustleId: hustleId,
@@ -418,7 +494,8 @@ export const useGameStore = create<GameState>()(
           ...monthNews,
           ...(bigWinMsg ? [bigWinMsg] : []),
           executionNews,
-          ...state.news
+          ...pendingNews,
+            ...get().news
         ].slice(0, 50);
 
         // Handle death
@@ -662,6 +739,28 @@ export const useGameStore = create<GameState>()(
           }
         }));
       },
+
+    setRealEstateChoices: (type, leverage, strategy) => {
+      set((state) => ({
+        pl: {
+          ...state.pl,
+          realEstateType: type,
+          realEstateLeverage: leverage,
+          realEstateStrategy: strategy
+        }
+      }));
+    },
+
+    setVCChoices: (stage, sector, investment) => {
+      set((state) => ({
+        pl: {
+          ...state.pl,
+          vcStage: stage,
+          vcSector: sector,
+          vcInvestment: investment
+        }
+      }));
+    },
 
       addTickerMessage: (text: string, colorClass?: string) => {
         set((state) => ({

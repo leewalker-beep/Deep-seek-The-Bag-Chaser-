@@ -9,7 +9,7 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 p-2 z-50">
       <div className="max-w-md mx-auto">
-        {news.slice(0, 2).map((msg, i) => {
+        {news.slice(0, 4).map((msg, i) => {
           const isObject = typeof msg === 'object';
           const text = isObject ? msg.text : msg;
           const colorClass = isObject ? msg.colorClass : 'text-slate-400';

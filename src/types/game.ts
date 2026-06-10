@@ -76,6 +76,17 @@ export interface PlayerStats {
   vaStaff?: 5 | 10 | 20;
   vaTraining?: 'none' | 'basic' | 'advanced';
   vaClient?: 'small' | 'medium' | 'large';
+  realEstateType: 'residential' | 'commercial' | 'industrial';
+  realEstateLeverage: 0 | 50 | 80;
+  realEstateStrategy: 'hold' | 'flip';
+  vcStage: 'seed' | 'seriesA' | 'growth';
+  vcSector: 'tech' | 'biotech' | 'energy';
+  vcInvestment: number;
+  marketCycle: {
+    realEstate: 'boom' | 'bust' | 'normal';
+    vc: Record<string, 'boom' | 'bust' | 'normal'>;
+  };
+  monthsSinceCycleChange: number;
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {
@@ -121,6 +132,8 @@ export interface GameState {
   setDataAnalyticsChoice: (choice: PlayerStats['dataAnalyticsChoice']) => void;
   setCryptoStrategy: (strategy: PlayerStats['cryptoStrategy']) => void;
   setVASettings: (staff: PlayerStats['vaStaff'], training: PlayerStats['vaTraining'], client: PlayerStats['vaClient']) => void;
+  setRealEstateChoices: (type: PlayerStats['realEstateType'], leverage: PlayerStats['realEstateLeverage'], strategy: PlayerStats['realEstateStrategy']) => void;
+  setVCChoices: (stage: PlayerStats['vcStage'], sector: PlayerStats['vcSector'], investment: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;

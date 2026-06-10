@@ -33,6 +33,21 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     vaStaff: 5,
     vaTraining: 'none',
     vaClient: 'small',
+    realEstateType: 'residential',
+    realEstateLeverage: 0,
+    realEstateStrategy: 'hold',
+    vcStage: 'seed',
+    vcSector: 'tech',
+    vcInvestment: 1,
+    marketCycle: {
+      realEstate: 'normal',
+      vc: {
+        tech: 'normal',
+        biotech: 'normal',
+        energy: 'normal',
+      },
+    },
+    monthsSinceCycleChange: 0,
     actionLog: [],
     milestones: [],
     stats: {
@@ -45,10 +60,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
   if (difficulty === 1) { // Trust Fund
     return {
       ...baseStats,
-      bag: 25000,
-      clout: 30,
-      aura: 30,
-      currentTier: 'STREET',
+      bag: 500000000,
+      clout: 1000,
+      aura: 1000,
+      currentTier: 'ELITE',
     };
   } else if (difficulty === 2) { // Middle Grind
     return {
