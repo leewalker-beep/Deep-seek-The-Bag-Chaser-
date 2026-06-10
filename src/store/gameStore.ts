@@ -44,6 +44,7 @@ export const useGameStore = create<GameState>()(
       deathBadge: null,
       fatalCause: null,
       difficulty: 3 as 1 | 2 | 3,
+      pendingUpdate: null,
 
       // Reset game
       resetGame: (difficulty: 1 | 2 | 3 = 3) => {
@@ -58,6 +59,7 @@ export const useGameStore = create<GameState>()(
           deathBadge: null,
           fatalCause: null,
           difficulty,
+          pendingUpdate: null,
         });
       },
 
@@ -187,7 +189,7 @@ export const useGameStore = create<GameState>()(
       },
 
       // Execute a hustle
-      executeHustle: (hustleId: string, minigameMultiplier: number = 1, forceSuccess?: boolean) => {
+      executeHustle: (hustleId: string, minigameMultiplier: number = 1, forceSuccess?: boolean, defer?: boolean) => {
         const state = get();
         const hustle = HUSTLES[hustleId];
         const pendingNews: (string | { text: string; colorClass: string })[] = [];
@@ -557,7 +559,7 @@ export const useGameStore = create<GameState>()(
           } : state.pl.hustleBranchIds,
         });
 
-        get().logAction({
+        const actionLogData = {
           month: state.pl.month,
           tier: state.pl.currentTier,
           hustleId,
@@ -575,8 +577,7 @@ export const useGameStore = create<GameState>()(
           marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
           marketName: market.name,
           variation: 0
-        });
-        get().checkMilestones();
+        };
 
         // Advance month using the result of the hustle
         const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
@@ -598,43 +599,48 @@ export const useGameStore = create<GameState>()(
             ...get().news
         ].slice(0, 50);
 
-        // Handle death
+        let finalPh = state.ph;
+        let finalDeathBadge = state.deathBadge;
+        let finalFatalCause = state.fatalCause;
+
         if (shouldDie) {
           const lastHustleId = cappedPl.lastExecutedHustleId || 'DEFAULT';
           const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
+          finalPh = 'POST_MORTEM';
+          finalDeathBadge = deathInfo.badge;
+          finalFatalCause = deathCause;
+        }
+
+        if (defer) {
+          set({
+            pendingUpdate: {
+              pl: cappedPl,
+              news: finalNews,
+              currentMarket: newMarket,
+              ph: finalPh,
+              deathBadge: finalDeathBadge,
+              fatalCause: finalFatalCause,
+              action: actionLogData
+            }
+          });
+        } else {
+          get().logAction(actionLogData);
+          get().checkMilestones();
 
           set({
             pl: cappedPl,
             currentMarket: newMarket,
             news: finalNews,
-            ph: 'POST_MORTEM',
-            deathBadge: deathInfo.badge,
-            fatalCause: deathCause,
+            ph: finalPh,
+            deathBadge: finalDeathBadge,
+            fatalCause: finalFatalCause,
           });
-
-          return {
-            success,
-            netChange: newBag - state.pl.bag,
-            message: 'GAME OVER',
-            cost: result.cost,
-            yieldCash: result.yieldCash,
-            yieldClout: result.yieldClout,
-            yieldAura: result.yieldAura,
-            mentalHit: result.mentalHit,
-            heatHit: result.heatHit
-          };
         }
-
-        set({
-          pl: cappedPl,
-          currentMarket: newMarket,
-          news: finalNews,
-        });
 
         return {
           success,
           netChange: newBag - state.pl.bag,
-          message: '',
+          message: shouldDie ? 'GAME OVER' : '',
           cost: result.cost,
           yieldCash: result.yieldCash,
           yieldClout: result.yieldClout,
@@ -642,6 +648,27 @@ export const useGameStore = create<GameState>()(
           mentalHit: result.mentalHit,
           heatHit: result.heatHit
         };
+      },
+
+      applyPendingUpdate: () => {
+        const state = get();
+        if (!state.pendingUpdate) return;
+
+        const { pl, news, currentMarket, ph, deathBadge, fatalCause, action } = state.pendingUpdate;
+
+        get().logAction(action);
+        get().checkMilestones();
+
+        set({
+          pl,
+          news,
+          currentMarket,
+          ph,
+          deathBadge,
+          fatalCause,
+          pendingUpdate: null,
+          activeHustleView: null,
+        });
       },
 
       // Upgrade a hustle to the next level
