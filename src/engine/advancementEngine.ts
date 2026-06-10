@@ -2,6 +2,7 @@ import type { PlayerStats, MarketType, Tier } from '../types/game';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLES } from '../config/hustles/base';
+import { enforceStatCaps } from './statEngine';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -191,5 +192,5 @@ export function advanceMonth(
     deathCause = 'Irrelevant: The world has moved on without you.';
   }
 
-  return { newPl, newMarket, news, shouldDie, deathCause };
+  return { newPl: enforceStatCaps(newPl), newMarket, news, shouldDie, deathCause };
 }

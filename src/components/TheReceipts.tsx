@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { PROGRESSION_ORDER } from '../config/tiers';
 
 export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { pl } = useGameStore();
+  const pl = useGameStore(state => state.pl);
   const [filterTier, setFilterTier] = useState<string>('ALL');
   const [showDebug, setShowDebug] = useState(false);
 

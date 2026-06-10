@@ -1,0 +1,23 @@
+import type { PlayerStats } from '../types/game';
+import { getTierMax } from '../config/tiers';
+
+export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
+  const { clout: maxClout, aura: maxAura } = getTierMax(pl.currentTier);
+  const maxMental = 100;
+  const maxHeat = 100;
+
+  // Emergency recovery for corrupted aura
+  let currentAura = pl.aura;
+  if (currentAura > 10000) {
+    currentAura = maxAura;
+  }
+
+  return {
+    ...pl,
+    clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
+    aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
+    mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),
+    heat: Math.floor(Math.max(0, Math.min(pl.heat, maxHeat))),
+    mentalShieldTurns: Math.floor(Math.max(0, pl.mentalShieldTurns || 0)),
+  };
+};
