@@ -87,6 +87,7 @@ export interface PlayerStats {
     vc: Record<string, 'boom' | 'bust' | 'normal'>;
   };
   monthsSinceCycleChange: number;
+  dynamicPassives: Record<string, number>;
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {
