@@ -48,6 +48,9 @@ export const useGameStore = create<GameState>()(
 
       // Reset game
       resetGame: (difficulty: 1 | 2 | 3 = 3) => {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('bag-chaser-save');
+        }
         set({
           pl: getInitialStats(difficulty),
           ph: 'PROLOGUE',
@@ -56,6 +59,7 @@ export const useGameStore = create<GameState>()(
           unlockedHustles: getUnlockedHustles(difficulty),
           activeTab: difficulty === 1 ? 'STREET' : 'MUD',
           activeHustleView: null,
+          activeNarrative: null,
           deathBadge: null,
           fatalCause: null,
           difficulty,
