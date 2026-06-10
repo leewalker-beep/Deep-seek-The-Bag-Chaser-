@@ -6,10 +6,18 @@ interface PinchToZoomProps {
 
 export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
   const [zoom, setZoom] = useState(1);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [targetDamage] = useState(() => Math.random() * 0.8 + 0.1); // 10% to 90%
   const [timeLeft, setTimeLeft] = useState(30);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastDistanceRef = useRef<number | null>(null);
+
+  const handleFinish = React.useCallback(() => {
+    // Zoom 1-5 maps to 0-100% assessment
+    const assessment = (zoom - 1) / 4;
+    const accuracy = 1 - Math.abs(assessment - targetDamage);
+    onComplete(accuracy);
+  }, [zoom, targetDamage, onComplete]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -23,7 +31,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [handleFinish]);
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -37,6 +45,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
       if (lastDistanceRef.current !== null) {
         const delta = (distance - lastDistanceRef.current) * 0.01;
         setZoom((prev) => Math.max(1, Math.min(5, prev + delta)));
+        setHasInteracted(true);
       }
       lastDistanceRef.current = distance;
     }
@@ -44,13 +53,6 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
 
   const handleTouchEnd = () => {
     lastDistanceRef.current = null;
-  };
-
-  const handleFinish = () => {
-    // Zoom 1-5 maps to 0-100% assessment
-    const assessment = (zoom - 1) / 4;
-    const accuracy = 1 - Math.abs(assessment - targetDamage);
-    onComplete(accuracy);
   };
 
   return (
@@ -110,17 +112,22 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
               max="5"
               step="0.01"
               value={zoom}
-              onChange={(e) => setZoom(parseFloat(e.target.value))}
+              onChange={(e) => {
+                setZoom(parseFloat(e.target.value));
+                setHasInteracted(true);
+              }}
               className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
             />
         </div>
 
-        <button
-          onClick={handleFinish}
-          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl uppercase tracking-widest text-xs"
-        >
-          CONFIRM ASSESSMENT
-        </button>
+        {hasInteracted && (
+          <button
+            onClick={handleFinish}
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl uppercase tracking-widest text-xs animate-in fade-in slide-in-from-bottom-4 duration-300"
+          >
+            SUBMIT ASSESSMENT
+          </button>
+        )}
       </div>
 
       {/* Target hint (hidden in real game, but showing for player slightly via 'thermal scan' message) */}

@@ -121,7 +121,17 @@ export interface GameState {
   setActiveTab: (tab: Tier | 'FLEX') => void;
   setActiveHustleView: (hustleId: string | null) => void;
   dismissNarrative: () => void;
-  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => { success: boolean; netChange: number; message: string };
+  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
+    success: boolean;
+    netChange: number;
+    message: string;
+    cost: number;
+    yieldCash: number;
+    yieldClout: number;
+    yieldAura: number;
+    mentalHit: number;
+    heatHit: number;
+  };
   executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
