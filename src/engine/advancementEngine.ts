@@ -70,6 +70,17 @@ export function advanceMonth(
     }
   });
 
+  // Real Estate Empire Passive Income
+  if (newPl.rentalCount > 0) {
+    const typeMult = { residential: 1.0, commercial: 1.5, industrial: 2.0 }[newPl.realEstateType];
+    const leverageMult = newPl.realEstateLeverage === 0 ? 1.0 : (newPl.realEstateLeverage === 50 ? 1.5 : 2.5);
+    const cycle = newPl.marketCycle.realEstate;
+    const cycleMult = cycle === 'boom' ? 1.5 : (cycle === 'bust' ? 0.6 : 1.0);
+    const baseProfit = 1000000;
+    const monthlyPassive = (baseProfit * typeMult * leverageMult * cycleMult * MARKET_CONFIGS[currentMarket].yieldMultiplier * 0.5);
+    passiveIncome += Math.floor(monthlyPassive * newPl.rentalCount);
+  }
+
   // 2. Flex Assets (including Vending Machines)
   FLEX_ASSETS.forEach(asset => {
     const count = newPl.flexAssets[asset.id] || 0;
@@ -126,6 +137,31 @@ export function advanceMonth(
       newMarket = newMarketType;
       news.unshift(`🌍 ECONOMIC SHIFT: ${MARKET_CONFIGS[newMarket].name} - ${MARKET_CONFIGS[newMarket].description}`);
     }
+  }
+
+  // Strategic Market Cycles (Real Estate & VC)
+  newPl.monthsSinceCycleChange++;
+  if (newPl.monthsSinceCycleChange >= 6 && (newPl.monthsSinceCycleChange >= 12 || Math.random() < 0.05)) {
+    const cycleTypes: ('boom' | 'bust' | 'normal')[] = ['boom', 'bust', 'normal'];
+
+    // Real Estate Cycle
+    const oldRECycle = newPl.marketCycle.realEstate;
+    newPl.marketCycle.realEstate = cycleTypes[Math.floor(Math.random() * cycleTypes.length)];
+    if (newPl.marketCycle.realEstate !== oldRECycle) {
+      news.push(`🏠 REAL ESTATE MARKET: Now in a ${newPl.marketCycle.realEstate.toUpperCase()} phase.`);
+    }
+
+    // VC Sector Cycles
+    const sectors = ['tech', 'biotech', 'energy'];
+    sectors.forEach(s => {
+      const oldVCCycle = newPl.marketCycle.vc[s];
+      newPl.marketCycle.vc[s] = cycleTypes[Math.floor(Math.random() * cycleTypes.length)];
+      if (newPl.marketCycle.vc[s] !== oldVCCycle) {
+        news.push(`💼 VC CYCLE (${s.toUpperCase()}): Shifted to ${newPl.marketCycle.vc[s].toUpperCase()}.`);
+      }
+    });
+
+    newPl.monthsSinceCycleChange = 0;
   }
 
   // Add monthly summary to news

@@ -562,15 +562,29 @@ HUSTLES.wellness_retreat = {
 };
 
 // ELITE Tier Hustles
+HUSTLES.psychiatrist = {
+  id: 'psychiatrist',
+  name: 'Psychiatrist',
+  tier: 'ELITE',
+  icon: '🧠',
+  description: 'Elite mental health care',
+  startBranchId: 'l1',
+  branches: {
+    l1: { id: 'l1', name: 'Psychiatrist Session', level: 1, cost: 1000000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 80, cloutReq: 0, auraReq: 0, shieldTurns: 6 },
+  },
+};
+
 HUSTLES.real_estate_empire = {
   id: 'real_estate_empire',
   name: 'Real Estate Empire',
   tier: 'ELITE',
   icon: '🏙️',
   description: 'Dominating the skyline',
-  levels: [
-    { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 500, yieldAura: 300, mentalHit: -30, cloutReq: 200, auraReq: 200, passiveYield: 500000 },
-  ]
+  hasPanel: true,
+  panelType: 'REAL_ESTATE',
+  branches: {
+    l1: { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 500, yieldAura: 300, mentalHit: -30, cloutReq: 200, auraReq: 200 },
+  }
 };
 
 HUSTLES.venture_capital = {
@@ -579,9 +593,39 @@ HUSTLES.venture_capital = {
   tier: 'ELITE',
   icon: '💼',
   description: 'Invest in the next unicorn',
-  levels: [
-    { level: 1, id: 'l1', cost: 10000000, yieldCash: 50000000, yieldClout: 800, yieldAura: 400, mentalHit: -25, cloutReq: 400, auraReq: 300 },
-  ]
+  hasPanel: true,
+  panelType: 'VENTURE_CAPITAL',
+  branches: {
+    l1: { level: 1, id: 'l1', cost: 0, yieldCash: 0, yieldClout: 800, yieldAura: 400, mentalHit: -25, cloutReq: 400, auraReq: 300 },
+  }
+};
+
+HUSTLES.hedgefund = {
+  id: 'hedgefund',
+  name: 'Hedge Fund',
+  tier: 'ELITE',
+  icon: '📊',
+  description: 'High-risk market trading',
+  startBranchId: 'l1',
+  branches: {
+    l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 10000000, yieldCash: 5000000, yieldClout: 100, yieldAura: 50, mentalHit: -15, cloutReq: 300, auraReq: 150, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Global Macro', level: 2, cost: 25000000, yieldCash: 15000000, yieldClout: 200, yieldAura: 100, mentalHit: -20, cloutReq: 500, auraReq: 250, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Aggressive Strategies', level: 3, cost: 50000000, yieldCash: 35000000, yieldClout: 400, yieldAura: 200, mentalHit: -25, cloutReq: 800, auraReq: 400 },
+  },
+};
+
+HUSTLES.privateequity = {
+  id: 'privateequity',
+  name: 'Private Equity',
+  tier: 'ELITE',
+  icon: '🏢',
+  description: 'Buy and transform companies',
+  startBranchId: 'l1',
+  branches: {
+    l1: { id: 'l1', name: 'Small Buyouts', level: 1, cost: 20000000, yieldCash: 10000000, yieldClout: 150, yieldAura: 75, mentalHit: -18, cloutReq: 350, auraReq: 175, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Mid Market', level: 2, cost: 50000000, yieldCash: 30000000, yieldClout: 300, yieldAura: 150, mentalHit: -22, cloutReq: 600, auraReq: 300, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Leveraged Buyouts', level: 3, cost: 100000000, yieldCash: 70000000, yieldClout: 600, yieldAura: 300, mentalHit: -28, cloutReq: 1000, auraReq: 500 },
+  },
 };
 
 // MOGUL Tier Hustles
