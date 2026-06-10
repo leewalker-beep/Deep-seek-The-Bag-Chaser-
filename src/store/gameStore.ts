@@ -7,6 +7,7 @@ import { MARKET_CONFIGS } from '../config/marketConfig';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { calculateHustleMath } from '../engine/mathEngine';
 import { advanceMonth } from '../engine/advancementEngine';
+import { showConfetti } from '../components/effects/Confetti';
 import { DEATH_MESSAGES } from '../config/deathMessages';
 import { getInitialStats, getUnlockedHustles } from './initialState';
 import { enforceStatCaps } from '../engine/statEngine';
@@ -933,6 +934,8 @@ export const useGameStore = create<GameState>()(
             activeTab: nextTier,
             news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
           });
+
+          showConfetti();
 
           // Force refresh of the active tab
           get().setActiveTab(nextTier);

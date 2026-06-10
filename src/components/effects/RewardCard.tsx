@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { showConfetti } from './Confetti';
 
 interface RewardCardProps {
   title: string;
@@ -16,6 +17,12 @@ export const RewardCard: React.FC<RewardCardProps> = ({
   onDismiss,
 }) => {
   const [displayStats, setDisplayStats] = useState<any[]>(stats.map(s => ({ ...s, current: 0 })));
+
+  useEffect(() => {
+    if (isRare) {
+      showConfetti();
+    }
+  }, [isRare]);
 
   useEffect(() => {
     const timers = stats.map((stat, i) => {
