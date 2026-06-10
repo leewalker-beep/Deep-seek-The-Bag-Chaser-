@@ -1,35 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, PlayerStats, MarketType, Tier } from '../types/game';
+import type { GameState, MarketType, Tier } from '../types/game';
 import { HUSTLES, type HustleLevel } from '../config/hustles/base';
-import { PROGRESSION_ORDER, TIER_REQUIREMENTS, getTierMax } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { calculateHustleMath } from '../engine/mathEngine';
 import { advanceMonth } from '../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../config/deathMessages';
 import { getInitialStats, getUnlockedHustles } from './initialState';
-
-const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
-  const { clout: maxClout, aura: maxAura } = getTierMax(pl.currentTier);
-  const maxMental = 100;
-  const maxHeat = 100;
-
-  // Emergency recovery for corrupted aura
-  let currentAura = pl.aura;
-  if (currentAura > 10000) {
-    currentAura = maxAura;
-  }
-
-  return {
-    ...pl,
-    clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
-    aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
-    mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),
-    heat: Math.floor(Math.max(0, Math.min(pl.heat, maxHeat))),
-    mentalShieldTurns: Math.floor(Math.max(0, pl.mentalShieldTurns || 0)),
-  };
-};
+import { enforceStatCaps } from '../engine/statEngine';
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -52,7 +32,7 @@ export const useGameStore = create<GameState>()(
           localStorage.removeItem('bag-chaser-save');
         }
         set({
-          pl: getInitialStats(difficulty),
+          pl: enforceStatCaps(getInitialStats(difficulty)),
           ph: 'PROLOGUE',
           currentMarket: 'NORMAL',
           news: ['Game reset. Welcome back.'],
@@ -70,7 +50,7 @@ export const useGameStore = create<GameState>()(
       // Set player name (for prologue)
       setPlayerName: (name: string) => {
         set((state) => ({
-          pl: { ...state.pl, name },
+          pl: enforceStatCaps({ ...state.pl, name }),
           ph: 'PLAYING',
         }));
       },
@@ -411,8 +391,8 @@ export const useGameStore = create<GameState>()(
           result = {
             ...result,
             cost: result.cost * costMult,
-            yieldClout: 50,
-            yieldAura: 25,
+            yieldClout: Math.floor(50 * (accuracy + 0.5)),
+            yieldAura: Math.floor(25 * (accuracy + 0.5)),
           };
         }
         else if (hustleId === 'global_franchise') {
@@ -618,7 +598,7 @@ export const useGameStore = create<GameState>()(
         if (defer) {
           set({
             pendingUpdate: {
-              pl: cappedPl,
+              pl: enforceStatCaps(cappedPl),
               news: finalNews,
               currentMarket: newMarket,
               ph: finalPh,
@@ -628,9 +608,6 @@ export const useGameStore = create<GameState>()(
             }
           });
         } else {
-          get().logAction(actionLogData);
-          get().checkMilestones();
-
           set({
             pl: cappedPl,
             currentMarket: newMarket,
@@ -639,6 +616,9 @@ export const useGameStore = create<GameState>()(
             deathBadge: finalDeathBadge,
             fatalCause: finalFatalCause,
           });
+
+          get().logAction(actionLogData);
+          get().checkMilestones();
         }
 
         return {
@@ -660,11 +640,8 @@ export const useGameStore = create<GameState>()(
 
         const { pl, news, currentMarket, ph, deathBadge, fatalCause, action } = state.pendingUpdate;
 
-        get().logAction(action);
-        get().checkMilestones();
-
         set({
-          pl,
+          pl: enforceStatCaps(pl),
           news,
           currentMarket,
           ph,
@@ -673,6 +650,9 @@ export const useGameStore = create<GameState>()(
           pendingUpdate: null,
           activeHustleView: null,
         });
+
+        get().logAction(action);
+        get().checkMilestones();
       },
 
       // Upgrade a hustle to the next level
@@ -770,7 +750,7 @@ export const useGameStore = create<GameState>()(
         }
 
         set({
-          pl: newPl,
+          pl: enforceStatCaps(newPl),
           news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name}`, ...state.news.slice(0, 49)]
         });
 
@@ -860,56 +840,56 @@ export const useGameStore = create<GameState>()(
         if (!artist) return;
 
         set({
-          pl: {
+          pl: enforceStatCaps({
             ...state.pl,
             artists: state.pl.artists.filter(a => a.id !== artistId),
-          },
+          }),
           news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
         });
       },
 
       setFestivalChoices: (choices) => {
-        set((state) => ({ pl: { ...state.pl, festivalChoices: choices } }));
+        set((state) => ({ pl: enforceStatCaps({ ...state.pl, festivalChoices: choices }) }));
       },
 
       setDataAnalyticsChoice: (choice) => {
-        set((state) => ({ pl: { ...state.pl, dataAnalyticsChoice: choice } }));
+        set((state) => ({ pl: enforceStatCaps({ ...state.pl, dataAnalyticsChoice: choice }) }));
       },
 
       setCryptoStrategy: (strategy) => {
-        set((state) => ({ pl: { ...state.pl, cryptoStrategy: strategy } }));
+        set((state) => ({ pl: enforceStatCaps({ ...state.pl, cryptoStrategy: strategy }) }));
       },
 
       setVASettings: (staff, training, client) => {
         set((state) => ({
-          pl: {
+          pl: enforceStatCaps({
             ...state.pl,
             vaStaff: staff,
             vaTraining: training,
             vaClient: client
-          }
+          })
         }));
       },
 
     setRealEstateChoices: (type, leverage, strategy) => {
       set((state) => ({
-        pl: {
+        pl: enforceStatCaps({
           ...state.pl,
           realEstateType: type,
           realEstateLeverage: leverage,
           realEstateStrategy: strategy
-        }
+        })
       }));
     },
 
     setVCChoices: (stage, sector, investment) => {
       set((state) => ({
-        pl: {
+        pl: enforceStatCaps({
           ...state.pl,
           vcStage: stage,
           vcSector: sector,
           vcInvestment: investment
-        }
+        })
       }));
     },
 
@@ -984,7 +964,7 @@ export const useGameStore = create<GameState>()(
         const newCount = (state.pl.flexAssets[assetId] || 0) + 1;
         const isVending = assetId === 'vending';
 
-        const plAfterPurchase = {
+        const plAfterPurchase = enforceStatCaps({
           ...state.pl,
           bag: state.pl.bag - asset.cost,
           flexAssets: {
@@ -992,7 +972,7 @@ export const useGameStore = create<GameState>()(
             [assetId]: newCount
           },
           vendingCount: isVending ? (state.pl.vendingCount + 1) : state.pl.vendingCount
-        };
+        });
 
         if (isVending) {
           const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
@@ -1019,7 +999,7 @@ export const useGameStore = create<GameState>()(
           }
         } else {
           set({
-            pl: enforceStatCaps(plAfterPurchase),
+            pl: plAfterPurchase,
             news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
           });
         }
@@ -1040,10 +1020,10 @@ export const useGameStore = create<GameState>()(
           timestamp: Date.now(),
         };
         set({
-          pl: {
+          pl: enforceStatCaps({
             ...state.pl,
             actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, 500),
-          },
+          }),
         });
       },
 
@@ -1077,10 +1057,10 @@ export const useGameStore = create<GameState>()(
 
         if (newMilestones.length > 0) {
           set({
-            pl: {
+            pl: enforceStatCaps({
               ...state.pl,
               milestones: [...(state.pl.milestones || []), ...newMilestones],
-            },
+            }),
             news: [`🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`, ...state.news],
           });
         }

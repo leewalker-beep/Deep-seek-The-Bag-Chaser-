@@ -310,7 +310,7 @@ function App() {
               const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
 
               if (showMinigame && hustle.miniGame) {
-                const onComplete = (multiplier: number) => {
+                const handleMinigameComplete = (multiplier: number) => {
                   try {
                     const isDeferred = hustle.id === 'lobbying' || hustle.id === 'disaster';
                     const result = executeHustle(hustle.id, multiplier, false, isDeferred);
@@ -330,14 +330,14 @@ function App() {
                   }
                 };
 
-                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
-                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
-                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
-                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
-                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
-                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
-                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
-                if (hustle.miniGame === 'RotateToScale') return <RotateToScale onComplete={onComplete} />;
+                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'RotateToScale') return <RotateToScale onComplete={handleMinigameComplete} />;
                 if (hustle.miniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
