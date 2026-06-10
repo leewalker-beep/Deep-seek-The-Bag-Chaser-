@@ -53,7 +53,7 @@ export const useGameStore = create<GameState>()(
           currentMarket: 'NORMAL',
           news: ['Game reset. Welcome back.'],
           unlockedHustles: getUnlockedHustles(difficulty),
-          activeTab: difficulty === 1 ? 'ELITE' : 'MUD',
+          activeTab: difficulty === 1 ? 'STREET' : 'MUD',
           activeHustleView: null,
           deathBadge: null,
           fatalCause: null,

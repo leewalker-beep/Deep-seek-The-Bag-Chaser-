@@ -61,10 +61,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
   if (difficulty === 1) { // Trust Fund
     return {
       ...baseStats,
-      bag: 500000000,
-      clout: 1000,
-      aura: 1000,
-      currentTier: 'ELITE',
+      bag: 25000,
+      clout: 30,
+      aura: 30,
+      currentTier: 'STREET',
     };
   } else if (difficulty === 2) { // Middle Grind
     return {
