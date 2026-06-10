@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { showConfetti } from './Confetti';
 
 interface BigWinCelebrationProps {
   onComplete: () => void;
@@ -7,6 +8,10 @@ interface BigWinCelebrationProps {
 }
 
 export const BigWinCelebration: React.FC<BigWinCelebrationProps> = ({ onComplete, amount }) => {
+  useEffect(() => {
+    showConfetti();
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
