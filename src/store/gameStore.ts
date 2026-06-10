@@ -790,11 +790,16 @@ export const useGameStore = create<GameState>()(
             return false;
           }
 
+          const newClout = Math.floor(state.pl.clout * 0.4);
+          const newAura = Math.floor(state.pl.aura * 0.4);
+
           set({
             pl: enforceStatCaps({
               ...state.pl,
               bag: state.pl.bag - req.fee,
               currentTier: nextTier,
+              clout: newClout,
+              aura: newAura,
             }),
             activeTab: nextTier,
             news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
