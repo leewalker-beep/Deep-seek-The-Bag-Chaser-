@@ -12,8 +12,10 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
   const { executeHustle } = useGameStore();
 
   const handleComplete = (multiplier: number) => {
-    executeHustle(hustle.id, multiplier);
-    onComplete();
+    const result = executeHustle(hustle.id, multiplier);
+    if (result.success) {
+      onComplete();
+    }
   };
 
   return (
