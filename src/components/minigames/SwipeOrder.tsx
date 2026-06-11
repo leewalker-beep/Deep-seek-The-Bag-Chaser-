@@ -45,13 +45,14 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
 
   const endGame = useCallback(() => {
     setGameActive(false);
-    const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
+    const accuracy = total > 0 ? score / total : 0;
 
     let multiplier = 0.5;
-    if (accuracy >= 90) multiplier = 2.0;
-    else if (accuracy >= 70) multiplier = 1.5;
-    else if (accuracy >= 60) multiplier = 1.0;
-    else multiplier = 0.5;
+    if (accuracy >= 0.9) multiplier = 5.0;
+    else if (accuracy >= 0.7) multiplier = 2.5;
+    else if (accuracy >= 0.5) multiplier = 1.5;
+    else if (accuracy >= 0.3) multiplier = 1.0;
+    else multiplier = 0.7;
 
     window.setTimeout(() => {
       onComplete(multiplier);
@@ -214,13 +215,14 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
       {/* Result Summary */}
       {!gameActive && (
         <div className="text-center animate-in fade-in zoom-in duration-500">
-          <div className="text-4xl mb-2">{accuracy >= 70 ? '🎉' : accuracy >= 60 ? '👍' : '😅'}</div>
+          <div className="text-4xl mb-2">{accuracy >= 70 ? '🎉' : accuracy >= 50 ? '👍' : '😅'}</div>
           <div className="text-xl font-black text-white">{accuracy}% Accuracy</div>
           <div className="text-[10px] text-slate-400 mt-2">
-            {accuracy >= 90 ? 'Master Distributor! 2x Profit' :
-             accuracy >= 70 ? 'Solid Performance! 1.5x Profit' :
-             accuracy >= 60 ? 'Break Even' :
-             'Losses this time'}
+            {accuracy >= 90 ? 'PERFECT! 5x Profit' :
+             accuracy >= 70 ? 'Great! 2.5x Profit' :
+             accuracy >= 50 ? 'Good! 1.5x Profit' :
+             accuracy >= 30 ? 'Passable. 1x (Break Even)' :
+             'Tough Run. 0.7x (Small Loss)'}
           </div>
         </div>
       )}
