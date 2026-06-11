@@ -81,8 +81,10 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     const selected = shuffled.slice(0, 10);
-    setShuffledProducts(selected);
-    setTimeLeft(selected[0].timeLimit);
+    window.setTimeout(() => {
+      setShuffledProducts(selected);
+      setTimeLeft(selected[0].timeLimit);
+    }, 0);
   }, []);
 
   // Per-product effect
@@ -92,7 +94,9 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
     if (productIndex < shuffledProducts.length && gameActive) {
       const product = shuffledProducts[productIndex];
 
-      setTimeLeft(product.timeLimit);
+      window.setTimeout(() => {
+        setTimeLeft(product.timeLimit);
+      }, 0);
 
       if (timerRef.current) window.clearInterval(timerRef.current);
       const startTime = Date.now();
@@ -111,7 +115,9 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
         if (timerRef.current) window.clearInterval(timerRef.current);
       };
     } else if (productIndex >= shuffledProducts.length && gameActive) {
-      endGame();
+      window.setTimeout(() => {
+        endGame();
+      }, 0);
     }
   }, [productIndex, shuffledProducts, gameActive, handleTimeout, endGame]);
 
