@@ -413,12 +413,12 @@ export const useGameStore = create<GameState>()(
           };
         }
         else if (hustleId === 'global_franchise') {
-          const angle = minigameMultiplier; // 0-180
+          const performance = minigameMultiplier / (state.pl.hustleLevels[hustleId] || 1);
           let cost, passive, risk;
 
-          if (angle < 45) { cost = 5000000; passive = 500000; risk = 0.05; }
-          else if (angle < 90) { cost = 10000000; passive = 1500000; risk = 0.15; }
-          else if (angle < 135) { cost = 20000000; passive = 3000000; risk = 0.30; }
+          if (performance <= 0.35) { cost = 5000000; passive = 500000; risk = 0.05; }
+          else if (performance <= 0.65) { cost = 10000000; passive = 1500000; risk = 0.15; }
+          else if (performance <= 0.85) { cost = 20000000; passive = 3000000; risk = 0.30; }
           else { cost = 40000000; passive = 5000000; risk = 0.50; }
 
           const isExpansionSuccess = Math.random() > risk;

@@ -337,7 +337,12 @@ function App() {
                 if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={handleMinigameComplete} />;
                 if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={handleMinigameComplete} />;
                 if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'RotateToScale') return <RotateToScale onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'RotateToScale') return (
+                  <RotateToScale
+                    level={pl.hustleLevels[hustle.id] || 1}
+                    onComplete={handleMinigameComplete}
+                  />
+                );
                 if (hustle.miniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
