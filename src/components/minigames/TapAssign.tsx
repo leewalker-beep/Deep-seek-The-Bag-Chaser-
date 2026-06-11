@@ -13,11 +13,11 @@ interface Item {
 const COLORS = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-orange-500', 'bg-red-500', 'bg-pink-500'];
 
 export const TapAssign: React.FC<TapAssignProps> = ({ onComplete }) => {
+  const [startTime] = useState(Date.now());
   const [staff, setStaff] = useState<Item[]>([]);
   const [clients, setClients] = useState<Item[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
   const [matches, setMatches] = useState(0);
-  const [startTime] = useState(Date.now());
 
   useEffect(() => {
     // Generate 6 unique colors for matching
@@ -45,9 +45,15 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete }) => {
       setSelectedStaff(null);
 
       if (matches + 1 === 6) {
-        const duration = (Date.now() - startTime) / 1000;
-        // Faster completion = higher multiplier. Base 1.0, max 2.0 if < 5s.
-        const multiplier = Math.max(1.0, Math.min(2.0, 3.0 - (duration / 5)));
+        const elapsed = (Date.now() - startTime) / 1000;
+
+        let multiplier = 1.0;
+        if (elapsed >= 9) multiplier = 0.5;
+        else if (elapsed >= 8) multiplier = 1.25;
+        else if (elapsed >= 7) multiplier = 1.5;
+        else if (elapsed >= 6) multiplier = 2.0;
+        else multiplier = 4.0;
+
         onComplete(multiplier);
       }
     } else {
