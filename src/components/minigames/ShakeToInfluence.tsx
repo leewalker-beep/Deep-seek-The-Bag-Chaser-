@@ -1,57 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface ShakeToInfluenceProps {
   onComplete: (multiplier: number) => void;
 }
 
 export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete }) => {
-  const [maxAccel, setMaxAccel] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [isCapturing, setIsCapturing] = useState(false);
+  const [currentIntensity, setCurrentIntensity] = useState(0);
+  const [holdTime, setHoldTime] = useState(0);
+  const [isInZone, setIsInZone] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(true);
 
-  const timerRef = useRef<number | null>(null);
-  const captureTimerRef = useRef<number | null>(null);
+  const targetMin = 2.5;
+  const targetMax = 3.5;
 
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleFinish(1.0); // Default to gentle on timeout
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const holdTimerRef = useRef<number | null>(null);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (captureTimerRef.current) clearInterval(captureTimerRef.current);
-      window.removeEventListener('devicemotion', handleMotion);
-    };
-  }, []);
-
-  const requestPermission = async () => {
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      try {
-        const response = await (DeviceMotionEvent as any).requestPermission();
-        if (response === 'granted') {
-          setPermissionGranted(true);
-          startCapture();
-        } else {
-          setPermissionGranted(false);
-        }
-      } catch (err) {
-        console.error(err);
-        setPermissionGranted(false);
-      }
-    } else {
-      setPermissionGranted(true);
-      startCapture();
-    }
-  };
-
-  const handleMotion = (event: DeviceMotionEvent) => {
+  const handleMotion = useCallback((event: DeviceMotionEvent) => {
     const accel = event.acceleration;
     if (!accel) return;
 
@@ -61,133 +26,170 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete }
       (accel.z || 0) ** 2
     );
 
-    setMaxAccel((prev) => Math.max(prev, totalAccel));
-  };
+    let intensity: number;
+    if (totalAccel < 5) intensity = 1;
+    else if (totalAccel < 12) intensity = 2;
+    else if (totalAccel < 20) intensity = 3;
+    else intensity = 4;
 
-  const startCapture = () => {
-    setIsCapturing(true);
-    setMaxAccel(0);
-    window.addEventListener('devicemotion', handleMotion);
+    setCurrentIntensity(intensity);
+    setIsInZone(intensity >= targetMin && intensity <= targetMax);
+  }, [targetMin, targetMax]);
 
-    captureTimerRef.current = window.setTimeout(() => {
-      stopCapture();
-    }, 2000);
-  };
-
-  const stopCapture = () => {
+  const endGame = useCallback((finalHoldTime: number) => {
+    setGameActive(false);
     window.removeEventListener('devicemotion', handleMotion);
-    setIsCapturing(false);
-  };
 
-  const handleFinish = (manualMultiplier?: number) => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    let multiplier = 0.5;
+    if (finalHoldTime >= 15) multiplier = 4.0;
+    else if (finalHoldTime >= 10) multiplier = 3.0;
+    else if (finalHoldTime >= 7) multiplier = 2.0;
+    else if (finalHoldTime >= 3) multiplier = 1.0;
+    else multiplier = 0.5;
 
-    let finalMultiplier = manualMultiplier;
-    if (finalMultiplier === undefined) {
-      if (maxAccel < 10) finalMultiplier = 1.0;
-      else if (maxAccel < 20) finalMultiplier = 2.0;
-      else if (maxAccel < 30) finalMultiplier = 3.0;
-      else finalMultiplier = 4.0;
+    setTimeout(() => {
+      onComplete(multiplier);
+    }, 500);
+  }, [handleMotion, onComplete]);
+
+  useEffect(() => {
+    if (!gameActive) return;
+
+    if (isInZone) {
+      if (holdTimerRef.current) return;
+      holdTimerRef.current = window.setInterval(() => {
+        setHoldTime(prev => {
+          const next = prev + 0.1;
+          if (next >= 15) {
+            endGame(next);
+          }
+          return next;
+        });
+      }, 100);
+    } else {
+      if (holdTimerRef.current) {
+        clearInterval(holdTimerRef.current as number);
+        holdTimerRef.current = null;
+      }
     }
 
-    onComplete(finalMultiplier);
+    return () => {
+      if (holdTimerRef.current) {
+        clearInterval(holdTimerRef.current as number);
+        holdTimerRef.current = null;
+      }
+    };
+  }, [isInZone, gameActive, endGame]);
+
+  // Ensure listener is removed on unmount
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('devicemotion', handleMotion);
+    };
+  }, [handleMotion]);
+
+  const startCapture = useCallback(() => {
+    window.addEventListener('devicemotion', handleMotion);
+  }, [handleMotion]);
+
+  const requestPermission = async () => {
+    const DeviceMotion = (window.DeviceMotionEvent as unknown) as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+    if (typeof DeviceMotion.requestPermission === 'function') {
+      try {
+        const response = await DeviceMotion.requestPermission();
+        if (response === 'granted') {
+          setPermissionGranted(true);
+          startCapture();
+        } else {
+          setPermissionGranted(false);
+        }
+      } catch {
+        setPermissionGranted(false);
+      }
+    } else {
+      setPermissionGranted(true);
+      startCapture();
+    }
   };
 
   const getIntensityLabel = () => {
-    if (maxAccel < 10) return { label: 'GENTLE', color: 'text-blue-400' };
-    if (maxAccel < 20) return { label: 'MEDIUM', color: 'text-emerald-400' };
-    if (maxAccel < 30) return { label: 'HARD', color: 'text-orange-400' };
-    return { label: 'VIOLENT', color: 'text-red-500 font-black animate-pulse' };
+    if (currentIntensity === 1) return { label: 'GENTLE', color: 'text-blue-400' };
+    if (currentIntensity === 2) return { label: 'MEDIUM', color: 'text-emerald-400' };
+    if (currentIntensity === 3) return { label: 'STRONG', color: 'text-yellow-400' };
+    return { label: 'VIOLENT', color: 'text-red-500' };
   };
 
   const { label, color } = getIntensityLabel();
 
   return (
-    <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center select-none touch-none min-h-[350px] flex flex-col justify-center items-center relative">
-      <div className="absolute top-4 right-4 text-[10px] font-mono text-slate-500">
-        TIMEOUT: {timeLeft}s
-      </div>
-
-      <div className="text-[10px] text-slate-500 uppercase font-bold mb-4">
-        SHAKE TO INFLUENCE POLICY
+    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+      <div className="absolute top-8 left-0 right-0 text-center">
+        <h2 className="text-2xl font-black text-white mb-1">LOBBYING FIRM</h2>
+        <p className="text-[10px] text-slate-500 uppercase">SHAKE TO INFLUENCE POLICY</p>
       </div>
 
       {!permissionGranted && permissionGranted !== false && (
-        <button
-          onClick={requestPermission}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold mb-4 transition-all active:scale-95 shadow-lg"
-        >
-          START SENSORS
+        <button onClick={requestPermission} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold">
+          ACTIVATE SENSORS
         </button>
       )}
 
-      {permissionGranted === false && (
-        <div className="text-red-400 text-xs mb-4 bg-red-400/10 p-3 rounded-lg border border-red-400/20">
-          Sensor access denied or not available. Use buttons below.
-        </div>
-      )}
-
       {permissionGranted === true && (
-        <div className="flex flex-col items-center gap-6 w-full">
-          <div className={`text-6xl transition-transform duration-75 ${isCapturing ? 'animate-bounce scale-110' : ''}`}>
-            🤝
+        <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 uppercase">TARGET LEVEL</div>
+            <div className="text-5xl font-black text-yellow-400">3</div>
           </div>
 
-          <div className="space-y-1">
-            <div className={`text-xl font-black ${color}`}>
-              {label}
+          <div className="w-full">
+            <div className="flex justify-between text-[8px] text-slate-500 mb-1">
+              <span>GENTLE</span><span>MEDIUM</span><span>STRONG</span><span>VIOLENT</span>
             </div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">
-              Peak Accel: {maxAccel.toFixed(1)} m/s²
+            <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden flex">
+              <div className={`w-1/4 h-full ${currentIntensity >= 1 ? 'bg-blue-500' : 'bg-slate-700'}`} />
+              <div className={`w-1/4 h-full ${currentIntensity >= 2 ? 'bg-emerald-500' : 'bg-slate-700'}`} />
+              <div className={`w-1/4 h-full ${currentIntensity >= 3 ? 'bg-yellow-500' : 'bg-slate-700'}`} />
+              <div className={`w-1/4 h-full ${currentIntensity >= 4 ? 'bg-red-500' : 'bg-slate-700'}`} />
+            </div>
+            <div className="text-center mt-2">
+              <span className={`text-sm font-bold ${color}`}>{label}</span>
             </div>
           </div>
 
-          <div className="w-full max-w-[200px] bg-slate-800 h-1.5 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${maxAccel > 30 ? 'bg-red-500' : maxAccel > 20 ? 'bg-orange-500' : 'bg-emerald-500'}`}
-              style={{ width: `${Math.min(100, (maxAccel / 40) * 100)}%` }}
-            />
+          <div className={`text-center p-3 rounded-xl ${isInZone ? 'bg-emerald-500/20 border border-emerald-500' : 'bg-slate-800/50'}`}>
+            <div className="text-[10px] text-slate-400 uppercase">SHAKE AS LONG AS YOU CAN</div>
+            <div className={`text-3xl font-mono font-bold ${isInZone ? 'text-emerald-400' : 'text-slate-500'}`}>
+              {holdTime.toFixed(1)}s
+            </div>
           </div>
 
-          {!isCapturing ? (
-            <button
-              onClick={startCapture}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all active:scale-95 shadow-xl"
-            >
-              {maxAccel > 0 ? 'RE-RECORD SHAKE' : 'RECORD SHAKE'}
-            </button>
-          ) : (
-            <div className="w-full py-4 bg-slate-800 text-emerald-400 font-black rounded-xl border border-emerald-500/50 animate-pulse">
-              SHAKING...
+          <div className="w-full mt-4 pt-4 border-t border-slate-800">
+            <div className="text-[8px] text-slate-600 text-center mb-2">MANUAL TEST MODE</div>
+            <div className="grid grid-cols-4 gap-2">
+              <button onClick={() => { setIsInZone(true); setCurrentIntensity(3); }} className="p-2 bg-slate-800 rounded text-[10px]">SET LEVEL 3</button>
+              <button onClick={() => endGame(holdTime)} className="p-2 bg-emerald-600 rounded text-[10px] font-bold">FINISH</button>
             </div>
-          )}
-
-          {maxAccel > 0 && !isCapturing && (
-             <button
-              onClick={() => handleFinish()}
-              className="w-full py-4 bg-white text-slate-900 rounded-xl font-black transition-all active:scale-95 hover:bg-slate-200"
-            >
-              SUBMIT INFLUENCE
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Show manual override if sensors not activated or not producing results */}
-      {(permissionGranted === false || !permissionGranted || (permissionGranted === true && !isCapturing && maxAccel === 0)) && (
-        <div className="w-full space-y-4">
-          <div className="text-[10px] text-slate-500 uppercase font-mono mb-2">Manual Override</div>
-          <div className="grid grid-cols-2 gap-3 w-full">
-            <button onClick={() => handleFinish(1.0)} className="p-4 bg-slate-800 rounded-xl text-[10px] font-black border border-blue-500/30 text-blue-400 active:scale-95 transition-all">GENTLE</button>
-            <button onClick={() => handleFinish(2.0)} className="p-4 bg-slate-800 rounded-xl text-[10px] font-black border border-emerald-500/30 text-emerald-400 active:scale-95 transition-all">MEDIUM</button>
-            <button onClick={() => handleFinish(3.0)} className="p-4 bg-slate-800 rounded-xl text-[10px] font-black border border-orange-500/30 text-orange-400 active:scale-95 transition-all">HARD</button>
-            <button onClick={() => handleFinish(4.0)} className="p-4 bg-slate-800 rounded-xl text-[10px] font-black border border-red-500/30 text-red-500 active:scale-95 transition-all">VIOLENT</button>
           </div>
         </div>
       )}
 
-      <div className="mt-8 text-[10px] text-slate-500 italic max-w-[220px] leading-relaxed">
-        "A gentle nudge or a violent shove—how far are you willing to go?"
+      {(permissionGranted === false || (!permissionGranted && permissionGranted !== null)) && (
+        <div className="w-full max-w-sm space-y-4">
+          <div className="text-[10px] text-slate-500 text-center">Manual Override</div>
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => { setCurrentIntensity(1); setIsInZone(false); }} className="p-4 bg-slate-800 rounded-xl text-[10px]">GENTLE</button>
+            <button onClick={() => { setCurrentIntensity(2); setIsInZone(false); }} className="p-4 bg-slate-800 rounded-xl text-[10px]">MEDIUM</button>
+            <button onClick={() => { setCurrentIntensity(3); setIsInZone(true); }} className="p-4 bg-emerald-800 rounded-xl text-[10px] text-emerald-300">STRONG (TARGET)</button>
+            <button onClick={() => { setCurrentIntensity(4); setIsInZone(false); }} className="p-4 bg-slate-800 rounded-xl text-[10px]">VIOLENT</button>
+          </div>
+          <button onClick={() => endGame(holdTime)} className="w-full py-3 bg-emerald-600 rounded-xl font-bold">COMPLETE</button>
+        </div>
+      )}
+
+      <div className="absolute bottom-8 text-center">
+        <p className="text-[8px] text-slate-600">Maintain LEVEL 3 as long as you can. Longer = better rewards.</p>
       </div>
     </div>
   );
