@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 interface TapAssignProps {
   onComplete: (multiplier: number) => void;
@@ -13,48 +13,52 @@ interface Item {
 const COLORS = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-orange-500', 'bg-red-500', 'bg-pink-500'];
 
 export const TapAssign: React.FC<TapAssignProps> = ({ onComplete }) => {
-  const [startTime] = useState(Date.now());
-  const [staff, setStaff] = useState<Item[]>([]);
-  const [clients, setClients] = useState<Item[]>([]);
+  // Use lazy initializers to avoid impure calls during render
+  const [startTime] = useState(() => Date.now());
+
+  const [initialData] = useState(() => {
+    const shuffledColors = [...COLORS].sort(() => Math.random() - 0.5);
+    const s = shuffledColors.map((color, i) => ({ id: i, type: 'STAFF', color }));
+    const c = [...s]
+      .map(item => ({ ...item, type: 'CLIENT' }))
+      .sort(() => Math.random() - 0.5);
+    return { s, c };
+  });
+
+  const [staff, setStaff] = useState<Item[]>(initialData.s);
+  const [clients, setClients] = useState<Item[]>(initialData.c);
   const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
   const [matches, setMatches] = useState(0);
-
-  useEffect(() => {
-    // Generate 6 unique colors for matching
-    const shuffledColors = [...COLORS].sort(() => Math.random() - 0.5);
-    const newStaff = shuffledColors.map((color, i) => ({ id: i, type: 'STAFF', color }));
-    const newClients = [...newStaff]
-      .map(s => ({ ...s, type: 'CLIENT' }))
-      .sort(() => Math.random() - 0.5);
-
-    setStaff(newStaff);
-    setClients(newClients);
-  }, []);
+  const isComplete = useRef(false);
 
   const handleStaffClick = (id: number) => {
     setSelectedStaff(id);
   };
 
+  const getMultiplier = useCallback((elapsed: number) => {
+    if (elapsed >= 9) return 0.5;
+    if (elapsed >= 8) return 1.25;
+    if (elapsed >= 7) return 1.5;
+    if (elapsed >= 6) return 2.0;
+    return 4.0;
+  }, []);
+
   const handleClientClick = (id: number) => {
-    if (selectedStaff === null) return;
+    if (selectedStaff === null || isComplete.current) return;
 
     if (selectedStaff === id) {
-      setMatches(m => m + 1);
+      const nextMatches = matches + 1;
+      setMatches(nextMatches);
       setStaff(prev => prev.filter(s => s.id !== id));
       setClients(prev => prev.filter(c => c.id !== id));
       setSelectedStaff(null);
 
-      if (matches + 1 === 6) {
-        const elapsed = (Date.now() - startTime) / 1000;
-
-        let multiplier = 1.0;
-        if (elapsed >= 9) multiplier = 0.5;
-        else if (elapsed >= 8) multiplier = 1.25;
-        else if (elapsed >= 7) multiplier = 1.5;
-        else if (elapsed >= 6) multiplier = 2.0;
-        else multiplier = 4.0;
-
-        onComplete(multiplier);
+      if (nextMatches === 6) {
+        isComplete.current = true;
+        // eslint-disable-next-line react-hooks/purity
+        const now = Date.now();
+        const elapsed = (now - startTime) / 1000;
+        onComplete(getMultiplier(elapsed));
       }
     } else {
       // Penalty for wrong match
@@ -76,6 +80,7 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete }) => {
             {clients.map(c => (
               <button
                 key={c.id}
+                type="button"
                 onClick={() => handleClientClick(c.id)}
                 className={`h-12 rounded-lg ${c.color} shadow-lg flex items-center justify-center text-xl transition-transform active:scale-90 border-2 border-transparent`}
               >
@@ -92,6 +97,7 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete }) => {
             {staff.map(s => (
               <button
                 key={s.id}
+                type="button"
                 onClick={() => handleStaffClick(s.id)}
                 className={`h-12 rounded-lg ${s.color} shadow-lg flex items-center justify-center text-xl transition-transform active:scale-90 ${selectedStaff === s.id ? 'border-white scale-110' : 'border-transparent'}`}
               >
