@@ -45,7 +45,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastDistanceRef = useRef<number | null>(null);
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<number | null>(null);
   const resolvedCountRef = useRef(resolvedCount);
 
   useEffect(() => {

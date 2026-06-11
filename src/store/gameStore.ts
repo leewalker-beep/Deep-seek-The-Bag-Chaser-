@@ -376,67 +376,36 @@ export const useGameStore = create<GameState>()(
           };
         }
         else if (hustleId === 'lobbying') {
-          const intensity = Math.floor(minigameMultiplier); // 1, 2, 3, or 4
-          let yieldCash = 0, heatHit = 5, successRate = 0.5;
-          let label = 'gentle';
-
-          if (intensity === 1) { yieldCash = 500000; heatHit = 5; successRate = 0.5; label = 'gentle'; }
-          else if (intensity === 2) { yieldCash = 2000000; heatHit = 10; successRate = 0.7; label = 'medium'; }
-          else if (intensity === 3) { yieldCash = 10000000; heatHit = 20; successRate = 0.3; label = 'hard'; }
-          else if (intensity === 4) { yieldCash = 50000000; heatHit = 40; successRate = 0.1; label = 'violent'; }
-
-          const isLobbySuccess = Math.random() < successRate;
-          success = isLobbySuccess;
-          if (isLobbySuccess) addLocalTicker(`✅ Influence successful (${label})! +$${yieldCash.toLocaleString()}`, 'text-emerald-400');
-          else addLocalTicker(`❌ Influence failed (${label})! Investment lost and heat increased.`, 'text-red-400');
-
-          result = {
-            ...result,
-            yieldCash: isLobbySuccess ? yieldCash : 0,
-            yieldClout: isLobbySuccess ? 100 : -50,
-            heatHit: isLobbySuccess ? heatHit : (heatHit * 2),
-          };
+          const intensity = Math.min(4, Math.max(1, Math.floor(minigameMultiplier || 1)));
+          const base = 5000000;
+          const cost = base;
+          const yieldCash = base * intensity;
+          const yieldClout = 100 * intensity;
+          const yieldAura = 50 * intensity;
+          const heatHit = 10 * intensity;
+          result = { cost, yieldCash, yieldClout, yieldAura, heatHit, mentalHit: -5, shieldTurns: 0 };
+          success = true;
         }
         else if (hustleId === 'disaster') {
-          const accuracy = minigameMultiplier; // 0.0 to 1.0
-          let costMult = 2.0;
-          if (accuracy >= 0.9) { costMult = 0.5; addLocalTicker('🎯 Precise assessment! Costs reduced by 50%.', 'text-emerald-400'); }
-          else if (accuracy >= 0.8) { costMult = 0.75; addLocalTicker('✅ Good assessment! Costs reduced by 25%.', 'text-blue-400'); }
-          else { addLocalTicker('❌ Poor assessment! Costs doubled.', 'text-red-400'); }
-
-
-          result = {
-            ...result,
-            cost: result.cost * costMult,
-            yieldClout: Math.floor(50 * (accuracy + 0.5)),
-            yieldAura: Math.floor(25 * (accuracy + 0.5)),
-          };
+          const crisisRatio = Math.min(1, Math.max(0, (minigameMultiplier || 0.5) / 4));
+          const base = 10000000;
+          const cost = base;
+          const yieldCash = base * crisisRatio * 2;
+          const yieldClout = 100 * crisisRatio;
+          const yieldAura = 50 * crisisRatio;
+          result = { cost, yieldCash, yieldClout, yieldAura, heatHit: 15, mentalHit: -10, shieldTurns: 0 };
+          success = true;
         }
         else if (hustleId === 'global_franchise') {
-          const performance = minigameMultiplier / (state.pl.hustleLevels[hustleId] || 1);
-          let cost, passive, risk;
-
-          if (performance <= 0.35) { cost = 5000000; passive = 500000; risk = 0.05; }
-          else if (performance <= 0.65) { cost = 10000000; passive = 1500000; risk = 0.15; }
-          else if (performance <= 0.85) { cost = 20000000; passive = 3000000; risk = 0.30; }
-          else { cost = 40000000; passive = 5000000; risk = 0.50; }
-
-          const isExpansionSuccess = Math.random() > risk;
-          success = isExpansionSuccess;
-          if (!isExpansionSuccess) {
-             addLocalTicker('❌ Global expansion failed! Investment lost.', 'text-red-400');
-             result = { ...result, cost: cost * market.expenseMultiplier, yieldCash: 0, yieldClout: 0, yieldAura: 0 };
-          } else {
-             addLocalTicker(`🌎 Global expansion successful! Passive income boosted.`, 'text-emerald-400');
-             result = {
-               ...result,
-               cost: cost * market.expenseMultiplier,
-               yieldCash: 0,
-               yieldClout: 200,
-               yieldAura: 100,
-               passiveAdded: (levelData.passiveYield || 0) + passive
-             };
-          }
+          const territories = Math.min(6, Math.max(1, Math.floor(minigameMultiplier || 1)));
+          const base = 5000000;
+          const cost = base;
+          const yieldCash = base * territories;
+          const yieldClout = 150 * territories;
+          const yieldAura = 75 * territories;
+          const passiveAdded = 50000 * territories;
+          result = { cost, yieldCash, yieldClout, yieldAura, passiveAdded, heatHit: 5, mentalHit: -5, shieldTurns: 0 };
+          success = true;
         }
         else if (hustleId === 'real_estate_empire') {
           const type = state.pl.realEstateType;
