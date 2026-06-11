@@ -3,27 +3,66 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 interface Product {
   id: number;
   name: string;
-  isReal: boolean;
+  type: 'real' | 'fake' | 'random';
   timeLimit: number;
 }
 
 const PRODUCTS: Product[] = [
-  { id: 1, name: 'Nike Air Max', isReal: true, timeLimit: 1.5 },
-  { id: 2, name: 'Nake Air Max', isReal: false, timeLimit: 1.5 },
-  { id: 3, name: 'Supreme Box Logo', isReal: true, timeLimit: 1.5 },
-  { id: 4, name: 'Suprme Box Logo', isReal: false, timeLimit: 1.5 },
-  { id: 5, name: 'Rolex Submariner', isReal: true, timeLimit: 1.5 },
-  { id: 6, name: 'Rolax Submariner', isReal: false, timeLimit: 1.5 },
-  { id: 7, name: 'Louis Vuitton Bag', isReal: true, timeLimit: 1.5 },
-  { id: 8, name: 'Louis Vuitton Bag (Fake)', isReal: false, timeLimit: 1.5 },
-  { id: 9, name: 'Apple iPhone 15', isReal: true, timeLimit: 1.5 },
-  { id: 10, name: 'Apple iPhone 15 Pro (Fake)', isReal: false, timeLimit: 1.5 },
-  { id: 11, name: 'Adidas Yeezy', isReal: true, timeLimit: 1.5 },
-  { id: 12, name: 'Adidas Yezy', isReal: false, timeLimit: 1.5 },
-  { id: 13, name: 'Gucci Belt', isReal: true, timeLimit: 1.5 },
-  { id: 14, name: 'Guci Belt', isReal: false, timeLimit: 1.5 },
-  { id: 15, name: 'PS5 Console', isReal: true, timeLimit: 1.5 },
-  { id: 16, name: 'PS5 Pro (Fake)', isReal: false, timeLimit: 1.5 },
+  // Level 1 - Streetwear (Obvious)
+  { id: 1, name: 'NIKE', type: 'real', timeLimit: 1.5 },
+  { id: 2, name: 'NAH-KE', type: 'fake', timeLimit: 1.5 },
+  { id: 3, name: 'ADIDAS', type: 'real', timeLimit: 1.5 },
+  { id: 4, name: 'ADIDONT', type: 'fake', timeLimit: 1.5 },
+  { id: 5, name: 'OFF-WHITE', type: 'real', timeLimit: 1.5 },
+  { id: 6, name: 'ON-WHITE', type: 'fake', timeLimit: 1.5 },
+  { id: 7, name: 'JORDAN', type: 'real', timeLimit: 1.5 },
+  { id: 8, name: 'JORDOWN', type: 'fake', timeLimit: 1.5 },
+  { id: 9, name: 'SUPREME', type: 'real', timeLimit: 1.5 },
+  { id: 10, name: 'SO PREME', type: 'fake', timeLimit: 1.5 },
+  { id: 11, name: 'VANS', type: 'real', timeLimit: 1.5 },
+  { id: 12, name: 'VANS?', type: 'random', timeLimit: 1.5 },
+  { id: 13, name: 'YEEZY', type: 'real', timeLimit: 1.5 },
+  { id: 14, name: 'JEEZY', type: 'fake', timeLimit: 1.5 },
+  { id: 15, name: 'BAPE', type: 'real', timeLimit: 1.5 },
+  { id: 16, name: 'BAPÉ', type: 'fake', timeLimit: 1.5 },
+  { id: 17, name: 'PALACE', type: 'real', timeLimit: 1.5 },
+  { id: 18, name: 'PLACE', type: 'fake', timeLimit: 1.5 },
+  { id: 19, name: 'FEAR OF GOD', type: 'real', timeLimit: 1.5 },
+  { id: 20, name: 'FEAR OF DOG', type: 'fake', timeLimit: 1.5 },
+
+  // Level 2 - Mid-Luxury (Obvious + Random)
+  { id: 21, name: 'GUCCI', type: 'real', timeLimit: 1.5 },
+  { id: 22, name: 'GOOCHI', type: 'fake', timeLimit: 1.5 },
+  { id: 23, name: 'LOUIS VUITTON', type: 'real', timeLimit: 1.5 },
+  { id: 24, name: 'LOUIS OUITION', type: 'fake', timeLimit: 1.5 },
+  { id: 25, name: 'RAY-BAN', type: 'real', timeLimit: 1.5 },
+  { id: 26, name: 'BAN RAY', type: 'fake', timeLimit: 1.5 },
+  { id: 27, name: 'BURBERRY', type: 'real', timeLimit: 1.5 },
+  { id: 28, name: 'BLUEBERRY', type: 'fake', timeLimit: 1.5 },
+  { id: 29, name: 'VERSACE', type: 'real', timeLimit: 1.5 },
+  { id: 30, name: 'VER-SLAY', type: 'fake', timeLimit: 1.5 },
+  { id: 31, name: 'PRADA?', type: 'random', timeLimit: 1.5 },
+  { id: 32, name: 'FENDI?', type: 'random', timeLimit: 1.5 },
+  { id: 33, name: 'CELINE?', type: 'random', timeLimit: 1.5 },
+  { id: 34, name: 'GIVENCHY?', type: 'random', timeLimit: 1.5 },
+  { id: 35, name: 'LOEWE?', type: 'random', timeLimit: 1.5 },
+
+  // Level 3 - Ultra-Luxury (Obvious + Random)
+  { id: 36, name: 'ROLEX', type: 'real', timeLimit: 1.5 },
+  { id: 37, name: 'ROLL-X', type: 'fake', timeLimit: 1.5 },
+  { id: 38, name: 'AUDEMARS PIGUET', type: 'real', timeLimit: 1.5 },
+  { id: 39, name: 'AUDEMARS PIG', type: 'fake', timeLimit: 1.5 },
+  { id: 40, name: 'PATEK PHILIPPE', type: 'real', timeLimit: 1.5 },
+  { id: 41, name: 'PATEK PHILLIP', type: 'fake', timeLimit: 1.5 },
+  { id: 42, name: 'RICHARD MILLE', type: 'real', timeLimit: 1.5 },
+  { id: 43, name: 'RICHARD MILL', type: 'fake', timeLimit: 1.5 },
+  { id: 44, name: 'HERMÈS', type: 'real', timeLimit: 1.5 },
+  { id: 45, name: 'HER-MESS', type: 'fake', timeLimit: 1.5 },
+  { id: 46, name: 'BUGATTI?', type: 'random', timeLimit: 1.5 },
+  { id: 47, name: 'ROLLS-ROYCE?', type: 'random', timeLimit: 1.5 },
+  { id: 48, name: 'HUBLOT?', type: 'random', timeLimit: 1.5 },
+  { id: 49, name: 'CARTI-NO?', type: 'random', timeLimit: 1.5 },
+  { id: 50, name: 'GRAFF?', type: 'random', timeLimit: 1.5 },
 ];
 
 interface SwipeOrderProps {
@@ -31,7 +70,7 @@ interface SwipeOrderProps {
 }
 
 export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
-  const [shuffledProducts, setShuffledProducts] = useState<Product[]>([]);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [productIndex, setProductIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
@@ -39,15 +78,25 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
   const [gameActive, setGameActive] = useState(true);
   const [offset, setOffset] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
-
+  const [isRealForRandom, setIsRealForRandom] = useState<Map<number, boolean>>(new Map());
   const touchStart = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  // Shuffle products at start
+  const [shuffledProducts] = useState(() => {
+    const shuffled = [...PRODUCTS];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 10);
+  });
 
   const endGame = useCallback(() => {
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
 
-    let multiplier = 0.5;
+    let multiplier = 0.7;
     if (accuracy >= 0.9) multiplier = 5.0;
     else if (accuracy >= 0.7) multiplier = 2.5;
     else if (accuracy >= 0.5) multiplier = 1.5;
@@ -59,40 +108,33 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
     }, 1000);
   }, [score, total, onComplete]);
 
-  const handleNext = useCallback(() => {
-    setResult(null);
-    setOffset(0);
-    setProductIndex(prev => prev + 1);
-  }, []);
-
   const handleTimeout = useCallback(() => {
     setResult('wrong');
     setTotal(prev => prev + 1);
     window.setTimeout(() => {
-      handleNext();
+      setProductIndex(prev => prev + 1);
     }, 500);
-  }, [handleNext]);
-
-  // Shuffle on mount
-  useEffect(() => {
-    const shuffled = [...PRODUCTS];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const selected = shuffled.slice(0, 10);
-    setShuffledProducts(selected);
-    setTimeLeft(selected[0].timeLimit);
   }, []);
 
-  // Per-product effect
+  // For random products, pre-determine if they are real or fake for this session
   useEffect(() => {
-    if (shuffledProducts.length === 0) return;
+    const randomMap = new Map<number, boolean>();
+    shuffledProducts.forEach(product => {
+      if (product.type === 'random') {
+        randomMap.set(product.id, Math.random() < 0.5);
+      }
+    });
+    setIsRealForRandom(randomMap);
+  }, [shuffledProducts]);
 
+  // Main game loop effect
+  useEffect(() => {
     if (productIndex < shuffledProducts.length && gameActive) {
       const product = shuffledProducts[productIndex];
-
+      setCurrentProduct(product);
       setTimeLeft(product.timeLimit);
+      setResult(null);
+      setOffset(0);
 
       if (timerRef.current) window.clearInterval(timerRef.current);
       const startTime = Date.now();
@@ -106,23 +148,29 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
           handleTimeout();
         }
       }, 50);
-
-      return () => {
-        if (timerRef.current) window.clearInterval(timerRef.current);
-      };
     } else if (productIndex >= shuffledProducts.length && gameActive) {
       endGame();
     }
-  }, [productIndex, shuffledProducts, gameActive, handleTimeout, endGame]);
+
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productIndex, shuffledProducts]);
+
+  const isProductReal = (product: Product): boolean => {
+    if (product.type === 'real') return true;
+    if (product.type === 'fake') return false;
+    return isRealForRandom.get(product.id) ?? false;
+  };
 
   const handleSwipe = (direction: 'left' | 'right') => {
-    const currentProduct = shuffledProducts[productIndex];
     if (!gameActive || !currentProduct || result !== null) return;
 
     if (timerRef.current) window.clearInterval(timerRef.current);
 
-    const isCorrect = (direction === 'right' && currentProduct.isReal) ||
-                      (direction === 'left' && !currentProduct.isReal);
+    const isReal = isProductReal(currentProduct);
+    const isCorrect = (direction === 'right' && isReal) || (direction === 'left' && !isReal);
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -134,7 +182,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
     setTotal(prev => prev + 1);
 
     window.setTimeout(() => {
-      handleNext();
+      setProductIndex(prev => prev + 1);
     }, 400);
   };
 
@@ -145,7 +193,8 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
   const handleTouchMove = (e: React.TouchEvent) => {
     if (touchStart.current !== null) {
       const currentX = e.targetTouches[0].clientX;
-      setOffset(currentX - touchStart.current);
+      const diff = currentX - touchStart.current;
+      setOffset(Math.min(Math.max(diff, -100), 100));
     }
   };
 
@@ -168,7 +217,6 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
-      {/* Header */}
       <div className="absolute top-8 left-0 right-0 text-center">
         <div className="text-[10px] text-slate-500 uppercase font-bold">Dropshipping</div>
         <div className="text-2xl font-black text-white">Sort the Goods</div>
@@ -184,8 +232,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
         </div>
       </div>
 
-      {/* Product Card */}
-      {shuffledProducts[productIndex] && gameActive && (
+      {currentProduct && gameActive && (
         <div
           className={`w-full max-w-sm bg-slate-900 rounded-2xl p-8 text-center border-2 transition-all duration-200 ${
             result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
@@ -198,21 +245,19 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
           style={{ transform: `translateX(${offset}px) rotate(${offset * 0.1}deg)` }}
         >
           <div className="text-6xl mb-4">📦</div>
-          <div className="text-2xl font-black text-white mb-2">{shuffledProducts[productIndex].name}</div>
+          <div className="text-2xl font-black text-white mb-2">{currentProduct.name}</div>
           <div className="text-[10px] text-slate-500 uppercase tracking-wider">Swipe RIGHT for REAL • Swipe LEFT for FAKE</div>
 
-          {/* Timer Bar */}
           <div className="mt-6 w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500 transition-all duration-50"
-              style={{ width: `${(timeLeft / (shuffledProducts[productIndex]?.timeLimit || 1.5)) * 100}%` }}
+              style={{ width: `${(timeLeft / currentProduct.timeLimit) * 100}%` }}
             />
           </div>
           <div className="text-[8px] text-slate-600 mt-1">{timeLeft.toFixed(1)}s</div>
         </div>
       )}
 
-      {/* Result Summary */}
       {!gameActive && (
         <div className="text-center animate-in fade-in zoom-in duration-500">
           <div className="text-4xl mb-2">{accuracy >= 70 ? '🎉' : accuracy >= 50 ? '👍' : '😅'}</div>
@@ -221,13 +266,12 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
             {accuracy >= 90 ? 'PERFECT! 5x Profit' :
              accuracy >= 70 ? 'Great! 2.5x Profit' :
              accuracy >= 50 ? 'Good! 1.5x Profit' :
-             accuracy >= 30 ? 'Passable. 1x (Break Even)' :
-             'Tough Run. 0.7x (Small Loss)'}
+             accuracy >= 30 ? 'Passable. 1x Profit' :
+             'Tough Run. 0.7x Profit'}
           </div>
         </div>
       )}
 
-      {/* Instructions */}
       {gameActive && (
         <div className="absolute bottom-8 left-0 right-0 text-center">
           <div className="flex justify-center gap-8">
