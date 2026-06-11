@@ -340,24 +340,40 @@ export const useGameStore = create<GameState>()(
           const training = state.pl.vaTraining || 'none';
           const client = state.pl.vaClient || 'small';
 
-          const cost = { 5: 10000, 10: 25000, 20: 50000 }[staff];
-          const trainingMult = { none: 1.0, basic: 1.3, advanced: 1.6 }[training];
-          const baseYield = { small: 50000, medium: 200000, large: 1000000 }[client];
+          const costMap = { 5: 10000, 10: 25000, 20: 50000 };
+          const cost = costMap[staff as keyof typeof costMap];
 
-          const successChance = (staff / 20) * trainingMult;
-          let yieldCash = baseYield * market.yieldMultiplier;
-          let yieldClout = result.yieldClout;
+          const trainingMult = { none: 1.0, basic: 1.3, advanced: 1.6 };
+          const trainingMultiplier = trainingMult[training as keyof typeof trainingMult];
 
-          if (Math.random() > successChance) {
+          const baseYieldMap = { small: 50000, medium: 200000, large: 1000000 };
+          const baseYield = baseYieldMap[client as keyof typeof baseYieldMap];
+
+          const successChance = Math.min(0.95, (staff / 20) * trainingMultiplier);
+          const isSuccessRoll = Math.random() < successChance;
+
+          let yieldCash = Math.floor(baseYield * market.yieldMultiplier);
+          let yieldClout = Math.floor(20 * trainingMultiplier);
+          let yieldAura = Math.floor(10 * trainingMultiplier);
+
+          if (!isSuccessRoll) {
             success = false;
-            yieldCash = 0;
-            yieldClout -= 10;
+            yieldCash = Math.floor(yieldCash * 0.3);
+            yieldClout = Math.floor(yieldClout * 0.5);
+            yieldAura = Math.floor(yieldAura * 0.5);
             addLocalTicker('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
           } else {
             success = true;
           }
 
-          result = { ...result, cost: cost * market.expenseMultiplier, yieldCash, yieldClout };
+          result = {
+            ...result,
+            cost: cost * market.expenseMultiplier,
+            yieldCash,
+            yieldClout,
+            yieldAura,
+            passiveAdded: Math.floor(baseYieldMap[client as keyof typeof baseYieldMap] * 0.08) // 8% of base as monthly passive
+          };
         }
         else if (hustleId === 'lobbying') {
           const intensity = Math.floor(minigameMultiplier); // 1, 2, 3, or 4
@@ -504,7 +520,7 @@ export const useGameStore = create<GameState>()(
         // Apply results
         const newBag = state.pl.bag - result.cost + result.yieldCash;
         const newDynamicPassives = { ...state.pl.dynamicPassives };
-        if (hustleId === 'global_franchise' && result.passiveAdded !== undefined) {
+        if (result.passiveAdded !== undefined) {
            newDynamicPassives[hustleId] = (newDynamicPassives[hustleId] || 0) + (result.passiveAdded - (levelData.passiveYield || 0));
         }
         const newClout = state.pl.clout + result.yieldClout;
@@ -528,6 +544,7 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
+          dynamicPassives: newDynamicPassives,
           rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
           flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
           // We don't add result.shieldTurns here because we want it to survive advanceMonth below
@@ -558,7 +575,7 @@ export const useGameStore = create<GameState>()(
           yieldAura: result.yieldAura,
           netCash: result.yieldCash - result.cost,
           success: success,
-          passiveAdded: levelData.passiveYield || 0,
+          passiveAdded: result.passiveAdded !== undefined ? result.passiveAdded : (levelData.passiveYield || 0),
           marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
           marketName: market.name,
           variation: 0
