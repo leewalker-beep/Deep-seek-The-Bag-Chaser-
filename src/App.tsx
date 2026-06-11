@@ -313,7 +313,7 @@ function App() {
                 const handleMinigameComplete = (multiplier: number) => {
                   try {
                     const isDeferred = hustle.id === 'lobbying' || hustle.id === 'disaster';
-                    const result = executeHustle(hustle.id, multiplier, false, isDeferred);
+                    const result = executeHustle(hustle.id, multiplier, undefined, isDeferred);
                     setActiveHustleResult({
                       hustleId: hustle.id,
                       ...result
