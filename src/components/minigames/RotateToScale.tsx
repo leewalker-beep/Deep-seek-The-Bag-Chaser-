@@ -1,149 +1,356 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+interface Coordinate {
+  target: number;
+  completed: boolean;
+}
 
 interface RotateToScaleProps {
   onComplete: (multiplier: number) => void;
+  level: number;
 }
 
-export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete }) => {
-  const [angle, setAngle] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level }) => {
+  const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentAngle, setCurrentAngle] = useState(0);
+  const [holdTime, setHoldTime] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
+  const [gameActive, setGameActive] = useState(true);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const [result, setResult] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(30);
+
+  const holdTimerRef = useRef<number | null>(null);
+  const countdownTimerRef = useRef<number | null>(null);
+
+  // Refs to avoid stale closures in event listener
+  const stateRef = useRef({
+    currentIndex,
+    coordinates,
+    isHolding,
+    gameActive
+  });
 
   useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleFinish();
-          return 0;
-        }
-        return prev - 1;
+    stateRef.current = { currentIndex, coordinates, isHolding, gameActive };
+  }, [currentIndex, coordinates, isHolding, gameActive]);
+
+  // Number of coordinates based on level
+  const getCoordinateCount = useCallback(() => {
+    return level * 2;
+  }, [level]);
+
+  // Generate random coordinates
+  useEffect(() => {
+    const count = getCoordinateCount();
+    const newCoords: Coordinate[] = [];
+    for (let i = 0; i < count; i++) {
+      newCoords.push({
+        target: Math.floor(Math.random() * 180) + 1, // 1-180 degrees
+        completed: false,
       });
-    }, 1000);
+    }
+    setCoordinates(newCoords);
+  }, [getCoordinateCount]);
+
+  const endGame = useCallback((finalCoordinates: Coordinate[]) => {
+    setGameActive(false);
+
+    const completedCount = finalCoordinates.filter(c => c.completed).length;
+    const totalCount = finalCoordinates.length;
+    const successRate = completedCount / totalCount;
+
+    let performanceBase;
+    if (successRate >= 1) performanceBase = 1.0;
+    else if (successRate >= 0.8) performanceBase = 0.8;
+    else if (successRate >= 0.6) performanceBase = 0.6;
+    else performanceBase = 0.3;
+
+    const finalMultiplier = performanceBase * level;
+    setResult(finalMultiplier);
+
+    setTimeout(() => {
+      onComplete(finalMultiplier);
+    }, 1500);
+  }, [level, onComplete]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (gameActive && !result) {
+      countdownTimerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+            endGame(stateRef.current.coordinates);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000) as unknown as number;
+    }
+    return () => {
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    };
+  }, [gameActive, result, endGame]);
+
+  const completeCoordinate = useCallback(() => {
+    setCoordinates(prev => {
+      const updated = [...prev];
+      updated[currentIndex].completed = true;
+
+      // Check if this was the last one
+      if (currentIndex + 1 >= updated.length) {
+        endGame(updated);
+      }
+
+      return updated;
+    });
+
+    if (currentIndex + 1 < getCoordinateCount()) {
+      setCurrentIndex(prev => prev + 1);
+      setIsHolding(false);
+      setHoldTime(0);
+    }
+  }, [currentIndex, getCoordinateCount, endGame]);
+
+  useEffect(() => {
+    if (!gameActive) return;
+
+    if (isHolding) {
+      if (holdTimerRef.current) return;
+      holdTimerRef.current = setInterval(() => {
+        setHoldTime(prev => {
+          const next = prev + 0.1;
+          if (next >= 3) {
+            if (holdTimerRef.current) {
+                clearInterval(holdTimerRef.current);
+                holdTimerRef.current = null;
+            }
+            completeCoordinate();
+            return 0;
+          }
+          return next;
+        });
+      }, 100) as unknown as number;
+    } else {
+      if (holdTimerRef.current) {
+        clearInterval(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+    }
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      window.removeEventListener('deviceorientation', handleOrientation);
+      if (holdTimerRef.current) clearInterval(holdTimerRef.current);
     };
+  }, [isHolding, gameActive, completeCoordinate]);
+
+  const handleOrientation = useCallback((event: DeviceOrientationEvent) => {
+    const { currentIndex: cIdx, coordinates: coords, gameActive: active } = stateRef.current;
+    if (!active) return;
+
+    const gamma = event.gamma || 0;
+    let angle = gamma + 90;
+    angle = Math.max(0, Math.min(180, angle));
+    setCurrentAngle(angle);
+
+    const currentTarget = coords[cIdx]?.target;
+    if (currentTarget && Math.abs(angle - currentTarget) <= 5) {
+      setIsHolding(true);
+    } else {
+      setIsHolding(prev => {
+        if (prev) setHoldTime(0);
+        return false;
+      });
+    }
   }, []);
 
+  useEffect(() => {
+    if (permissionGranted) {
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, [permissionGranted, handleOrientation]);
+
   const requestPermission = async () => {
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    const DeviceOrientation = (window.DeviceOrientationEvent as unknown) as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+
+    if (typeof DeviceOrientation.requestPermission === 'function') {
       try {
-        const response = await (DeviceOrientationEvent as any).requestPermission();
+        const response = await DeviceOrientation.requestPermission();
         if (response === 'granted') {
           setPermissionGranted(true);
-          window.addEventListener('deviceorientation', handleOrientation);
         } else {
           setPermissionGranted(false);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
         setPermissionGranted(false);
       }
     } else {
       setPermissionGranted(true);
-      window.addEventListener('deviceorientation', handleOrientation);
     }
   };
 
-  const handleOrientation = (event: DeviceOrientationEvent) => {
-    // gamma is left-to-right tilt in degrees [-90, 90]
-    // beta is front-to-back tilt [-180, 180]
-    // We'll use gamma for a steering-wheel style rotation or beta for a 'scale' feel
-    // Let's use absolute gamma and map it to 0-180 territory expansion
-    let val = event.gamma || 0;
-    // Map -90..90 to 0..180
-    val = val + 90;
-    setAngle(val);
+  const getProgress = () => {
+    const completed = coordinates.filter(c => c.completed).length;
+    return `${completed}/${coordinates.length}`;
   };
-
-  const handleFinish = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    onComplete(angle);
-  };
-
-  const getTierInfo = () => {
-    if (angle < 45) return { territories: '1-2', cost: '$5M', risk: '5%', color: 'text-emerald-400' };
-    if (angle < 90) return { territories: '3-5', cost: '$10M', risk: '15%', color: 'text-blue-400' };
-    if (angle < 135) return { territories: '6-8', cost: '$20M', risk: '30%', color: 'text-orange-400' };
-    return { territories: '9-10', cost: '$40M', risk: '50%', color: 'text-red-500 font-black animate-pulse' };
-  };
-
-  const info = getTierInfo();
 
   return (
-    <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center select-none touch-none min-h-[450px] flex flex-col justify-center items-center relative overflow-hidden">
-      <div className="absolute top-4 right-4 text-[10px] font-mono text-slate-500">
-        TIMEOUT: {timeLeft}s
+    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+      <div className="absolute top-8 left-0 right-0 text-center">
+        <h2 className="text-2xl font-black text-white mb-1">GLOBAL FRANCHISE</h2>
+        <p className="text-[10px] text-slate-500 uppercase">ROTATE TO EXPAND</p>
+        <div className="text-xs font-mono text-red-500 mt-1">TIME LEFT: {timeLeft}s</div>
       </div>
 
-      <div className="text-[10px] text-slate-500 uppercase font-bold mb-6">
-        ROTATE PHONE TO SCALE GLOBALLY
-      </div>
-
-      <div className="relative w-48 h-48 flex items-center justify-center mb-8">
-        {/* Compass/Rotation UI */}
-        <div
-          className="absolute inset-0 border-4 border-slate-800 rounded-full flex items-center justify-center transition-transform duration-100 ease-out"
-          style={{ transform: `rotate(${angle}deg)` }}
-        >
-          <div className="w-1 h-24 bg-gradient-to-t from-transparent via-emerald-500 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
-          <div className="absolute top-0 w-3 h-3 bg-white rounded-full shadow-lg" />
-        </div>
-
-        <div className="z-10 bg-slate-950 w-24 h-24 rounded-full border-2 border-slate-800 flex flex-col items-center justify-center shadow-2xl">
-          <span className="text-2xl font-black text-white">{Math.floor(angle)}°</span>
-          <span className="text-[8px] text-slate-500 uppercase font-bold">Rotation</span>
-        </div>
-      </div>
-
-      <div className="w-full bg-slate-950/50 rounded-2xl p-4 border border-slate-800/50 space-y-4">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="text-center">
-            <div className="text-[8px] text-slate-500 uppercase mb-1">Territories</div>
-            <div className={`text-xs font-bold ${info.color}`}>{info.territories}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-[8px] text-slate-500 uppercase mb-1">Launch Cost</div>
-            <div className="text-xs font-bold text-white">{info.cost}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-[8px] text-slate-500 uppercase mb-1">Risk Factor</div>
-            <div className="text-xs font-bold text-red-400">{info.risk}</div>
-          </div>
-        </div>
-
-        {!permissionGranted && (
+      {!permissionGranted && permissionGranted !== false && (
+        <div className="flex flex-col gap-3">
           <button
             onClick={requestPermission}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all active:scale-95 shadow-lg text-xs"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all active:scale-95 shadow-lg"
           >
-            ACTIVATE GYRO
+            ACTIVATE ROTATION SENSORS
           </button>
-        )}
-
-        <div className="w-full">
-            <input
-              type="range"
-              min="0"
-              max="180"
-              value={angle}
-              onChange={(e) => setAngle(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-            />
+          <button
+            onClick={() => setPermissionGranted(false)}
+            className="text-[10px] text-slate-500 uppercase underline"
+          >
+            Manual Mode (Desktop)
+          </button>
         </div>
+      )}
 
-        <button
-          onClick={handleFinish}
-          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl uppercase tracking-widest text-xs"
-        >
-          LOCK IN SCALE
-        </button>
-      </div>
+      {permissionGranted === false && (
+        <div className="text-red-400 text-xs mb-4 bg-red-400/10 p-3 rounded-lg border border-red-400/20">
+          Sensor access denied. Use manual dial below.
+        </div>
+      )}
 
-      <div className="mt-6 text-[10px] text-slate-500 italic max-w-[240px]">
-        "The wider the expansion, the greater the reward... and the steeper the risk of total collapse."
+      {permissionGranted === true && !result && (
+        <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 uppercase">TARGET ANGLE</div>
+            <div className="text-5xl font-black text-yellow-400">
+              {coordinates[currentIndex]?.target}°
+            </div>
+          </div>
+
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 uppercase">CURRENT ANGLE</div>
+            <div className={`text-3xl font-mono font-bold ${isHolding ? 'text-emerald-400' : 'text-white'}`}>
+              {Math.floor(currentAngle)}°
+            </div>
+          </div>
+
+          <div className="relative w-40 h-40">
+            <div className="absolute inset-0 border-4 border-slate-700 rounded-full" />
+            <div
+              className="absolute top-1/2 left-1/2 w-1 h-16 bg-emerald-500 origin-bottom transition-transform duration-100"
+              style={{ transform: `translateX(-50%) rotate(${currentAngle}deg)`, transformOrigin: 'center center' }}
+            />
+            <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+          </div>
+
+          {isHolding && (
+            <div className="w-full">
+              <div className="flex justify-between text-[8px] text-slate-500 mb-1">
+                <span>HOLDING...</span>
+                <span>{holdTime.toFixed(1)} / 3.0 sec</span>
+              </div>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-100"
+                  style={{ width: `${(holdTime / 3) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 uppercase">TERRITORIES</div>
+            <div className="text-xl font-bold text-emerald-400">{getProgress()}</div>
+          </div>
+        </div>
+      )}
+
+      {(permissionGranted === false || (!permissionGranted && permissionGranted !== null)) && !result && (
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 uppercase">TARGET ANGLE</div>
+            <div className="text-5xl font-black text-yellow-400">
+              {coordinates[currentIndex]?.target}°
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="180"
+            value={currentAngle}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              setCurrentAngle(val);
+              const currentTarget = coordinates[currentIndex]?.target;
+              if (currentTarget && Math.abs(val - currentTarget) <= 5) {
+                setIsHolding(true);
+              } else {
+                setIsHolding(false);
+              }
+            }}
+            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+          />
+
+          <div className="text-center text-3xl font-mono font-bold text-white">
+            {Math.floor(currentAngle)}°
+          </div>
+
+          {isHolding && (
+            <div className="w-full">
+              <div className="flex justify-between text-[8px] text-slate-500 mb-1">
+                <span>HOLDING...</span>
+                <span>{holdTime.toFixed(1)} / 3.0 sec</span>
+              </div>
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-100"
+                  style={{ width: `${(holdTime / 3) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="text-center text-[10px] text-slate-400">
+            Territories: {getProgress()}
+          </div>
+        </div>
+      )}
+
+      {result && (
+        <div className="text-center animate-in fade-in zoom-in duration-500">
+          <div className="text-6xl mb-4">
+            {result / level >= 0.8 ? '🌍✨' : result / level >= 0.6 ? '🌍' : '💀'}
+          </div>
+          <h3 className="text-2xl font-black text-white mb-2">EXPANSION COMPLETE</h3>
+          <p className="text-slate-400 text-sm">
+            {result / level >= 0.8 ? 'Global dominance achieved!' :
+             result / level >= 0.6 ? 'Successful expansion.' :
+             'Expansion failed. Try again.'}
+          </p>
+          <p className="text-emerald-400 text-lg font-bold mt-2">
+            {result.toFixed(1)}x Multiplier
+          </p>
+        </div>
+      )}
+
+      <div className="absolute bottom-8 text-center">
+        <p className="text-[8px] text-slate-600 max-w-xs">
+          Rotate phone to match target angle. Hold for 3 seconds to capture territory.
+        </p>
       </div>
     </div>
   );
