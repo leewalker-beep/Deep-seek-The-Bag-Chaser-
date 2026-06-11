@@ -58,9 +58,9 @@ export const RewardCard: React.FC<RewardCardProps> = ({
   }, [stats]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onDismiss}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onDismiss}>
       <div
-        className={`w-full max-w-md bg-slate-900 border-2 ${isRare ? 'border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)]' : 'border-slate-700'} rounded-3xl p-6 mb-8 transform transition-all duration-500 animate-in slide-in-from-bottom-full`}
+        className={`w-full max-w-md bg-slate-900 border-2 ${isRare ? 'border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.3)]' : 'border-slate-700'} rounded-3xl p-6 transform transition-all duration-500 animate-in zoom-in-95`}
         onClick={e => e.stopPropagation()}
       >
         <div className="text-center mb-6">
