@@ -62,25 +62,23 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    // Speed multiplier: 0.5x to 2.0x
-    let speedMult = 1.0;
+    let speedMult: number;
     if (velocity < 1) speedMult = 0.5;
     else if (velocity > 4) speedMult = 2.0;
-    else speedMult = 1.0 + (velocity - 1) / 3;
+    else speedMult = 1.0 + ((velocity - 1) / 3);
     speedMult = Math.min(2.0, Math.max(0.5, speedMult));
 
-    // Payout based on pre-determined outcome
-    let outcomeMult = 0.75;
+    let outcomeMult: number;
     let isRare = false;
     let isSuccess = true;
 
     if (outcome === 'RARE') {
-      outcomeMult = 30.0;
+      outcomeMult = 5.0;
       isRare = true;
     } else if (outcome === 'WIN') {
-      outcomeMult = 0.75;
+      outcomeMult = 1.5;
     } else {
-      outcomeMult = -0.05;
+      outcomeMult = 0.3;
       isSuccess = false;
     }
 
