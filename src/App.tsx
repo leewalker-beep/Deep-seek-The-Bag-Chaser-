@@ -18,6 +18,7 @@ import { MagneticSweep } from './components/minigames/MagneticSweep';
 import { ShakeToInfluence } from './components/minigames/ShakeToInfluence';
 import { PinchToZoom } from './components/minigames/PinchToZoom';
 import { RotateToScale } from './components/minigames/RotateToScale';
+import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
@@ -310,8 +311,9 @@ function App() {
               const hasBranches = !!hustle.branches && !!currentBranchId;
               const currentBranch = hasBranches ? hustle.branches![currentBranchId] : null;
               const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
+              const activeMiniGame = currentBranch?.miniGame || hustle.miniGame;
 
-              if (showMinigame && hustle.miniGame) {
+              if (showMinigame && activeMiniGame) {
                 const onComplete = (multiplier: number) => {
                   console.log('🔧 Minigame completed, multiplier:', multiplier);
 
@@ -337,20 +339,20 @@ function App() {
                   });
                 };
 
-                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
-                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
-                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
-                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
-                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
-                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
-                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
-                if (hustle.miniGame === 'RotateToScale') return (
+                if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
+                if (activeMiniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
+                if (activeMiniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
+                if (activeMiniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
+                if (activeMiniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
+                if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
+                if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
+                if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={pl.hustleLevels[hustle.id] || 1}
                     onComplete={onComplete}
                   />
                 );
-                if (hustle.miniGame === 'MagneticSweep') {
+                if (activeMiniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
                       onComplete={(sweepRes) => {
@@ -388,6 +390,9 @@ function App() {
                     />
                   );
                 }
+
+                // Fallback for unknown minigames
+                return <SimpleFallback name={activeMiniGame} onComplete={onComplete} />;
               }
 
               if (hustle.hasPanel) {
@@ -438,7 +443,7 @@ function App() {
                     currentBranchId={currentBranchId!}
                     onSelectBranch={(branchId) => executeBranch(hustle.id, branchId)}
                     onExecute={() => {
-                      if (hustle.miniGame) {
+                      if (currentBranch?.miniGame || hustle.miniGame) {
                         setShowMinigame(true);
                       } else {
                         executeHustle(hustle.id);
@@ -456,7 +461,8 @@ function App() {
                   player={pl}
                   currentBranchId={currentBranchId}
                   onExecute={() => {
-                    if (hustle.miniGame) {
+                    const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                    if (levelData?.miniGame || hustle.miniGame) {
                       setShowMinigame(true);
                     } else {
                       executeHustle(hustle.id);

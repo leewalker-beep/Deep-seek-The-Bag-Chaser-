@@ -95,6 +95,7 @@ export const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolea
     'r_flyers',
     'r_sleep',
     'r_vending',
+    'street_eats',
   ];
 
   if (difficulty === 1) {

@@ -15,6 +15,7 @@ export interface HustleLevel {
   nextBranches?: string[];
   isRepeatable?: boolean;
   maxRepeat?: number;
+  miniGame?: string;
 }
 
 export interface Hustle {
@@ -214,6 +215,90 @@ HUSTLES.r_sleep = {
     l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
     l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 1000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
+};
+
+HUSTLES.street_eats = {
+  id: 'street_eats',
+  name: 'Street Eats',
+  tier: 'MUD',
+  icon: '🌮',
+  description: 'From taco cart to restaurant empire',
+  startBranchId: 'l1',
+  branches: {
+    l1: {
+      level: 1,
+      id: 'l1',
+      name: 'Taco Cart',
+      cost: 500,
+      yieldCash: 1200,
+      yieldClout: 5,
+      yieldAura: 3,
+      mentalHit: -5,
+      cloutReq: 0,
+      auraReq: 0,
+      nextBranches: ['l2'],
+      miniGame: 'SwipeToCook'
+    },
+    l2: {
+      level: 2,
+      id: 'l2',
+      name: 'Food Truck',
+      cost: 8000,
+      yieldCash: 5000,
+      yieldClout: 15,
+      yieldAura: 8,
+      mentalHit: -8,
+      cloutReq: 20,
+      auraReq: 10,
+      nextBranches: ['l3'],
+      passiveYield: 500,
+      miniGame: 'SocialMediaPost'
+    },
+    l3: {
+      level: 3,
+      id: 'l3',
+      name: 'Ghost Kitchen',
+      cost: 25000,
+      yieldCash: 15000,
+      yieldClout: 30,
+      yieldAura: 15,
+      mentalHit: -12,
+      cloutReq: 50,
+      auraReq: 25,
+      nextBranches: ['l4'],
+      passiveYield: 2000,
+      miniGame: 'DeliveryRush'
+    },
+    l4: {
+      level: 4,
+      id: 'l4',
+      name: 'Brick & Mortar',
+      cost: 80000,
+      yieldCash: 40000,
+      yieldClout: 60,
+      yieldAura: 30,
+      mentalHit: -15,
+      cloutReq: 100,
+      auraReq: 50,
+      nextBranches: ['l5'],
+      passiveYield: 8000,
+      miniGame: 'ReservationSystem'
+    },
+    l5: {
+      level: 5,
+      id: 'l5',
+      name: 'Mini-Chain',
+      cost: 250000,
+      yieldCash: 100000,
+      yieldClout: 120,
+      yieldAura: 60,
+      mentalHit: -20,
+      cloutReq: 200,
+      auraReq: 100,
+      passiveYield: 25000,
+      miniGame: 'FranchiseNegotiation'
+    }
+  }
 };
 
 // STREET Tier Hustles

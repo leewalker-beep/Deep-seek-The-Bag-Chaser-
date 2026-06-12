@@ -78,7 +78,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
               : 'bg-slate-800 text-slate-600 cursor-not-allowed'
           }`}
         >
-          {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (hustle.miniGame ? 'PLAY' : (currentBranch.cost > 0 ? `RUN IT (-$${currentBranch.cost.toLocaleString()})` : 'EXECUTE'))}
+          {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (currentBranch.miniGame || hustle.miniGame ? 'PLAY' : (currentBranch.cost > 0 ? `RUN IT (-$${currentBranch.cost.toLocaleString()})` : 'EXECUTE'))}
         </button>
 
         {isRepeatable && (
