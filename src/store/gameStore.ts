@@ -191,7 +191,7 @@ export const useGameStore = create<GameState>()(
         }
 
         const isRecovery = (hustleId === 'psychiatrist' || hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session' || hustleId === 'wellness_retreat');
-        const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency');
+        const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency' || hustleId === 'hedgefund' || hustleId === 'privateequity');
 
         // Check if tier is unlocked
         const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
@@ -558,6 +558,11 @@ export const useGameStore = create<GameState>()(
 
         // Apply shield turns AFTER advanceMonth so they aren't immediately decremented
         newPl.mentalShieldTurns += result.shieldTurns;
+
+        // Reset rival bids after any hustle execution
+        if (newPl.rivals) {
+          newPl.rivals = newPl.rivals.map(r => ({ ...r, currentBid: 0 }));
+        }
 
         const cappedPl = enforceStatCaps(newPl);
 

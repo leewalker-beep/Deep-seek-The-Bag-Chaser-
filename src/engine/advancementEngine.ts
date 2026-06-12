@@ -130,6 +130,26 @@ export function advanceMonth(
   // Decay heat (cool down over time)
   newPl.heat = Math.max(0, newPl.heat - 10);
 
+  // Rival AI Updates
+  if (newPl.rivals) {
+    newPl.rivals = newPl.rivals.map(rival => {
+      // Net worth fluctuations (-2% to +5%)
+      const fluctuation = 1 + (Math.random() * 0.07 - 0.02);
+      const newNetWorth = Math.floor(rival.netWorth * fluctuation);
+
+      // Random bidding challenge (5% chance per rival per month if player is ELITE+)
+      let currentBid = 0;
+      const isElitePlus = ['ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'].includes(newPl.currentTier);
+      if (isElitePlus && Math.random() < 0.05) {
+        // Rivals bid based on their scale
+        currentBid = Math.floor(newNetWorth * (0.05 + Math.random() * 0.1));
+        news.push(`⚠️ RIVAL ALERT: ${rival.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`);
+      }
+
+      return { ...rival, netWorth: newNetWorth, currentBid };
+    });
+  }
+
   // Decrement mental shield
   if (newPl.mentalShieldTurns > 0) {
     newPl.mentalShieldTurns--;
