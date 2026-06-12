@@ -191,7 +191,7 @@ export const useGameStore = create<GameState>()(
         }
 
         const isRecovery = (hustleId === 'psychiatrist' || hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session' || hustleId === 'wellness_retreat');
-        const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency' || hustleId === 'hedgefund' || hustleId === 'privateequity');
+        const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency' || hustleId === 'hedgefund' || hustleId === 'privateequity' || hustleId === 'film_studio' || hustleId === 'fight_promoter' || hustleId === 'space_investment' || hustleId === 'philanthropy_empire');
 
         // Check if tier is unlocked
         const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
@@ -252,6 +252,9 @@ export const useGameStore = create<GameState>()(
         const market = MARKET_CONFIGS[state.currentMarket];
         let success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
         const isVending = hustleId === 'r_vending';
+
+        // Apply Legacy Multiplier (0.1% per point)
+        const legacyMultiplier = 1 + ((state.pl.legacyPoints || 0) * 0.001);
 
         let result = calculateHustleMath(
           hustleId,
@@ -473,6 +476,76 @@ export const useGameStore = create<GameState>()(
 
           result = { ...result, cost: investment, yieldCash: Math.floor(yieldCash) };
         }
+        else if (hustleId === 'film_studio') {
+          const genre = state.pl.filmStudioGenre || 'action';
+          const budget = state.pl.filmStudioBudget || 'medium';
+          const genreMult = { action: 1.2, comedy: 1.0, drama: 0.8 }[genre];
+          const budgetMult = { low: 0.7, medium: 1.0, high: 1.5 }[budget];
+          const baseCost = 25000000;
+          const cost = baseCost * budgetMult * market.expenseMultiplier;
+
+          const perfMult = minigameMultiplier || 1.0;
+          const finalYieldMult = perfMult * genreMult * budgetMult;
+          const yieldCash = Math.floor(baseCost * finalYieldMult * market.yieldMultiplier);
+
+          result = {
+            ...result,
+            cost,
+            yieldCash,
+            yieldClout: 200 * (perfMult > 1 ? perfMult : 1),
+            yieldAura: 100 * (perfMult > 1 ? perfMult : 1),
+            mentalHit: -15
+          };
+          success = perfMult >= 0.5;
+        }
+        else if (hustleId === 'fight_promoter') {
+          const mult = minigameMultiplier || 1;
+          const cost = 15000000 * market.expenseMultiplier;
+          const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
+
+          result = {
+            ...result,
+            cost,
+            yieldCash,
+            yieldClout: 300 * (mult > 1 ? mult : 1),
+            yieldAura: 150 * (mult > 1 ? mult : 1),
+            mentalHit: -10
+          };
+          success = mult >= 0.5;
+        }
+        else if (hustleId === 'space_investment') {
+          const company = state.pl.spaceInvestmentCompany || 'asteroid';
+          const cost = 100000000 * market.expenseMultiplier;
+          const mult = minigameMultiplier || 1.0;
+          const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
+
+          result = {
+            ...result,
+            cost,
+            yieldCash,
+            yieldClout: 400 * (mult > 1 ? mult : 1),
+            yieldAura: 300 * (mult > 1 ? mult : 1),
+            mentalHit: -20
+          };
+          success = mult >= 0.5;
+        }
+        else if (hustleId === 'philanthropy_empire') {
+          const donation = state.pl.philanthropyDonation || 10000000;
+          const donationMult = donation / 50000000;
+          const legacyGain = Math.floor(donationMult * 100);
+
+          result = {
+            ...result,
+            cost: donation * market.expenseMultiplier,
+            yieldCash: 0,
+            yieldClout: 500 * donationMult,
+            yieldAura: 1000 * donationMult,
+            legacyGain,
+            mentalHit: 20
+          };
+          success = true;
+        }
+
 
         const bigWinMsg = (result.isBigWin && result.bigWinMessage)
           ? { text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }
@@ -485,6 +558,11 @@ export const useGameStore = create<GameState>()(
             cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
           };
         }
+
+        // Apply Legacy Multiplier to all yields
+        result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier);
+        result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier);
+        result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier);
 
         // Apply results
         const newBag = state.pl.bag - result.cost + result.yieldCash;
@@ -513,6 +591,7 @@ export const useGameStore = create<GameState>()(
           aura: newAura,
           mentalHealth: newMental,
           heat: newHeat,
+          legacyPoints: (state.pl.legacyPoints || 0) + (result.legacyGain || 0),
           dynamicPassives: newDynamicPassives,
           rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
           flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
@@ -870,6 +949,34 @@ export const useGameStore = create<GameState>()(
           realEstateType: type,
           realEstateLeverage: leverage,
           realEstateStrategy: strategy
+        })
+      }));
+    },
+
+    setFilmStudioChoices: (genre, budget) => {
+      set((state) => ({
+        pl: enforceStatCaps({
+          ...state.pl,
+          filmStudioGenre: genre,
+          filmStudioBudget: budget
+        })
+      }));
+    },
+
+    setSpaceInvestmentChoice: (company) => {
+      set((state) => ({
+        pl: enforceStatCaps({
+          ...state.pl,
+          spaceInvestmentCompany: company
+        })
+      }));
+    },
+
+    setPhilanthropyChoice: (donation) => {
+      set((state) => ({
+        pl: enforceStatCaps({
+          ...state.pl,
+          philanthropyDonation: donation
         })
       }));
     },

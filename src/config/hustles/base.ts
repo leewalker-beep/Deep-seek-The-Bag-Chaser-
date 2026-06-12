@@ -724,9 +724,11 @@ HUSTLES.film_studio = {
   name: 'Film Studio',
   tier: 'MOGUL',
   icon: '🎬',
-  description: 'Produce blockbusters',
+  description: 'Produce blockbusters. Greenlight or pass?',
+  hasPanel: true,
+  panelType: 'FILM_STUDIO',
   levels: [
-    { level: 1, id: 'l1', cost: 25000000, yieldCash: 60000000, yieldClout: 1000, yieldAura: 500, mentalHit: -50, cloutReq: 500, auraReq: 500 },
+    { level: 1, cost: 25000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 500, auraReq: 300, passiveYield: 0 }
   ]
 };
 
@@ -735,9 +737,10 @@ HUSTLES.fight_promoter = {
   name: 'Fight Promoter',
   tier: 'MOGUL',
   icon: '🥊',
-  description: 'The biggest cards in history',
+  description: 'The biggest cards in history. Shake for hype!',
+  miniGame: 'ShakeForHype',
   levels: [
-    { level: 1, id: 'l1', cost: 15000000, yieldCash: 40000000, yieldClout: 1500, yieldAura: 800, mentalHit: -40, cloutReq: 800, auraReq: 600 },
+    { level: 1, cost: 15000000, yieldCash: 0, yieldClout: 300, yieldAura: 150, mentalHit: -10, cloutReq: 400, auraReq: 250, passiveYield: 0 }
   ]
 };
 
@@ -746,9 +749,11 @@ HUSTLES.space_investment = {
   name: 'Space Investment',
   tier: 'MOGUL',
   icon: '🚀',
-  description: 'Mining asteroids and orbital tourism',
+  description: 'Mining asteroids and orbital tourism. High risk, infinite reward.',
+  hasPanel: true,
+  panelType: 'SPACE_INVESTMENT',
   levels: [
-    { level: 1, id: 'l1', cost: 100000000, yieldCash: 0, yieldClout: 2000, yieldAura: 1500, mentalHit: -30, cloutReq: 1000, auraReq: 1000, passiveYield: 10000000 },
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 400, yieldAura: 300, mentalHit: -20, cloutReq: 800, auraReq: 600, passiveYield: 0 }
   ]
 };
 
@@ -757,9 +762,11 @@ HUSTLES.philanthropy_empire = {
   name: 'Philanthropy Empire',
   tier: 'MOGUL',
   icon: '🤝',
-  description: 'Solve world hunger for the tax break',
+  description: 'Solve world hunger for the tax break. Buy immortality.',
+  hasPanel: true,
+  panelType: 'PHILANTHROPY',
   levels: [
-    { level: 1, id: 'l1', cost: 50000000, yieldCash: 0, yieldClout: 1000, yieldAura: 5000, mentalHit: 50, cloutReq: 1500, auraReq: 1000 },
+    { level: 1, cost: 50000000, yieldCash: 0, yieldClout: 500, yieldAura: 1000, mentalHit: 20, cloutReq: 600, auraReq: 500, passiveYield: 0 }
   ]
 };
 
