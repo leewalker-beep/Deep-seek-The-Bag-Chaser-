@@ -18,66 +18,50 @@ export const AnimatedBag: React.FC<AnimatedBagProps> = ({
   onComplete
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
-  const targetValueRef = useRef(value);
-  const currentDisplayValueRef = useRef(value);
-  const onCompleteRef = useRef(onComplete);
-  const animationFrameRef = useRef<number | null>(null);
+  const prevValueRef = useRef(value);
+  const animatingRef = useRef(false);
 
   useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
+    if (prevValueRef.current === value || animatingRef.current) return;
 
-  useEffect(() => {
-    // Only start a new animation if the value prop has actually changed
-    if (targetValueRef.current === value) return;
-
-    const startValue = currentDisplayValueRef.current;
+    const startValue = prevValueRef.current;
     const endValue = value;
-    targetValueRef.current = value;
-
     const diff = endValue - startValue;
-    let startTime: number | null = null;
+    const steps = isJackpot ? 20 : 12;
+    const stepTime = duration / steps;
 
-    const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+    let currentStep = 0;
+    animatingRef.current = true;
 
-      // Easing: easeOutCubic
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-      let currentValue: number;
-      if (isJackpot && progress < 1) {
-        // Jackpot chaos: add some jitter to the intermediate values
-        const chaos = Math.random() * Math.abs(diff) * 0.2;
-        currentValue = startValue + (diff * easedProgress) + (Math.random() > 0.5 ? chaos : -chaos);
+    const intermediates: number[] = [];
+    for (let i = 1; i <= steps; i++) {
+      let progress = i / steps;
+      progress = 1 - Math.pow(1 - progress, 3);
+      let intermediate;
+      if (isJackpot) {
+        const chaos = Math.random() * Math.abs(diff) * 0.5;
+        intermediate = startValue + (diff * progress) + (Math.random() > 0.5 ? chaos : -chaos);
       } else {
-        currentValue = startValue + (diff * easedProgress);
+        intermediate = startValue + (diff * progress);
       }
-
-      const finalValue = progress === 1 ? endValue : Math.max(0, Math.floor(currentValue));
-      setDisplayValue(finalValue);
-      currentDisplayValueRef.current = finalValue;
-
-      if (progress < 1) {
-        animationFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        animationFrameRef.current = null;
-        if (onCompleteRef.current) onCompleteRef.current();
-      }
-    };
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
+      intermediates.push(Math.max(0, Math.floor(intermediate)));
     }
-    animationFrameRef.current = requestAnimationFrame(animate);
 
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+    const interval = setInterval(() => {
+      if (currentStep < steps) {
+        setDisplayValue(intermediates[currentStep]);
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        setDisplayValue(endValue);
+        animatingRef.current = false;
+        prevValueRef.current = endValue;
+        if (onComplete) onComplete();
       }
-    };
-  }, [value, isJackpot, duration]);
+    }, stepTime);
+
+    return () => clearInterval(interval);
+  }, [value, isJackpot, duration, onComplete]);
 
   const getColorClass = () => {
     if (isJackpot) return 'text-yellow-400 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)]';
