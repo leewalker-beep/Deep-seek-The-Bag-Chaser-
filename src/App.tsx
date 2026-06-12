@@ -32,6 +32,10 @@ import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel
 import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
 import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
 import { VCPanel } from './components/hustles/panels/VCPanel';
+import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
+import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
+import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
+import { ShakeForHype } from './components/minigames/ShakeForHype';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -377,6 +381,10 @@ function App() {
                   );
                 }
 
+                if (activeMiniGame === 'ShakeForHype') {
+                  return <ShakeForHype onComplete={onComplete} />;
+                }
+
                 if (activeMiniGame === 'BoardroomBattle') {
                   const rival = pl.rivals?.find(r => r.currentBid > 0);
                   const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
@@ -472,6 +480,15 @@ function App() {
                 }
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
                   return <VCPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'FILM_STUDIO') {
+                  return <FilmStudioPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'SPACE_INVESTMENT') {
+                  return <SpaceInvestmentPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'PHILANTHROPY') {
+                  return <PhilanthropyPanel hustle={hustle} />;
                 }
               }
 

@@ -9,6 +9,7 @@ export interface MathResult {
   heatHit: number;
   shieldTurns: number;
   passiveAdded?: number;
+  legacyGain?: number;
   isBigWin?: boolean;
   bigWinMessage?: string;
 }

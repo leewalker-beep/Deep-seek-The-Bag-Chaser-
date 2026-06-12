@@ -39,6 +39,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     vcStage: 'seed',
     vcSector: 'tech',
     vcInvestment: 1,
+    filmStudioGenre: 'action',
+    filmStudioBudget: 'medium',
+    spaceInvestmentCompany: 'asteroid',
+    philanthropyDonation: 10000000,
     marketCycle: {
       realEstate: 'normal',
       vc: {
@@ -49,6 +53,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     },
     monthsSinceCycleChange: 0,
     dynamicPassives: {},
+    legacyPoints: 0,
     rivals: [
       { id: 'rival_1', name: 'Sterling Vane', netWorth: 50000000, currentBid: 0, isNpc: true },
       { id: 'rival_2', name: 'Morgan Thorne', netWorth: 75000000, currentBid: 0, isNpc: true },

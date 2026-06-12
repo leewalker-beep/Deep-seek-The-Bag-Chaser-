@@ -110,6 +110,10 @@ export function advanceMonth(
     passiveIncome += val;
   });
 
+  // Apply Legacy Multiplier (0.1% per point)
+  const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
+  passiveIncome = Math.floor(passiveIncome * legacyMultiplier);
+
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly
   newPl.artists.forEach(artist => {
