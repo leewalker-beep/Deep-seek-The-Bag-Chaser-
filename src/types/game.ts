@@ -34,6 +34,14 @@ export interface Artist {
   isGrammyWinner?: boolean;
 }
 
+export interface Rival {
+  id: string;
+  name: string;
+  netWorth: number;
+  currentBid: number;
+  isNpc: boolean;
+}
+
 export interface Milestone {
   id: string;
   name: string;
@@ -88,6 +96,7 @@ export interface PlayerStats {
   };
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
+  rivals: Rival[];
   actionLog: GameAction[];
   milestones: Milestone[];
   stats?: {

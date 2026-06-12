@@ -694,6 +694,7 @@ HUSTLES.hedgefund = {
   tier: 'ELITE',
   icon: '📊',
   description: 'High-risk market trading',
+  miniGame: 'MarketPredictor',
   startBranchId: 'l1',
   branches: {
     l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 10000000, yieldCash: 5000000, yieldClout: 100, yieldAura: 50, mentalHit: -15, cloutReq: 300, auraReq: 150, nextBranches: ['l2'] },
@@ -708,6 +709,7 @@ HUSTLES.privateequity = {
   tier: 'ELITE',
   icon: '🏢',
   description: 'Buy and transform companies',
+  miniGame: 'BoardroomBattle',
   startBranchId: 'l1',
   branches: {
     l1: { id: 'l1', name: 'Small Buyouts', level: 1, cost: 20000000, yieldCash: 10000000, yieldClout: 150, yieldAura: 75, mentalHit: -18, cloutReq: 350, auraReq: 175, nextBranches: ['l2'] },

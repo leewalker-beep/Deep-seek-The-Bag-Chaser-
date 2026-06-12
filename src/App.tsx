@@ -18,6 +18,9 @@ import { MagneticSweep } from './components/minigames/MagneticSweep';
 import { ShakeToInfluence } from './components/minigames/ShakeToInfluence';
 import { PinchToZoom } from './components/minigames/PinchToZoom';
 import { RotateToScale } from './components/minigames/RotateToScale';
+import { MarketPredictor } from './components/minigames/MarketPredictor';
+import { BoardroomBattle } from './components/minigames/BoardroomBattle';
+import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -56,6 +59,7 @@ function App() {
     setPlayerName,
     resetGame,
     applyPendingUpdate,
+    addTickerMessage,
   } = useGameStore();
 
   const forceUpdate = useReducer(() => ({}), {})[1];
@@ -264,6 +268,11 @@ function App() {
             {/* Flex Market */}
             {showFlexMarket && <FlexMarket />}
 
+            {/* Rival Leaderboard in ELITE tab */}
+            {!showFlexMarket && activeTab === 'ELITE' && (
+              <RivalLeaderboard playerBag={pl.bag} playerName={pl.name || 'You'} rivals={pl.rivals} />
+            )}
+
             {/* Hustle Grid */}
             {!showFlexMarket && (
               <div className="grid grid-cols-2 gap-3">
@@ -352,6 +361,36 @@ function App() {
                     onComplete={onComplete}
                   />
                 );
+
+                if (activeMiniGame === 'MarketPredictor') {
+                  const rival = pl.rivals?.find(r => r.currentBid > 0);
+                  const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                  return (
+                    <MarketPredictor
+                      onComplete={onComplete}
+                      playerBid={levelData?.cost || 10000000}
+                      rivalBid={rival?.currentBid || 0}
+                      onOutbid={(amount) => {
+                        addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
+                      }}
+                    />
+                  );
+                }
+
+                if (activeMiniGame === 'BoardroomBattle') {
+                  const rival = pl.rivals?.find(r => r.currentBid > 0);
+                  const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                  return (
+                    <BoardroomBattle
+                      onComplete={onComplete}
+                      playerBid={levelData?.cost || 20000000}
+                      rivalBid={rival?.currentBid || 0}
+                      onOutbid={(amount) => {
+                        addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
+                      }}
+                    />
+                  );
+                }
                 if (activeMiniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep

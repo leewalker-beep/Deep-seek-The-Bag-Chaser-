@@ -49,6 +49,12 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     },
     monthsSinceCycleChange: 0,
     dynamicPassives: {},
+    rivals: [
+      { id: 'rival_1', name: 'Sterling Vane', netWorth: 50000000, currentBid: 0, isNpc: true },
+      { id: 'rival_2', name: 'Morgan Thorne', netWorth: 75000000, currentBid: 0, isNpc: true },
+      { id: 'rival_3', name: 'Elena Rosso', netWorth: 120000000, currentBid: 0, isNpc: true },
+      { id: 'rival_4', name: 'Victor Draken', netWorth: 250000000, currentBid: 0, isNpc: true },
+    ],
     actionLog: [],
     milestones: [],
     stats: {
