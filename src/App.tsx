@@ -311,9 +311,12 @@ function App() {
 
               if (showMinigame && hustle.miniGame) {
                 const handleMinigameComplete = (multiplier: number) => {
+                  console.log('🔍 SAFARI DEBUG: onComplete called with multiplier:', multiplier);
+                  console.log('🔍 SAFARI DEBUG: hustle.id =', hustle.id);
                   try {
                     const isDeferred = hustle.id === 'lobbying' || hustle.id === 'disaster';
                     const result = executeHustle(hustle.id, multiplier, undefined, isDeferred);
+                    console.log('🔍 SAFARI DEBUG: executeHustle result =', result);
                     setActiveHustleResult({
                       hustleId: hustle.id,
                       ...result
@@ -321,6 +324,7 @@ function App() {
                   } catch (err) {
                     console.error('Minigame execution failed, falling back to standard', err);
                     const result = executeHustle(hustle.id);
+                    console.log('🔍 SAFARI DEBUG: executeHustle result =', result);
                     setActiveHustleResult({
                       hustleId: hustle.id,
                       ...result
