@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 

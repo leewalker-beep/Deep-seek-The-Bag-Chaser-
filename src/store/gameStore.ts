@@ -514,7 +514,6 @@ export const useGameStore = create<GameState>()(
           success = mult >= 0.5;
         }
         else if (hustleId === 'space_investment') {
-          const company = state.pl.spaceInvestmentCompany || 'asteroid';
           const cost = 100000000 * market.expenseMultiplier;
           const mult = minigameMultiplier || 1.0;
           const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
