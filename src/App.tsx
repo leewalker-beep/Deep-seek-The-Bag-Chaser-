@@ -315,7 +315,8 @@ function App() {
                 const onComplete = (multiplier: number) => {
                   console.log('🔧 Minigame completed, multiplier:', multiplier);
 
-                  requestAnimationFrame(() => {
+                  // setTimeout is more reliable than requestAnimationFrame in Safari
+                  setTimeout(() => {
                     const result = executeHustle(hustle.id, multiplier);
                     console.log('🔧 executeHustle result:', result);
 
@@ -331,10 +332,12 @@ function App() {
                         mentalHit: result.mentalHit,
                         heatHit: result.heatHit,
                       });
+                      // Double forceUpdate ensures Safari re-renders
                       forceUpdate();
+                      setTimeout(() => forceUpdate(), 50);
                     }
                     setShowMinigame(false);
-                  });
+                  }, 10);
                 };
 
                 if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
