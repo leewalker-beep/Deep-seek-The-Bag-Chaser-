@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useReducer } from 'react';
 import { useGameStore } from './store/gameStore';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
@@ -56,6 +56,8 @@ function App() {
     resetGame,
     applyPendingUpdate,
   } = useGameStore();
+
+  const forceUpdate = useReducer(() => ({}), {})[1];
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
@@ -310,66 +312,78 @@ function App() {
               const hasNextBranches = currentBranch?.nextBranches && currentBranch.nextBranches.length > 0;
 
               if (showMinigame && hustle.miniGame) {
-                const handleMinigameComplete = (multiplier: number) => {
-                  console.log('🔍 SAFARI DEBUG: onComplete called with multiplier:', multiplier);
-                  console.log('🔍 SAFARI DEBUG: hustle.id =', hustle.id);
-                  try {
-                    const isDeferred = hustle.id === 'lobbying' || hustle.id === 'disaster';
-                    const result = executeHustle(hustle.id, multiplier, undefined, isDeferred);
-                    console.log('🔍 SAFARI DEBUG: executeHustle result =', result);
-                    setActiveHustleResult({
-                      hustleId: hustle.id,
-                      ...result
-                    });
-                  } catch (err) {
-                    console.error('Minigame execution failed, falling back to standard', err);
-                    const result = executeHustle(hustle.id);
-                    console.log('🔍 SAFARI DEBUG: executeHustle result =', result);
-                    setActiveHustleResult({
-                      hustleId: hustle.id,
-                      ...result
-                    });
-                  } finally {
+                const onComplete = (multiplier: number) => {
+                  console.log('🔧 Minigame completed, multiplier:', multiplier);
+
+                  requestAnimationFrame(() => {
+                    const result = executeHustle(hustle.id, multiplier);
+                    console.log('🔧 executeHustle result:', result);
+
+                    if (result.success) {
+                      setActiveHustleResult({
+                        hustleId: hustle.id,
+                        success: result.success,
+                        netChange: result.netChange,
+                        cost: result.cost,
+                        yieldCash: result.yieldCash,
+                        yieldClout: result.yieldClout,
+                        yieldAura: result.yieldAura,
+                        mentalHit: result.mentalHit,
+                        heatHit: result.heatHit,
+                      });
+                      forceUpdate();
+                    }
                     setShowMinigame(false);
-                  }
+                  });
                 };
 
-                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={handleMinigameComplete} />;
-                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={handleMinigameComplete} />;
+                if (hustle.miniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
+                if (hustle.miniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
+                if (hustle.miniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
+                if (hustle.miniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
+                if (hustle.miniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
+                if (hustle.miniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
+                if (hustle.miniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
                 if (hustle.miniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={pl.hustleLevels[hustle.id] || 1}
-                    onComplete={handleMinigameComplete}
+                    onComplete={onComplete}
                   />
                 );
                 if (hustle.miniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
-                      onComplete={(result) => {
-                        const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
-                        const levelMult = LEVEL_MULTIPLIERS[levelData?.level || 1] || 1;
-                        const market = MARKET_CONFIGS[currentMarket];
+                      onComplete={(sweepRes) => {
+                        requestAnimationFrame(() => {
+                          const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                          const levelMult = LEVEL_MULTIPLIERS[levelData?.level || 1] || 1;
+                          const market = MARKET_CONFIGS[currentMarket];
 
-                        // Trigger the hustle execution
-                        // We use forceSuccess: true because the minigame outcome logic (win/loss/rare)
-                        // is already handled within MagneticSweep and passed via result.multiplier
-                        const execution = executeHustle(hustle.id, result.multiplier, true);
+                          // Trigger the hustle execution
+                          // We use forceSuccess: true because the minigame outcome logic (win/loss/rare)
+                          // is already handled within MagneticSweep and passed via sweepRes.multiplier
+                          const result = executeHustle(hustle.id, sweepRes.multiplier, true);
 
-                        if (result.isRare) {
-                          setBigWin({ amount: execution.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier });
-                        }
+                          if (sweepRes.isRare) {
+                            setBigWin({ amount: result.netChange + (levelData?.cost || 0) * levelMult * market.expenseMultiplier });
+                          }
 
-                        setActiveHustleResult({
-                          hustleId: hustle.id,
-                          ...execution
+                          if (result.success) {
+                            setActiveHustleResult({
+                              hustleId: hustle.id,
+                              success: result.success,
+                              netChange: result.netChange,
+                              cost: result.cost,
+                              yieldCash: result.yieldCash,
+                              yieldClout: result.yieldClout,
+                              yieldAura: result.yieldAura,
+                              mentalHit: result.mentalHit,
+                              heatHit: result.heatHit,
+                            });
+                            forceUpdate();
+                          }
+                          setShowMinigame(false);
                         });
-
-                        setShowMinigame(false);
                       }}
                     />
                   );
