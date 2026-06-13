@@ -1,5 +1,7 @@
-import { useEffect, useState, useReducer, useCallback } from 'react';
+import { useEffect, useState, useReducer, useCallback, useMemo } from 'react';
 import { useGameStore } from './store/gameStore';
+import { useSafariCompatible } from './hooks/useSafariCompatible';
+import { debounce } from './utils/performance';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
 import { BranchChoice } from './components/BranchChoice';
@@ -47,6 +49,21 @@ import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier } from './types/game';
 
 function App() {
+  const forceUpdate = useReducer(() => ({}), {})[1];
+
+  // Wrap critical handlers with Safari compatibility and ensure stability
+  const debouncedResize = useMemo(() => debounce(() => {
+    // Force re-render on resize for mobile
+    forceUpdate();
+  }, 250), []);
+
+  const handleResize = useSafariCompatible(debouncedResize);
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
+
   const [showMinigame, setShowMinigame] = useState(false);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showEnding, setShowEnding] = useState(true);
@@ -78,8 +95,6 @@ function App() {
     applyPendingUpdate,
     addTickerMessage,
   } = useGameStore();
-
-  const forceUpdate = useReducer(() => ({}), {})[1];
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);

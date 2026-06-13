@@ -49,3 +49,23 @@
 .flash-purple { animation: flash-purple 1s infinite; }
 .flash-orange { animation: flash-orange 1s infinite; }
 .flash-red-border { animation: flash-red-border 1s infinite; border-width: 2px; }
+
+/* Performance optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
