@@ -12,6 +12,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     currentTier: 'MUD',
     hustleLevels: {},
     hustleBranchIds: {},
+    masteredHustles: [],
     flexAssets: {},
     unlockedAchievements: [],
     rentalCount: 0,

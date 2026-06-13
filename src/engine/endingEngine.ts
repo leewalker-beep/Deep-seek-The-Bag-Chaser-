@@ -32,6 +32,13 @@ export const ENDINGS: Record<string, Ending> = {
     requirement: 'High Clout + High Legacy',
     colorClass: 'text-cyan-400',
   },
+  SCRAP_KING: {
+    id: 'SCRAP_KING',
+    title: 'Scrap King',
+    description: 'You started in the mud and stayed there. But you own all the metal.',
+    requirement: 'Low Cash + High Total Hustles',
+    colorClass: 'text-zinc-500',
+  },
   // Aura-Heavy Endings
   THE_GHOST: {
     id: 'THE_GHOST',
@@ -108,11 +115,12 @@ export const calculateEnding = (state: PlayerStats): Ending => {
   if (clout > 5000 && aura > 5000 && bag > 1000000000) return ENDINGS.ASCENDED_BEING;
   if (heat >= 90) return ENDINGS.PRISON_EMPIRE;
   if (legacyPoints > 5000 && bag < 100000) return ENDINGS.PHILANTHROPIST;
+  if (bag < 1000 && (state.stats?.totalHustles || 0) > 10) return ENDINGS.SCRAP_KING;
 
-  if (clout > aura * 3) {
+  if (clout > aura * 2) {
     return legacyPoints > 2000 ? ENDINGS.CLOUT_GURU : ENDINGS.MEDIA_TYCOON;
   }
-  if (aura > clout * 3) {
+  if (aura > clout * 2) {
     return bag < 1000000 ? ENDINGS.STREET_LEGEND : ENDINGS.THE_GHOST;
   }
 

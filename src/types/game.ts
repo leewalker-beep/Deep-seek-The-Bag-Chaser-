@@ -50,6 +50,18 @@ export interface Milestone {
   tier: string;
 }
 
+export interface Badge {
+  id: string;
+  hustleId: string;
+  name: string;
+  description: string;
+  icon: string;
+  buff: {
+    type: 'yield' | 'clout' | 'aura' | 'mental' | 'heat';
+    value: number; // multiplier, e.g. 1.05 for +5%
+  };
+}
+
 export interface PlayerStats {
   name?: string;
   bag: number;
@@ -61,6 +73,7 @@ export interface PlayerStats {
   currentTier: Tier;
   hustleLevels: Record<string, number>;
   hustleBranchIds: Record<string, string>;
+  masteredHustles: string[]; // hustle IDs
   flexAssets: Record<string, number>;
   unlockedAchievements: string[];
   lastExecutedHustleId?: string;

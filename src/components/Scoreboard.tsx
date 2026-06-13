@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
 import { StatCard } from './ui/StatCard';
+import { HUSTLE_BADGES } from '../config/badges';
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'career' | 'history' | 'endings'>('career');
+  const [activeTab, setActiveTab] = useState<'career' | 'history' | 'badges' | 'endings'>('career');
 
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
@@ -26,7 +27,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="flex bg-slate-950/50 p-1 m-4 rounded-xl border border-slate-800">
-          {['career', 'history', 'endings'].map((tab) => (
+          {['career', 'history', 'badges', 'endings'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -55,6 +56,43 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <StatCard label="Legacy Score" value={pl.legacyPoints || 0} colorClass="text-yellow-400" />
                 <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
                 <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
+              </motion.div>
+            )}
+
+            {activeTab === 'badges' && (
+              <motion.div
+                key="badges"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="grid grid-cols-1 gap-3"
+              >
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mastery Badges</div>
+                {pl.masteredHustles.length === 0 ? (
+                  <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl">
+                    No hustles mastered yet. Max out a hustle to earn a badge.
+                  </div>
+                ) : (
+                  pl.masteredHustles.map(hId => {
+                    const badge = HUSTLE_BADGES[hId];
+                    if (!badge) return null;
+                    return (
+                      <div key={badge.id} className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl flex items-center gap-4 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-1 bg-emerald-500/10 text-[8px] font-bold text-emerald-400 border-l border-b border-emerald-500/20">MASTERED</div>
+                        <div className="text-4xl bg-slate-900 w-16 h-16 flex items-center justify-center rounded-xl shadow-inner border border-slate-800">
+                          {badge.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{badge.name}</div>
+                          <div className="text-xs text-slate-400 italic mb-2">{badge.description}</div>
+                          <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
+                            BUFF: {badge.buff.value}x {badge.buff.type}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </motion.div>
             )}
 

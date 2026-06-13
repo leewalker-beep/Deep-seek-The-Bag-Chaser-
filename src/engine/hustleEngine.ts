@@ -2,6 +2,7 @@ import type { PlayerStats, MarketType } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
+import { HUSTLE_BADGES } from '../config/badges';
 
 export interface HustleExecutionResult {
   success: boolean;
@@ -146,10 +147,54 @@ export const executeHustleAction = (
   const strategy = getHustleStrategy(hustleId);
   const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess);
 
+  // Apply Badge Buffs
+  let finalYieldMult = 1.0;
+  let finalCloutMult = 1.0;
+  let finalAuraMult = 1.0;
+  let finalMentalMult = 1.0;
+  let finalHeatMult = 1.0;
+
+  state.masteredHustles.forEach(mId => {
+    const badge = HUSTLE_BADGES[mId];
+    if (!badge) return;
+    if (badge.buff.type === 'yield') finalYieldMult *= badge.buff.value;
+    if (badge.buff.type === 'clout') finalCloutMult *= badge.buff.value;
+    if (badge.buff.type === 'aura') finalAuraMult *= badge.buff.value;
+    if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
+    if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
+  });
+
+  // Apply Tier Mechanics
+  if (state.currentTier === 'MUD') {
+    result.mentalHit = Math.floor(result.mentalHit * 1.5); // More exhausting
+  } else if (state.currentTier === 'STREET') {
+    const streakBonus = Math.min(2.0, 1 + (state.streak || 0) * 0.1);
+    result.yieldClout = Math.floor(result.yieldClout * streakBonus);
+  } else if (state.currentTier === 'CORPORATE') {
+    // High variance in corporate
+    const variance = 0.5 + Math.random(); // 0.5x to 1.5x
+    result.yieldCash = Math.floor(result.yieldCash * variance);
+  } else if (state.currentTier === 'ELITE') {
+    // Boardroom pressure: Higher mental hits but higher potential clout
+    result.mentalHit = Math.floor(result.mentalHit * 1.3);
+    result.yieldClout = Math.floor(result.yieldClout * 1.2);
+  } else if (state.currentTier === 'MOGUL') {
+    // Big Swings: Higher yield but much higher heat
+    result.yieldCash = Math.floor(result.yieldCash * 1.5);
+    result.heatHit = Math.floor(result.heatHit * 1.5);
+  } else if (state.currentTier === 'PRESIDENT') {
+    // Campaign intensity: Aura acts as multiplier for Clout
+    const auraBonus = 1 + (state.aura / 5000);
+    result.yieldClout = Math.floor(result.yieldClout * auraBonus);
+  }
+
   const legacyMultiplier = 1 + ((state.legacyPoints || 0) * 0.001);
-  result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier);
-  result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier);
-  result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier);
+
+  result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier * finalYieldMult);
+  result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier * finalCloutMult);
+  result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier * finalAuraMult);
+  result.mentalHit = Math.floor(result.mentalHit * finalMentalMult);
+  result.heatHit = Math.floor(result.heatHit * finalHeatMult);
 
   return result;
 };

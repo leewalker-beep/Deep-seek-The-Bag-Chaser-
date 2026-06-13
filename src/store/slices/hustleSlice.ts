@@ -93,11 +93,41 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       newMilestones.push({ id: 'MILLIONAIRE', name: 'Millionaire', description: 'Earn $1,000,000 total profit', achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
     }
 
+    // Mastery Check
+    const masteredHustles = [...state.pl.masteredHustles];
+    Object.keys(HUSTLES).forEach(hId => {
+      if (masteredHustles.includes(hId)) return;
+
+      const h = HUSTLES[hId];
+      if (h.levels) {
+        const currentLvl = state.pl.hustleLevels[hId] || 1;
+        if (currentLvl >= h.levels.length) {
+          masteredHustles.push(hId);
+          newMilestones.push({ id: `MASTERED_${hId}`, name: `Mastered ${h.name}`, description: `Reached max level in ${h.name}`, achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+      } else if (h.branches) {
+        const nodeId = state.pl.hustleBranchIds[hId] || h.startBranchId;
+        const node = nodeId ? h.branches[nodeId] : undefined;
+        // Repeatables (like Vending) are mastered if they exist and are at a significant count
+        const isRepeatableMastery = node?.isRepeatable && (
+          (hId === 'r_vending' && state.pl.vendingCount >= 20) ||
+          (node.id === 'l2b' && state.pl.rentalCount >= 10)
+        );
+        const isBranchMastery = node && (!node.nextBranches || node.nextBranches.length === 0) && !node.isRepeatable;
+
+        if (isBranchMastery || isRepeatableMastery) {
+           masteredHustles.push(hId);
+           newMilestones.push({ id: `MASTERED_${hId}`, name: `Mastered ${h.name}`, description: `Completed all branches of ${h.name}`, achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        }
+      }
+    });
+
     if (newMilestones.length > 0) {
       set({
         pl: enforceStatCaps({
           ...state.pl,
           milestones: [...(state.pl.milestones || []), ...newMilestones],
+          masteredHustles,
         }),
         news: [`🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`, ...state.news],
       });
