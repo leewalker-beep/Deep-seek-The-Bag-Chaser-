@@ -253,9 +253,6 @@ export const useGameStore = create<GameState>()(
         let success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
         const isVending = hustleId === 'r_vending';
 
-        // Apply Legacy Multiplier (0.1% per point)
-        const legacyMultiplier = 1 + ((state.pl.legacyPoints || 0) * 0.001);
-
         let result = calculateHustleMath(
           hustleId,
           levelData,
@@ -477,8 +474,8 @@ export const useGameStore = create<GameState>()(
           result = { ...result, cost: investment, yieldCash: Math.floor(yieldCash) };
         }
         else if (hustleId === 'film_studio') {
-          const genre = state.pl.filmStudioGenre || 'action';
-          const budget = state.pl.filmStudioBudget || 'medium';
+          const genre = state.pl.filmGenre || 'action';
+          const budget = state.pl.filmBudget || 'medium';
           const genreMult = { action: 1.2, comedy: 1.0, drama: 0.8 }[genre];
           const budgetMult = { low: 0.7, medium: 1.0, high: 1.5 }[budget];
           const baseCost = 25000000;
@@ -514,7 +511,6 @@ export const useGameStore = create<GameState>()(
           success = mult >= 0.5;
         }
         else if (hustleId === 'space_investment') {
-          const company = state.pl.spaceInvestmentCompany || 'asteroid';
           const cost = 100000000 * market.expenseMultiplier;
           const mult = minigameMultiplier || 1.0;
           const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
@@ -560,6 +556,7 @@ export const useGameStore = create<GameState>()(
         }
 
         // Apply Legacy Multiplier to all yields
+        const legacyMultiplier = 1 + ((state.pl.legacyPoints || 0) * 0.001);
         result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier);
         result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier);
         result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier);
@@ -608,6 +605,13 @@ export const useGameStore = create<GameState>()(
             [hustleId]: state.pl.hustleBranchIds[hustleId] || hustle.startBranchId || ''
           } : state.pl.hustleBranchIds,
         });
+
+        // Add philanthropy legacy points
+        if (hustleId === 'philanthropy_empire') {
+          const donationAmount = state.pl.philanthropyDonation || 10000000;
+          const legacyGain = Math.floor(donationAmount / 500000);
+          hustleResultPl.legacyPoints = (hustleResultPl.legacyPoints || 0) + legacyGain;
+        }
 
         const actionLogData = {
           month: state.pl.month,
@@ -953,34 +957,6 @@ export const useGameStore = create<GameState>()(
       }));
     },
 
-    setFilmStudioChoices: (genre, budget) => {
-      set((state) => ({
-        pl: enforceStatCaps({
-          ...state.pl,
-          filmStudioGenre: genre,
-          filmStudioBudget: budget
-        })
-      }));
-    },
-
-    setSpaceInvestmentChoice: (company) => {
-      set((state) => ({
-        pl: enforceStatCaps({
-          ...state.pl,
-          spaceInvestmentCompany: company
-        })
-      }));
-    },
-
-    setPhilanthropyChoice: (donation) => {
-      set((state) => ({
-        pl: enforceStatCaps({
-          ...state.pl,
-          philanthropyDonation: donation
-        })
-      }));
-    },
-
     setVCChoices: (stage, sector, investment) => {
       set((state) => ({
         pl: enforceStatCaps({
@@ -991,6 +967,24 @@ export const useGameStore = create<GameState>()(
         })
       }));
     },
+
+  setFilmChoices: (genre: 'action' | 'comedy' | 'drama', budget: 'low' | 'medium' | 'high') => {
+    set((state) => ({
+      pl: { ...state.pl, filmGenre: genre, filmBudget: budget }
+    }));
+  },
+
+  setSpaceCompany: (company: 'asteroid' | 'tourism' | 'mining') => {
+    set((state) => ({
+      pl: { ...state.pl, spaceCompany: company }
+    }));
+  },
+
+  setPhilanthropyDonation: (amount: number) => {
+    set((state) => ({
+      pl: { ...state.pl, philanthropyDonation: amount }
+    }));
+  },
 
       addTickerMessage: (text: string, colorClass?: string) => {
         set((state) => ({
