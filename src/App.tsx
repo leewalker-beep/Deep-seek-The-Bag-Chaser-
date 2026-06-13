@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useCallback } from 'react';
 import { useGameStore } from './store/gameStore';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
@@ -7,6 +7,7 @@ import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
+import { EndingModal } from './components/EndingModal';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import { SwipeOrder } from './components/minigames/SwipeOrder';
@@ -21,6 +22,8 @@ import { RotateToScale } from './components/minigames/RotateToScale';
 import { MarketPredictor } from './components/minigames/MarketPredictor';
 import { BoardroomBattle } from './components/minigames/BoardroomBattle';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
+import { Scoreboard } from './components/Scoreboard';
+import { TutorialOverlay } from './components/TutorialOverlay';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -45,6 +48,15 @@ import type { Tier } from './types/game';
 
 function App() {
   const [showMinigame, setShowMinigame] = useState(false);
+  const [showScoreboard, setShowScoreboard] = useState(false);
+  const [showEnding, setShowEnding] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem('bag-chaser-tutorial-complete');
+  });
+
+  const handleTutorialComplete = useCallback(() => {
+    setShowTutorial(false);
+  }, []);
 
   const {
     pl,
@@ -120,15 +132,27 @@ function App() {
   // Death screen
   if (ph === 'POST_MORTEM') {
     return (
-      <DeathScreen
-        deathBadge={deathBadge}
-        fatalCause={fatalCause}
-        lastHustleId={pl?.lastExecutedHustleId}
-        onReset={() => {
-          resetGame();
-          window.location.reload();
-        }}
-      />
+      <>
+        {showEnding ? (
+          <EndingModal
+            onClose={() => setShowEnding(false)}
+            onNewGamePlus={() => {
+              resetGame();
+              window.location.reload();
+            }}
+          />
+        ) : (
+          <DeathScreen
+            deathBadge={deathBadge}
+            fatalCause={fatalCause}
+            lastHustleId={pl?.lastExecutedHustleId}
+            onReset={() => {
+              resetGame();
+              window.location.reload();
+            }}
+          />
+        )}
+      </>
     );
   }
 
@@ -207,12 +231,20 @@ function App() {
             <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
               ${pl.bag.toLocaleString()}
             </div>
-            <button
-              onClick={() => setShowReceipts(true)}
-              className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
-            >
-              Receipts
-            </button>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setShowScoreboard(true)}
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
+              >
+                📊 Stats
+              </button>
+              <button
+                onClick={() => setShowReceipts(true)}
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
+              >
+                Receipts
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-1 text-center">
             <div className="flex flex-col">
@@ -579,6 +611,9 @@ function App() {
           }}
         />
       )}
+
+      {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
+      {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
 
       {/* News Ticker */}
       <NewsTicker news={news} />
