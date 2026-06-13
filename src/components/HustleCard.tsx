@@ -2,6 +2,7 @@ import React from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
 import { useGameStore } from '../store/gameStore';
+import { HUSTLE_BADGES } from '../config/badges';
 
 interface HustleCardProps {
   hustle: Hustle;
@@ -45,8 +46,22 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   const canAfford = player.bag >= levelData.cost;
   const isVending = hustle.id === 'r_vending';
 
+  const tierClass = `hustle-card-${hustle.tier.toLowerCase()}`;
+  const isMastered = player.masteredHustles?.includes(hustle.id);
+  const badge = HUSTLE_BADGES[hustle.id];
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
+    <div className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}>
+      {isMastered && badge && (
+        <div className="absolute top-0 right-0 p-2 bg-emerald-500/20 rounded-bl-xl border-l border-b border-emerald-500/30 group">
+           <span className="text-xl" title={badge.name}>{badge.icon}</span>
+           <div className="absolute top-full right-0 mt-1 w-48 bg-slate-900 border border-slate-700 p-2 rounded-lg text-[10px] hidden group-hover:block z-50 shadow-2xl">
+              <div className="font-bold text-emerald-400">{badge.name}</div>
+              <div className="text-slate-400 italic mb-1">{badge.description}</div>
+              <div className="text-blue-400 font-mono">BUFF: {badge.buff.value}x {badge.buff.type}</div>
+           </div>
+        </div>
+      )}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-3xl bg-slate-800 w-12 h-12 flex items-center justify-center rounded-xl shadow-inner">

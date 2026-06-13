@@ -14,7 +14,7 @@ describe('endingEngine', () => {
   });
 
   it('should return SCRAP_KING if bag is empty', () => {
-    const state = { heat: 0, bag: 500 } as PlayerStats;
+    const state = { heat: 0, bag: 500, stats: { totalHustles: 15 } } as PlayerStats;
     expect(calculateEnding(state)).toBe(ENDINGS.SCRAP_KING);
   });
 

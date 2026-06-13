@@ -11,18 +11,87 @@
   --startup-accent: #fbbf24;
 }
 
-.mud-tier { background: var(--mud-bg); transition: background 1s ease; }
-.street-tier { background: var(--street-bg); transition: background 1s ease; }
-.startup-tier { background: var(--startup-bg); transition: background 1s ease; }
+/* Tier Global Styles */
+.mud-tier {
+  background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+  font-family: 'Courier New', Courier, monospace;
+}
+.street-tier {
+  background: linear-gradient(to bottom, #0a0a2a, #1a0a3a);
+  font-family: 'Inter', sans-serif;
+}
+.startup-tier {
+  background: linear-gradient(to bottom, #0f172a, #1e293b);
+  font-family: 'Geist', 'Inter', sans-serif;
+}
+.corporate-tier {
+  background: linear-gradient(to bottom, #0a1628, #1e3a8a);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.elite-tier {
+  background: linear-gradient(to bottom, #1a0f2a, #2e1065);
+}
+.mogul-tier {
+  background: linear-gradient(to bottom, #2a0f1a, #701a75);
+}
+.president-tier {
+  background: linear-gradient(to bottom, #1a1a0f, #422006);
+}
+.open-tier {
+  background: radial-gradient(circle, #111827 0%, #000000 100%);
+}
 
-.mud { background: #0f0f0f; min-height: 100vh; }
-.street { background: #0a0a2a; min-height: 100vh; }
-.startup { background: #0f172a; min-height: 100vh; }
-.corporate { background: #0a1628; min-height: 100vh; }
-.elite { background: #1a0f2a; min-height: 100vh; }
-.mogul { background: #2a0f1a; min-height: 100vh; }
-.president { background: #1a1a0f; min-height: 100vh; }
+/* Tier Specific Card Styles */
+.hustle-card-mud {
+  @apply bg-zinc-900 border-zinc-800 grayscale-[0.5] contrast-125;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
 
+.hustle-card-street {
+  @apply bg-slate-900 border-blue-500/30;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+.hustle-card-street:hover {
+  @apply border-blue-400;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.hustle-card-startup {
+  @apply bg-white/5 backdrop-blur-md border-white/10;
+}
+
+.hustle-card-corporate {
+  @apply bg-slate-800 border-yellow-500/50;
+  background-image: linear-gradient(45deg, rgba(234, 179, 8, 0.05) 25%, transparent 25%);
+  background-size: 4px 4px;
+}
+
+.hustle-card-elite {
+  @apply bg-purple-950/40 border-purple-500/30;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.hustle-card-mogul {
+  @apply bg-fuchsia-950/30 border-fuchsia-500/40;
+  border-width: 2px;
+}
+
+.hustle-card-president {
+  @apply bg-stone-900 border-amber-600/50;
+  box-shadow: 0 0 40px rgba(217, 119, 6, 0.1);
+}
+
+.hustle-card-open {
+  @apply bg-black border-white/20;
+  animation: pulse-border 4s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(255,255,255,0.1); }
+  50% { border-color: rgba(255,255,255,0.5); }
+}
+
+/* Animations */
 @keyframes flash-red {
   0%, 100% { color: inherit; }
   50% { color: #ef4444; }

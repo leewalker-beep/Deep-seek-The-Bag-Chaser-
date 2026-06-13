@@ -23,6 +23,9 @@ import { PinchToZoom } from './components/minigames/PinchToZoom';
 import { RotateToScale } from './components/minigames/RotateToScale';
 import { MarketPredictor } from './components/minigames/MarketPredictor';
 import { BoardroomBattle } from './components/minigames/BoardroomBattle';
+import { SlotMachine } from './components/minigames/SlotMachine';
+import { QuickReaction } from './components/minigames/QuickReaction';
+import { StruggleMash } from './components/minigames/StruggleMash';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { TutorialOverlay } from './components/TutorialOverlay';
@@ -328,21 +331,29 @@ function App() {
             {/* Hustle Grid */}
             {!showFlexMarket && (
               <div className="grid grid-cols-2 gap-3">
-                {hustles.map((hustle) => (
-                  <button
-                    key={hustle.id}
-                    onClick={() => {
-                      setActiveHustleView(hustle.id);
-                      setShowMinigame(false);
-                    }}
-                    className="bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all hover:border-slate-700 active:scale-95"
-                  >
-                    <div className="text-4xl mb-2">{hustle.icon}</div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
-                      {hustle.name}
-                    </div>
-                  </button>
-                ))}
+                {hustles.map((hustle) => {
+                  const isMastered = pl.masteredHustles?.includes(hustle.id);
+                  const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
+
+                  return (
+                    <button
+                      key={hustle.id}
+                      onClick={() => {
+                        setActiveHustleView(hustle.id);
+                        setShowMinigame(false);
+                      }}
+                      className={`${tierCardClass} rounded-xl p-4 text-center border transition-all active:scale-95 relative overflow-hidden`}
+                    >
+                      {isMastered && (
+                        <div className="absolute top-1 right-1 text-xs">👑</div>
+                      )}
+                      <div className="text-4xl mb-2">{hustle.icon}</div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
+                        {hustle.name}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -407,6 +418,9 @@ function App() {
                 if (activeMiniGame === 'HoldHype') return <HoldHype onComplete={onComplete} />;
                 if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} />;
                 if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} />;
+                if (activeMiniGame === 'SlotMachine') return <SlotMachine onComplete={onComplete} />;
+                if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} />;
+                if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} />;
                 if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={pl.hustleLevels[hustle.id] || 1}
