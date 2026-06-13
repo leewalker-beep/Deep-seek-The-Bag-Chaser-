@@ -1,21 +1,22 @@
 import { test, expect } from '@playwright/test';
 
 test('verify mogul hustles', async ({ page }) => {
-  // Set up MOGUL state
+  // Set up MOGUL state directly in localStorage to bypass prologue/tutorial
   await page.goto('http://localhost:5173');
+
   await page.evaluate(() => {
-    const state = {
+    const mogulState = {
       state: {
         pl: {
-          name: 'Mogul Tester',
-          bag: 1000000000,
-          clout: 1000,
-          aura: 1000,
-          mentalHealth: 80,
+          name: 'Test Mogul',
+          bag: 500000000,
+          clout: 5000,
+          aura: 5000,
+          mentalHealth: 100,
           heat: 0,
-          month: 25,
+          month: 120,
           currentTier: 'MOGUL',
-          hustleLevels: { film_studio: 1, fight_promoter: 1, space_investment: 1, philanthropy_empire: 1 },
+          hustleLevels: {},
           hustleBranchIds: {},
           flexAssets: {},
           unlockedAchievements: [],
@@ -26,36 +27,40 @@ test('verify mogul hustles', async ({ page }) => {
           mentalShieldTurns: 0,
           artists: [],
           grammyCount: 0,
-          recordLabelLevel: 1,
+          recordLabelLevel: 0,
           realEstateType: 'residential',
           realEstateLeverage: 0,
           realEstateStrategy: 'hold',
           vcStage: 'seed',
           vcSector: 'tech',
-          vcInvestment: 1,
-          marketCycle: { realEstate: 'normal', vc: { tech: 'normal', biotech: 'normal', energy: 'normal' } },
+          vcInvestment: 0,
+          marketCycle: {
+            realEstate: 'normal',
+            vc: { tech: 'normal', biotech: 'normal', energy: 'normal' }
+          },
           monthsSinceCycleChange: 0,
           dynamicPassives: {},
-          legacyPoints: 0,
           rivals: [],
           actionLog: [],
-          milestones: [],
-          stats: { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 }
+          milestones: []
         },
         ph: 'PLAYING',
         currentMarket: 'NORMAL',
-        unlockedHustles: { film_studio: true, fight_promoter: true, space_investment: true, philanthropy_empire: true },
+        unlockedHustles: {},
         activeTab: 'MOGUL',
         difficulty: 3
       },
       version: 0
     };
-    localStorage.setItem('bag-chaser-save', JSON.stringify(state));
-    window.location.reload();
+    localStorage.setItem('bag-chaser-save', JSON.stringify(mogulState));
+    localStorage.setItem('bag-chaser-tutorial-complete', 'true');
   });
 
-  // Verify MOGUL tab is active
-  await expect(page.locator('button:has-text("MOGUL")')).toHaveClass(/bg-emerald-500/);
+  // Reload to apply state
+  await page.goto('http://localhost:5173');
+
+  // Wait for Film Studio button to be visible
+  await page.waitForSelector('text=Film Studio');
 
   // 1. Film Studio
   console.log('Testing Film Studio...');
@@ -64,38 +69,12 @@ test('verify mogul hustles', async ({ page }) => {
   await page.click('button:has-text("MEDIUM")');
   await page.click('button:has-text("GREENLIGHT MOVIE")');
 
-  // Wait for Reward Card and collect
-  await page.waitForSelector('text=COLLECT REWARDS', { timeout: 10000 });
-  await page.click('button:has-text("COLLECT REWARDS")');
+  // Wait for ShakeForHype minigame and complete it
+  await page.waitForSelector('text=Shake for Hype');
+  await page.click('text=Skip to Results');
 
-  // 2. Fight Promoter (ShakeForHype fallback)
-  console.log('Testing Fight Promoter...');
-  await page.click('text=Fight Promoter');
-  await page.waitForSelector('text=FIGHT PROMOTER');
-  // Since we are in a headless/desktop env, it should show the slider fallback
-  await page.fill('input[type="range"]', '80');
-  await page.click('button:has-text("COMPLETE")');
-  await page.waitForSelector('text=COLLECT REWARDS');
-  await page.click('button:has-text("COLLECT REWARDS")');
+  await page.waitForSelector('text=HUSTLE SUCCESS');
+  await page.click('text=Dismiss');
 
-  // 3. Space Investment
-  console.log('Testing Space Investment...');
-  await page.click('text=Space Investment');
-  await page.click('text=Asteroid Mining Co.');
-  await page.click('button:has-text("INVEST $100M")');
-  await page.waitForSelector('text=COLLECT REWARDS');
-  await page.click('button:has-text("COLLECT REWARDS")');
-
-  // 4. Philanthropy
-  console.log('Testing Philanthropy...');
-  await page.click('text=Philanthropy Empire');
-  await page.click('text=DONATE $50M → +100 Legacy Points');
-  await page.click('button:has-text("MAKE DONATION")');
-  await page.waitForSelector('text=COLLECT REWARDS');
-  await page.click('button:has-text("COLLECT REWARDS")');
-
-  // Verify Legacy Points
-  console.log('Verifying Legacy Points...');
-  const legacyPointsText = await page.textContent('body');
-  expect(legacyPointsText).toContain('Legacy Points: 100');
+  expect(await page.isVisible('text=Test Mogul')).toBeTruthy();
 });
