@@ -814,3 +814,71 @@ HUSTLES.the_campaign = {
     { level: 1, id: 'l1', cost: 100000000, yieldCash: 0, yieldClout: 5000, yieldAura: 5000, mentalHit: -80, cloutReq: 1000, auraReq: 1000 },
   ]
 };
+
+HUSTLES.president_campaign = {
+  id: 'president_campaign',
+  name: 'Campaign Trail',
+  tier: 'PRESIDENT',
+  icon: '🇺🇸',
+  description: 'Run for the highest office in the land',
+  hasPanel: true,
+  panelType: 'PRESIDENT_CAMPAIGN',
+  levels: [
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 1000, yieldAura: 1000, mentalHit: -50, cloutReq: 1000, auraReq: 1000, passiveYield: 0 }
+  ]
+};
+
+HUSTLES.open_island = {
+  id: 'open_island',
+  name: 'Buy an Island',
+  tier: 'OPEN',
+  icon: '🏝️',
+  description: 'Own a private paradise',
+  levels: [
+    { level: 1, cost: 500000000, yieldCash: 0, yieldClout: 0, yieldAura: 500, mentalHit: 20, cloutReq: 0, auraReq: 500, passiveYield: 50000000 }
+  ]
+};
+
+HUSTLES.open_sports_league = {
+  id: 'open_sports_league',
+  name: 'Buy a Sports League',
+  tier: 'OPEN',
+  icon: '🏆',
+  description: 'Own the game',
+  levels: [
+    { level: 1, cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 500, mentalHit: -10, cloutReq: 2000, auraReq: 500, passiveYield: 200000000 }
+  ]
+};
+
+HUSTLES.open_crypto = {
+  id: 'open_crypto',
+  name: 'Create a Cryptocurrency',
+  tier: 'OPEN',
+  icon: '₿',
+  description: 'Pump and dump your own coin',
+  levels: [
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 500, yieldAura: 200, mentalHit: -30, cloutReq: 500, auraReq: 200, passiveYield: 0 }
+  ]
+};
+
+HUSTLES.open_celebrity = {
+  id: 'open_celebrity',
+  name: 'Marry a Celebrity',
+  tier: 'OPEN',
+  icon: '💍',
+  description: 'Power couple status',
+  levels: [
+    { level: 1, cost: 50000000, yieldCash: 0, yieldClout: 100, yieldAura: 200, mentalHit: 10, cloutReq: 100, auraReq: 200, passiveYield: 0 }
+  ]
+};
+
+HUSTLES.open_movie = {
+  id: 'open_movie',
+  name: 'Fund a Movie',
+  tier: 'OPEN',
+  icon: '🎬',
+  description: 'Finance a Hollywood blockbuster',
+  levels: [
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 300, yieldAura: 150, mentalHit: -15, cloutReq: 300, auraReq: 150, passiveYield: 0 }
+  ]
+};

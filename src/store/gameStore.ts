@@ -986,6 +986,30 @@ export const useGameStore = create<GameState>()(
     }));
   },
 
+  setCampaignStage: (stage: number) => {
+    set((state) => ({
+      pl: { ...state.pl, campaignStage: stage }
+    }));
+  },
+
+  setCampaignPlatform: (platform: 'economy' | 'healthcare' | 'foreign') => {
+    set((state) => ({
+      pl: { ...state.pl, campaignPlatform: platform }
+    }));
+  },
+
+  setCampaignVP: (vp: string) => {
+    set((state) => ({
+      pl: { ...state.pl, campaignVP: vp }
+    }));
+  },
+
+  setCampaignDelegates: (delegates: number) => {
+    set((state) => ({
+      pl: { ...state.pl, campaignDelegates: delegates }
+    }));
+  },
+
       addTickerMessage: (text: string, colorClass?: string) => {
         set((state) => ({
           news: [{ text, colorClass }, ...state.news.slice(0, 49)]
