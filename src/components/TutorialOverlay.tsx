@@ -1,48 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BaseButton } from './ui/BaseButton';
 
-interface TutorialOverlayProps {
-  onComplete: () => void;
+interface TutorialStep {
+  title: string;
+  content: string;
+  target?: string; // CSS selector for highlighting
 }
 
-export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onComplete }) => {
-  const [step, setStep] = useState(0);
+const STEPS: TutorialStep[] = [
+  {
+    title: 'Welcome to the Grind',
+    content: "You're starting at the bottom. The goal is simple: chase the bag, build your clout, and become a legend.",
+  },
+  {
+    title: 'The Essentials',
+    content: "Keep an eye on your stats. BAG is your cash, CLOUT is your reputation, and AURA is your street cred. Don't let your MENTAL HEALTH drop too low, or it's game over.",
+  },
+  {
+    title: 'Hustles & Minigames',
+    content: "Every hustle is different. Some are simple taps, others require precision sensors. Master them all to maximize your yields.",
+  },
+  {
+    title: 'Market Conditions',
+    content: "The world changes. BULL markets make everything easy, but a CRACKDOWN can freeze your assets. Adapt or starve.",
+  },
+  {
+    title: 'Ready?',
+    content: "The first hustle is waiting. Get to work.",
+  },
+];
 
-  const steps = [
-    { title: 'Welcome to Bag Chaser', message: 'Escape the mud. Build the empire. Don\'t lose your soul.', position: 'center' },
-    { title: 'Pick a Hustle', message: 'Tap any hustle card to start making money.', position: 'center', highlight: '.grid-cols-2 button:first-child' },
-    { title: 'Play the Minigame', message: 'Each hustle has a unique touch-based minigame. Follow the instructions.', position: 'center' },
-    { title: 'Collect Your Reward', message: 'Your bag, clout, and aura will increase. Watch for big wins!', position: 'center' },
-    { title: 'Manage Your Stats', message: 'Keep mental health high and heat low. Use recovery hustles if needed.', position: 'center', highlight: '.grid-cols-4' },
-    { title: 'Advance to Next Tier', message: 'Meet the requirements and tap the purple button to level up.', position: 'center', highlight: '.bg-purple-600' },
-  ];
+export const TutorialOverlay: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
+  const [currentStep, setCurrentStep] = useState(0);
 
-  useEffect(() => {
-    if (step < steps.length) {
-      const timer = setTimeout(() => {
-        setStep(step + 1);
-      }, 4000);
-      return () => clearTimeout(timer);
+  const next = () => {
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
     } else {
-      onComplete();
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');
+      onComplete();
     }
-  }, [step, steps.length, onComplete]);
-
-  if (step >= steps.length) return null;
-
-  const currentStep = steps[step];
+  };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-slate-900 rounded-2xl border-2 border-emerald-500 p-6 max-w-sm text-center">
-        <div className="text-4xl mb-3">{step === 0 ? '💰' : step === 1 ? '🎮' : step === 2 ? '🎯' : step === 3 ? '📈' : step === 4 ? '🛡️' : '⭐'}</div>
-        <h3 className="text-xl font-black text-white mb-2">{currentStep.title}</h3>
-        <p className="text-slate-300 text-sm mb-6">{currentStep.message}</p>
-        <div className="flex justify-between">
-          <button onClick={() => { localStorage.setItem('bag-chaser-tutorial-complete', 'true'); onComplete(); }} className="text-[10px] text-slate-500 uppercase">Skip Tutorial</button>
-          <div className="text-[10px] text-slate-500">Step {step + 1}/{steps.length}</div>
-        </div>
-      </div>
-    </div>
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-sm w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl"
+        >
+          <div className="text-emerald-500 font-black uppercase tracking-widest text-[10px] mb-2">
+            Tutorial Step {currentStep + 1} of {STEPS.length}
+          </div>
+          <h2 className="text-2xl font-black mb-4 tracking-tight">{STEPS[currentStep].title}</h2>
+          <p className="text-slate-400 leading-relaxed mb-8">
+            {STEPS[currentStep].content}
+          </p>
+          <BaseButton onClick={next} className="w-full">
+            {currentStep === STEPS.length - 1 ? "Let's Go" : "Next"}
+          </BaseButton>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
