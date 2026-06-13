@@ -13,32 +13,54 @@
 
 /* Tier Global Styles */
 .mud-tier {
-  background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+  background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
   font-family: 'Courier New', Courier, monospace;
+  position: relative;
 }
+.mud-tier::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
 .street-tier {
-  background: linear-gradient(to bottom, #0a0a2a, #1a0a3a);
+  background: linear-gradient(to bottom, #05051a, #120a2e);
   font-family: 'Inter', sans-serif;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
+
 .startup-tier {
-  background: linear-gradient(to bottom, #0f172a, #1e293b);
+  background: linear-gradient(to bottom, #020617, #0f172a);
   font-family: 'Geist', 'Inter', sans-serif;
 }
+
 .corporate-tier {
-  background: linear-gradient(to bottom, #0a1628, #1e3a8a);
+  background: linear-gradient(to bottom, #0f172a, #1e3a8a);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 .elite-tier {
-  background: linear-gradient(to bottom, #1a0f2a, #2e1065);
+  background: linear-gradient(to bottom, #0a0a0a, #1a0f2e);
+  font-family: 'Georgia', serif;
 }
+
 .mogul-tier {
-  background: linear-gradient(to bottom, #2a0f1a, #701a75);
+  background: linear-gradient(135deg, #2a0f1a 0%, #4a1d2e 50%, #701a75 100%);
+  font-family: 'Garamond', serif;
 }
+
 .president-tier {
-  background: linear-gradient(to bottom, #1a1a0f, #422006);
+  background: linear-gradient(to bottom, #0c0a09, #292524);
+  font-family: 'Times New Roman', Times, serif;
 }
+
 .open-tier {
-  background: radial-gradient(circle, #111827 0%, #000000 100%);
+  background: radial-gradient(circle at center, #111827 0%, #000000 100%);
+  font-family: 'System-ui', sans-serif;
 }
 
 /* Tier Specific Card Styles */
