@@ -7,8 +7,15 @@ interface BalanceScaleProps {
 export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
   const [balance, setBalance] = useState(50); // 0 to 100, 50 is perfectly balanced
   const [timeLeft, setTimeLeft] = useState(10);
-  const [failed, setFailed] = useState(false);
-  const requestRef = useRef<number>();
+  const [failed, setFailed] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (failed) {
+       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    }
+  }, [failed]);
+
+  const requestRef = useRef<number>(0);
   const driftRef = useRef(Math.random() > 0.5 ? 0.5 : -0.5);
 
   useEffect(() => {
@@ -50,7 +57,7 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
       const score = 1 - Math.abs(50 - balance) / 50;
       onComplete(1.0 + score * 2.0);
     }
-  }, [timeLeft, failed]);
+  }, [timeLeft, failed, balance, onComplete]);
 
   const handleCorrect = (amount: number) => {
     setBalance(prev => Math.max(0, Math.min(100, prev + amount)));

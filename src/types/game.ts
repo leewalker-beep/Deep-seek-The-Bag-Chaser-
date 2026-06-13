@@ -50,6 +50,15 @@ export interface Milestone {
   tier: string;
 }
 
+export interface DailyChallenge {
+  id: string;
+  description: string;
+  target: number;
+  current: number;
+  isCompleted: boolean;
+  reward: { cash: number };
+}
+
 export interface Badge {
   id: string;
   hustleId: string;
@@ -157,6 +166,11 @@ export interface GameState {
   difficulty: 1 | 2 | 3;
   pendingUpdate: PendingUpdate | null;
 
+  // Challenges
+  dailyChallenges: DailyChallenge[];
+  loginStreak: number;
+  lastLoginDate: string | null;
+
   // Actions
   resetGame: (difficulty?: 1 | 2 | 3) => void;
   setPlayerName: (name: string) => void;
@@ -198,4 +212,7 @@ export interface GameState {
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;
+  checkChallenges: () => void;
+  updateChallengeProgress: (type: string, amount: number) => void;
+  processLogin: () => void;
 }
