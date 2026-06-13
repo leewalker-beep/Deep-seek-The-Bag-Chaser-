@@ -11,6 +11,8 @@ import { showConfetti } from '../components/effects/Confetti';
 import { DEATH_MESSAGES } from '../config/deathMessages';
 import { getInitialStats, getUnlockedHustles } from './initialState';
 import { enforceStatCaps } from '../engine/statEngine';
+import { getEnding } from '../config/endings';
+import { getDominantStat } from '../utils/endingUtils';
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -668,6 +670,15 @@ export const useGameStore = create<GameState>()(
           finalPh = 'POST_MORTEM';
           finalDeathBadge = deathInfo.badge;
           finalFatalCause = deathCause;
+
+          // Save Ending
+          const finalStat = getDominantStat(cappedPl);
+          const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
+          const savedEndings = JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]');
+          if (!savedEndings.includes(ending.title)) {
+            savedEndings.push(ending.title);
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          }
         }
 
         if (defer) {
@@ -1102,6 +1113,15 @@ export const useGameStore = create<GameState>()(
           const cappedPl = enforceStatCaps(newPl);
 
           if (shouldDie) {
+            // Save Ending
+            const finalStat = getDominantStat(cappedPl);
+            const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
+            const savedEndings = JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]');
+            if (!savedEndings.includes(ending.title)) {
+              savedEndings.push(ending.title);
+              localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+            }
+
             set({
               pl: cappedPl,
               currentMarket: newMarket,
