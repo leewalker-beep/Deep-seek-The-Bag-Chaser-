@@ -90,17 +90,17 @@ export interface PlayerStats {
   vcStage: 'seed' | 'seriesA' | 'growth';
   vcSector: 'tech' | 'biotech' | 'energy';
   vcInvestment: number;
-  filmStudioGenre: 'action' | 'comedy' | 'drama';
-  filmStudioBudget: 'low' | 'medium' | 'high';
-  spaceInvestmentCompany: 'asteroid' | 'tourism' | 'mining';
-  philanthropyDonation: number;
+  legacyPoints?: number;
+  filmGenre?: 'action' | 'comedy' | 'drama';
+  filmBudget?: 'low' | 'medium' | 'high';
+  spaceCompany?: 'asteroid' | 'tourism' | 'mining';
+  philanthropyDonation?: number;
   marketCycle: {
     realEstate: 'boom' | 'bust' | 'normal';
     vc: Record<string, 'boom' | 'bust' | 'normal'>;
   };
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
-  legacyPoints: number;
   rivals: Rival[];
   actionLog: GameAction[];
   milestones: Milestone[];
@@ -171,9 +171,9 @@ export interface GameState {
   setVASettings: (staff: PlayerStats['vaStaff'], training: PlayerStats['vaTraining'], client: PlayerStats['vaClient']) => void;
   setRealEstateChoices: (type: PlayerStats['realEstateType'], leverage: PlayerStats['realEstateLeverage'], strategy: PlayerStats['realEstateStrategy']) => void;
   setVCChoices: (stage: PlayerStats['vcStage'], sector: PlayerStats['vcSector'], investment: number) => void;
-  setFilmStudioChoices: (genre: PlayerStats['filmStudioGenre'], budget: PlayerStats['filmStudioBudget']) => void;
-  setSpaceInvestmentChoice: (company: PlayerStats['spaceInvestmentCompany']) => void;
-  setPhilanthropyChoice: (donation: number) => void;
+  setFilmChoices: (genre: 'action' | 'comedy' | 'drama', budget: 'low' | 'medium' | 'high') => void;
+  setSpaceCompany: (company: 'asteroid' | 'tourism' | 'mining') => void;
+  setPhilanthropyDonation: (amount: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;

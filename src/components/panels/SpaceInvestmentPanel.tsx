@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 
@@ -7,8 +7,8 @@ interface SpaceInvestmentPanelProps {
 }
 
 export const SpaceInvestmentPanel: React.FC<SpaceInvestmentPanelProps> = ({ hustle }) => {
-  const { pl, executeHustle, setSpaceInvestmentChoice, setActiveHustleView } = useGameStore();
-  const company = pl.spaceInvestmentCompany || 'asteroid';
+  const { pl, setSpaceCompany, executeHustle, setActiveHustleView } = useGameStore();
+  const company = pl.spaceCompany || 'asteroid';
 
   const companyData = {
     asteroid: { name: 'Asteroid Mining Co.', risk: '70% failure', reward: '3x success, 10x moon' },
@@ -18,7 +18,7 @@ export const SpaceInvestmentPanel: React.FC<SpaceInvestmentPanelProps> = ({ hust
 
   const handleInvest = () => {
     const roll = Math.random();
-    let multiplier = 1.0;
+    let multiplier: number;
 
     if (company === 'asteroid') {
       if (roll < 0.7) multiplier = 0.5;
@@ -52,7 +52,7 @@ export const SpaceInvestmentPanel: React.FC<SpaceInvestmentPanelProps> = ({ hust
         {(['asteroid', 'tourism', 'mining'] as const).map((opt) => (
           <button
             key={opt}
-            onClick={() => setSpaceInvestmentChoice(opt)}
+            onClick={() => setSpaceCompany(opt)}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all ${company === opt ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-800 bg-slate-950'}`}
           >
             <div className="font-black text-white uppercase tracking-tighter">{companyData[opt].name}</div>

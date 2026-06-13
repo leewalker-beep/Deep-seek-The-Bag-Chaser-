@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 
@@ -7,11 +7,11 @@ interface PhilanthropyPanelProps {
 }
 
 export const PhilanthropyPanel: React.FC<PhilanthropyPanelProps> = ({ hustle }) => {
-  const { pl, executeHustle, setPhilanthropyChoice, setActiveHustleView } = useGameStore();
+  const { pl, setPhilanthropyDonation, executeHustle, setActiveHustleView } = useGameStore();
   const donation = pl.philanthropyDonation || 10000000;
 
   const handleDonate = () => {
-    const result = executeHustle(hustle.id);
+    const result = executeHustle(hustle.id, donation / 50000000);
     if (result.success) setActiveHustleView(null);
   };
 
@@ -31,13 +31,13 @@ export const PhilanthropyPanel: React.FC<PhilanthropyPanelProps> = ({ hustle }) 
       </div>
 
       <div className="grid gap-3">
-        <button onClick={() => setPhilanthropyChoice(10000000)} className={`py-3 rounded-lg border-2 ${donation === 10000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
+        <button onClick={() => setPhilanthropyDonation(10000000)} className={`py-3 rounded-lg border-2 ${donation === 10000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
           DONATE $10M → +20 Legacy Points
         </button>
-        <button onClick={() => setPhilanthropyChoice(50000000)} className={`py-3 rounded-lg border-2 ${donation === 50000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
+        <button onClick={() => setPhilanthropyDonation(50000000)} className={`py-3 rounded-lg border-2 ${donation === 50000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
           DONATE $50M → +100 Legacy Points
         </button>
-        <button onClick={() => setPhilanthropyChoice(100000000)} className={`py-3 rounded-lg border-2 ${donation === 100000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
+        <button onClick={() => setPhilanthropyDonation(100000000)} className={`py-3 rounded-lg border-2 ${donation === 100000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
           DONATE $100M → +200 Legacy Points
         </button>
       </div>

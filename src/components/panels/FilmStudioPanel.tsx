@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 
@@ -7,29 +7,27 @@ interface FilmStudioPanelProps {
 }
 
 export const FilmStudioPanel: React.FC<FilmStudioPanelProps> = ({ hustle }) => {
-  const { pl, executeHustle, setFilmStudioChoices, setActiveHustleView } = useGameStore();
-  const genre = pl.filmStudioGenre || 'action';
-  const budget = pl.filmStudioBudget || 'medium';
+  const { pl, setFilmChoices, executeHustle, setActiveHustleView } = useGameStore();
 
+  const genre = pl.filmGenre || 'action';
+  const budget = pl.filmBudget || 'medium';
+
+  const genreMultiplier = { action: 1.2, comedy: 1.0, drama: 0.8 };
   const budgetMultiplier = { low: 0.7, medium: 1.0, high: 1.5 };
   const baseCost = 25000000;
   const totalCost = baseCost * budgetMultiplier[budget];
 
   const handleProduce = () => {
     const outcome = Math.random();
-    let multiplier = 1.0;
+    let multiplier: number;
 
-    if (outcome < 0.3) {
-      multiplier = 0.3;
-    } else if (outcome < 0.7) {
-      multiplier = 1.5;
-    } else if (outcome < 0.9) {
-      multiplier = 3.0;
-    } else {
-      multiplier = 5.0;
-    }
+    if (outcome < 0.3) multiplier = 0.3;
+    else if (outcome < 0.7) multiplier = 1.5;
+    else if (outcome < 0.9) multiplier = 3.0;
+    else multiplier = 5.0;
 
-    const result = executeHustle(hustle.id, multiplier);
+    const finalMultiplier = multiplier * genreMultiplier[genre];
+    const result = executeHustle(hustle.id, finalMultiplier);
     if (result.success) setActiveHustleView(null);
   };
 
@@ -47,18 +45,18 @@ export const FilmStudioPanel: React.FC<FilmStudioPanelProps> = ({ hustle }) => {
         <div>
           <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Genre</label>
           <div className="grid grid-cols-3 gap-2">
-            <button onClick={() => setFilmStudioChoices('action', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'action' ? 'bg-red-600 border-red-500' : 'bg-slate-800 border-slate-700'}`}>ACTION</button>
-            <button onClick={() => setFilmStudioChoices('comedy', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'comedy' ? 'bg-yellow-600 border-yellow-500' : 'bg-slate-800 border-slate-700'}`}>COMEDY</button>
-            <button onClick={() => setFilmStudioChoices('drama', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'drama' ? 'bg-blue-600 border-blue-500' : 'bg-slate-800 border-slate-700'}`}>DRAMA</button>
+            <button onClick={() => setFilmChoices('action', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'action' ? 'bg-red-600 border-red-500' : 'bg-slate-800 border-slate-700'}`}>ACTION</button>
+            <button onClick={() => setFilmChoices('comedy', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'comedy' ? 'bg-yellow-600 border-yellow-500' : 'bg-slate-800 border-slate-700'}`}>COMEDY</button>
+            <button onClick={() => setFilmChoices('drama', budget)} className={`py-2 rounded-lg text-xs font-bold border-2 ${genre === 'drama' ? 'bg-blue-600 border-blue-500' : 'bg-slate-800 border-slate-700'}`}>DRAMA</button>
           </div>
         </div>
 
         <div>
           <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Budget</label>
           <div className="grid grid-cols-3 gap-2">
-            <button onClick={() => setFilmStudioChoices(genre, 'low')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'low' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>LOW ($17.5M)</button>
-            <button onClick={() => setFilmStudioChoices(genre, 'medium')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'medium' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>MEDIUM ($25M)</button>
-            <button onClick={() => setFilmStudioChoices(genre, 'high')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'high' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>HIGH ($37.5M)</button>
+            <button onClick={() => setFilmChoices(genre, 'low')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'low' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>LOW ($17.5M)</button>
+            <button onClick={() => setFilmChoices(genre, 'medium')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'medium' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>MEDIUM ($25M)</button>
+            <button onClick={() => setFilmChoices(genre, 'high')} className={`py-2 rounded-lg text-xs font-bold border-2 ${budget === 'high' ? 'bg-emerald-600 border-emerald-500' : 'bg-slate-800 border-slate-700'}`}>HIGH ($37.5M)</button>
           </div>
         </div>
       </div>
