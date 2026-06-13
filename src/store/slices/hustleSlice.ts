@@ -208,6 +208,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
     });
 
+    (get() as any).updateChallengeProgress('hustle_count', 1);
+    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
+    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
+
     get().logAction({
       month: state.pl.month,
       tier: state.pl.currentTier,
@@ -645,6 +649,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         [hustleId]: state.pl.hustleBranchIds[hustleId] || hustle.startBranchId || ''
       } : state.pl.hustleBranchIds,
     });
+
+    (get() as any).updateChallengeProgress('hustle_count', 1);
+    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
+    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
 
     if (hustleId === 'philanthropy_empire') {
       const donationAmount = state.pl.philanthropyDonation || 10000000;

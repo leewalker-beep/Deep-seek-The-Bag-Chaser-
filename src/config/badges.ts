@@ -136,5 +136,69 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     description: 'The sun never sets on your burger empire.',
     icon: '🍔',
     buff: { type: 'yield', value: 1.10 }
+  },
+  smm: {
+    id: 'badge_smm',
+    hustleId: 'smm',
+    name: 'Agency Architect',
+    description: 'Managed 100 accounts without a single password leak.',
+    icon: '📈',
+    buff: { type: 'clout', value: 1.10 }
+  },
+  gig: {
+    id: 'badge_gig',
+    hustleId: 'gig',
+    name: 'Logistics Legend',
+    description: 'Your fleet delivers faster than the speed of light.',
+    icon: '🚚',
+    buff: { type: 'yield', value: 1.05 }
+  },
+  meme: {
+    id: 'badge_meme',
+    hustleId: 'meme',
+    name: 'Diamond Hands',
+    description: 'Held through a 99% crash and came out on top.',
+    icon: '🪙',
+    buff: { type: 'aura', value: 1.15 }
+  },
+  festival: {
+    id: 'badge_festival',
+    hustleId: 'festival',
+    name: 'Woodstock Wizard',
+    description: 'Organized the greatest show on Earth.',
+    icon: '🎸',
+    buff: { type: 'aura', value: 1.10 }
+  },
+  lobbying: {
+    id: 'badge_lobbying',
+    hustleId: 'lobbying',
+    name: 'Kingmaker',
+    description: 'Laws are just suggestions for you.',
+    icon: '🏛️',
+    buff: { type: 'heat', value: 0.85 }
+  },
+  hedgefund: {
+    id: 'badge_hedge',
+    hustleId: 'hedgefund',
+    name: 'Market Manipulator',
+    description: 'You don\'t predict the market, you ARE the market.',
+    icon: '📊',
+    buff: { type: 'yield', value: 1.15 }
+  },
+  film_studio: {
+    id: 'badge_film',
+    hustleId: 'film_studio',
+    name: 'Oscar Owner',
+    description: 'Every movie you touch turns to gold.',
+    icon: '🎬',
+    buff: { type: 'clout', value: 1.20 }
+  },
+  president_campaign: {
+    id: 'badge_president',
+    hustleId: 'president_campaign',
+    name: 'Commander in Chief',
+    description: 'The ultimate hustle. You won the country.',
+    icon: '🇺🇸',
+    buff: { type: 'aura', value: 1.25 }
   }
 };

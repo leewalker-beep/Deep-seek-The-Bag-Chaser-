@@ -26,9 +26,13 @@ import { BoardroomBattle } from './components/minigames/BoardroomBattle';
 import { SlotMachine } from './components/minigames/SlotMachine';
 import { QuickReaction } from './components/minigames/QuickReaction';
 import { StruggleMash } from './components/minigames/StruggleMash';
+import { PatternMemory } from './components/minigames/PatternMemory';
+import { BalanceScale } from './components/minigames/BalanceScale';
+import { ReactionGrid } from './components/minigames/ReactionGrid';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { TutorialOverlay } from './components/TutorialOverlay';
+import { DailyChallenges } from './components/DailyChallenges';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -73,6 +77,7 @@ function App() {
   const [showTutorial, setShowTutorial] = useState(() => {
     return !localStorage.getItem('bag-chaser-tutorial-complete');
   });
+  const [showChallenges, setShowChallenges] = useState(false);
 
   const handleTutorialComplete = useCallback(() => {
     setShowTutorial(false);
@@ -97,7 +102,12 @@ function App() {
     resetGame,
     applyPendingUpdate,
     addTickerMessage,
+    processLogin,
   } = useGameStore();
+
+  useEffect(() => {
+    processLogin();
+  }, [processLogin]);
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
@@ -204,8 +214,28 @@ function App() {
 
   const tierClass = `${pl.currentTier.toLowerCase()}-tier`;
 
+  const TierDecoration = () => {
+    switch (pl.currentTier) {
+      case 'MUD':
+        return <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />;
+      case 'STREET':
+        return <div className="fixed inset-0 pointer-events-none opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />;
+      case 'CORPORATE':
+        return <div className="fixed inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fff_1px,#fff_2px)] bg-[size:100%_4px]" />;
+      case 'ELITE':
+        return <div className="fixed inset-0 pointer-events-none border-[20px] border-purple-950/20" />;
+      case 'MOGUL':
+        return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />;
+      case 'PRESIDENT':
+        return <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000`}>
+    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative overflow-x-hidden`}>
+      <TierDecoration />
       {/* Hidden StatsPanel to run its side effects (warning system) */}
       <div className="hidden">
         <StatsPanel stats={pl} market={currentMarket} />
@@ -255,6 +285,12 @@ function App() {
                 className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
               >
                 📊 Stats
+              </button>
+              <button
+                onClick={() => setShowChallenges(true)}
+                className="text-[9px] bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+              >
+                🔥 Goals
               </button>
               <button
                 onClick={() => setShowReceipts(true)}
@@ -421,6 +457,9 @@ function App() {
                 if (activeMiniGame === 'SlotMachine') return <SlotMachine onComplete={onComplete} />;
                 if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} />;
                 if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} />;
+                if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} />;
+                if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} />;
+                if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} />;
                 if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={pl.hustleLevels[hustle.id] || 1}
@@ -643,6 +682,7 @@ function App() {
 
       {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
       {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
+      <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
 
       {/* News Ticker */}
       <NewsTicker news={news} />
