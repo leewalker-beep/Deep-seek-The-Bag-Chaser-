@@ -95,6 +95,10 @@ export interface PlayerStats {
   filmBudget?: 'low' | 'medium' | 'high';
   spaceCompany?: 'asteroid' | 'tourism' | 'mining';
   philanthropyDonation?: number;
+  campaignStage?: number;
+  campaignPlatform?: 'economy' | 'healthcare' | 'foreign';
+  campaignVP?: string;
+  campaignDelegates?: number;
   marketCycle: {
     realEstate: 'boom' | 'bust' | 'normal';
     vc: Record<string, 'boom' | 'bust' | 'normal'>;
@@ -174,6 +178,10 @@ export interface GameState {
   setFilmChoices: (genre: 'action' | 'comedy' | 'drama', budget: 'low' | 'medium' | 'high') => void;
   setSpaceCompany: (company: 'asteroid' | 'tourism' | 'mining') => void;
   setPhilanthropyDonation: (amount: number) => void;
+  setCampaignStage: (stage: number) => void;
+  setCampaignPlatform: (platform: 'economy' | 'healthcare' | 'foreign') => void;
+  setCampaignVP: (vp: string) => void;
+  setCampaignDelegates: (delegates: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;

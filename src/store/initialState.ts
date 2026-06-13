@@ -44,6 +44,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     filmBudget: 'medium',
     spaceCompany: 'asteroid',
     philanthropyDonation: 10000000,
+    campaignStage: 1,
+    campaignPlatform: 'economy',
+    campaignVP: '',
+    campaignDelegates: 0,
     marketCycle: {
       realEstate: 'normal',
       vc: {

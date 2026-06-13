@@ -35,6 +35,7 @@ import { VCPanel } from './components/hustles/panels/VCPanel';
 import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
+import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
 import { ShakeForHype } from './components/minigames/ShakeForHype';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
@@ -489,6 +490,9 @@ function App() {
                 }
                 if (hustle.panelType === 'PHILANTHROPY') {
                   return <PhilanthropyPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'PRESIDENT_CAMPAIGN') {
+                  return <PresidentCampaignPanel hustle={hustle} />;
                 }
               }
 
