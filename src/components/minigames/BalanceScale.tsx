@@ -8,7 +8,7 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
   const [balance, setBalance] = useState(50); // 0 to 100, 50 is perfectly balanced
   const [timeLeft, setTimeLeft] = useState(10);
   const [failed, setFailed] = useState(false);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number>(null);
   const driftRef = useRef(Math.random() > 0.5 ? 0.5 : -0.5);
 
   useEffect(() => {

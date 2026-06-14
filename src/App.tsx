@@ -29,6 +29,8 @@ import { StruggleMash } from './components/minigames/StruggleMash';
 import { PatternMemory } from './components/minigames/PatternMemory';
 import { BalanceScale } from './components/minigames/BalanceScale';
 import { ReactionGrid } from './components/minigames/ReactionGrid';
+import { RiskMeter } from './components/minigames/RiskMeter';
+import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { TutorialOverlay } from './components/TutorialOverlay';
@@ -217,17 +219,51 @@ function App() {
   const TierDecoration = () => {
     switch (pl.currentTier) {
       case 'MUD':
-        return <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />;
+        return (
+          <>
+            <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+            <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]" />
+          </>
+        );
       case 'STREET':
-        return <div className="fixed inset-0 pointer-events-none opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />;
+        return (
+          <>
+            <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.3),transparent_70%)]" />
+            <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-10" />
+          </>
+        );
+      case 'STARTUP':
+        return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-5" />;
       case 'CORPORATE':
-        return <div className="fixed inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fff_1px,#fff_2px)] bg-[size:100%_4px]" />;
+        return (
+          <>
+            <div className="fixed inset-0 pointer-events-none opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fbbf24_1px,#fbbf24_2px)] bg-[size:100%_4px]" />
+            <div className="fixed inset-0 pointer-events-none border-[1px] border-yellow-500/10" />
+          </>
+        );
       case 'ELITE':
-        return <div className="fixed inset-0 pointer-events-none border-[20px] border-purple-950/20" />;
+        return <div className="fixed inset-0 pointer-events-none border-[30px] border-purple-950/30" />;
       case 'MOGUL':
-        return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />;
+        return (
+          <>
+            <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />
+            <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
+          </>
+        );
       case 'PRESIDENT':
-        return <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />;
+        return (
+          <>
+             <div className="fixed inset-0 pointer-events-none opacity-5 bg-[url('https://www.transparenttextures.com/patterns/padded.png')]" />
+             <div className="fixed inset-0 pointer-events-none border-x-[50px] border-blue-900/10" />
+          </>
+        );
+      case 'OPEN':
+        return (
+          <>
+            <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.4),transparent)]" />
+            <div className="fixed inset-0 pointer-events-none opacity-10 bg-[url('https://www.transparenttextures.com/patterns/beach-dust.png')]" />
+          </>
+        );
       default:
         return null;
     }
@@ -458,8 +494,10 @@ function App() {
                 if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} />;
                 if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} />;
                 if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} />;
+                if (activeMiniGame === 'SequenceRecall') return <SequenceRecall onComplete={onComplete} />;
                 if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} />;
                 if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} />;
+                if (activeMiniGame === 'RiskMeter') return <RiskMeter onComplete={onComplete} />;
                 if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={pl.hustleLevels[hustle.id] || 1}

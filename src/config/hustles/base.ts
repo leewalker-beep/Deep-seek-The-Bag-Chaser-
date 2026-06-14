@@ -37,7 +37,7 @@ export interface Hustle {
 
 export const HUSTLES: Record<string, Hustle> = {};
 
-// MUD Tier Hustles
+// MUD Tier Hustles (Swipe, Tap)
 HUSTLES.r_labor = {
   id: 'r_labor',
   name: 'Labor & Property',
@@ -72,7 +72,7 @@ HUSTLES.r_labor = {
       cloutReq: 40,
       auraReq: 20,
       nextBranches: ['l3a'],
-      miniGame: 'QuickReaction'
+      miniGame: 'SwipeOrder'
     },
     l2b: {
       level: 2,
@@ -103,7 +103,7 @@ HUSTLES.r_labor = {
       cloutReq: 200,
       auraReq: 100,
       passiveYield: 15000,
-      miniGame: 'RotateToScale'
+      miniGame: 'SwipeOrder'
     },
   },
 };
@@ -114,12 +114,12 @@ HUSTLES.r_delivery = {
   tier: 'MUD',
   icon: '🛵',
   description: 'Fast cash, faster roads',
-  miniGame: 'ReactionGrid',
+  miniGame: 'StruggleMash',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
     l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 8000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TapAssign' },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'SwipeOrder' },
   }
 };
 
@@ -318,12 +318,12 @@ HUSTLES.cc = {
   tier: 'STREET',
   icon: '📱',
   description: 'Build your audience',
-  miniGame: 'QuickReaction',
+  miniGame: 'HoldHype',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
     l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 2000, yieldClout: 300, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'TapAssign' },
+    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'DragScale' },
   },
 };
 
@@ -349,7 +349,7 @@ HUSTLES.drop = {
   tier: 'STREET',
   icon: '📦',
   description: 'Middleman your way to wealth',
-  miniGame: 'SwipeOrder',
+  miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 2000, yieldCash: 4000, yieldClout: 5, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'] },
@@ -440,7 +440,7 @@ HUSTLES.sw = {
   tier: 'STARTUP',
   icon: '👕',
   description: 'Building a global hype brand',
-  miniGame: 'PatternMemory',
+  miniGame: 'SequenceRecall',
   hasPanel: true,
   panelType: 'STREETWEAR',
   startBranchId: 'l1',
@@ -472,7 +472,7 @@ HUSTLES.gig = {
   tier: 'STARTUP',
   icon: '🚚',
   description: 'Scale your logistics and fleet management',
-  miniGame: 'ReactionGrid',
+  miniGame: 'PatternMemory',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
@@ -577,7 +577,7 @@ HUSTLES.global_franchise = {
   tier: 'CORPORATE',
   icon: '🍔',
   description: 'Scalable standardized success',
-  miniGame: 'ReactionGrid',
+  miniGame: 'RiskMeter',
   levels: [
     { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 15000 },
     { level: 2, id: 'l2', cost: 2000000, yieldCash: 500000, yieldClout: 300, yieldAura: 150, mentalHit: -40, cloutReq: 300, auraReq: 200, passiveYield: 40000 },
@@ -638,7 +638,7 @@ HUSTLES.lobbying = {
   tier: 'CORPORATE',
   icon: '🏛️',
   description: 'Influence politics, reduce negative events',
-  miniGame: 'ShakeToInfluence',
+  miniGame: 'SlotMachine',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 150, auraReq: 75, nextBranches: ['l2'] },
@@ -653,7 +653,7 @@ HUSTLES.disaster = {
   tier: 'CORPORATE',
   icon: '🛡️',
   description: 'Insurance and crisis management',
-  miniGame: 'PinchToZoom',
+  miniGame: 'RiskMeter',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 120, auraReq: 60, nextBranches: ['l2'] },
@@ -723,7 +723,7 @@ HUSTLES.hedgefund = {
   tier: 'ELITE',
   icon: '📊',
   description: 'High-risk market trading',
-  miniGame: 'BalanceScale',
+  miniGame: 'ReactionGrid',
   startBranchId: 'l1',
   branches: {
     l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 10000000, yieldCash: 5000000, yieldClout: 100, yieldAura: 50, mentalHit: -15, cloutReq: 300, auraReq: 150, nextBranches: ['l2'] },

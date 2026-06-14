@@ -117,15 +117,97 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
             </div>
           </motion.div>
         );
-      default:
+      case 4:
         return (
-          <div className="space-y-4 text-center py-8">
-            <div className="text-4xl mb-4">🗳️</div>
-            <h3 className="text-xl font-black text-white">Stage {stage}: The Final Push</h3>
-            <p className="text-slate-400 text-sm px-6">You've come too far to lose now. Mobilize the base and secure the future.</p>
-            <BaseButton isLoading={isCasting} onClick={() => handleStageComplete(stage * 0.5)} className="w-full py-4 text-xl">EXECUTE STAGE</BaseButton>
-          </div>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <h3 className="text-lg font-black text-white mb-2">Stage 4: Convention Speech</h3>
+              <p className="text-slate-400 text-xs mb-4">The world is watching. Choose the tone of your keynote address.</p>
+              <div className="grid gap-3">
+                {[
+                  { id: 'unifying', label: 'Unifying & Hopeful', desc: '+500 Aura, -50 Heat' },
+                  { id: 'aggressive', label: 'Aggressive & Bold', desc: '+500 Clout, +30 Heat' },
+                  { id: 'visionary', label: 'Future Visionary', desc: '+300 Clout, +300 Aura' }
+                ].map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleStageComplete(1.2)}
+                    className="p-3 rounded-lg border border-slate-800 hover:border-blue-500 hover:bg-blue-500/10 text-left transition-all"
+                  >
+                    <div className="font-bold text-sm text-white">{s.label}</div>
+                    <div className="text-[9px] text-slate-500 uppercase font-black">{s.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         );
+      case 5:
+        return (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center">
+              <h3 className="text-lg font-black text-white mb-2">Stage 5: General Election Trail</h3>
+              <p className="text-slate-400 text-xs mb-6">Barnstorming the swing states. Your Clout and Aura determine the momentum.</p>
+              <div className="flex justify-around mb-6">
+                <div>
+                  <div className="text-[8px] text-slate-500 uppercase font-black">Momentum</div>
+                  <div className="text-2xl font-black text-blue-400">{Math.floor((pl.clout + pl.aura) / 100)}%</div>
+                </div>
+                <div>
+                  <div className="text-[8px] text-slate-500 uppercase font-black">Polls</div>
+                  <div className="text-2xl font-black text-emerald-400">+{Math.floor(pl.aura / 200)} pts</div>
+                </div>
+              </div>
+              <BaseButton isLoading={isCasting} onClick={() => handleStageComplete(2.0)} className="w-full py-4">FIGHT FOR EVERY VOTE</BaseButton>
+            </div>
+          </motion.div>
+        );
+      case 6:
+        return (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center">
+              <h3 className="text-lg font-black text-white mb-2">Stage 6: Presidential Debates</h3>
+              <p className="text-slate-400 text-xs mb-6">One on one. No teleprompters. Only your wits and your record.</p>
+              <div className="bg-slate-900 p-4 rounded-lg mb-6 border border-slate-800 text-left">
+                <div className="text-[10px] text-blue-500 font-bold uppercase mb-2">Moderator:</div>
+                <div className="text-xs italic text-slate-300">"Candidate, how do you respond to the allegations regarding your business ties?"</div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <BaseButton onClick={() => handleStageComplete(1.5)} className="text-xs">DEFLECT & ATTACK</BaseButton>
+                <BaseButton onClick={() => handleStageComplete(1.5)} className="text-xs">STATE THE FACTS</BaseButton>
+              </div>
+            </div>
+          </motion.div>
+        );
+      case 7:
+        return (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <div className="bg-slate-950 p-8 rounded-xl border-4 border-double border-red-600 text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-red-600" />
+               <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter italic">ELECTION NIGHT</h3>
+               <p className="text-slate-400 text-xs mb-8 uppercase tracking-widest font-bold">The results are coming in...</p>
+
+               <div className="space-y-4 mb-8">
+                  <div className="flex justify-between items-center bg-slate-900 p-3 rounded border border-slate-800">
+                    <span className="text-xs font-bold">FLORIDA</span>
+                    <span className="text-blue-500 font-black">CALLED</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-slate-900 p-3 rounded border border-slate-800">
+                    <span className="text-xs font-bold">OHIO</span>
+                    <span className="text-blue-500 font-black">CALLED</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-slate-900 p-3 rounded border border-slate-800">
+                    <span className="text-xs font-bold">PENNSYLVANIA</span>
+                    <span className="text-amber-500 font-black animate-pulse">TOO CLOSE TO CALL</span>
+                  </div>
+               </div>
+
+               <BaseButton isLoading={isCasting} onClick={() => handleStageComplete(5.0)} className="w-full py-6 text-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)]">CLAIM VICTORY</BaseButton>
+            </div>
+          </motion.div>
+        );
+      default:
+        return null;
     }
   };
 
