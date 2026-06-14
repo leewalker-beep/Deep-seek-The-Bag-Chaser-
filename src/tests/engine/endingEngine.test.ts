@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculateEnding, ENDINGS } from '../engine/endingEngine';
-import type { PlayerStats } from '../types/game';
+import { calculateEnding, ENDINGS } from '../../engine/endingEngine';
+import type { PlayerStats } from '../../types/game';
 
 describe('endingEngine', () => {
   it('should return PRESIDENT_FOR_LIFE if campaignStage is 7', () => {
