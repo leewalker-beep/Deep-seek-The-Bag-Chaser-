@@ -28,7 +28,7 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: 'AURA_100', name: 'Mysterious Figure', description: 'Reach 100 Aura.', isUnlocked: false },
 ];
 
-export const createAchievementSlice: StateCreator<GameState, [], [], AchievementSlice> = (set) => ({
+export const createAchievementSlice: StateCreator<GameState, [], [], AchievementSlice> = (set, get) => ({
   achievements: INITIAL_ACHIEVEMENTS,
 
   unlockAchievement: (id) => {
@@ -42,6 +42,8 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
         );
 
         const tickerMessage = `🏆 ACHIEVEMENT UNLOCKED: ${achievement.name}`;
+
+        get().logEvent('SPECIAL_EVENT', { type: 'ACHIEVEMENT_UNLOCKED', achievementId: id, achievementName: achievement.name });
 
         return {
           achievements: updatedAchievements,

@@ -2,6 +2,38 @@ export type Tier = 'MUD' | 'STREET' | 'STARTUP' | 'CORPORATE' | 'ELITE' | 'MOGUL
 export type MarketType = 'NORMAL' | 'RECESSION' | 'BULL_MARKET' | 'CRACKDOWN';
 export type CrisisType = 'shadowban' | 'blacklist' | 'strike' | 'frozen';
 
+export type GameEventType =
+  | 'HUSTLE_COMPLETED'
+  | 'PROMOTION_EARNED'
+  | 'BUSINESS_PURCHASED'
+  | 'PROPERTY_PURCHASED'
+  | 'COMPANY_ACQUIRED'
+  | 'INVESTMENT_MADE'
+  | 'MARKET_WIN'
+  | 'RIVAL_DEFEATED'
+  | 'PRIMARY_WON'
+  | 'ELECTION_WON'
+  | 'CABINET_APPOINTED'
+  | 'LAW_PASSED'
+  | 'SCANDAL_TRIGGERED'
+  | 'ECONOMIC_EVENT'
+  | 'SPECIAL_EVENT';
+
+export interface GameEvent {
+  id: string;
+  type: GameEventType;
+  timestamp: number;
+  playerStats: {
+    bag: number;
+    clout: number;
+    aura: number;
+    mental: number;
+    heat: number;
+    tier: Tier;
+  };
+  metadata: any;
+}
+
 export interface GameAction {
   id: string;
   timestamp: number;
@@ -122,6 +154,7 @@ export interface PlayerStats {
   rivals: Rival[];
   actionLog: GameAction[];
   milestones: Milestone[];
+  events: GameEvent[];
   collectedDeathBadges: string[];
   stats?: {
     totalHustles: number;
@@ -202,6 +235,7 @@ export interface GameState {
   setCampaignDelegates: (delegates: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
+  logEvent: (type: GameEventType, metadata?: any) => void;
   checkMilestones: () => void;
   processLogin: () => void;
 }

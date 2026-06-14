@@ -76,7 +76,10 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
                 ].map((v) => (
                   <button
                     key={v.id}
-                    onClick={() => setCampaignVP(v.id)}
+                    onClick={() => {
+                      setCampaignVP(v.id);
+                      useGameStore.getState().logEvent('CABINET_APPOINTED', { type: 'RUNNING_MATE', vpName: v.name });
+                    }}
                     className={`p-3 rounded-lg border text-left transition-all ${vp === v.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 hover:border-slate-700'}`}
                   >
                     <div className="font-bold text-sm text-white">{v.name}</div>
@@ -105,6 +108,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
                   setCampaignDelegates(Math.min(GAME_CONSTANTS.NOMINATION_DELEGATES_REQUIRED, delegates + gain));
                   if (delegates + gain >= GAME_CONSTANTS.NOMINATION_DELEGATES_REQUIRED) {
                     addTickerMessage("NOMINATION CLINCHED!", "text-yellow-400 font-black");
+                    useGameStore.getState().logEvent('PRIMARY_WON', { delegates: delegates + gain });
                     handleStageComplete(1.5);
                   } else {
                     addTickerMessage(`Won Primary: +${gain} delegates`, "text-emerald-400");
@@ -202,7 +206,10 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
                   </div>
                </div>
 
-               <BaseButton isLoading={isCasting} onClick={() => handleStageComplete(5.0)} className="w-full py-6 text-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)]">CLAIM VICTORY</BaseButton>
+               <BaseButton isLoading={isCasting} onClick={() => {
+                 useGameStore.getState().logEvent('ELECTION_WON', { status: 'CLAIMED' });
+                 handleStageComplete(5.0);
+               }} className="w-full py-6 text-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)]">CLAIM VICTORY</BaseButton>
             </div>
           </motion.div>
         );
