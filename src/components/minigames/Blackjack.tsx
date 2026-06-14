@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface BlackjackProps {
   onComplete: (multiplier: number) => void;
@@ -166,12 +166,9 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
       </motion.div>
 
       {gameState === 'PLAYER_TURN' && (
-        <div
-          className="grid grid-cols-2 gap-4"
-          onClick={hit}
-        >
-          <button onClick={(e) => { e.stopPropagation(); hit(); }} className="bg-emerald-600 py-4 rounded-xl font-black text-white active:scale-95 shadow-lg">HIT</button>
-          <button onClick={(e) => { e.stopPropagation(); stand(); }} className="bg-slate-700 py-4 rounded-xl font-black text-white active:scale-95 shadow-lg">STAND</button>
+        <div className="grid grid-cols-2 gap-4">
+          <button onClick={hit} className="bg-emerald-600 py-4 rounded-xl font-black text-white active:scale-95 shadow-lg">HIT</button>
+          <button onClick={stand} className="bg-slate-700 py-4 rounded-xl font-black text-white active:scale-95 shadow-lg">STAND</button>
         </div>
       )}
 

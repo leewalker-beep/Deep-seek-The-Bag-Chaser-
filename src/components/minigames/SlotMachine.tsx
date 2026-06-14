@@ -13,23 +13,6 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
   const [spinsLeft, setSpinsLeft] = useState(3);
   const [result, setResult] = useState<string | null>(null);
 
-  useEffect(() => {
-    let lastShake = 0;
-    const handleMotion = (e: DeviceMotionEvent) => {
-      if (isSpinning || spinsLeft <= 0) return;
-      const accel = e.accelerationIncludingGravity;
-      if (!accel) return;
-      const total = Math.sqrt((accel.x || 0) ** 2 + (accel.y || 0) ** 2 + (accel.z || 0) ** 2);
-      if (total > 25 && Date.now() - lastShake > 1000) {
-        lastShake = Date.now();
-        spin();
-      }
-    };
-
-    window.addEventListener('devicemotion', handleMotion);
-    return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [isSpinning, spinsLeft, spin]);
-
   const spin = useCallback(() => {
     if (isSpinning || spinsLeft <= 0) return;
 
@@ -52,6 +35,23 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
       }
     }, 60);
   }, [isSpinning, spinsLeft]);
+
+  useEffect(() => {
+    let lastShake = 0;
+    const handleMotion = (e: DeviceMotionEvent) => {
+      if (isSpinning || spinsLeft <= 0) return;
+      const accel = e.accelerationIncludingGravity;
+      if (!accel) return;
+      const total = Math.sqrt((accel.x || 0) ** 2 + (accel.y || 0) ** 2 + (accel.z || 0) ** 2);
+      if (total > 25 && Date.now() - lastShake > 1000) {
+        lastShake = Date.now();
+        spin();
+      }
+    };
+
+    window.addEventListener('devicemotion', handleMotion);
+    return () => window.removeEventListener('devicemotion', handleMotion);
+  }, [isSpinning, spinsLeft, spin]);
 
   useEffect(() => {
     if (!isSpinning && spinsLeft < 3) {
