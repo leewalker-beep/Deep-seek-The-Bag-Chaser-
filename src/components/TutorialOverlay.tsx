@@ -10,24 +10,24 @@ interface TutorialStep {
 
 const STEPS: TutorialStep[] = [
   {
-    title: 'Welcome to the Grind',
-    content: "You're starting at the bottom. The goal is simple: chase the bag, build your clout, and become a legend.",
+    title: 'Welcome to Bag Chaser V2',
+    content: "You're starting in the MUD. The goal is simple: chase the bag, build your legacy, and climb the tiers to the Presidency.",
   },
   {
-    title: 'The Essentials',
-    content: "Keep an eye on your stats. BAG is your cash, CLOUT is your reputation, and AURA is your street cred. Don't let your MENTAL HEALTH drop too low, or it's game over.",
+    title: 'Step 1: Pick a Hustle',
+    content: "Tap any available hustle card to see its requirements. Each tier has a unique visual identity and set of mechanics. MUD is gritty and monospace; STREET is neon and vibrant.",
   },
   {
-    title: 'Hustles & Minigames',
-    content: "Every hustle is different. Some are simple taps, others require precision sensors. Master them all to maximize your yields.",
+    title: 'Step 2: Play the Minigame',
+    content: "Hustles aren't free money. You'll need to complete a minigame. MUD uses simple swipes and taps. STREET requires holding and dragging for momentum. High performance means high yields.",
   },
   {
-    title: 'Market Conditions',
-    content: "The world changes. BULL markets make everything easy, but a CRACKDOWN can freeze your assets. Adapt or starve.",
+    title: 'Step 3: Collect Rewards',
+    content: "Success grants Cash, Clout, and Aura. If you max out all levels of a hustle, you'll earn a Mastery Badge—a permanent buff that follows you through the tiers.",
   },
   {
-    title: 'Ready?',
-    content: "The first hustle is waiting. Get to work.",
+    title: 'Step 4: Advance Tiers',
+    content: "Once you hit the cash and clout requirements, an ADVANCE TIER button will appear. Moving up unlocks better hustles, higher limits, and a completely new look for the game.",
   },
 ];
 

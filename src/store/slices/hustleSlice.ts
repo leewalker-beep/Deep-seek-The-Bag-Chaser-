@@ -12,6 +12,7 @@ import { getEnding } from '../../config/endings';
 import { showConfetti } from '../../components/effects/Confetti';
 import { FLEX_ASSETS } from '../../config/flexAssets';
 import { getUnlockedHustles, getInitialStats } from '../initialState';
+import { executeHustleAction } from '../../engine/hustleEngine';
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
@@ -99,26 +100,40 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       if (masteredHustles.includes(hId)) return;
 
       const h = HUSTLES[hId];
+      let isMastered = false;
+
       if (h.levels) {
         const currentLvl = state.pl.hustleLevels[hId] || 1;
         if (currentLvl >= h.levels.length) {
-          masteredHustles.push(hId);
-          newMilestones.push({ id: `MASTERED_${hId}`, name: `Mastered ${h.name}`, description: `Reached max level in ${h.name}`, achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+          isMastered = true;
         }
       } else if (h.branches) {
         const nodeId = state.pl.hustleBranchIds[hId] || h.startBranchId;
         const node = nodeId ? h.branches[nodeId] : undefined;
-        // Repeatables (like Vending) are mastered if they exist and are at a significant count
+
+        // Repeatables are mastered at a threshold or if they are terminal
+        const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
         const isRepeatableMastery = node?.isRepeatable && (
-          (hId === 'r_vending' && state.pl.vendingCount >= 20) ||
+          (hId === 'r_vending' && state.pl.vendingCount >= 10) ||
+          (hId === 'street_eats' && node.level >= 5) ||
           (node.id === 'l2b' && state.pl.rentalCount >= 10)
         );
-        const isBranchMastery = node && (!node.nextBranches || node.nextBranches.length === 0) && !node.isRepeatable;
 
-        if (isBranchMastery || isRepeatableMastery) {
-           masteredHustles.push(hId);
-           newMilestones.push({ id: `MASTERED_${hId}`, name: `Mastered ${h.name}`, description: `Completed all branches of ${h.name}`, achievedAtMonth: state.pl.month, tier: state.pl.currentTier });
+        if (isTerminal || isRepeatableMastery) {
+          isMastered = true;
         }
+      }
+
+      if (isMastered) {
+        masteredHustles.push(hId);
+        newMilestones.push({
+          id: `MASTERED_${hId}`,
+          name: `Mastered ${h.name}`,
+          description: `You've reached the peak of ${h.name}. Mastery Badge awarded!`,
+          achievedAtMonth: state.pl.month,
+          tier: state.pl.currentTier
+        });
+        showConfetti();
       }
     });
 
@@ -239,11 +254,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
   executeHustle: (hustleId, minigameMultiplier = 1, forceSuccess, defer) => {
     const state = get();
     const hustle = HUSTLES[hustleId];
-    const pendingNews: (string | { text: string; colorClass: string })[] = [];
-
-    const addLocalTicker = (text: string, colorClass?: string) => {
-      pendingNews.push(colorClass ? { text, colorClass } : text);
-    };
 
     if (!hustle) {
       return {
@@ -251,9 +261,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
       };
     }
-
-    const isRecovery = (hustleId === 'psychiatrist' || hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session' || hustleId === 'wellness_retreat');
-    const isStrategic = (hustleId === 'real_estate_empire' || hustleId === 'venture_capital' || hustleId === 'festival' || hustleId === 'data_analytics' || hustleId === 'crypto_mining' || hustleId === 'virtual_assistant_agency' || hustleId === 'hedgefund' || hustleId === 'privateequity' || hustleId === 'film_studio' || hustleId === 'fight_promoter' || hustleId === 'space_investment' || hustleId === 'philanthropy_empire');
 
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
@@ -275,15 +282,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       levelData = hustle.levels.find(l => l.level === currentLevel);
     }
 
-    if (!levelData && isStrategic) {
-      levelData = { level: 1, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0 };
-    }
-
     if (!levelData) {
-      return {
-        success: false, netChange: 0, message: 'Level data missing',
-        cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
-      };
+      levelData = { level: 1, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0 };
     }
 
     if (state.pl.clout < levelData.cloutReq) {
@@ -300,346 +300,51 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
     }
 
-    const market = MARKET_CONFIGS[state.currentMarket];
-    let success = forceSuccess !== undefined ? forceSuccess : (isRecovery || isStrategic ? true : Math.random() < 0.8);
-    const isVending = hustleId === 'r_vending';
+    if (state.pl.bag < levelData.cost) {
+        return {
+          success: false, netChange: 0, message: `Need $${levelData.cost.toLocaleString()}`,
+          cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+        };
+    }
 
-    let result = calculateHustleMath(
+    const result = executeHustleAction(
       hustleId,
+      state.pl,
+      state.currentMarket,
       levelData,
       currentLevel,
-      isVending ? 1 : market.expenseMultiplier,
-      market.yieldMultiplier,
-      market.heatMultiplier,
       minigameMultiplier,
-      success,
-      state.pl.mentalShieldTurns
+      forceSuccess
     );
-
-    if (hustleId === 'festival') {
-      const choices = state.pl.festivalChoices || { headliner: 'budget', venue: 'small', marketing: 'basic', insurance: false };
-      const headlinerMult = { budget: 1.0, premium: 1.5, luxury: 2.5 }[choices.headliner];
-      const venueCap = { small: 5000, medium: 20000, large: 50000 }[choices.venue];
-      const marketingMult = { basic: 1.0, standard: 1.5, aggressive: 2.5 }[choices.marketing];
-
-      const headlinerCost = { budget: 50000, premium: 200000, luxury: 500000 }[choices.headliner];
-      const marketingCost = { basic: 10000, standard: 50000, aggressive: 100000 }[choices.marketing];
-      const insuranceCost = choices.insurance ? 50000 : 0;
-      const totalCost = (headlinerCost + marketingCost + insuranceCost) * market.expenseMultiplier;
-
-      const ticketPrice = 50;
-      let attendanceMult = marketingMult;
-      if (Math.random() < 0.15) {
-        if (!choices.insurance) {
-          attendanceMult *= 0.5;
-          addLocalTicker('⛈️ RAIN EVENT! Attendance slashed by 50% without insurance!', 'text-red-400');
-        } else {
-          addLocalTicker('⛈️ RAIN EVENT! Insurance covered the losses!', 'text-blue-400');
-        }
-      }
-
-      const yieldCash = Math.floor((ticketPrice * venueCap * headlinerMult * attendanceMult) * market.yieldMultiplier);
-      result = { ...result, cost: totalCost, yieldCash };
-    }
-    else if (hustleId === 'data_analytics') {
-        const choice = state.pl.dataAnalyticsChoice || 'consumer';
-        let yieldCash = 0, yieldClout = 0, yieldAura = 0, heatHit = 5;
-
-        if (choice === 'consumer') { yieldCash = 100000; yieldClout = 50; }
-        else if (choice === 'financial') { yieldCash = 500000; heatHit = 10; }
-        else if (choice === 'social') { yieldCash = 50000; yieldAura = 100; }
-        else if (choice === 'all' && currentLevel >= 3) {
-          yieldCash = 1000000; yieldClout = 150; yieldAura = 150; heatHit = 30;
-          if (Math.random() < 0.10) {
-            heatHit += 50; yieldClout -= 100;
-            addLocalTicker('🚨 DATA BREACH! Massive heat spike and clout loss!', 'text-red-500 font-bold');
-          }
-        }
-
-        result = {
-          ...result,
-          yieldCash: yieldCash * market.yieldMultiplier,
-          yieldClout,
-          yieldAura,
-          heatHit: heatHit * market.heatMultiplier
-        };
-      }
-      else if (hustleId === 'crypto_mining') {
-        const strategy = state.pl.cryptoStrategy || 'solo';
-        let yieldCash = 0, heatHit = 5, risk = 0;
-
-        if (strategy === 'solo') { yieldCash = 50000; }
-        else if (strategy === 'pool') { yieldCash = 200000; heatHit = 10; risk = 0.05; }
-        else if (strategy === 'cloud') { yieldCash = 500000; heatHit = 20; risk = 0.20; }
-        else if (strategy === 'asic' && currentLevel >= 3) { yieldCash = 2000000; heatHit = 30; risk = 0.10; }
-
-        if (Math.random() < risk) {
-          yieldCash = 0;
-          const msg = strategy === 'cloud' ? 'Scammed by cloud provider!' : 'Mining failure!';
-          addLocalTicker(`❌ ${msg} Yield is 0.`, 'text-red-400');
-        }
-
-        result = {
-          ...result,
-          yieldCash: yieldCash * market.yieldMultiplier,
-          heatHit: heatHit * market.heatMultiplier
-        };
-      }
-      else if (hustleId === 'virtual_assistant_agency') {
-        const staff = state.pl.vaStaff || 5;
-        const training = state.pl.vaTraining || 'none';
-        const client = state.pl.vaClient || 'small';
-
-        const costMap = { 5: 10000, 10: 25000, 20: 50000 };
-        const cost = costMap[staff as keyof typeof costMap];
-
-        const trainingMult = { none: 1.0, basic: 1.3, advanced: 1.6 };
-        const trainingMultiplier = trainingMult[training as keyof typeof trainingMult];
-
-        const baseYieldMap = { small: 50000, medium: 200000, large: 1000000 };
-        const baseYield = baseYieldMap[client as keyof typeof baseYieldMap];
-
-        const successChance = Math.min(0.95, (staff / 20) * trainingMultiplier);
-        const isSuccessRoll = Math.random() < successChance;
-
-        let yieldCash = Math.floor(baseYield * market.yieldMultiplier);
-        let yieldClout = Math.floor(20 * trainingMultiplier);
-        let yieldAura = Math.floor(10 * trainingMultiplier);
-
-        if (!isSuccessRoll) {
-          success = false;
-          yieldCash = Math.floor(yieldCash * 0.3);
-          yieldClout = Math.floor(yieldClout * 0.5);
-          yieldAura = Math.floor(yieldAura * 0.5);
-          addLocalTicker('❌ Agency fulfillment failed! Client lost.', 'text-red-400');
-        } else {
-          success = true;
-        }
-
-        result = {
-          ...result,
-          cost: cost * market.expenseMultiplier,
-          yieldCash,
-          yieldClout,
-          yieldAura,
-          passiveAdded: Math.floor(baseYieldMap[client as keyof typeof baseYieldMap] * 0.08)
-        };
-      }
-      else if (hustleId === 'lobbying') {
-        const intensity = Math.min(4, Math.max(1, Math.floor(minigameMultiplier || 1)));
-        const base = 5000000;
-        const cost = base;
-        const yieldCash = base * intensity;
-        const yieldClout = 100 * intensity;
-        const yieldAura = 50 * intensity;
-        const heatHit = 10 * intensity;
-        result = { cost, yieldCash, yieldClout, yieldAura, heatHit, mentalHit: -5, shieldTurns: 0 };
-        success = true;
-      }
-      else if (hustleId === 'disaster') {
-        const crisisRatio = Math.min(1, Math.max(0, (minigameMultiplier || 0.5) / 4));
-        const base = 10000000;
-        const cost = base;
-        const yieldCash = base * crisisRatio * 2;
-        const yieldClout = 100 * crisisRatio;
-        const yieldAura = 50 * crisisRatio;
-        result = { cost, yieldCash, yieldClout, yieldAura, heatHit: 15, mentalHit: -10, shieldTurns: 0 };
-        success = true;
-      }
-      else if (hustleId === 'global_franchise') {
-        const territories = Math.min(6, Math.max(1, Math.floor(minigameMultiplier || 1)));
-        const base = 5000000;
-        const cost = base;
-        const yieldCash = base * territories;
-        const yieldClout = 150 * territories;
-        const yieldAura = 75 * territories;
-        const passiveAdded = 50000 * territories;
-        result = { cost, yieldCash, yieldClout, yieldAura, passiveAdded, heatHit: 5, mentalHit: -5, shieldTurns: 0 };
-        success = true;
-      }
-      else if (hustleId === 'real_estate_empire') {
-        const type = state.pl.realEstateType;
-        const leverage = state.pl.realEstateLeverage;
-        const strategy = state.pl.realEstateStrategy;
-
-        const typeMult = { residential: 1.0, commercial: 1.5, industrial: 2.0 }[type];
-        const leverageMult = leverage === 0 ? 1.0 : (leverage === 50 ? 1.5 : 2.5);
-
-        const cycle = state.pl.marketCycle.realEstate;
-        const cycleMult = cycle === 'boom' ? 1.5 : (cycle === 'bust' ? 0.6 : 1.0);
-
-        const baseYield = 1000000;
-        let yieldCash = baseYield * typeMult * leverageMult * cycleMult * market.yieldMultiplier;
-
-        if (strategy === 'hold') {
-          yieldCash = 0;
-          addLocalTicker(`🏙️ Property acquired for HOLD. Passive income updated.`, 'text-blue-400');
-        } else {
-          addLocalTicker(`🏙️ Property FLIPPED for $${Math.floor(yieldCash).toLocaleString()}!`, 'text-emerald-400');
-        }
-
-        result = { ...result, yieldCash: Math.floor(yieldCash) };
-      }
-      else if (hustleId === 'venture_capital') {
-        const stage = state.pl.vcStage;
-        const sector = state.pl.vcSector;
-        const investment = state.pl.vcInvestment * 1000000;
-
-        if (state.pl.bag < investment) {
-          return {
-            success: false, netChange: 0, message: `Need $${investment.toLocaleString()} for investment`,
-            cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
-          };
-        }
-
-        const stageData = {
-          seed: { multRange: [10, 50], failRate: 0.7 },
-          seriesA: { multRange: [5, 20], failRate: 0.5 },
-          growth: { multRange: [2, 5], failRate: 0.3 },
-        }[stage as 'seed' | 'seriesA' | 'growth'];
-
-        const sectorCycle = state.pl.marketCycle.vc[sector];
-        const sectorMult = sectorCycle === 'boom' ? 1.4 : (sectorCycle === 'bust' ? 0.7 : 1.0);
-
-        let yieldCash = 0;
-        const outcomeRoll = Math.random();
-
-        if (outcomeRoll > stageData.failRate) {
-          success = true;
-          const successTypeRoll = Math.random();
-          let exitMult;
-          if (successTypeRoll < 0.25) {
-            exitMult = stageData.multRange[1];
-            addLocalTicker(`🚀 UNICORN IPO! ${sector.toUpperCase()} exit at ${exitMult}x!`, 'text-emerald-400 font-black animate-bounce');
-          } else {
-            exitMult = Math.random() * (stageData.multRange[1] - stageData.multRange[0]) + stageData.multRange[0];
-            addLocalTicker(`💰 ACQUISITION! ${sector.toUpperCase()} company sold at ${exitMult.toFixed(1)}x.`, 'text-emerald-400');
-          }
-          yieldCash = investment * exitMult * sectorMult * market.yieldMultiplier;
-        } else {
-          success = false;
-          addLocalTicker(`📉 STARTUP FAILED. ${sector.toUpperCase()} investment lost.`, 'text-red-400');
-        }
-
-        result = { ...result, cost: investment, yieldCash: Math.floor(yieldCash) };
-      }
-      else if (hustleId === 'film_studio') {
-        const genre = state.pl.filmGenre || 'action';
-        const budget = state.pl.filmBudget || 'medium';
-        const genreMult = { action: 1.2, comedy: 1.0, drama: 0.8 }[genre];
-        const budgetMult = { low: 0.7, medium: 1.0, high: 1.5 }[budget];
-        const baseCost = 25000000;
-        const cost = baseCost * budgetMult * market.expenseMultiplier;
-
-        const perfMult = minigameMultiplier || 1.0;
-        const finalYieldMult = perfMult * genreMult * budgetMult;
-        const yieldCash = Math.floor(baseCost * finalYieldMult * market.yieldMultiplier);
-
-        result = {
-          ...result,
-          cost,
-          yieldCash,
-          yieldClout: 200 * (perfMult > 1 ? perfMult : 1),
-          yieldAura: 100 * (perfMult > 1 ? perfMult : 1),
-          mentalHit: -15
-        };
-        success = perfMult >= 0.5;
-      }
-      else if (hustleId === 'fight_promoter') {
-        const mult = minigameMultiplier || 1;
-        const cost = 15000000 * market.expenseMultiplier;
-        const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
-
-        result = {
-          ...result,
-          cost,
-          yieldCash,
-          yieldClout: 300 * (mult > 1 ? mult : 1),
-          yieldAura: 150 * (mult > 1 ? mult : 1),
-          mentalHit: -10
-        };
-        success = mult >= 0.5;
-      }
-      else if (hustleId === 'space_investment') {
-        const cost = 100000000 * market.expenseMultiplier;
-        const mult = minigameMultiplier || 1.0;
-        const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
-
-        result = {
-          ...result,
-          cost,
-          yieldCash,
-          yieldClout: 400 * (mult > 1 ? mult : 1),
-          yieldAura: 300 * (mult > 1 ? mult : 1),
-          mentalHit: -20
-        };
-        success = mult >= 0.5;
-      }
-      else if (hustleId === 'philanthropy_empire') {
-        const donation = state.pl.philanthropyDonation || 10000000;
-        const donationMult = donation / 50000000;
-        const legacyGain = Math.floor(donationMult * 100);
-
-        result = {
-          ...result,
-          cost: donation * market.expenseMultiplier,
-          yieldCash: 0,
-          yieldClout: 500 * donationMult,
-          yieldAura: 1000 * donationMult,
-          legacyGain,
-          mentalHit: 20
-        };
-        success = true;
-      }
-
-    const bigWinMsg = (result.isBigWin && result.bigWinMessage)
-      ? { text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }
-      : null;
-
-    if (state.pl.bag < result.cost) {
-      return {
-        success: false, netChange: 0, message: `Need $${result.cost.toLocaleString()}`,
-        cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
-      };
-    }
-
-    const legacyMultiplier = 1 + ((state.pl.legacyPoints || 0) * 0.001);
-    result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier);
-    result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier);
-    result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier);
 
     const newBag = state.pl.bag - result.cost + result.yieldCash;
     const newDynamicPassives = { ...state.pl.dynamicPassives };
     if (result.passiveAdded !== undefined) {
        newDynamicPassives[hustleId] = (newDynamicPassives[hustleId] || 0) + (result.passiveAdded - (levelData.passiveYield || 0));
     }
-    const newClout = state.pl.clout + result.yieldClout;
-    const newAura = state.pl.aura + result.yieldAura;
-    const newMental = state.pl.mentalHealth + result.mentalHit;
-    const newHeat = state.pl.heat + result.heatHit;
 
     const newStats = state.pl.stats
       ? { ...state.pl.stats }
       : { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
 
     newStats.totalHustles += 1;
-    if (success) newStats.successfulHustles += 1;
+    if (result.success) newStats.successfulHustles += 1;
     newStats.lifetimeEarnings += result.yieldCash;
 
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
       bag: newBag,
-      clout: newClout,
-      aura: newAura,
-      mentalHealth: newMental,
-      heat: newHeat,
+      clout: state.pl.clout + result.yieldClout,
+      aura: state.pl.aura + result.yieldAura,
+      mentalHealth: state.pl.mentalHealth + result.mentalHit,
+      heat: state.pl.heat + result.heatHit,
       legacyPoints: (state.pl.legacyPoints || 0) + (result.legacyGain || 0),
       dynamicPassives: newDynamicPassives,
       rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
       flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
       stats: newStats,
       lastExecutedHustleId: hustleId,
-      streak: success ? (state.pl.streak || 0) + 1 : 0,
+      streak: result.success ? (state.pl.streak || 0) + 1 : 0,
       hustleLevels: {
         ...state.pl.hustleLevels,
         [hustleId]: currentLevel
@@ -654,12 +359,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
 
-    if (hustleId === 'philanthropy_empire') {
-      const donationAmount = state.pl.philanthropyDonation || 10000000;
-      const legacyGain = Math.floor(donationAmount / 500000);
-      hustleResultPl.legacyPoints = (hustleResultPl.legacyPoints || 0) + legacyGain;
-    }
-
     const actionLogData = {
       month: state.pl.month,
       tier: state.pl.currentTier,
@@ -673,10 +372,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
       netCash: result.yieldCash - result.cost,
-      success: success,
+      success: result.success,
       passiveAdded: result.passiveAdded !== undefined ? result.passiveAdded : (levelData.passiveYield || 0),
-      marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
-      marketName: market.name,
+      marketMult: { yield: 1, expense: 1, heat: 1 },
+      marketName: state.currentMarket,
       variation: 0
     };
 
@@ -685,7 +384,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       state.currentMarket
     );
 
-    newPl.mentalShieldTurns += result.shieldTurns;
+    newPl.mentalShieldTurns += (result.shieldTurns || 0);
 
     if (newPl.rivals) {
       newPl.rivals = newPl.rivals.map(r => ({ ...r, currentBid: 0 }));
@@ -693,13 +392,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const cappedPl = enforceStatCaps(newPl);
 
-    const executionNews = ` ${success ? '✅' : '❌'} ${hustle.name}: ${success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`;
+    const executionNews = ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`;
     const finalNews = [
       ...monthNews,
-      ...(bigWinMsg ? [bigWinMsg] : []),
+      ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }] : []),
       executionNews,
-      ...pendingNews,
-        ...get().news
+      ...(result.tickerMessages || []),
+      ...get().news
     ].slice(0, 50);
 
     let finalPh = state.ph;
@@ -713,12 +412,25 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      if (finalDeathBadge && !cappedPl.collectedDeathBadges.includes(finalDeathBadge)) {
+        cappedPl.collectedDeathBadges.push(finalDeathBadge);
+      }
+
       const finalStat = getDominantStat(cappedPl);
       const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
       const savedEndings = JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]');
       if (!savedEndings.includes(ending.title)) {
         savedEndings.push(ending.title);
         localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+      }
+
+      // Update best run
+      if (cappedPl.stats) {
+        if (!cappedPl.stats.bestRunBag || cappedPl.bag > cappedPl.stats.bestRunBag) {
+          cappedPl.stats.bestRunBag = cappedPl.bag;
+          cappedPl.stats.bestRunTier = cappedPl.currentTier;
+          cappedPl.stats.bestRunEnding = ending.title;
+        }
       }
     }
 
@@ -748,17 +460,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().checkMilestones();
     }
 
-    return {
-      success,
-      netChange: newBag - state.pl.bag,
-      message: shouldDie ? 'GAME OVER' : '',
-      cost: result.cost,
-      yieldCash: result.yieldCash,
-      yieldClout: result.yieldClout,
-      yieldAura: result.yieldAura,
-      mentalHit: result.mentalHit,
-      heatHit: result.heatHit
-    };
+    return result;
   },
 
   applyPendingUpdate: () => {

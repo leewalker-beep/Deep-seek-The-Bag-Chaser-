@@ -7,7 +7,7 @@ import { HUSTLE_BADGES } from '../config/badges';
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'career' | 'history' | 'badges' | 'endings'>('career');
+  const [activeTab, setActiveTab] = useState<'career' | 'history' | 'badges' | 'endings' | 'deaths'>('career');
 
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
@@ -26,12 +26,12 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
         </div>
 
-        <div className="flex bg-slate-950/50 p-1 m-4 rounded-xl border border-slate-800">
-          {['career', 'history', 'badges', 'endings'].map((tab) => (
+        <div className="flex bg-slate-950/50 p-1 m-4 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
+          {['career', 'history', 'badges', 'endings', 'deaths'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+              className={`flex-shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                 activeTab === tab ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'
               }`}
             >
@@ -54,6 +54,8 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
                 <StatCard label="Total Hustles" value={stats.totalHustles} />
                 <StatCard label="Legacy Score" value={pl.legacyPoints || 0} colorClass="text-yellow-400" />
+                <StatCard label="Login Streak" value={`${pl.loginStreak || 0} Days`} icon="🔥" />
+                <StatCard label="Endings Found" value={`${JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').length}/16`} icon="🎬" />
                 <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
                 <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
               </motion.div>
@@ -105,15 +107,44 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 className="space-y-3"
               >
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Unlocked Endings</div>
-                {JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').map((title: string) => (
-                  <div key={title} className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-3">
-                    <span className="text-xl">🏆</span>
-                    <span className="font-bold text-white text-sm">{title}</span>
-                  </div>
-                ))}
+                <div className="grid grid-cols-2 gap-2">
+                  {JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').map((title: string) => (
+                    <div key={title} className="p-3 bg-slate-950 border border-emerald-500/30 rounded-xl flex flex-col items-center text-center gap-2">
+                      <span className="text-3xl">🏆</span>
+                      <span className="font-black text-white text-[10px] uppercase">{title}</span>
+                    </div>
+                  ))}
+                </div>
                 {JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').length === 0 && (
-                  <div className="text-center py-12 text-slate-600 text-sm italic">No endings unlocked yet. Complete the journey.</div>
+                  <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl">
+                    No endings unlocked yet. Complete the journey to fill your gallery.
+                  </div>
                 )}
+              </motion.div>
+            )}
+
+            {activeTab === 'deaths' && (
+              <motion.div
+                key="deaths"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-3"
+              >
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Death Badges</div>
+                <div className="grid grid-cols-3 gap-3">
+                  {(pl.collectedDeathBadges || []).map((badge: string) => (
+                    <div key={badge} className="aspect-square bg-slate-950 border border-red-500/20 rounded-xl flex items-center justify-center text-3xl shadow-inner grayscale hover:grayscale-0 transition-all duration-500">
+                      {badge}
+                    </div>
+                  ))}
+                  {Array.from({ length: Math.max(0, 9 - (pl.collectedDeathBadges?.length || 0)) }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-slate-950/30 border border-slate-800 border-dashed rounded-xl flex items-center justify-center text-slate-700 text-xl font-black">
+                      ?
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[8px] text-slate-500 text-center uppercase font-bold mt-4">Collect every unique way to go out</p>
               </motion.div>
             )}
 

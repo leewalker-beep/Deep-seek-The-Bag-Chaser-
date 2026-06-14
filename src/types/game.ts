@@ -108,6 +108,7 @@ export interface PlayerStats {
   filmBudget?: 'low' | 'medium' | 'high';
   spaceCompany?: 'asteroid' | 'tourism' | 'mining';
   philanthropyDonation?: number;
+  loginStreak?: number;
   campaignStage?: number;
   campaignPlatform?: 'economy' | 'healthcare' | 'foreign';
   campaignVP?: string;
@@ -121,10 +122,14 @@ export interface PlayerStats {
   rivals: Rival[];
   actionLog: GameAction[];
   milestones: Milestone[];
+  collectedDeathBadges: string[];
   stats?: {
     totalHustles: number;
     successfulHustles: number;
     lifetimeEarnings: number;
+    bestRunTier?: Tier;
+    bestRunBag?: number;
+    bestRunEnding?: string;
   };
 }
 
@@ -198,4 +203,5 @@ export interface GameState {
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   checkMilestones: () => void;
+  processLogin: () => void;
 }
