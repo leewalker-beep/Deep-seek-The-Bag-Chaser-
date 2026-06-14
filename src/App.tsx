@@ -33,6 +33,7 @@ import { RiskMeter } from './components/minigames/RiskMeter';
 import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
+import { EndgameSummary } from './components/EndgameSummary';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { DailyChallenges } from './components/DailyChallenges';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
@@ -76,6 +77,7 @@ function App() {
   const [showMinigame, setShowMinigame] = useState(false);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showEnding, setShowEnding] = useState(true);
+  const [showSummary, setShowSummary] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => {
     return !localStorage.getItem('bag-chaser-tutorial-complete');
   });
@@ -163,12 +165,19 @@ function App() {
   if (ph === 'POST_MORTEM') {
     return (
       <>
-        {showEnding ? (
+        {showSummary ? (
+          <EndgameSummary
+            onRestart={() => {
+              resetGame();
+              window.location.reload();
+            }}
+          />
+        ) : showEnding ? (
           <EndingModal
             onClose={() => setShowEnding(false)}
             onNewGamePlus={() => {
-              resetGame();
-              window.location.reload();
+              setShowEnding(false);
+              setShowSummary(true);
             }}
           />
         ) : (
@@ -176,10 +185,7 @@ function App() {
             deathBadge={deathBadge}
             fatalCause={fatalCause}
             lastHustleId={pl?.lastExecutedHustleId}
-            onReset={() => {
-              resetGame();
-              window.location.reload();
-            }}
+            onReset={() => setShowSummary(true)}
           />
         )}
       </>
