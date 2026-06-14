@@ -39,6 +39,7 @@ import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { EndgameSummary } from './components/EndgameSummary';
 import { TutorialOverlay } from './components/TutorialOverlay';
+import { Tooltip } from './components/ui/Tooltip';
 import { DailyChallenges } from './components/DailyChallenges';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
@@ -210,11 +211,11 @@ function App() {
     if (activeTab === 'FLEX') return [];
 
     // Show hustles whose tier matches the active tab
-    // AND whose tier is <= current player tier
+    // Allow viewing one tier ahead of current
     return Object.values(HUSTLES).filter(h => {
       const hustleTierIndex = PROGRESSION_ORDER.indexOf(h.tier as Tier);
       const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
-      return h.tier === activeTab && hustleTierIndex <= currentTierIndex;
+      return h.tier === activeTab && hustleTierIndex <= currentTierIndex + 1;
     });
   };
 
@@ -417,23 +418,54 @@ function App() {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
 
+                  const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
+                  const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as Tier);
+                  const tierLocked = hustleTierIndex > currentTierIndex;
+
+                  const levelData = hustle.branches ? (hustle.branches[hustle.startBranchId || 'l1']) : hustle.levels?.[0];
+                  const cloutReq = levelData?.cloutReq || 0;
+                  const auraReq = levelData?.auraReq || 0;
+                  const costReq = levelData?.cost || 0;
+
+                  const cloutMet = pl.clout >= cloutReq;
+                  const auraMet = pl.aura >= auraReq;
+                  const costMet = pl.bag >= costReq;
+
+                  const isLocked = tierLocked || !cloutMet || !auraMet || !costMet;
+
+                  const missingReqs = [];
+                  if (tierLocked) missingReqs.push(`Tier ${hustle.tier}`);
+                  if (!cloutMet) missingReqs.push(`${cloutReq} Clout (you have ${Math.floor(pl.clout)})`);
+                  if (!auraMet) missingReqs.push(`${auraReq} Aura (you have ${Math.floor(pl.aura)})`);
+                  if (!costMet) missingReqs.push(`$${costReq.toLocaleString()} (you have $${pl.bag.toLocaleString()})`);
+
+                  const tooltipContent = isLocked ? `Requires: ${missingReqs.join(', ')}` : null;
+
                   return (
-                    <button
-                      key={hustle.id}
-                      onClick={() => {
-                        setActiveHustleView(hustle.id);
-                        setShowMinigame(false);
-                      }}
-                      className={`${tierCardClass} rounded-xl p-4 text-center border transition-all active:scale-95 relative overflow-hidden`}
-                    >
-                      {isMastered && (
-                        <div className="absolute top-1 right-1 text-xs">👑</div>
-                      )}
-                      <div className="text-4xl mb-2">{hustle.icon}</div>
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
-                        {hustle.name}
-                      </div>
-                    </button>
+                    <Tooltip key={hustle.id} content={tooltipContent} disabled={!isLocked}>
+                      <button
+                        onClick={() => {
+                          if (!isLocked) {
+                            setActiveHustleView(hustle.id);
+                            setShowMinigame(false);
+                          }
+                        }}
+                        className={`${tierCardClass} w-full rounded-xl p-4 text-center border transition-all relative overflow-hidden ${
+                          isLocked
+                            ? 'opacity-60 grayscale contrast-75 cursor-not-allowed'
+                            : 'active:scale-95'
+                        }`}
+                      >
+                        {isLocked && <div className="absolute top-2 right-2 text-xs">🔒</div>}
+                        {isMastered && (
+                          <div className="absolute top-1 right-1 text-xs">👑</div>
+                        )}
+                        <div className="text-4xl mb-2">{hustle.icon}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
+                          {hustle.name}
+                        </div>
+                      </button>
+                    </Tooltip>
                   );
                 })}
               </div>

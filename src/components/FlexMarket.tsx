@@ -1,6 +1,7 @@
 import React from 'react';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { useGameStore } from '../store/gameStore';
+import { Tooltip } from './ui/Tooltip';
 
 export const FlexMarket: React.FC = () => {
   const { pl, purchaseFlexAsset } = useGameStore();
@@ -16,21 +17,25 @@ export const FlexMarket: React.FC = () => {
           const canAfford = pl.bag >= asset.cost;
 
           return (
-            <button
-              key={asset.id}
-              onClick={() => purchaseFlexAsset(asset.id)}
-              disabled={!canAfford}
-              className={`bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all ${
-                canAfford
-                  ? 'hover:border-slate-700 active:scale-95'
-                  : 'opacity-50 grayscale cursor-not-allowed'
-              }`}
-            >
-              <div className="text-4xl mb-2">{asset.icon}</div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
-                {asset.name}
-              </div>
-            </button>
+            <Tooltip key={asset.id} content={!canAfford ? `Need $${(asset.cost - pl.bag).toLocaleString()} more` : null} disabled={canAfford}>
+              <button
+                onClick={() => purchaseFlexAsset(asset.id)}
+                disabled={!canAfford}
+                className={`w-full bg-slate-900 rounded-xl p-4 text-center border border-slate-800 transition-all ${
+                  canAfford
+                    ? 'hover:border-slate-700 active:scale-95'
+                    : 'opacity-50 grayscale cursor-not-allowed'
+                }`}
+              >
+                <div className="text-4xl mb-2">{asset.icon}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
+                  {asset.name}
+                </div>
+                <div className={`text-[9px] mt-1 font-mono ${canAfford ? 'text-blue-400' : 'text-red-500 font-bold'}`}>
+                  ${asset.cost.toLocaleString()}
+                </div>
+              </button>
+            </Tooltip>
           );
         })}
       </div>
