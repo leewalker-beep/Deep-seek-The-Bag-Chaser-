@@ -94,6 +94,23 @@ export interface Badge {
   };
 }
 
+export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  category: AchievementCategory;
+  isUnlocked: boolean;
+  unlockedAt?: number;
+  reward?: {
+    cash?: number;
+    clout?: number;
+    aura?: number;
+    buff?: string;
+  };
+}
+
 export interface PlayerStats {
   name?: string;
   bag: number;
@@ -156,6 +173,7 @@ export interface PlayerStats {
   milestones: Milestone[];
   events: GameEvent[];
   collectedDeathBadges: string[];
+  completedDailyChallengesCount: number;
   stats?: {
     totalHustles: number;
     successfulHustles: number;
@@ -238,4 +256,6 @@ export interface GameState {
   logEvent: (type: GameEventType, metadata?: any) => void;
   checkMilestones: () => void;
   processLogin: () => void;
+  achievements: Achievement[];
+  unlockAchievement: (id: string) => void;
 }

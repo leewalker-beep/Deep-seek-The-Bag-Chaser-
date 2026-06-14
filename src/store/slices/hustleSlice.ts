@@ -13,6 +13,7 @@ import { showConfetti } from '../../components/effects/Confetti';
 import { FLEX_ASSETS } from '../../config/flexAssets';
 import { getUnlockedHustles, getInitialStats } from '../initialState';
 import { executeHustleAction } from '../../engine/hustleEngine';
+import { checkAchievements } from '../../engine/achievementEngine';
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
@@ -91,6 +92,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
       }),
     });
+
+    // Check for achievements after logging the event
+    if (type !== 'SPECIAL_EVENT' || metadata.type !== 'ACHIEVEMENT_UNLOCKED') {
+      const newlyUnlocked = checkAchievements(get(), newEvent);
+      newlyUnlocked.forEach(id => get().unlockAchievement(id));
+    }
   },
 
   checkMilestones: () => {
@@ -263,7 +270,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleName: hustle.name,
       success: true,
       profit: result.yieldCash - result.cost,
-      branchId
+      branchId,
+      miniGame: hustle.miniGame || branch.miniGame,
+      multiplier: 1.0 // Branches usually don't have minigame scaling in this version or it's fixed
     });
 
     (get() as any).updateChallengeProgress('hustle_count', 1);
@@ -408,7 +417,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleName: hustle.name,
       success: result.success,
       profit: result.yieldCash - result.cost,
-      level: currentLevel
+      level: currentLevel,
+      miniGame: hustle.miniGame || levelData.miniGame,
+      multiplier: minigameMultiplier
     });
 
     if (result.success) {
@@ -511,6 +522,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         savedEndings.push(ending.title);
         localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
       }
+
+      get().logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: cappedPl.legacyPoints || 0
+      });
 
       // Update best run
       if (cappedPl.stats) {
