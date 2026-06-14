@@ -35,16 +35,17 @@ export const InteractiveCard: React.FC<InteractiveCardProps> = ({
         isActive
           ? 'border-emerald-500 shadow-[0_0_20px_var(--glow-color)]'
           : 'border-slate-800 hover:border-slate-700',
-        isLocked && 'opacity-50 grayscale contrast-75',
+        isLocked && 'opacity-60 grayscale contrast-75',
         className
       )}
       style={{ '--glow-color': glowColor } as any}
       {...props}
     >
       {isLocked && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/40 backdrop-blur-[1px]">
-          <span className="text-2xl">🔒</span>
-        </div>
+        <>
+          <div className="absolute inset-0 z-10 bg-slate-950/60 backdrop-blur-[1px]" />
+          <div className="absolute top-2 right-2 z-20 text-lg">🔒</div>
+        </>
       )}
       {children as React.ReactNode}
     </motion.div>

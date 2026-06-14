@@ -3,6 +3,7 @@ import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
 import { useGameStore } from '../store/gameStore';
 import { HUSTLE_BADGES } from '../config/badges';
+import { Tooltip } from './ui/Tooltip';
 
 interface HustleCardProps {
   hustle: Hustle;
@@ -111,58 +112,69 @@ export const HustleCard: React.FC<HustleCardProps> = ({
             </button>
           </div>
         ) : (
-          <button
-            onClick={onExecute}
-            className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
-              canAfford
-                ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-                : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-            }`}
-          >
-            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'))}
-          </button>
+          <Tooltip content={!canAfford ? `Need $${(levelData.cost - player.bag).toLocaleString()} more` : null} disabled={canAfford}>
+            <button
+              onClick={onExecute}
+              className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+                canAfford
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                  : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+              }`}
+            >
+              {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (levelData.cost > 0 ? <span>RUN IT (-<span className={canAfford ? "" : "text-red-500 font-bold"}>${levelData.cost.toLocaleString()}</span>)</span> : 'EXECUTE'))}
+            </button>
+          </Tooltip>
         )}
 
         <div className="flex gap-2 overflow-x-auto pb-1">
           {/* Repeatable Logic */}
           {levelData.isRepeatable && !isVending && (
-            <button
-              onClick={() => onUpgrade(player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
-              disabled={
-                player.bag < levelData!.cost ||
-                (levelData!.maxRepeat !== undefined &&
-                  (hustle.id === 'r_vending' ? player.vendingCount : (levelData!.id === 'l2a' ? player.flipCount : player.rentalCount)) >= levelData!.maxRepeat)
-              }
-              className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
-            >
-              Repeat {levelData.name}
-              <br />
-              ${levelData.cost.toLocaleString()} ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentalCount)}/{levelData.maxRepeat})
-            </button>
+            <Tooltip content={player.bag < levelData!.cost ? `Need $${(levelData!.cost - player.bag).toLocaleString()} more` : null} disabled={player.bag >= levelData!.cost}>
+              <button
+                onClick={() => onUpgrade(player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
+                disabled={
+                  player.bag < levelData!.cost ||
+                  (levelData!.maxRepeat !== undefined &&
+                    (hustle.id === 'r_vending' ? player.vendingCount : (levelData!.id === 'l2a' ? player.flipCount : player.rentalCount)) >= levelData!.maxRepeat)
+                }
+                className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
+              >
+                Repeat {levelData.name}
+                <br />
+                <span className={player.bag >= levelData!.cost ? "" : "text-red-500 font-bold"}>${levelData.cost.toLocaleString()}</span> ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentalCount)}/{levelData.maxRepeat})
+              </button>
+            </Tooltip>
           )}
 
           {/* Next Branches / Upgrades */}
           {nextBranches.map(branch => {
-            const canUpgradeBranch =
-              player.bag >= branch.cost &&
-              player.clout >= branch.cloutReq &&
-              player.aura >= branch.auraReq;
+            const cloutMet = player.clout >= branch.cloutReq;
+            const auraMet = player.aura >= branch.auraReq;
+            const costMet = player.bag >= branch.cost;
+            const canUpgradeBranch = cloutMet && auraMet && costMet;
+
+            const missing = [];
+            if (!cloutMet) missing.push(`${branch.cloutReq} Clout`);
+            if (!auraMet) missing.push(`${branch.auraReq} Aura`);
+            if (!costMet) missing.push(`$${(branch.cost - player.bag).toLocaleString()} more`);
+            const tooltip = missing.length > 0 ? `Requires: ${missing.join(', ')}` : null;
 
             return (
-              <button
-                key={branch.id || branch.level}
-                onClick={() => onUpgrade(branch.id)}
-                disabled={!canUpgradeBranch}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
-                  canUpgradeBranch
-                    ? 'border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
-                    : 'border-slate-800 text-slate-700 cursor-not-allowed'
-                }`}
-              >
-                {branch.name ? `Unlock ${branch.name}` : 'Upgrade'}
-                <br />
-                ${branch.cost.toLocaleString()}
-              </button>
+              <Tooltip key={branch.id || branch.level} content={tooltip} disabled={canUpgradeBranch}>
+                <button
+                  onClick={() => onUpgrade(branch.id)}
+                  disabled={!canUpgradeBranch}
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
+                    canUpgradeBranch
+                      ? 'border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
+                      : 'border-slate-800 text-slate-700 cursor-not-allowed'
+                  }`}
+                >
+                  {branch.name ? `Unlock ${branch.name}` : 'Upgrade'}
+                  <br />
+                  <span className={costMet ? "" : "text-red-500 font-bold"}>${branch.cost.toLocaleString()}</span>
+                </button>
+              </Tooltip>
             );
           })}
         </div>

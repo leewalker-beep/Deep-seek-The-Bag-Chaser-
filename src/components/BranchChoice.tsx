@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import { useGameStore } from '../store/gameStore';
+import { Tooltip } from './ui/Tooltip';
 
 interface BranchChoiceProps {
   hustle: Hustle;
@@ -70,31 +71,35 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
       </div>
 
       <div className="flex flex-col gap-2 mb-4">
-        <button
-          onClick={onExecute}
-          className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
-            canAffordExecute
-              ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-              : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-          }`}
-        >
-          {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (currentBranch.miniGame || hustle.miniGame ? 'PLAY' : (currentBranch.cost > 0 ? `RUN IT (-$${currentBranch.cost.toLocaleString()})` : 'EXECUTE'))}
-        </button>
-
-        {isRepeatable && (
+        <Tooltip content={!canAffordExecute ? `Need $${(currentBranch.cost - pl.bag).toLocaleString()} more` : null} disabled={canAffordExecute}>
           <button
-            onClick={() => onSelectBranch(currentBranchId)}
-            disabled={!canRepeat}
-            className={`w-full py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
-              canRepeat
-                ? 'border-blue-500/50 text-blue-400 hover:bg-blue-500/10'
-                : 'border-slate-800 text-slate-700 cursor-not-allowed'
+            onClick={onExecute}
+            className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+              canAffordExecute
+                ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            Repeat {currentBranch.name}
-            <br />
-            ${currentBranch.cost.toLocaleString()} ({currentCount}/{currentBranch.maxRepeat})
+            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (currentBranch.miniGame || hustle.miniGame ? 'PLAY' : (currentBranch.cost > 0 ? <span>RUN IT (-<span className={canAffordExecute ? "" : "text-red-500 font-bold"}>${currentBranch.cost.toLocaleString()}</span>)</span> : 'EXECUTE'))}
           </button>
+        </Tooltip>
+
+        {isRepeatable && (
+          <Tooltip content={pl.bag < currentBranch.cost ? `Need $${(currentBranch.cost - pl.bag).toLocaleString()} more` : null} disabled={pl.bag >= currentBranch.cost}>
+            <button
+              onClick={() => onSelectBranch(currentBranchId)}
+              disabled={!canRepeat}
+              className={`w-full py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
+                canRepeat
+                  ? 'border-blue-500/50 text-blue-400 hover:bg-blue-500/10'
+                  : 'border-slate-800 text-slate-700 cursor-not-allowed'
+              }`}
+            >
+              Repeat {currentBranch.name}
+              <br />
+              <span className={pl.bag >= currentBranch.cost ? "" : "text-red-500 font-bold"}>${currentBranch.cost.toLocaleString()}</span> ({currentCount}/{currentBranch.maxRepeat})
+            </button>
+          </Tooltip>
         )}
       </div>
 
@@ -107,31 +112,38 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
             const meetsAura = pl.aura >= branch.auraReq;
             const canTake = canAffordUpgrade && meetsClout && meetsAura;
 
+            const missing = [];
+            if (!meetsClout) missing.push(`${branch.cloutReq} Clout`);
+            if (!meetsAura) missing.push(`${branch.auraReq} Aura`);
+            if (!canAffordUpgrade) missing.push(`$${(branch.cost - pl.bag).toLocaleString()} more`);
+            const tooltip = missing.length > 0 ? `Requires: ${missing.join(', ')}` : null;
+
             return (
-              <button
-                key={branch.id}
-                onClick={() => onSelectBranch(branch.id!)}
-                disabled={!canTake}
-                className={`w-full p-3 rounded-lg text-left transition-all border ${
-                  canTake
-                    ? 'bg-slate-800 border-blue-500/50 hover:bg-slate-700 active:scale-[0.98]'
-                    : 'bg-slate-900 border-slate-800 opacity-50 grayscale'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="font-bold text-white text-sm">{branch.name}</div>
-                  <div className="text-blue-400 font-mono text-[11px]">-${branch.cost.toLocaleString()}</div>
-                </div>
-                <div className="text-[10px] text-slate-400 mt-1">
-                  Yield: <span className="text-emerald-400">${branch.yieldCash.toLocaleString()}</span>
-                  {branch.passiveYield && branch.passiveYield > 0 ? ` | Passive: +$${branch.passiveYield.toLocaleString()}/mo` : ''}
-                </div>
-                {(branch.cloutReq > 0 || branch.auraReq > 0) && (
-                  <div className="text-[9px] text-slate-500 mt-1 uppercase tracking-tighter">
-                    Requires: {branch.cloutReq > 0 ? `${branch.cloutReq} CLT ` : ''}{branch.auraReq > 0 ? `${branch.auraReq} AUR` : ''}
+              <Tooltip key={branch.id} content={tooltip} disabled={canTake}>
+                <button
+                  onClick={() => onSelectBranch(branch.id!)}
+                  disabled={!canTake}
+                  className={`w-full p-3 rounded-lg text-left transition-all border ${
+                    canTake
+                      ? 'bg-slate-800 border-blue-500/50 hover:bg-slate-700 active:scale-[0.98]'
+                      : 'bg-slate-900 border-slate-800 opacity-50 grayscale'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="font-bold text-white text-sm">{branch.name}</div>
+                    <div className={`font-mono text-[11px] ${canAffordUpgrade ? "text-blue-400" : "text-red-500 font-bold"}`}>-${branch.cost.toLocaleString()}</div>
                   </div>
-                )}
-              </button>
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Yield: <span className="text-emerald-400">${branch.yieldCash.toLocaleString()}</span>
+                    {branch.passiveYield && branch.passiveYield > 0 ? ` | Passive: +$${branch.passiveYield.toLocaleString()}/mo` : ''}
+                  </div>
+                  {(branch.cloutReq > 0 || branch.auraReq > 0) && (
+                    <div className="text-[9px] text-slate-500 mt-1 uppercase tracking-tighter">
+                      Requires: {branch.cloutReq > 0 ? `${branch.cloutReq} CLT ` : ''}{branch.auraReq > 0 ? `${branch.auraReq} AUR` : ''}
+                    </div>
+                  )}
+                </button>
+              </Tooltip>
             );
           })}
         </div>
