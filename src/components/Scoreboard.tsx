@@ -11,10 +11,18 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, achievements } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'history' | 'badges' | 'achievements' | 'endings' | 'deaths'>('career');
 
+  const { setPh } = useGameStore();
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
     ? Math.floor((stats.successfulHustles / stats.totalHustles) * 100)
     : 0;
+
+  const handleEndRun = () => {
+    if (confirm('Are you sure you want to end this run? You will see your final score and start fresh.')) {
+      setPh('POST_MORTEM');
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
@@ -228,8 +236,15 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </AnimatePresence>
         </div>
 
-        <div className="p-4 bg-slate-950/50 border-t border-slate-800">
-          <BaseButton variant="secondary" onClick={onClose} className="w-full">Close Scoreboard</BaseButton>
+        <div className="p-4 bg-slate-950/50 border-t border-slate-800 flex gap-2">
+          <BaseButton variant="secondary" onClick={onClose} className="flex-1">Close</BaseButton>
+          <BaseButton
+            variant="danger"
+            onClick={handleEndRun}
+            className="flex-1 bg-red-900/20 text-red-500 border border-red-500/20 hover:bg-red-900/40"
+          >
+            End Run
+          </BaseButton>
         </div>
       </motion.div>
     </div>

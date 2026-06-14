@@ -153,6 +153,7 @@ export interface PlayerStats {
   vcSector: 'tech' | 'biotech' | 'energy';
   vcInvestment: number;
   legacyPoints?: number;
+  legacyScore?: number;
   filmGenre?: 'action' | 'comedy' | 'drama';
   filmBudget?: 'low' | 'medium' | 'high';
   spaceCompany?: 'asteroid' | 'tourism' | 'mining';

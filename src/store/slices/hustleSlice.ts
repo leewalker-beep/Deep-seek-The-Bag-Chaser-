@@ -14,6 +14,7 @@ import { FLEX_ASSETS } from '../../config/flexAssets';
 import { getUnlockedHustles, getInitialStats } from '../initialState';
 import { executeHustleAction } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
+import { calculateLegacyScore } from '../../engine/legacyEngine';
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
@@ -86,11 +87,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       },
       metadata,
     };
+    const updatedPl = enforceStatCaps({
+      ...state.pl,
+      events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
+    });
+    updatedPl.legacyScore = calculateLegacyScore(updatedPl);
+
     set({
-      pl: enforceStatCaps({
-        ...state.pl,
-        events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
-      }),
+      pl: updatedPl,
     });
 
     // Check for achievements after logging the event
@@ -250,6 +254,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
       hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
     });
+    nextPl.legacyScore = calculateLegacyScore(nextPl);
 
     set({
       pl: nextPl,
@@ -501,6 +506,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     ].slice(0, 50);
 
     let finalPh = state.ph;
+
+    // Recalculate legacy score before saving
+    cappedPl.legacyScore = calculateLegacyScore(cappedPl);
+
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
 
@@ -573,9 +582,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!state.pendingUpdate) return;
 
     const { pl, news, currentMarket, ph, deathBadge, fatalCause, action } = state.pendingUpdate;
+    const updatedPl = enforceStatCaps(pl);
+    updatedPl.legacyScore = calculateLegacyScore(updatedPl);
 
     set({
-      pl: enforceStatCaps(pl),
+      pl: updatedPl,
       news,
       currentMarket,
       ph,
@@ -652,6 +663,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       heat: state.pl.heat + result.heatHit,
       mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
     });
+    newPl.legacyScore = calculateLegacyScore(newPl);
 
     if (hustle.branches && (branchId || targetNodeData.id)) {
       const nodeId = branchId || targetNodeData.id!;
@@ -727,14 +739,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         return false;
       }
 
+      const nextPl = enforceStatCaps({
+        ...state.pl,
+        bag: state.pl.bag - totalFee,
+        clout: Math.floor(state.pl.clout * 0.6),
+        aura: Math.floor(state.pl.aura * 0.6),
+        currentTier: nextTier,
+      });
+      nextPl.legacyScore = calculateLegacyScore(nextPl);
+
       set({
-        pl: enforceStatCaps({
-          ...state.pl,
-          bag: state.pl.bag - totalFee,
-          clout: Math.floor(state.pl.clout * 0.6),
-          aura: Math.floor(state.pl.aura * 0.6),
-          currentTier: nextTier,
-        }),
+        pl: nextPl,
         activeTab: nextTier,
         news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
       });
@@ -777,6 +792,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       },
       vendingCount: isVending ? (state.pl.vendingCount + 1) : state.pl.vendingCount
     });
+    plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
     if (isVending) {
       get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: asset.cost });
