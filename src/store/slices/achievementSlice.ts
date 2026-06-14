@@ -1,39 +1,27 @@
 import type { StateCreator } from 'zustand';
-import type { GameState } from '../../types/game';
-
-export interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  isUnlocked: boolean;
-  unlockedAt?: number;
-  reward?: {
-    cash?: number;
-    clout?: number;
-    aura?: number;
-  };
-}
+import type { GameState, Achievement } from '../../types/game';
+import { ACHIEVEMENTS } from '../../config/achievements';
 
 export interface AchievementSlice {
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
 }
 
-const INITIAL_ACHIEVEMENTS: Achievement[] = [
-  { id: 'FIRST_HUSTLE', name: 'The First Grind', description: 'Complete your very first hustle.', isUnlocked: false },
-  { id: 'CASH_10K', name: 'Ten Bands', description: 'Accumulate $10,000 in your bag.', isUnlocked: false },
-  { id: 'CASH_100K', name: 'Six Figures', description: 'Accumulate $100,000 in your bag.', isUnlocked: false },
-  { id: 'CASH_1M', name: 'Millionaire Club', description: 'Accumulate $1,000,000 in your bag.', isUnlocked: false },
-  { id: 'CLOUT_100', name: 'Rising Star', description: 'Reach 100 Clout.', isUnlocked: false },
-  { id: 'AURA_100', name: 'Mysterious Figure', description: 'Reach 100 Aura.', isUnlocked: false },
-];
+const INITIAL_ACHIEVEMENTS: Achievement[] = ACHIEVEMENTS.map(a => ({
+  id: a.id,
+  name: a.name,
+  description: a.description,
+  category: a.category,
+  isUnlocked: false,
+  reward: a.reward,
+}));
 
 export const createAchievementSlice: StateCreator<GameState, [], [], AchievementSlice> = (set, get) => ({
   achievements: INITIAL_ACHIEVEMENTS,
 
   unlockAchievement: (id) => {
     set((state) => {
-      const currentAchievements = (state as any).achievements as Achievement[];
+      const currentAchievements = (state as GameState).achievements;
       const achievement = currentAchievements.find((a) => a.id === id);
 
       if (achievement && !achievement.isUnlocked) {
@@ -42,8 +30,6 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
         );
 
         const tickerMessage = `🏆 ACHIEVEMENT UNLOCKED: ${achievement.name}`;
-
-        get().logEvent('SPECIAL_EVENT', { type: 'ACHIEVEMENT_UNLOCKED', achievementId: id, achievementName: achievement.name });
 
         return {
           achievements: updatedAchievements,
@@ -58,5 +44,7 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
       }
       return state;
     });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'ACHIEVEMENT_UNLOCKED', achievementId: id });
   },
 });
