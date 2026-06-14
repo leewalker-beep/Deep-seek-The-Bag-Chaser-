@@ -18,7 +18,7 @@ export const ReactionGrid: React.FC<ReactionGridProps> = ({ onComplete }) => {
       const multiplier = Math.max(0.5, Math.min(3.0, hits / 10));
       onComplete(multiplier);
     }
-  }, [isStarted, timeLeft, hits]);
+  }, [isStarted, timeLeft, hits, onComplete]);
 
   useEffect(() => {
     if (isStarted && timeLeft > 0) {

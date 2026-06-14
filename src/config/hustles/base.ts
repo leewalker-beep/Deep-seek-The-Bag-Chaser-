@@ -145,7 +145,7 @@ HUSTLES.r_vending = {
   isPassive: true,
   isRepeatable: true,
   maxRepeat: Infinity,
-  miniGame: 'QuickReaction',
+  miniGame: 'StruggleMash',
   startBranchId: 'l1',
   branches: {
     l1: {
@@ -172,7 +172,7 @@ HUSTLES.r_ghost_mode = {
   tier: 'MUD',
   icon: '👻',
   description: 'Low-heat operations',
-  miniGame: 'QuickReaction',
+  miniGame: 'PatternMemory',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'] },
@@ -318,7 +318,7 @@ HUSTLES.cc = {
   tier: 'STREET',
   icon: '📱',
   description: 'Build your audience',
-  miniGame: 'QuickReaction',
+  miniGame: 'BalanceScale',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
@@ -333,7 +333,7 @@ HUSTLES.pod = {
   tier: 'STREET',
   icon: '🎙️',
   description: 'Find your voice',
-  miniGame: 'PatternMemory',
+  miniGame: 'TapRhythm',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 2000, nextBranches: ['l2'] },
@@ -364,7 +364,7 @@ HUSTLES.vintage = {
   tier: 'STREET',
   icon: '🧥',
   description: 'Thrift flips and archival pieces',
-  miniGame: 'SwipeOrder',
+  miniGame: 'QuickReaction',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Thrift Flip', cost: 1000, yieldCash: 3000, yieldClout: 15, yieldAura: 10, mentalHit: -8, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
@@ -379,7 +379,7 @@ HUSTLES.techFlip = {
   tier: 'STREET',
   icon: '💻',
   description: 'Refurbish and resell electronics',
-  miniGame: 'PatternMemory',
+  miniGame: 'QuickReaction',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Refurb', cost: 1500, yieldCash: 3500, yieldClout: 10, yieldAura: 5, mentalHit: -9, cloutReq: 25, auraReq: 15, nextBranches: ['l2'] },
@@ -440,7 +440,7 @@ HUSTLES.sw = {
   tier: 'STARTUP',
   icon: '👕',
   description: 'Building a global hype brand',
-  miniGame: 'PatternMemory',
+  miniGame: 'HoldHype',
   hasPanel: true,
   panelType: 'STREETWEAR',
   startBranchId: 'l1',
@@ -472,7 +472,7 @@ HUSTLES.gig = {
   tier: 'STARTUP',
   icon: '🚚',
   description: 'Scale your logistics and fleet management',
-  miniGame: 'ReactionGrid',
+  miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
@@ -487,7 +487,7 @@ HUSTLES.meme = {
   tier: 'STARTUP',
   icon: '🪙',
   description: 'Manipulate the markets for high-tier gains',
-  miniGame: 'BalanceScale',
+  miniGame: 'HoldHype',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
@@ -577,7 +577,7 @@ HUSTLES.global_franchise = {
   tier: 'CORPORATE',
   icon: '🍔',
   description: 'Scalable standardized success',
-  miniGame: 'ReactionGrid',
+  miniGame: 'RotateToScale',
   levels: [
     { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 15000 },
     { level: 2, id: 'l2', cost: 2000000, yieldCash: 500000, yieldClout: 300, yieldAura: 150, mentalHit: -40, cloutReq: 300, auraReq: 200, passiveYield: 40000 },
@@ -723,7 +723,7 @@ HUSTLES.hedgefund = {
   tier: 'ELITE',
   icon: '📊',
   description: 'High-risk market trading',
-  miniGame: 'BalanceScale',
+  miniGame: 'MarketPredictor',
   startBranchId: 'l1',
   branches: {
     l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 10000000, yieldCash: 5000000, yieldClout: 100, yieldAura: 50, mentalHit: -15, cloutReq: 300, auraReq: 150, nextBranches: ['l2'] },

@@ -153,7 +153,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       market.heatMultiplier,
       1,
       true,
-      state.pl.mentalShieldTurns
+      state.pl.mentalShieldTurns,
+      state.pl.masteredHustles
     );
 
     if (state.pl.bag < result.cost) return { success: false, message: `Need $${result.cost.toLocaleString()}` };
@@ -207,10 +208,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       pl: nextPl,
       news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
     });
-
-    (get() as any).updateChallengeProgress('hustle_count', 1);
-    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
-    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
 
     get().logAction({
       month: state.pl.month,
@@ -313,7 +310,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       market.heatMultiplier,
       minigameMultiplier,
       success,
-      state.pl.mentalShieldTurns
+      state.pl.mentalShieldTurns,
+      state.pl.masteredHustles
     );
 
     if (hustleId === 'festival') {
@@ -650,10 +648,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       } : state.pl.hustleBranchIds,
     });
 
-    (get() as any).updateChallengeProgress('hustle_count', 1);
-    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
-    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
-
     if (hustleId === 'philanthropy_empire') {
       const donationAmount = state.pl.philanthropyDonation || 10000000;
       const legacyGain = Math.floor(donationAmount / 500000);
@@ -829,7 +823,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       market.heatMultiplier,
       1,
       true,
-      state.pl.mentalShieldTurns
+      state.pl.mentalShieldTurns,
+      state.pl.masteredHustles
     );
 
     if (state.pl.bag < result.cost) return false;

@@ -1,4 +1,5 @@
 import type { HustleLevel } from '../config/hustles/base';
+import { HUSTLE_BADGES } from '../config/badges';
 
 export interface MathResult {
   cost: number;
@@ -30,18 +31,38 @@ export function calculateHustleMath(
   marketHeatMult: number,
   minigameMult: number,
   isSuccess: boolean,
-  mentalShieldTurns: number = 0
+  mentalShieldTurns: number = 0,
+  masteredHustles: string[] = []
 ): MathResult {
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
 
+  // Apply Badge Buffs
+  let badgeYieldMult = 1;
+  let badgeCloutMult = 1;
+  let badgeAuraMult = 1;
+  let badgeMentalMult = 1;
+  let badgeHeatMult = 1;
+
+  masteredHustles.forEach(hId => {
+    const badge = HUSTLE_BADGES[hId];
+    if (badge) {
+      if (badge.buff.type === 'yield') badgeYieldMult *= badge.buff.value;
+      if (badge.buff.type === 'clout') badgeCloutMult *= badge.buff.value;
+      if (badge.buff.type === 'aura') badgeAuraMult *= badge.buff.value;
+      if (badge.buff.type === 'mental') badgeMentalMult *= badge.buff.value;
+      if (badge.buff.type === 'heat') badgeHeatMult *= badge.buff.value;
+    }
+  });
+
   const cost = levelData.cost * levelMult * marketExpenseMult;
-  let yieldCash = Math.floor(levelData.yieldCash * levelMult * marketYieldMult * minigameMult);
-  let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult);
-  let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
-  // Cap minigame impact on mental health to prevent extreme hits or weird gains from negative multipliers
+  let yieldCash = Math.floor(levelData.yieldCash * levelMult * marketYieldMult * minigameMult * badgeYieldMult);
+  let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult * badgeCloutMult);
+  let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult * badgeAuraMult);
+
+  // Cap minigame impact on mental health
   const mentalMinigameMult = Math.max(0.5, Math.min(2.0, Math.abs(minigameMult)));
-  let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? mentalMinigameMult : 1);
-  let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
+  let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? (mentalMinigameMult * badgeMentalMult) : 1);
+  let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult * badgeHeatMult;
 
   let isBigWin = false;
   let bigWinMessage = '';

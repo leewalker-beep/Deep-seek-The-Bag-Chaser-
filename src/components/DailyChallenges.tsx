@@ -1,80 +1,63 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { BaseButton } from './ui/BaseButton';
 
-interface DailyChallengesProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const DailyChallenges: React.FC<DailyChallengesProps> = ({ isOpen, onClose }) => {
-  const { dailyChallenges, loginStreak } = useGameStore() as any;
+export const DailyChallenges: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const { dailyChallenges, loginStreak } = useGameStore();
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            className="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl relative z-10"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
           >
-            <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-black text-white uppercase italic">Daily Grind</h2>
-                <div className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">
-                  Login Streak: {loginStreak} Days 🔥
+             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+
+             <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Daily Grind</h2>
+                  <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Login Streak: {loginStreak} Days 🔥</p>
                 </div>
-              </div>
-              <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
-            </div>
+                <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
+             </div>
 
-            <div className="p-6 space-y-4">
-              {dailyChallenges.map((challenge: any) => {
-                const progress = Math.min(100, (challenge.current / challenge.target) * 100);
-                return (
-                  <div key={challenge.id} className={`p-4 rounded-2xl border transition-colors ${
-                    challenge.isCompleted ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-950 border-slate-800'
-                  }`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className={`text-sm font-bold ${challenge.isCompleted ? 'text-emerald-400' : 'text-white'}`}>
-                          {challenge.description}
-                        </div>
-                        <div className="text-[10px] text-slate-500 font-mono mt-1">
-                          REWARD: ${challenge.reward.cash.toLocaleString()}
-                        </div>
+             <div className="space-y-4 mb-8">
+                {dailyChallenges.map((challenge) => (
+                  <div key={challenge.id} className="p-4 bg-slate-950/50 border border-slate-800 rounded-2xl relative overflow-hidden group">
+                    {challenge.isCompleted && (
+                      <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-end px-4">
+                        <span className="text-emerald-400 font-black text-xs uppercase tracking-widest">Completed</span>
                       </div>
-                      {challenge.isCompleted && <span className="text-xl">✅</span>}
-                    </div>
-
-                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        className={`h-full ${challenge.isCompleted ? 'bg-emerald-500' : 'bg-blue-500'}`}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-2">
-                       <span className="text-[8px] text-slate-500 font-bold uppercase">Progress</span>
-                       <span className="text-[10px] text-white font-mono">{challenge.current} / {challenge.target}</span>
+                    )}
+                    <div className="relative z-10">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-bold text-white text-sm">{challenge.description}</span>
+                        <span className="text-[10px] font-black text-emerald-400 font-mono">REWARD: ${challenge.reward.cash.toLocaleString()}</span>
+                      </div>
+                      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, (challenge.current / challenge.target) * 100)}%` }}
+                          className={`h-full ${challenge.isCompleted ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                        />
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter italic">Progress</span>
+                        <span className="text-[10px] font-mono text-slate-400">{challenge.current} / {challenge.target}</span>
+                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+             </div>
 
-            <div className="p-4 bg-slate-950/50 text-center">
-              <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Challenges reset every 24 hours</p>
-            </div>
+             <div className="text-center">
+                <p className="text-[8px] text-slate-500 uppercase tracking-[0.2em] mb-4">Challenges reset every 24 hours</p>
+                <BaseButton variant="secondary" onClick={onClose} className="w-full">Back to Hustle</BaseButton>
+             </div>
           </motion.div>
         </div>
       )}

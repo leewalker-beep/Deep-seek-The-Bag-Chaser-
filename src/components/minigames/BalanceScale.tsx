@@ -9,14 +9,14 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
   const [timeLeft, setTimeLeft] = useState(10);
   const [failed, setFailed] = useState<boolean>(false);
 
+  const requestRef = useRef<number>(0);
+  const driftRef = useRef(Math.random() > 0.5 ? 0.5 : -0.5);
+
   useEffect(() => {
     if (failed) {
        if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }
   }, [failed]);
-
-  const requestRef = useRef<number>(0);
-  const driftRef = useRef(Math.random() > 0.5 ? 0.5 : -0.5);
 
   useEffect(() => {
     const timer = setInterval(() => {

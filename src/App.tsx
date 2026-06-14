@@ -214,28 +214,9 @@ function App() {
 
   const tierClass = `${pl.currentTier.toLowerCase()}-tier`;
 
-  const TierDecoration = () => {
-    switch (pl.currentTier) {
-      case 'MUD':
-        return <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />;
-      case 'STREET':
-        return <div className="fixed inset-0 pointer-events-none opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />;
-      case 'CORPORATE':
-        return <div className="fixed inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fff_1px,#fff_2px)] bg-[size:100%_4px]" />;
-      case 'ELITE':
-        return <div className="fixed inset-0 pointer-events-none border-[20px] border-purple-950/20" />;
-      case 'MOGUL':
-        return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />;
-      case 'PRESIDENT':
-        return <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative overflow-x-hidden`}>
-      <TierDecoration />
+      <TierDecoration tier={pl.currentTier} />
       {/* Hidden StatsPanel to run its side effects (warning system) */}
       <div className="hidden">
         <StatsPanel stats={pl} market={currentMarket} />
@@ -689,5 +670,24 @@ function App() {
     </div>
   );
 }
+
+const TierDecoration = ({ tier }: { tier: Tier }) => {
+  switch (tier) {
+    case 'MUD':
+      return <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />;
+    case 'STREET':
+      return <div className="fixed inset-0 pointer-events-none opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />;
+    case 'CORPORATE':
+      return <div className="fixed inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fff_1px,#fff_2px)] bg-[size:100%_4px]" />;
+    case 'ELITE':
+      return <div className="fixed inset-0 pointer-events-none border-[20px] border-purple-950/20" />;
+    case 'MOGUL':
+      return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />;
+    case 'PRESIDENT':
+      return <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />;
+    default:
+      return null;
+  }
+};
 
 export default App;

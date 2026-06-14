@@ -31,7 +31,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
 
   processLogin: () => {
     const today = new Date().toISOString().split('T')[0];
-    const state = get() as any;
+    const state = get();
 
     if (state.lastLoginDate === today) return;
 
@@ -53,16 +53,16 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
         { id: 'earn_cash', description: 'Earn $50,000 in a single day', target: 50000, current: 0, isCompleted: false, reward: { cash: 10000 } },
         { id: 'clout_gain', description: 'Gain 100 Clout', target: 100, current: 0, isCompleted: false, reward: { cash: 5000 } },
       ]
-    } as any);
+    });
   },
 
   checkChallenges: () => {
-    const state = get() as any;
-    const completedChallenges = state.dailyChallenges.filter((c: any) => !c.isCompleted && c.current >= c.target);
+    const state = get();
+    const completedChallenges = state.dailyChallenges.filter((c) => !c.isCompleted && c.current >= c.target);
 
     if (completedChallenges.length > 0) {
       let bonusCash = 0;
-      const updatedChallenges = state.dailyChallenges.map((c: any) => {
+      const updatedChallenges = state.dailyChallenges.map((c) => {
         if (!c.isCompleted && c.current >= c.target) {
           bonusCash += c.reward.cash;
           return { ...c, isCompleted: true };
@@ -74,17 +74,17 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
         dailyChallenges: updatedChallenges,
         pl: { ...state.pl, bag: state.pl.bag + bonusCash },
         news: [`🎁 DAILY CHALLENGE COMPLETE: +$${bonusCash.toLocaleString()}`, ...state.news.slice(0, 49)]
-      } as any);
+      });
     }
   },
 
   updateChallengeProgress: (id, amount) => {
-    const state = get() as any;
-    const updatedChallenges = state.dailyChallenges.map((c: any) =>
+    const state = get();
+    const updatedChallenges = state.dailyChallenges.map((c) =>
         c.id === id ? { ...c, current: c.current + amount } : c
     );
 
-    set({ dailyChallenges: updatedChallenges } as any);
-    (get() as any).checkChallenges();
+    set({ dailyChallenges: updatedChallenges });
+    get().checkChallenges();
   }
 });

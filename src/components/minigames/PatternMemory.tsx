@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface PatternMemoryProps {
@@ -12,11 +12,16 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
   const [activeButton, setActiveButton] = useState<number | null>(null);
   const [round, setRound] = useState(1);
   const [failed, setFailed] = useState(false);
+  const isMounted = useRef(true);
 
   const totalRounds = 4;
 
   useEffect(() => {
+    isMounted.current = true;
     startNewRound(1);
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const startNewRound = (currentRound: number) => {
@@ -29,12 +34,14 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
   const displaySequence = async (seq: number[]) => {
     setIsDisplaying(true);
     for (const num of seq) {
+      if (!isMounted.current) return;
       setActiveButton(num);
       await new Promise(resolve => setTimeout(resolve, 600));
+      if (!isMounted.current) return;
       setActiveButton(null);
       await new Promise(resolve => setTimeout(resolve, 200));
     }
-    setIsDisplaying(false);
+    if (isMounted.current) setIsDisplaying(false);
   };
 
   const handleButtonClick = (index: number) => {
