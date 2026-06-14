@@ -25,6 +25,7 @@ export interface HustleSlice {
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
+  logEvent: (type: any, metadata?: any) => void;
   checkMilestones: () => void;
   resetGame: (difficulty?: 1 | 2 | 3) => void;
 }
@@ -64,6 +65,30 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       pl: enforceStatCaps({
         ...state.pl,
         actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, 500),
+      }),
+    });
+  },
+
+  logEvent: (type, metadata = {}) => {
+    const state = get();
+    const newEvent = {
+      id: Math.random().toString(36).substring(7),
+      type,
+      timestamp: Date.now(),
+      playerStats: {
+        bag: state.pl.bag,
+        clout: state.pl.clout,
+        aura: state.pl.aura,
+        mental: state.pl.mentalHealth,
+        heat: state.pl.heat,
+        tier: state.pl.currentTier,
+      },
+      metadata,
+    };
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
       }),
     });
   },
@@ -133,6 +158,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           achievedAtMonth: state.pl.month,
           tier: state.pl.currentTier
         });
+        get().logEvent('SPECIAL_EVENT', { type: 'HUSTLE_MASTERY', hustleId: hId, hustleName: h.name });
         showConfetti();
       }
     });
@@ -221,6 +247,23 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     set({
       pl: nextPl,
       news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
+    });
+
+    const isVendingBuy = hustleId === 'r_vending';
+    const isRealEstateBuy = ['l2a', 'l2b', 'l3a'].includes(branchId) && hustleId === 'r_labor';
+
+    if (isVendingBuy) {
+      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
+    } else if (isRealEstateBuy) {
+      get().logEvent('PROPERTY_PURCHASED', { branchId, branchName: branch.name, cost: result.cost });
+    }
+
+    get().logEvent('HUSTLE_COMPLETED', {
+      hustleId,
+      hustleName: hustle.name,
+      success: true,
+      profit: result.yieldCash - result.cost,
+      branchId
     });
 
     (get() as any).updateChallengeProgress('hustle_count', 1);
@@ -359,6 +402,47 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
 
+    // Event Logging
+    get().logEvent('HUSTLE_COMPLETED', {
+      hustleId,
+      hustleName: hustle.name,
+      success: result.success,
+      profit: result.yieldCash - result.cost,
+      level: currentLevel
+    });
+
+    if (result.success) {
+      if (hustleId === 'real_estate_empire') {
+        get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
+      } else if (hustleId === 'privateequity') {
+        get().logEvent('COMPANY_ACQUIRED', { level: currentLevel, cost: result.cost });
+      } else if (hustleId === 'venture_capital') {
+        get().logEvent('INVESTMENT_MADE', { sector: state.pl.vcSector, investment: result.cost });
+        if (result.yieldCash > result.cost) {
+          get().logEvent('MARKET_WIN', { type: 'VC_EXIT', profit: result.yieldCash - result.cost });
+        }
+      } else if (hustleId === 'hedgefund') {
+        if (result.yieldCash > result.cost) {
+          get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
+        }
+      } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
+        get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
+      }
+
+      // Rival Check
+      const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);
+      if (activeRival && result.success) {
+        get().logEvent('RIVAL_DEFEATED', { rivalName: activeRival.name, bid: activeRival.currentBid });
+      }
+    }
+
+    if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
+      get().logEvent('SCANDAL_TRIGGERED', { type: 'DATA_BREACH' });
+    }
+    if (hustleResultPl.heat > 90) {
+      get().logEvent('SCANDAL_TRIGGERED', { type: 'POLICE_RAID_RISK', heat: hustleResultPl.heat });
+    }
+
     const actionLogData = {
       month: state.pl.month,
       tier: state.pl.currentTier,
@@ -383,6 +467,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleResultPl,
       state.currentMarket
     );
+
+    if (newMarket !== state.currentMarket) {
+      get().logEvent('ECONOMIC_EVENT', { from: state.currentMarket, to: newMarket });
+    }
 
     newPl.mentalShieldTurns += (result.shieldTurns || 0);
 
@@ -634,6 +722,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
       });
 
+      get().logEvent('PROMOTION_EARNED', { from: state.pl.currentTier, to: nextTier, fee: totalFee });
       showConfetti();
       get().setActiveTab(nextTier);
 
@@ -673,10 +762,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     if (isVending) {
+      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: asset.cost });
       const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
         plAfterPurchase,
         state.currentMarket
       );
+
+      if (newMarket !== state.currentMarket) {
+        get().logEvent('ECONOMIC_EVENT', { from: state.currentMarket, to: newMarket });
+      }
 
       const cappedPl = enforceStatCaps(newPl);
 
@@ -708,6 +802,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         pl: plAfterPurchase,
         news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
       });
+      get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
     }
 
     return true;

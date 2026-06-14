@@ -174,6 +174,8 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       news: [`🎤 SUCCESS! Signed ${tier} artist: ${name}`, ...state.news.slice(0, 49)]
     });
 
+    get().logEvent('INVESTMENT_MADE', { type: 'ARTIST_SCOUT', tier, artistName: name, cost });
+
     return { success: true, artist: newArtist, message: 'Success' };
   },
 
