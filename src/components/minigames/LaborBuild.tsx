@@ -1,0 +1,87 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+
+interface LaborBuildProps {
+  onComplete: (multiplier: number) => void;
+}
+
+export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(10);
+  const [isActive, setIsActive] = useState(true);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 0.1) {
+          setIsActive(false);
+          return 0;
+        }
+        return prev - 0.1;
+      });
+
+      // Slow decay
+      setProgress(prev => Math.max(0, prev - 1));
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [isActive]);
+
+  const handleTap = () => {
+    if (!isActive) return;
+    setProgress(prev => Math.min(100, prev + 5));
+  };
+
+  useEffect(() => {
+    if (!isActive) {
+      let multiplier = 0.5;
+      if (progress > 90) multiplier = 3.0;
+      else if (progress > 70) multiplier = 2.0;
+      else if (progress > 40) multiplier = 1.0;
+      else if (progress > 20) multiplier = 0.7;
+
+      const timeout = setTimeout(() => onComplete(multiplier), 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isActive, progress, onComplete]);
+
+  return (
+    <div className="bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto">
+      <h2 className="text-2xl font-black text-stone-400 mb-2 uppercase tracking-tighter italic">LABOR & PROPERTY</h2>
+      <p className="text-[10px] text-stone-600 mb-6 uppercase tracking-widest font-bold">Tap to build the foundations</p>
+
+      <div className="relative h-48 w-full bg-stone-900 rounded-2xl border-2 border-stone-800 overflow-hidden mb-6 flex flex-col justify-end">
+        <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-1 p-2 opacity-20">
+          {[...Array(16)].map((_, i) => (
+            <div key={i} className="bg-stone-700 rounded-sm" />
+          ))}
+        </div>
+        <motion.div
+          animate={{ height: `${progress}%` }}
+          className="w-full bg-orange-900/60 border-t-4 border-orange-500 relative z-10"
+        />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <span className="text-6xl font-black text-white/10">{Math.floor(progress)}%</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <button
+          onPointerDown={handleTap}
+          className={`py-6 rounded-2xl font-black text-2xl transition-all active:scale-95 touch-none ${
+            isActive ? 'bg-orange-600 text-white border-b-8 border-orange-900 shadow-lg' : 'bg-stone-900 text-stone-700'
+          }`}
+        >
+          {isActive ? 'BUILD!!!' : 'COMPLETE'}
+        </button>
+
+        <div className="flex justify-between items-center text-[10px] font-bold text-stone-500 uppercase">
+          <span>Time: {timeLeft.toFixed(1)}s</span>
+          <span className="text-orange-500/50">Target: 90%+</span>
+        </div>
+      </div>
+    </div>
+  );
+};

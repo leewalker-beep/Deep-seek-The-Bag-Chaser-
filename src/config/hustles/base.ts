@@ -37,7 +37,7 @@ export interface Hustle {
 
 export const HUSTLES: Record<string, Hustle> = {};
 
-// MUD Tier Hustles (Simple survival: StruggleMash, SwipeOrder, MagneticSweep)
+// MUD Tier Hustles (Unique Survival Controls)
 HUSTLES.r_labor = {
   id: 'r_labor',
   name: 'Labor & Property',
@@ -45,7 +45,7 @@ HUSTLES.r_labor = {
   icon: '🏗️',
   description: 'From manual labor to real estate empire',
   startBranchId: 'l1',
-  miniGame: 'StruggleMash',
+  miniGame: 'LaborBuild',
   branches: {
     l1: {
       level: 1,
@@ -58,7 +58,8 @@ HUSTLES.r_labor = {
       mentalHit: -8,
       cloutReq: 0,
       auraReq: 0,
-      nextBranches: ['l2a', 'l2b']
+      nextBranches: ['l2a', 'l2b'],
+      miniGame: 'LaborBuild'
     },
     l2a: {
       level: 2,
@@ -72,7 +73,7 @@ HUSTLES.r_labor = {
       cloutReq: 40,
       auraReq: 20,
       nextBranches: ['l3a'],
-      miniGame: 'SwipeOrder'
+      miniGame: 'LaborBuild'
     },
     l2b: {
       level: 2,
@@ -89,7 +90,7 @@ HUSTLES.r_labor = {
       nextBranches: ['l3a'],
       isRepeatable: true,
       maxRepeat: 10,
-      miniGame: 'SwipeOrder'
+      miniGame: 'LaborBuild'
     },
     l3a: {
       level: 3,
@@ -103,7 +104,7 @@ HUSTLES.r_labor = {
       cloutReq: 200,
       auraReq: 100,
       passiveYield: 15000,
-      miniGame: 'SwipeOrder'
+      miniGame: 'LaborBuild'
     },
   },
 };
@@ -114,12 +115,12 @@ HUSTLES.r_delivery = {
   tier: 'MUD',
   icon: '🛵',
   description: 'Fast cash, faster roads',
-  miniGame: 'StruggleMash',
+  miniGame: 'TrafficDodge',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 8000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'SwipeOrder' },
+    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'TrafficDodge' },
+    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 8000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'TrafficDodge' },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TrafficDodge' },
   }
 };
 
@@ -129,10 +130,10 @@ HUSTLES.r_plasma = {
   tier: 'MUD',
   icon: '🩸',
   description: 'Sell your essence',
-  miniGame: 'StruggleMash',
+  miniGame: 'PlasmaDonation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Plasma Donation', cost: 0, yieldCash: 500, yieldClout: 0, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0 },
+    l1: { level: 1, id: 'l1', name: 'Plasma Donation', cost: 0, yieldCash: 500, yieldClout: 0, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, miniGame: 'PlasmaDonation' },
   },
 };
 
@@ -145,7 +146,6 @@ HUSTLES.r_vending = {
   isPassive: true,
   isRepeatable: true,
   maxRepeat: Infinity,
-  miniGame: 'MagneticSweep',
   startBranchId: 'l1',
   branches: {
     l1: {
@@ -172,12 +172,12 @@ HUSTLES.r_ghost_mode = {
   tier: 'MUD',
   icon: '👻',
   description: 'Low-heat operations',
-  miniGame: 'StruggleMash',
+  miniGame: 'GhostTap',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'SwipeOrder' }
+    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'], miniGame: 'GhostTap' },
+    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'], miniGame: 'GhostTap' },
+    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'GhostTap' }
   },
 };
 
@@ -197,28 +197,12 @@ HUSTLES.r_scrap = {
   },
 };
 
-HUSTLES.r_flyers = {
-  id: 'r_flyers',
-  name: 'Flyer Distribution',
-  tier: 'MUD',
-  icon: '📄',
-  description: 'Promote local businesses',
-  miniGame: 'StruggleMash',
-  startBranchId: 'l1',
-  branches: {
-    l1: { level: 1, id: 'l1', name: 'Flyers', cost: 100, yieldCash: 300, yieldClout: 1, yieldAura: 0, mentalHit: -3, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Digital Flyers', cost: 1500, yieldCash: 1000, yieldClout: 5, yieldAura: 0, mentalHit: -6, cloutReq: 15, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'National Campaign', cost: 8000, yieldCash: 4000, yieldClout: 20, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 15 },
-  },
-};
-
 HUSTLES.r_sleep = {
   id: 'r_sleep',
   name: 'Rest & Recover',
   tier: 'MUD',
   icon: '😴',
   description: 'Regain mental health',
-  miniGame: 'StruggleMash',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 1, nextBranches: ['l2'] },
@@ -234,6 +218,7 @@ HUSTLES.street_eats = {
   icon: '🌮',
   description: 'From taco cart to restaurant empire',
   startBranchId: 'l1',
+  miniGame: 'StreetEats',
   branches: {
     l1: {
       level: 1,
@@ -247,7 +232,7 @@ HUSTLES.street_eats = {
       cloutReq: 0,
       auraReq: 0,
       nextBranches: ['l2'],
-      miniGame: 'StruggleMash'
+      miniGame: 'StreetEats'
     },
     l2: {
       level: 2,
@@ -262,7 +247,7 @@ HUSTLES.street_eats = {
       auraReq: 10,
       nextBranches: ['l3'],
       passiveYield: 500,
-      miniGame: 'SwipeOrder'
+      miniGame: 'StreetEats'
     },
     l3: {
       level: 3,
@@ -277,7 +262,7 @@ HUSTLES.street_eats = {
       auraReq: 25,
       nextBranches: ['l4'],
       passiveYield: 2000,
-      miniGame: 'SwipeOrder'
+      miniGame: 'StreetEats'
     },
     l4: {
       level: 4,
@@ -292,7 +277,7 @@ HUSTLES.street_eats = {
       auraReq: 50,
       nextBranches: ['l5'],
       passiveYield: 8000,
-      miniGame: 'MagneticSweep'
+      miniGame: 'StreetEats'
     },
     l5: {
       level: 5,
@@ -306,7 +291,7 @@ HUSTLES.street_eats = {
       cloutReq: 200,
       auraReq: 100,
       passiveYield: 25000,
-      miniGame: 'MagneticSweep'
+      miniGame: 'StreetEats'
     }
   }
 };
