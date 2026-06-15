@@ -417,6 +417,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       heat: state.pl.heat + result.heatHit,
       legacyPoints: (state.pl.legacyPoints || 0) + (result.legacyGain || 0),
       dynamicPassives: newDynamicPassives,
+      vendingCount: state.pl.vendingCount + (hustleId === 'r_vending' ? 1 : 0),
       rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
       flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
       stats: newStats,
@@ -480,6 +481,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     const cappedPl = enforceStatCaps(newPl);
+
+    if (hustleId === 'r_vending' && result.success) {
+      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
+    }
 
     const executionNews = ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`;
     const finalNews = [
@@ -828,7 +833,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (state.pl.bag < asset.cost) return false;
 
     const newCount = (state.pl.flexAssets[assetId] || 0) + 1;
-    const isVending = assetId === 'vending';
 
     const plAfterPurchase = enforceStatCaps({
       ...state.pl,
@@ -837,58 +841,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         ...state.pl.flexAssets,
         [assetId]: newCount
       },
-      vendingCount: isVending ? (state.pl.vendingCount + 1) : state.pl.vendingCount
     });
     plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
-    if (isVending) {
-      // Backup if spending > 10%
-      if (asset.cost > state.pl.bag * 0.1) {
-        backupSave();
-      }
-
-      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: asset.cost });
-      const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
-        plAfterPurchase,
-        state.currentMarket
-      );
-
-      if (newMarket !== state.currentMarket) {
-        get().logEvent('ECONOMIC_EVENT', { from: state.currentMarket, to: newMarket });
-      }
-
-      const cappedPl = enforceStatCaps(newPl);
-
-      if (shouldDie) {
-        const finalStat = getDominantStat(cappedPl);
-        const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
-        const savedEndings = JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]');
-        if (!savedEndings.includes(ending.title)) {
-          savedEndings.push(ending.title);
-          localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
-        }
-
-        set({
-          pl: cappedPl,
-          currentMarket: newMarket,
-          news: [...monthNews, `💎 Purchased ${asset.name}`, ...state.news.slice(0, 45)],
-          ph: 'POST_MORTEM',
-          fatalCause: deathCause,
-        });
-      } else {
-        set({
-          pl: cappedPl,
-          currentMarket: newMarket,
-          news: [...monthNews, `💎 Purchased ${asset.name}`, ...state.news.slice(0, 45)]
-        });
-      }
-    } else {
-      set({
-        pl: plAfterPurchase,
-        news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
-      });
-      get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
-    }
+    set({
+      pl: plAfterPurchase,
+      news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
+    });
+    get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
 
     return true;
   },

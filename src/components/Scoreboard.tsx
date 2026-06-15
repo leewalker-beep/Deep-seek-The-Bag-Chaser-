@@ -67,6 +67,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <StatCard label="Login Streak" value={`${pl.loginStreak || 0} Days`} icon="🔥" />
                 <StatCard label="Endings Found" value={`${JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').length}/16`} icon="🎬" />
                 <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
+                <StatCard label="Vending Machines" value={pl.vendingCount || 0} icon="🥤" />
                 <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
               </motion.div>
             )}

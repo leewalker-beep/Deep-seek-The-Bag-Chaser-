@@ -10,7 +10,6 @@ export interface FlexAsset {
 }
 
 export const FLEX_ASSETS: FlexAsset[] = [
-  { id: 'vending', name: 'Vending Machine', cost: 2000, icon: '🥤', maxCloutBoost: 0, maxAuraBoost: 0, maxMentalBoost: 0, passiveYield: 250 },
   { id: 'watch', name: 'Vintage Watch', cost: 10000, icon: '⌚', maxCloutBoost: 5, maxAuraBoost: 0, maxMentalBoost: 0, passiveYield: 0 },
   { id: 'car', name: 'Sports Car', cost: 50000, icon: '🏎️', maxCloutBoost: 0, maxAuraBoost: 10, maxMentalBoost: 0, passiveYield: 0 },
   { id: 'yacht', name: 'Yacht', cost: 500000, icon: '🛥️', maxCloutBoost: 25, maxAuraBoost: 25, maxMentalBoost: 0, passiveYield: 10000 },
