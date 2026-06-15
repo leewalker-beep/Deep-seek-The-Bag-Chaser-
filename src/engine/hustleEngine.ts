@@ -190,7 +190,7 @@ const cryptoMiningStrategy: HustleStrategy = (state, marketType, _levelData, cur
   };
 };
 
-const vaAgencyStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
+const vaAgencyStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const staff = state.vaStaff || 5;
   const training = state.vaTraining || 'none';
@@ -206,7 +206,7 @@ const vaAgencyStrategy: HustleStrategy = (state, marketType, _levelData, _curren
   const baseYield = baseYieldMap[client as keyof typeof baseYieldMap] || 50000;
 
   const successChance = Math.min(0.95, (staff / 20) * trainingMultiplier);
-  const isSuccess = Math.random() < successChance;
+  const isSuccess = forceSuccess !== undefined ? forceSuccess : Math.random() < successChance;
 
   let yieldCash = Math.floor(baseYield * market.yieldMultiplier);
   let yieldClout = Math.floor(20 * trainingMultiplier);

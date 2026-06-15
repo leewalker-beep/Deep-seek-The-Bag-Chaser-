@@ -198,6 +198,7 @@ export interface PendingUpdate {
   deathBadge: string | null;
   fatalCause: string | null;
   action: Omit<GameAction, 'id' | 'timestamp'>;
+  event?: { type: GameEventType; metadata: any };
 }
 
 export interface GameState {

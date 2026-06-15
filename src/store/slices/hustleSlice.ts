@@ -240,6 +240,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       newRentalCount++;
     }
 
+    const newStats = state.pl.stats
+      ? { ...state.pl.stats }
+      : { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
+
+    newStats.totalHustles += 1;
+    newStats.successfulHustles += 1;
+    newStats.lifetimeEarnings += result.yieldCash;
+
     const nextPl = enforceStatCaps({
       ...state.pl,
       bag: newBag,
@@ -253,6 +261,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       vendingCount: newVendingCount,
       hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
       hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
+      stats: newStats,
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
@@ -277,7 +286,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       profit: result.yieldCash - result.cost,
       branchId,
       miniGame: hustle.miniGame || branch.miniGame,
-      multiplier: 1.0 // Branches usually don't have minigame scaling in this version or it's fixed
+      multiplier: 1.0
     });
 
     (get() as any).updateChallengeProgress('hustle_count', 1);
@@ -416,41 +425,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
 
-    // Event Logging
-    get().logEvent('HUSTLE_COMPLETED', {
-      hustleId,
-      hustleName: hustle.name,
-      success: result.success,
-      profit: result.yieldCash - result.cost,
-      level: currentLevel,
-      miniGame: hustle.miniGame || levelData.miniGame,
-      multiplier: minigameMultiplier
-    });
-
-    if (result.success) {
-      if (hustleId === 'real_estate_empire') {
-        get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
-      } else if (hustleId === 'privateequity') {
-        get().logEvent('COMPANY_ACQUIRED', { level: currentLevel, cost: result.cost });
-      } else if (hustleId === 'venture_capital') {
-        get().logEvent('INVESTMENT_MADE', { sector: state.pl.vcSector, investment: result.cost });
-        if (result.yieldCash > result.cost) {
-          get().logEvent('MARKET_WIN', { type: 'VC_EXIT', profit: result.yieldCash - result.cost });
-        }
-      } else if (hustleId === 'hedgefund') {
-        if (result.yieldCash > result.cost) {
-          get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
-        }
-      } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
-        get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
-      }
-
-      // Rival Check
-      const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);
-      if (activeRival && result.success) {
-        get().logEvent('RIVAL_DEFEATED', { rivalName: activeRival.name, bid: activeRival.currentBid });
-      }
-    }
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
       get().logEvent('SCANDAL_TRIGGERED', { type: 'DATA_BREACH' });
@@ -548,6 +522,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     }
 
+    const eventToLog = {
+      type: 'HUSTLE_COMPLETED' as const,
+      metadata: {
+        hustleId,
+        hustleName: hustle.name,
+        success: result.success,
+        profit: result.yieldCash - result.cost,
+        level: currentLevel,
+        miniGame: hustle.miniGame || levelData.miniGame,
+        multiplier: minigameMultiplier
+      }
+    };
+
     if (defer) {
       set({
         pendingUpdate: {
@@ -557,7 +544,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           ph: finalPh,
           deathBadge: finalDeathBadge,
           fatalCause: finalFatalCause,
-          action: actionLogData
+          action: actionLogData,
+          event: eventToLog
         }
       });
     } else {
@@ -570,6 +558,32 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         fatalCause: finalFatalCause,
       });
 
+      get().logEvent(eventToLog.type, eventToLog.metadata);
+
+      if (result.success) {
+        if (hustleId === 'real_estate_empire') {
+          get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
+        } else if (hustleId === 'privateequity') {
+          get().logEvent('COMPANY_ACQUIRED', { level: currentLevel, cost: result.cost });
+        } else if (hustleId === 'venture_capital') {
+          get().logEvent('INVESTMENT_MADE', { sector: state.pl.vcSector, investment: result.cost });
+          if (result.yieldCash > result.cost) {
+            get().logEvent('MARKET_WIN', { type: 'VC_EXIT', profit: result.yieldCash - result.cost });
+          }
+        } else if (hustleId === 'hedgefund') {
+          if (result.yieldCash > result.cost) {
+            get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
+          }
+        } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
+          get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
+        }
+
+        const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);
+        if (activeRival) {
+          get().logEvent('RIVAL_DEFEATED', { rivalName: activeRival.name, bid: activeRival.currentBid });
+        }
+      }
+
       get().logAction(actionLogData);
       get().checkMilestones();
     }
@@ -581,7 +595,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const state = get();
     if (!state.pendingUpdate) return;
 
-    const { pl, news, currentMarket, ph, deathBadge, fatalCause, action } = state.pendingUpdate;
+    const { pl, news, currentMarket, ph, deathBadge, fatalCause, action, event } = state.pendingUpdate;
     const updatedPl = enforceStatCaps(pl);
     updatedPl.legacyScore = calculateLegacyScore(updatedPl);
 
@@ -595,6 +609,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       pendingUpdate: null,
       activeHustleView: null,
     });
+
+    if (event) {
+      get().logEvent(event.type, event.metadata);
+    }
 
     get().logAction(action);
     get().checkMilestones();
@@ -654,6 +672,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (state.pl.clout < targetNodeData.cloutReq) return false;
     if (state.pl.aura < targetNodeData.auraReq) return false;
 
+    const newStats = state.pl.stats
+      ? { ...state.pl.stats }
+      : { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
+
+    newStats.totalHustles += 1;
+    newStats.successfulHustles += 1;
+    newStats.lifetimeEarnings += result.yieldCash;
+
     const newPl = enforceStatCaps({
       ...state.pl,
       bag: state.pl.bag - result.cost,
@@ -662,6 +688,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       mentalHealth: state.pl.mentalHealth + result.mentalHit,
       heat: state.pl.heat + result.heatHit,
       mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
+      stats: newStats,
     });
     newPl.legacyScore = calculateLegacyScore(newPl);
 
