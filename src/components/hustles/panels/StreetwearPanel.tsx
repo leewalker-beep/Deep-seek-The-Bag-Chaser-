@@ -1,5 +1,5 @@
 import React from 'react';
-import { HoldHype } from '../../minigames/HoldHype';
+import { StreetwearDesign } from '../../minigames/StreetwearDesign';
 import { useGameStore } from '../../../store/gameStore';
 import type { Hustle } from '../../../config/hustles/base';
 
@@ -32,14 +32,13 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
         </div>
 
         <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
-          <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">HYPE STRATEGY</div>
+          <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">DESIGN STRATEGY</div>
           <p className="text-slate-300 text-sm">
-            Timing the release is everything. Hold the button to build hype. Release within the
-            <span className="text-emerald-400 font-bold mx-1">2.0s window</span> for maximum viral impact.
+            Consistency is key. Match the color swatches to the target outfit parts for maximum hype.
           </p>
         </div>
 
-        <HoldHype onComplete={handleComplete} />
+        <StreetwearDesign onComplete={handleComplete} />
       </div>
 
       <button
