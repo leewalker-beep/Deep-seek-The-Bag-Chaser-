@@ -121,10 +121,6 @@ function App() {
   });
   const [showChallenges, setShowChallenges] = useState(false);
 
-  if (!isHydrated) {
-    return <LoadingSkeleton />;
-  }
-
   const handleTutorialComplete = useCallback(() => {
     setShowTutorial(false);
   }, []);
@@ -173,8 +169,10 @@ function App() {
   } | null>(null);
 
   useEffect(() => {
-    document.body.className = pl.currentTier.toLowerCase();
-  }, [pl.currentTier]);
+    if (pl?.currentTier) {
+      document.body.className = pl.currentTier.toLowerCase();
+    }
+  }, [pl?.currentTier]);
 
   // Animate cash changes
   useEffect(() => {
@@ -190,6 +188,10 @@ function App() {
       }
     }
   }, [pl?.bag, displayedCash]);
+
+  if (!isHydrated) {
+    return <LoadingSkeleton />;
+  }
 
   // Prologue screen
   if (ph === 'PROLOGUE') {
