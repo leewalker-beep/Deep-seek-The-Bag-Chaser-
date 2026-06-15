@@ -13,6 +13,12 @@ import { EndingModal } from './components/EndingModal';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import { SwipeOrder } from './components/minigames/SwipeOrder';
+import { SwipeUpViral } from './components/minigames/SwipeUpViral';
+import { SwipeAuthentic } from './components/minigames/SwipeAuthentic';
+import { BeatSequence } from './components/minigames/BeatSequence';
+import { TechRepairDrag } from './components/minigames/TechRepairDrag';
+import { WordTap } from './components/minigames/WordTap';
+import { PinchToInspect } from './components/minigames/PinchToInspect';
 import { TapRhythm } from './components/minigames/TapRhythm';
 import { DragScale } from './components/minigames/DragScale';
 import { TapAssign } from './components/minigames/TapAssign';
@@ -499,6 +505,12 @@ function App() {
                 };
 
                 if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
+                if (activeMiniGame === 'SwipeUpViral') return <SwipeUpViral onComplete={onComplete} />;
+                if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} />;
+                if (activeMiniGame === 'BeatSequence') return <BeatSequence onComplete={onComplete} />;
+                if (activeMiniGame === 'TechRepairDrag') return <TechRepairDrag onComplete={onComplete} />;
+                if (activeMiniGame === 'WordTap') return <WordTap onComplete={onComplete} />;
+                if (activeMiniGame === 'PinchToInspect') return <PinchToInspect onComplete={onComplete} />;
                 if (activeMiniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} />;
                 if (activeMiniGame === 'DragScale') return <DragScale onComplete={onComplete} />;
                 if (activeMiniGame === 'TapAssign') return <TapAssign onComplete={onComplete} />;
