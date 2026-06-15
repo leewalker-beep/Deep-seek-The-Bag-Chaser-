@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProgressBar } from '../ui/ProgressBar';
 
 interface GhostTapProps {
   onComplete: (multiplier: number) => void;
@@ -10,6 +11,7 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [gameActive, setGameActive] = useState(true);
+  const [feedback, setFeedback] = useState<'tap' | null>(null);
   const targetId = React.useRef(0);
 
   useEffect(() => {
@@ -46,6 +48,9 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
     if (!gameActive) return;
     setScore(s => s + 1);
     setTargets(prev => prev.filter(t => t.id !== id));
+    setFeedback('tap');
+    setTimeout(() => setFeedback(null), 100);
+    if (navigator.vibrate) navigator.vibrate(20);
   };
 
   useEffect(() => {
@@ -61,10 +66,12 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
   }, [gameActive, score, onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+    <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${feedback ? 'bg-purple-950/20' : 'bg-black'}`}>
       <div className="absolute top-12 text-center z-20">
         <h2 className="text-3xl font-black text-purple-500 italic tracking-tighter">GHOST MODE</h2>
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Tap the ghosts before they vanish!</p>
+        <div className="flex items-center justify-center gap-2">
+           <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-purple-700">TAP THE GHOSTS!</motion.span>
+        </div>
         <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">REMOVED: {score}</div>
       </div>
 
@@ -77,7 +84,7 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.5, opacity: 0 }}
               onClick={() => handleTap(t.id)}
-              className="absolute w-16 h-16 flex items-center justify-center text-4xl filter drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+              className="absolute w-16 h-16 flex items-center justify-center text-4xl filter drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] active:scale-125 transition-transform"
               style={{ top: `${t.top}%`, left: `${t.left}%` }}
             >
               👻
@@ -86,8 +93,16 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
         </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-20 text-slate-600 font-bold uppercase text-[10px]">
-        TIME REMAINING: {timeLeft.toFixed(1)}s
+      <div className="absolute bottom-12 w-full max-w-[300px] px-4">
+        <ProgressBar
+          value={timeLeft}
+          max={10}
+          label={`SIGNAL TIME: ${timeLeft.toFixed(1)}s`}
+          colorClass="bg-purple-500"
+        />
+        <div className="mt-2 text-center text-[10px] text-slate-600 font-black uppercase">
+          Target: 12+ for 3x Yield
+        </div>
       </div>
     </div>
   );

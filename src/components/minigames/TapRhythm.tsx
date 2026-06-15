@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TapRhythmProps {
   onComplete: (multiplier: number) => void;
@@ -9,6 +10,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [beats, setBeats] = useState<{ id: number; offset: number }[]>([]);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [feedback, setFeedback] = useState<'hit' | 'miss' | null>(null);
   const nextId = useRef(0);
   const TOTAL_BEATS = 8;
   const MAX_DURATION = 30000; // 30 seconds
@@ -46,6 +48,8 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
         if (missed.length > 0) {
           const newTotal = totalAttempts + missed.length;
           setTotalAttempts(newTotal);
+          setFeedback('miss');
+          setTimeout(() => setFeedback(null), 200);
           if (newTotal >= TOTAL_BEATS) {
             handleGameOver(hits, newTotal);
           }
@@ -62,7 +66,6 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
     if (isGameOver) return;
     setIsGameOver(true);
 
-    // Accuracy affects track quality (90%+ = 2x yield, 70-89% = 1.5x, below = 0.8x)
     const accuracy = finalAttempts > 0 ? finalHits / finalAttempts : 0;
     let multiplier = 0.8;
     if (accuracy >= 0.9) multiplier = 2.0;
@@ -80,10 +83,17 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
     if (hitIndex !== -1) {
       setHits(h => h + 1);
       setBeats(prev => prev.filter((_, i) => i !== hitIndex));
+      setFeedback('hit');
+      if (navigator.vibrate) navigator.vibrate(20);
+    } else {
+      setFeedback('miss');
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
 
     const newTotal = totalAttempts + 1;
     setTotalAttempts(newTotal);
+
+    setTimeout(() => setFeedback(null), 200);
 
     if (newTotal >= TOTAL_BEATS) {
       handleGameOver(hitIndex !== -1 ? hits + 1 : hits, newTotal);
@@ -93,33 +103,66 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
   return (
     <div
       onClick={handleTap}
-      className="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center select-none touch-none h-64 flex flex-col justify-center items-center relative overflow-hidden"
+      className={`transition-colors duration-200 bg-slate-900 p-8 rounded-3xl border-4 text-center select-none touch-none h-72 flex flex-col justify-center items-center relative overflow-hidden ${
+        feedback === 'hit' ? 'border-emerald-500 bg-emerald-950/20' :
+        feedback === 'miss' ? 'border-red-500 bg-red-950/20' :
+        'border-slate-800'
+      }`}
     >
-      <div className="text-[10px] text-slate-500 uppercase font-bold mb-8">
-        8-BEAT SESSION ({hits}/{TOTAL_BEATS})
+      <div className="absolute top-6 w-full text-center">
+        <h2 className="text-xl font-black text-blue-400 italic tracking-tighter">PODCAST SESSION</h2>
+        <div className="text-[10px] text-slate-500 uppercase font-black mt-1">
+          PERFECT BEATS: {hits}/{TOTAL_BEATS}
+        </div>
       </div>
 
-      <div className="w-full h-12 bg-slate-800 relative rounded-full border border-slate-700">
+      <div className="w-full h-16 bg-slate-800 relative rounded-2xl border-2 border-slate-700 shadow-inner overflow-hidden">
         {/* Target Zone */}
-        <div className="absolute left-[15%] top-0 bottom-0 w-[10%] bg-blue-500/30 border-x border-blue-400 z-0 animate-pulse" />
+        <div className="absolute left-[15%] top-0 bottom-0 w-[10%] bg-blue-500/20 border-x-2 border-blue-400/50 z-0">
+           <motion.div
+             animate={{ opacity: [0.2, 0.5, 0.2] }}
+             transition={{ repeat: Infinity, duration: 1 }}
+             className="w-full h-full bg-blue-400/20"
+           />
+        </div>
 
         {/* Moving Beats */}
-        {beats.map(beat => (
-          <div
-            key={beat.id}
-            className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10"
-            style={{ left: `${beat.offset}%` }}
-          />
-        ))}
+        <AnimatePresence>
+          {beats.map(beat => (
+            <motion.div
+              key={beat.id}
+              exit={{ scale: 1.5, opacity: 0 }}
+              className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] z-10 flex items-center justify-center text-xl"
+              style={{ left: `${beat.offset}%` }}
+            >
+              🎙️
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
-      <div className="mt-8 text-[10px] text-blue-400 font-mono">
-        90%+ ACCURACY = 2X YIELD | 70%+ = 1.5X
+      <div className="mt-8 flex flex-col items-center gap-2">
+        <div className="text-[10px] text-blue-400 font-mono font-bold tracking-widest animate-pulse">
+          90%+ ACCURACY = 2X YIELD
+        </div>
+        <div className="flex items-center gap-2 text-slate-500">
+           <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>👆</motion.span>
+           <span className="text-[10px] font-black uppercase tracking-widest">TAP ON THE BEAT</span>
+        </div>
       </div>
 
-      <div className="absolute bottom-4 text-[8px] text-slate-600 font-bold uppercase">
-        TAP ON THE BEAT
-      </div>
+      <AnimatePresence>
+        {feedback && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 2, opacity: 0 }}
+            className={`absolute font-black text-4xl italic z-20 ${feedback === 'hit' ? 'text-emerald-500' : 'text-red-500'}`}
+          >
+            {feedback === 'hit' ? 'GREAT!' : 'MISS!'}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

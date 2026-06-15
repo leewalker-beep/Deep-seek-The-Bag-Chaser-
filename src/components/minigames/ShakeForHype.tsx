@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ProgressBar } from '../ui/ProgressBar';
 
 interface ShakeForHypeProps {
   onComplete: (multiplier: number) => void;
@@ -8,11 +10,13 @@ export const ShakeForHype: React.FC<ShakeForHypeProps> = ({ onComplete }) => {
   const [hype, setHype] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(false);
   const intensityRef = useRef(0);
   const timerRef = useRef<number | null>(null);
+  const [feedback, setFeedback] = useState<'shake' | null>(null);
 
   useEffect(() => {
-    if (!permissionGranted) return;
+    if (!gameActive) return;
 
     timerRef.current = window.setInterval(() => {
       setTimeLeft(prev => {
@@ -27,80 +31,176 @@ export const ShakeForHype: React.FC<ShakeForHypeProps> = ({ onComplete }) => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [permissionGranted]);
+  }, [gameActive]);
 
   const requestPermission = async () => {
+    const startAction = () => {
+        setPermissionGranted(true);
+        setGameActive(true);
+        window.addEventListener('devicemotion', handleMotion);
+    };
+
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
       try {
         const response = await (DeviceMotionEvent as any).requestPermission();
         if (response === 'granted') {
-          setPermissionGranted(true);
-          window.addEventListener('devicemotion', handleMotion);
+          startAction();
         } else {
           setPermissionGranted(false);
+          setGameActive(true);
         }
       } catch {
         setPermissionGranted(false);
+        setGameActive(true);
       }
     } else {
-      setPermissionGranted(true);
-      window.addEventListener('devicemotion', handleMotion);
+      startAction();
     }
   };
 
   const handleMotion = (event: DeviceMotionEvent) => {
+    if (!gameActive) return;
     const accel = event.acceleration;
     if (!accel) return;
 
     const total = Math.sqrt((accel.x || 0) ** 2 + (accel.y || 0) ** 2 + (accel.z || 0) ** 2);
-    intensityRef.current = Math.min(4, total / 5);
-    setHype(prev => Math.min(100, prev + intensityRef.current));
+    if (total > 15) {
+        intensityRef.current = Math.min(4, total / 5);
+        setHype(prev => Math.min(100, prev + intensityRef.current));
+        setFeedback('shake');
+        setTimeout(() => setFeedback(null), 100);
+        if (navigator.vibrate) navigator.vibrate(5);
+    }
   };
 
   const endGame = () => {
+    setGameActive(false);
     window.removeEventListener('devicemotion', handleMotion);
-    const multiplier = 0.5 + (hype / 100) * 2.5;
-    onComplete(multiplier);
+    const multiplier = 0.5 + (hype / 100) * 3.5; // Slightly buffed yield
+    if (navigator.vibrate) navigator.vibrate(100);
+    setTimeout(() => onComplete(multiplier), 1500);
   };
 
   const getHypeColor = () => {
-    if (hype >= 80) return 'text-purple-400';
-    if (hype >= 50) return 'text-yellow-400';
-    return 'text-slate-400';
+    if (hype >= 90) return 'text-purple-400';
+    if (hype >= 70) return 'text-yellow-400';
+    if (hype >= 40) return 'text-blue-400';
+    return 'text-slate-500';
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center p-4 z-[100]">
-      <h2 className="text-2xl font-black text-white mb-2">FIGHT PROMOTER</h2>
-      <p className="text-[10px] text-slate-500 mb-6">SHAKE TO BUILD HYPE!</p>
+    <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center p-8 z-[100] ${
+        feedback ? 'bg-purple-950/20' : 'bg-slate-950'
+    }`}>
+      <div className="absolute top-12 text-center w-full px-8">
+        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">PRESIDENTIAL CAMPAIGN</h2>
+        <div className="flex items-center justify-center gap-2 mt-1">
+             <motion.span animate={{ rotate: [0, 45, -45, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="text-purple-500">📱</motion.span>
+             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">SHAKE TO BUILD MASSIVE HYPE</p>
+        </div>
+      </div>
 
-      {!permissionGranted && permissionGranted !== false && (
-        <button onClick={requestPermission} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold">
-          ACTIVATE SENSORS
-        </button>
-      )}
-
-      {permissionGranted === true && (
-        <>
-          <div className="text-center mb-8">
-            <div className="text-[10px] text-slate-500 uppercase">HYPE LEVEL</div>
-            <div className={`text-6xl font-black ${getHypeColor()}`}>{Math.floor(hype)}%</div>
-          </div>
-
-          <div className="w-full max-w-sm h-4 bg-slate-800 rounded-full overflow-hidden mb-4">
-            <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-100" style={{ width: `${hype}%` }} />
-          </div>
-
-          <div className="text-center text-[10px] text-slate-500">TIME LEFT: {timeLeft.toFixed(1)}s</div>
-        </>
-      )}
-
-      {(permissionGranted === false || (permissionGranted === null && typeof (DeviceMotionEvent as any).requestPermission !== 'function')) && (
-        <div className="w-full max-w-sm">
-          <input type="range" min="0" max="100" value={hype} onChange={(e) => setHype(parseInt(e.target.value))} className="w-full" />
-          <button onClick={endGame} className="w-full mt-4 py-4 bg-purple-600 text-white font-black rounded-xl">COMPLETE</button>
+      {!gameActive && timeLeft === 10 && (
+        <div className="flex flex-col gap-4 z-20">
+          <button
+            onClick={requestPermission}
+            className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.3)] border-b-4 border-purple-800"
+          >
+            ACTIVATE SENSORS
+          </button>
+          <button
+            onClick={() => {
+                setPermissionGranted(false);
+                setGameActive(true);
+            }}
+            className="text-[10px] text-slate-500 underline font-black uppercase tracking-widest"
+          >
+            Manual Mode (Slider)
+          </button>
         </div>
       )}
+
+      {gameActive && (
+        <div className="flex flex-col items-center gap-10 w-full max-w-sm">
+          <div className="text-center">
+            <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-4">HYPE INTENSITY</div>
+            <motion.div
+                animate={{ scale: feedback ? 1.2 : 1, rotate: feedback ? [0, 5, -5, 0] : 0 }}
+                className={`text-7xl font-black italic tracking-tighter font-mono ${getHypeColor()} drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]`}
+            >
+                {Math.floor(hype)}%
+            </motion.div>
+          </div>
+
+          <div className="w-full">
+              <ProgressBar
+                value={hype}
+                max={100}
+                colorClass={hype >= 90 ? 'bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-blue-500'}
+              />
+              <div className="flex justify-between mt-2">
+                  <div className="text-[8px] text-slate-600 font-black uppercase tracking-widest">LOW VIBE</div>
+                  <div className="text-[8px] text-purple-400 font-black uppercase tracking-widest">PEAK VIRAL</div>
+              </div>
+          </div>
+
+          <div className="text-center bg-slate-900/50 p-4 rounded-2xl border-2 border-slate-800 w-full">
+            <div className="text-[10px] text-slate-500 font-black uppercase mb-1">CAMPAIGN WINDOW</div>
+            <div className={`text-3xl font-black font-mono ${timeLeft < 3 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                {timeLeft.toFixed(1)}s
+            </div>
+          </div>
+
+          {permissionGranted === false && (
+              <div className="w-full space-y-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={hype}
+                    onChange={(e) => {
+                        setHype(parseInt(e.target.value));
+                        if (navigator.vibrate) navigator.vibrate(5);
+                    }}
+                    className="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-600 border border-slate-700"
+                  />
+                  <button
+                    onClick={endGame}
+                    className="w-full py-5 bg-purple-600 text-white font-black rounded-2xl shadow-xl border-b-4 border-purple-800 uppercase italic"
+                  >
+                      END CAMPAIGN
+                  </button>
+              </div>
+          )}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {!gameActive && timeLeft < 10 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-30 p-8 text-center"
+          >
+            <div className="text-8xl mb-6">📈</div>
+            <h3 className="text-4xl font-black text-white mb-2 italic tracking-tighter uppercase">CAMPAIGN CONCLUDED</h3>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
+                {hype >= 90 ? 'A new era of political dominance.' :
+                 hype >= 60 ? 'Significant public interest secured.' :
+                 'A forgettable election cycle.'}
+            </p>
+            <div className="text-purple-400 text-4xl font-black font-mono mt-8 italic">
+                {(0.5 + (hype / 100) * 3.5).toFixed(2)}X MULTIPLIER
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="absolute bottom-8 w-full max-w-xs text-center opacity-30 pointer-events-none">
+        <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest leading-relaxed">
+            PRESIDENTIAL PROTOCOL • HIGH-INTENSITY PUBLICITY
+        </p>
+      </div>
     </div>
   );
 };

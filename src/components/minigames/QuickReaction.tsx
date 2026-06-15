@@ -15,6 +15,7 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
       const timeout = setTimeout(() => {
         setGameState('ready');
         setStartTime(Date.now());
+        if (navigator.vibrate) navigator.vibrate(50);
       }, 1000 + Math.random() * 3000);
       return () => clearTimeout(timeout);
     }
@@ -23,10 +24,12 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
   const handleClick = () => {
     if (gameState === 'waiting') {
       setGameState('too-soon');
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     } else if (gameState === 'ready') {
       const time = Date.now() - startTime;
       setReactionTime(time);
       setGameState('clicked');
+      if (navigator.vibrate) navigator.vibrate(20);
     }
   };
 
@@ -45,44 +48,86 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
   return (
     <div
       onClick={handleClick}
-      className={`h-[400px] w-full rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 ${
-        gameState === 'waiting' ? 'bg-slate-900 border-4 border-slate-800' :
-        gameState === 'ready' ? 'bg-emerald-500' :
-        gameState === 'too-soon' ? 'bg-red-500' : 'bg-blue-600'
-      }`}
+      className={`fixed inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 border-8 ${
+        gameState === 'waiting' ? 'bg-slate-950 border-slate-900' :
+        gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' :
+        gameState === 'too-soon' ? 'bg-red-600 border-red-400' :
+        'bg-blue-600 border-blue-400'
+      } z-[100] p-6`}
     >
-      <div className="text-white text-center p-6 pointer-events-none">
-        <h2 className="text-3xl font-black mb-4 uppercase tracking-tighter">
-          {gameState === 'waiting' ? 'WAIT FOR IT...' :
-           gameState === 'ready' ? 'GO! GO! GO!' :
-           gameState === 'too-soon' ? 'TOO SOON!' : 'NICE WORK!'}
-        </h2>
+      <div className="text-white text-center pointer-events-none max-w-sm">
+        <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            key={gameState}
+        >
+            <h2 className="text-5xl font-black mb-6 uppercase tracking-tighter italic italic drop-shadow-2xl">
+            {gameState === 'waiting' ? 'STAND BY...' :
+            gameState === 'ready' ? 'CLICK NOW!' :
+            gameState === 'too-soon' ? 'FAIL!' : 'LOCKED IN!'}
+            </h2>
+        </motion.div>
 
-        <AnimatePresence>
-          {reactionTime && (
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-4xl font-mono font-bold"
-            >
-              {reactionTime}ms
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="h-24 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+            {reactionTime ? (
+                <motion.div
+                    key="time"
+                    initial={{ scale: 0.5, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    className="flex flex-col items-center"
+                >
+                    <div className="text-6xl font-black font-mono tracking-tighter">{reactionTime}ms</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/60 mt-2">
+                        {reactionTime < 250 ? 'ELITE REFLEXES' : reactionTime < 400 ? 'GREAT SPEED' : 'AVERAGE'}
+                    </div>
+                </motion.div>
+            ) : gameState === 'too-soon' ? (
+                <motion.div
+                    key="fail"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-xl font-black uppercase"
+                >
+                    ANTICIPATED START
+                </motion.div>
+            ) : gameState === 'waiting' ? (
+                <motion.div
+                    key="wait"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="text-4xl"
+                >
+                    🛑
+                </motion.div>
+            ) : (
+                <motion.div
+                    key="go"
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 0.2 }}
+                    className="text-6xl"
+                >
+                    ⚡
+                </motion.div>
+            )}
+            </AnimatePresence>
+        </div>
 
-        <p className="mt-4 text-sm opacity-80">
-          {gameState === 'waiting' ? 'Tap as soon as the screen turns GREEN' :
-           gameState === 'clicked' || gameState === 'too-soon' ? 'Tap below to finish' : ''}
+        <p className="mt-12 text-xs font-black uppercase tracking-[0.2em] text-white/50">
+          {gameState === 'waiting' ? 'TAP IMMEDIATELY ON COLOR CHANGE' :
+           gameState === 'clicked' || gameState === 'too-soon' ? 'PROCEED TO RESULTS' : ''}
         </p>
       </div>
 
       {(gameState === 'clicked' || gameState === 'too-soon') && (
-        <button
+        <motion.button
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           onClick={(e) => { e.stopPropagation(); handleFinish(); }}
-          className="mt-8 px-8 py-3 bg-white text-black font-black rounded-full hover:scale-105 transition-transform"
+          className="absolute bottom-12 w-full max-w-xs py-5 bg-white text-black font-black rounded-2xl shadow-2xl active:scale-95 transition-all border-b-4 border-slate-300 uppercase tracking-widest text-xl italic"
         >
           CONTINUE
-        </button>
+        </motion.button>
       )}
     </div>
   );

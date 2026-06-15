@@ -12,6 +12,7 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
   const [activeButton, setActiveButton] = useState<number | null>(null);
   const [round, setRound] = useState(1);
   const [failed, setFailed] = useState(false);
+  const [feedback, setFeedback] = useState<'hit' | null>(null);
 
   const totalRounds = 4;
 
@@ -30,6 +31,7 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
     setIsDisplaying(true);
     for (const num of seq) {
       setActiveButton(num);
+      if (navigator.vibrate) navigator.vibrate(20);
       await new Promise(resolve => setTimeout(resolve, 600));
       setActiveButton(null);
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -45,12 +47,18 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
 
     if (newUserSequence[newUserSequence.length - 1] !== sequence[newUserSequence.length - 1]) {
       setFailed(true);
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
       return;
     }
 
+    setFeedback('hit');
+    if (navigator.vibrate) navigator.vibrate(20);
+    setTimeout(() => setFeedback(null), 100);
+
     if (newUserSequence.length === sequence.length) {
       if (round === totalRounds) {
-        onComplete(3.0);
+        if (navigator.vibrate) navigator.vibrate(100);
+        setTimeout(() => onComplete(3.0), 500);
       } else {
         setRound(prev => prev + 1);
         setTimeout(() => startNewRound(round + 1), 500);
@@ -60,12 +68,13 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
 
   if (failed) {
     return (
-      <div className="h-[400px] w-full bg-slate-950 border-4 border-red-900 rounded-3xl flex flex-col items-center justify-center p-6">
-        <h2 className="text-3xl font-black text-red-500 mb-4">SYSTEM FAILURE</h2>
-        <p className="text-slate-400 mb-8">Memory corrupted at round {round}</p>
+      <div className="h-[400px] w-full bg-slate-950 border-4 border-red-900 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h2 className="text-3xl font-black text-red-500 mb-2 tracking-tighter uppercase italic">SYSTEM FAILURE</h2>
+        <p className="text-slate-400 mb-8 font-bold text-xs uppercase tracking-widest">Memory corrupted at round {round}</p>
         <button
           onClick={() => onComplete(0.5)}
-          className="px-8 py-3 bg-red-600 text-white font-black rounded-full hover:bg-red-500 transition-colors"
+          className="px-10 py-4 bg-red-600 text-white font-black rounded-2xl hover:bg-red-500 transition-all border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
         >
           ACCEPT LOSS
         </button>
@@ -74,29 +83,55 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
   }
 
   return (
-    <div className="h-[400px] w-full bg-slate-950 border-4 border-slate-800 rounded-3xl flex flex-col items-center justify-center p-6">
-      <div className="mb-6 text-center">
-        <h2 className="text-xl font-bold text-blue-400">ENCRYPTION SEQUENCE</h2>
-        <p className="text-xs text-slate-500 uppercase tracking-widest">Round {round} / {totalRounds}</p>
+    <div className={`h-[400px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-6 ${
+        isDisplaying ? 'border-blue-500' : feedback ? 'border-emerald-500' : 'border-slate-800'
+    }`}>
+      <div className="mb-8 text-center">
+        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter">ENCRYPTION SEQUENCE</h2>
+        <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mt-1">Node {round} / {totalRounds}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
+      <div className="grid grid-cols-2 gap-4 w-full max-w-[260px]">
         {[0, 1, 2, 3].map((num) => (
           <motion.button
             key={num}
             whileTap={{ scale: 0.95 }}
             onClick={() => handleButtonClick(num)}
-            className={`h-24 rounded-2xl transition-all duration-200 ${
+            className={`h-28 rounded-2xl transition-all duration-200 relative ${
               activeButton === num
-                ? 'bg-blue-400 shadow-[0_0_20px_rgba(96,165,250,0.8)]'
-                : 'bg-slate-800 hover:bg-slate-700'
-            } ${isDisplaying ? 'cursor-default' : 'cursor-pointer'}`}
-          />
+                ? 'bg-blue-400 shadow-[0_0_30px_rgba(96,165,250,0.6)] border-t-2 border-blue-200'
+                : 'bg-slate-900 border-2 border-slate-800'
+            } ${isDisplaying ? 'cursor-default' : 'cursor-pointer active:bg-blue-600'}`}
+          >
+             {activeButton === num && (
+                <motion.div
+                    className="absolute inset-0 bg-blue-300/20 rounded-2xl"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                />
+            )}
+          </motion.button>
         ))}
       </div>
 
-      <p className="mt-8 text-xs text-slate-500 text-center uppercase">
-        {isDisplaying ? 'Watch closely...' : 'Repeat the pattern'}
+      <div className="mt-8 flex gap-2">
+        {[...Array(totalRounds)].map((_, i) => (
+          <div key={i} className={`w-10 h-1.5 rounded-full transition-colors duration-300 ${i < round - 1 ? 'bg-emerald-500' : i === round - 1 ? 'bg-blue-500 animate-pulse' : 'bg-slate-800'}`} />
+        ))}
+      </div>
+
+      <p className="mt-4 text-[10px] text-slate-500 text-center uppercase font-black tracking-widest flex items-center gap-2">
+        {isDisplaying ? (
+            <>
+                <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 1 }}>📡</motion.span>
+                <span>WATCH CLOSELY...</span>
+            </>
+        ) : (
+            <>
+                <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>⚡</motion.span>
+                <span>REPEAT PATTERN</span>
+            </>
+        )}
       </p>
     </div>
   );

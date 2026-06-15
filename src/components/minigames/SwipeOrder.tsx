@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Product {
   id: number;
@@ -111,6 +112,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
   const handleTimeout = useCallback(() => {
     setResult('wrong');
     setTotal(prev => prev + 1);
+    if (navigator.vibrate) navigator.vibrate([30, 30]);
     window.setTimeout(() => {
       setProductIndex(prev => prev + 1);
     }, 500);
@@ -175,8 +177,10 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       setResult('correct');
+      if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setResult('wrong');
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
 
     setTotal(prev => prev + 1);
@@ -218,70 +222,80 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-8 left-0 right-0 text-center">
-        <div className="text-[10px] text-slate-500 uppercase font-bold">Dropshipping</div>
-        <div className="text-2xl font-black text-white">Sort the Goods</div>
-        <div className="flex justify-center gap-8 mt-2">
+        <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mb-1">QUALITY CONTROL</div>
+        <div className="text-2xl font-black text-white italic">SORT THE GOODS</div>
+        <div className="flex justify-center gap-12 mt-4">
           <div className="text-center">
-            <div className="text-[8px] text-slate-500">SCORE</div>
-            <div className="text-xl font-bold text-emerald-400">{score}/{total}</div>
+            <div className="text-[8px] text-slate-500 font-bold uppercase">UNITS</div>
+            <div className="text-xl font-bold text-emerald-400 font-mono">{score}/{total}</div>
           </div>
           <div className="text-center">
-            <div className="text-[8px] text-slate-500">ACCURACY</div>
-            <div className="text-xl font-bold text-blue-400">{accuracy}%</div>
+            <div className="text-[8px] text-slate-500 font-bold uppercase">PRECISION</div>
+            <div className="text-xl font-bold text-blue-400 font-mono">{accuracy}%</div>
           </div>
         </div>
       </div>
 
-      {currentProduct && gameActive && (
-        <div
-          className={`w-full max-w-sm bg-slate-900 rounded-2xl p-8 text-center border-2 transition-all duration-200 ${
-            result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
-            result === 'wrong' ? 'border-red-500 bg-red-500/10' :
-            'border-slate-800'
-          }`}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          style={{ transform: `translateX(${offset}px) rotate(${offset * 0.1}deg)` }}
-        >
-          <div className="text-6xl mb-4">📦</div>
-          <div className="text-2xl font-black text-white mb-2">{currentProduct.name}</div>
-          <div className="text-[10px] text-slate-500 uppercase tracking-wider">Swipe RIGHT for REAL • Swipe LEFT for FAKE</div>
+      <AnimatePresence mode="wait">
+        {currentProduct && gameActive && (
+          <motion.div
+            key={productIndex}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1, x: offset, rotate: offset * 0.1 }}
+            exit={{ x: offset > 0 ? 300 : -300, opacity: 0, scale: 0.5 }}
+            className={`w-full max-relative max-w-sm bg-slate-900 rounded-3xl p-10 text-center border-4 shadow-2xl transition-colors duration-200 ${
+              result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
+              result === 'wrong' ? 'border-red-500 bg-red-500/10' :
+              'border-slate-800'
+            }`}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="text-7xl mb-6 filter drop-shadow-xl">📦</div>
+            <div className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">{currentProduct.name}</div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-8">
+              Swipe <span className="text-emerald-500">RIGHT</span> for REAL<br/>
+              Swipe <span className="text-red-500">LEFT</span> for FAKE
+            </div>
 
-          <div className="mt-6 w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-emerald-500 transition-all duration-50"
-              style={{ width: `${(timeLeft / currentProduct.timeLimit) * 100}%` }}
-            />
-          </div>
-          <div className="text-[8px] text-slate-600 mt-1">{timeLeft.toFixed(1)}s</div>
-        </div>
-      )}
+            <div className="relative w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-emerald-500"
+                initial={{ width: '100%' }}
+                animate={{ width: `${(timeLeft / currentProduct.timeLimit) * 100}%` }}
+                transition={{ ease: "linear", duration: 0.05 }}
+              />
+            </div>
+            <div className="text-[8px] text-slate-600 mt-2 font-mono font-bold tracking-widest">{timeLeft.toFixed(2)}s</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!gameActive && (
         <div className="text-center animate-in fade-in zoom-in duration-500">
-          <div className="text-4xl mb-2">{accuracy >= 70 ? '🎉' : accuracy >= 50 ? '👍' : '😅'}</div>
-          <div className="text-xl font-black text-white">{accuracy}% Accuracy</div>
-          <div className="text-[10px] text-slate-400 mt-2">
-            {accuracy >= 90 ? 'PERFECT! 5x Profit' :
-             accuracy >= 70 ? 'Great! 2.5x Profit' :
-             accuracy >= 50 ? 'Good! 1.5x Profit' :
-             accuracy >= 30 ? 'Passable. 1x Profit' :
-             'Tough Run. 0.7x Profit'}
+          <div className="text-6xl mb-4">{accuracy >= 70 ? '💰' : accuracy >= 50 ? '📦' : '❌'}</div>
+          <div className="text-3xl font-black text-white mb-2">{accuracy}% ACCURACY</div>
+          <div className={`text-xs font-bold uppercase tracking-widest ${accuracy >= 70 ? 'text-emerald-500' : 'text-slate-500'}`}>
+            {accuracy >= 90 ? 'PERFECT SHIPMENT! 5x Yield' :
+             accuracy >= 70 ? 'Excellent Fulfillment! 2.5x Yield' :
+             accuracy >= 50 ? 'Standard Service. 1.5x Yield' :
+             accuracy >= 30 ? 'High Refund Rate. 1x Yield' :
+             'Logistics Failure. 0.7x Yield'}
           </div>
         </div>
       )}
 
       {gameActive && (
-        <div className="absolute bottom-8 left-0 right-0 text-center">
-          <div className="flex justify-center gap-8">
-            <div className="text-center">
-              <div className="text-3xl">⬅️</div>
-              <div className="text-[8px] text-red-400 uppercase font-bold">FAKE</div>
+        <div className="absolute bottom-12 left-0 right-0 px-8">
+          <div className="flex justify-between items-center max-w-sm mx-auto">
+            <div className="flex flex-col items-center gap-1 opacity-40">
+               <motion.div animate={{ x: [-5, 0, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-4xl">⬅️</motion.div>
+               <span className="text-[10px] font-black text-red-500 uppercase">FAKE</span>
             </div>
-            <div className="text-center">
-              <div className="text-3xl">➡️</div>
-              <div className="text-[8px] text-emerald-400 uppercase font-bold">REAL</div>
+            <div className="flex flex-col items-center gap-1 opacity-40">
+               <motion.div animate={{ x: [5, 0, 5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-4xl">➡️</motion.div>
+               <span className="text-[10px] font-black text-emerald-500 uppercase">REAL</span>
             </div>
           </div>
         </div>
