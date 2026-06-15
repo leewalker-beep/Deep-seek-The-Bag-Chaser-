@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import { useGameStore } from '../store/gameStore';
+import { ConfirmationModal } from './ui/ConfirmationModal';
 
 interface BranchChoiceProps {
   hustle: Hustle;
@@ -11,6 +12,11 @@ interface BranchChoiceProps {
 
 export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranchId, onSelectBranch, onExecute }) => {
   const { pl } = useGameStore();
+  const [pendingAction, setPendingAction] = useState<{
+    type: 'EXECUTE' | 'SELECT';
+    branchId?: string;
+    cost: number;
+  } | null>(null);
 
   if (!hustle.branches) return null;
 
@@ -34,9 +40,34 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
   const currentCount = hustle.id === 'r_vending' ? pl.vendingCount : (currentBranch.id === 'l2a' ? pl.flipCount : pl.rentalCount);
   const canRepeat = isRepeatable && pl.bag >= currentBranch.cost && (!currentBranch.maxRepeat || currentCount < currentBranch.maxRepeat);
 
+  const handleAction = (type: 'EXECUTE' | 'SELECT', cost: number, branchId?: string) => {
+    if (cost > pl.bag * 0.1) {
+      setPendingAction({ type, cost, branchId });
+    } else {
+      if (type === 'EXECUTE') onExecute();
+      else if (type === 'SELECT') onSelectBranch(branchId!);
+    }
+  };
+
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    if (pendingAction.type === 'EXECUTE') onExecute();
+    else if (pendingAction.type === 'SELECT') onSelectBranch(pendingAction.branchId!);
+    setPendingAction(null);
+  };
+
   // Show branch choices
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
+      <ConfirmationModal
+        isOpen={!!pendingAction}
+        title="Confirm Large Spend"
+        message={`This action costs $${pendingAction?.cost.toLocaleString()}, which is over 10% of your current bag. Are you sure?`}
+        confirmLabel="Yes, Spend It"
+        onConfirm={confirmAction}
+        onCancel={() => setPendingAction(null)}
+        isHighStakes={true}
+      />
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-3xl bg-slate-800 w-12 h-12 flex items-center justify-center rounded-xl shadow-inner">
@@ -71,7 +102,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
 
       <div className="flex flex-col gap-2 mb-4">
         <button
-          onClick={onExecute}
+          onClick={() => handleAction('EXECUTE', currentBranch.cost)}
           className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
             canAffordExecute
               ? 'bg-emerald-600 text-white hover:bg-emerald-500'
@@ -83,7 +114,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
 
         {isRepeatable && (
           <button
-            onClick={() => onSelectBranch(currentBranchId)}
+            onClick={() => handleAction('SELECT', currentBranch.cost, currentBranchId)}
             disabled={!canRepeat}
             className={`w-full py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
               canRepeat
@@ -110,7 +141,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
             return (
               <button
                 key={branch.id}
-                onClick={() => onSelectBranch(branch.id!)}
+                onClick={() => handleAction('SELECT', branch.cost, branch.id!)}
                 disabled={!canTake}
                 className={`w-full p-3 rounded-lg text-left transition-all border ${
                   canTake

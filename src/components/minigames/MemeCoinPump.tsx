@@ -11,21 +11,49 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete }) => {
   const [isDumping, setIsDumping] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
   const [feedback, setFeedback] = useState<'pump' | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(false);
   const lastShake = useRef(0);
 
-  useEffect(() => {
-    const handleMotion = (e: DeviceMotionEvent) => {
-      const acc = e.accelerationIncludingGravity;
-      if (!acc) return;
-      const total = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
-
-      if (total > 20 && Date.now() - lastShake.current > 100) {
-        lastShake.current = Date.now();
-        handlePump();
-      }
+  const requestPermission = async () => {
+    const startAction = () => {
+        setPermissionGranted(true);
+        setGameActive(true);
+        window.addEventListener('devicemotion', handleMotion);
     };
 
-    window.addEventListener('devicemotion', handleMotion);
+    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      try {
+        const response = await (DeviceMotionEvent as any).requestPermission();
+        if (response === 'granted') {
+          startAction();
+        } else {
+          setPermissionGranted(false);
+          setGameActive(true);
+        }
+      } catch {
+        setPermissionGranted(false);
+        setGameActive(true);
+      }
+    } else {
+      startAction();
+    }
+  };
+
+  const handleMotion = (e: DeviceMotionEvent) => {
+    const acc = e.accelerationIncludingGravity;
+    if (!acc) return;
+    const total = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
+
+    if (total > 20 && Date.now() - lastShake.current > 100) {
+      lastShake.current = Date.now();
+      handlePump();
+    }
+  };
+
+  useEffect(() => {
+    if (!gameActive) return;
+
     // Fallback for desktop: Mouse movement
     const handleMouse = () => {
       if (Date.now() - lastShake.current > 100) {
@@ -39,7 +67,7 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete }) => {
       window.removeEventListener('devicemotion', handleMotion);
       window.removeEventListener('mousedown', handleMouse);
     };
-  }, []);
+  }, [gameActive]);
 
   const handlePump = () => {
     if (isDumping) return;
@@ -82,6 +110,26 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete }) => {
     <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
         feedback ? 'bg-emerald-950/20' : 'bg-slate-950'
     }`}>
+      {!gameActive && (
+        <div className="flex flex-col gap-4 z-20">
+          <button
+            onClick={requestPermission}
+            className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)] border-b-4 border-emerald-800"
+          >
+            ACTIVATE SENSORS
+          </button>
+          <button
+            onClick={() => {
+                setPermissionGranted(false);
+                setGameActive(true);
+            }}
+            className="text-[10px] text-slate-500 underline font-black uppercase tracking-widest"
+          >
+            Manual Mode (Click/Slider)
+          </button>
+        </div>
+      )}
+
       <div className="absolute top-12 text-center pointer-events-none w-full px-8">
         <h2 className="text-3xl font-black text-slate-100 italic tracking-tighter uppercase">MEME COIN PUMP</h2>
         <div className="flex items-center justify-center gap-4 mt-1">
@@ -110,13 +158,31 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete }) => {
       </div>
 
       <div className="w-full max-w-xs mt-12 space-y-4">
-        <button
-          onClick={handleDump}
-          disabled={isDumping}
-          className="w-full py-5 bg-red-600 hover:bg-red-500 text-white font-black rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all active:scale-95 disabled:opacity-50 border-b-4 border-red-800"
-        >
-          {isDumping ? 'DUMPING...' : 'EXIT POSITION (DUMP)'}
-        </button>
+        {gameActive && (
+          <>
+            {permissionGranted === false && (
+              <input
+                type="range"
+                min="1"
+                max="100"
+                className="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-600 border border-slate-700 mb-4"
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (val > (value - 1) * 10) {
+                     handlePump();
+                  }
+                }}
+              />
+            )}
+            <button
+              onClick={handleDump}
+              disabled={isDumping}
+              className="w-full py-5 bg-red-600 hover:bg-red-500 text-white font-black rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.4)] transition-all active:scale-95 disabled:opacity-50 border-b-4 border-red-800"
+            >
+              {isDumping ? 'DUMPING...' : 'EXIT POSITION (DUMP)'}
+            </button>
+          </>
+        )}
       </div>
 
       <div className="absolute bottom-12 w-full max-w-[300px] px-6">

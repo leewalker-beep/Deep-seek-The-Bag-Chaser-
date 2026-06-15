@@ -15,6 +15,7 @@ import { getUnlockedHustles, getInitialStats } from '../initialState';
 import { executeHustleAction } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
+import { backupSave } from '../../utils/saveUtils';
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
@@ -209,6 +210,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     );
 
     if (state.pl.bag < result.cost) return { success: false, message: `Need $${result.cost.toLocaleString()}` };
+
+    // Backup if spending > 10%
+    if (result.cost > state.pl.bag * 0.1) {
+      backupSave();
+    }
     if (state.pl.clout < branch.cloutReq) return { success: false, message: `Need ${branch.cloutReq} clout` };
     if (state.pl.aura < branch.auraReq) return { success: false, message: `Need ${branch.auraReq} aura` };
 
@@ -371,6 +377,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           success: false, netChange: 0, message: `Need $${levelData.cost.toLocaleString()}`,
           cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
         };
+    }
+
+    // Backup if spending > 10%
+    if (levelData.cost > state.pl.bag * 0.1) {
+      backupSave();
     }
 
     const result = executeHustleAction(
@@ -669,6 +680,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     );
 
     if (state.pl.bag < result.cost) return false;
+
+    // Backup if spending > 10%
+    if (result.cost > state.pl.bag * 0.1) {
+      backupSave();
+    }
+
     if (state.pl.clout < targetNodeData.cloutReq) return false;
     if (state.pl.aura < targetNodeData.auraReq) return false;
 
@@ -759,6 +776,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         state.pl.clout >= req.clout &&
         state.pl.aura >= req.aura) {
 
+      // Always backup before tier advancement
+      backupSave();
+
       if (state.pl.bag < totalFee) {
         set({
           news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees and institutional buy-in`, ...state.news.slice(0, 49)]
@@ -822,6 +842,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
     if (isVending) {
+      // Backup if spending > 10%
+      if (asset.cost > state.pl.bag * 0.1) {
+        backupSave();
+      }
+
       get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: asset.cost });
       const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
         plAfterPurchase,
