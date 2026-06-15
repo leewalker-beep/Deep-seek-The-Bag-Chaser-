@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
-import { useGameStore } from '../store/gameStore';
 import { HUSTLE_BADGES } from '../config/badges';
+import { ConfirmationModal } from './ui/ConfirmationModal';
 
 interface HustleCardProps {
   hustle: Hustle;
@@ -19,6 +19,12 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   onUpgrade,
   currentBranchId,
 }) => {
+  const [pendingAction, setPendingAction] = useState<{
+    type: 'EXECUTE' | 'UPGRADE' | 'REPEAT';
+    branchId?: string;
+    cost: number;
+  } | null>(null);
+
   const currentLevel = player.hustleLevels[hustle.id] || 1;
   let levelData: HustleLevel | undefined;
   let nextBranches: HustleLevel[] = [];
@@ -42,7 +48,6 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     );
   }
 
-  const { purchaseFlexAsset } = useGameStore();
   const canAfford = player.bag >= levelData.cost;
   const isVending = hustle.id === 'r_vending';
 
@@ -50,8 +55,33 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   const isMastered = player.masteredHustles?.includes(hustle.id);
   const badge = HUSTLE_BADGES[hustle.id];
 
+  const handleAction = (type: 'EXECUTE' | 'UPGRADE' | 'REPEAT', cost: number, branchId?: string) => {
+    if (cost > player.bag * 0.1) {
+      setPendingAction({ type, cost, branchId });
+    } else {
+      if (type === 'EXECUTE') onExecute();
+      else if (type === 'UPGRADE' || type === 'REPEAT') onUpgrade(branchId);
+    }
+  };
+
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    if (pendingAction.type === 'EXECUTE') onExecute();
+    else if (pendingAction.type === 'UPGRADE' || pendingAction.type === 'REPEAT') onUpgrade(pendingAction.branchId);
+    setPendingAction(null);
+  };
+
   return (
     <div className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}>
+      <ConfirmationModal
+        isOpen={!!pendingAction}
+        title="Confirm Large Spend"
+        message={`This action costs $${pendingAction?.cost.toLocaleString()}, which is over 10% of your current bag. Are you sure?`}
+        confirmLabel="Yes, Spend It"
+        onConfirm={confirmAction}
+        onCancel={() => setPendingAction(null)}
+        isHighStakes={true}
+      />
       {isMastered && badge && (
         <div className="absolute top-0 right-0 p-2 bg-emerald-500/20 rounded-bl-xl border-l border-b border-emerald-500/30 group">
            <span className="text-xl" title={badge.name}>{badge.icon}</span>
@@ -104,7 +134,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
               <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * 250}/month</span>
             </div>
             <button
-              onClick={() => purchaseFlexAsset('vending')}
+              onClick={() => handleAction('UPGRADE', 2000, 'vending')}
               className="w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 bg-emerald-600 text-white hover:bg-emerald-500"
             >
               BUY MACHINE ($2,000)
@@ -112,7 +142,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           </div>
         ) : (
           <button
-            onClick={onExecute}
+            onClick={() => handleAction('EXECUTE', levelData!.cost)}
             className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
               canAfford
                 ? 'bg-emerald-600 text-white hover:bg-emerald-500'
@@ -127,7 +157,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           {/* Repeatable Logic */}
           {levelData.isRepeatable && !isVending && (
             <button
-              onClick={() => onUpgrade(player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
+              onClick={() => handleAction('REPEAT', levelData!.cost, player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
               disabled={
                 player.bag < levelData!.cost ||
                 (levelData!.maxRepeat !== undefined &&
@@ -151,7 +181,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
             return (
               <button
                 key={branch.id || branch.level}
-                onClick={() => onUpgrade(branch.id)}
+                onClick={() => handleAction('UPGRADE', branch.cost, branch.id)}
                 disabled={!canUpgradeBranch}
                 className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border ${
                   canUpgradeBranch

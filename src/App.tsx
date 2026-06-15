@@ -56,6 +56,7 @@ import { Scoreboard } from './components/Scoreboard';
 import { EndgameSummary } from './components/EndgameSummary';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { DailyChallenges } from './components/DailyChallenges';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -79,7 +80,24 @@ import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier } from './types/game';
 
 function App() {
+  const [isHydrated, setIsHydrated] = useState(false);
   const forceUpdate = useReducer(() => ({}), {})[1];
+
+  useEffect(() => {
+    // Check if the store has hydrated
+    const checkHydration = () => {
+      const state = useGameStore.getState();
+      // If we have player name or some initial state, we consider it hydrated
+      // Or we can just wait a small bit for the persist middleware
+      if (state.pl) {
+        setIsHydrated(true);
+      }
+    };
+
+    // Tiny delay to ensure persist middleware has finished
+    const timer = setTimeout(checkHydration, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Wrap critical handlers with Safari compatibility and ensure stability
   const debouncedResize = useMemo(() => debounce(() => {
@@ -102,6 +120,10 @@ function App() {
     return !localStorage.getItem('bag-chaser-tutorial-complete');
   });
   const [showChallenges, setShowChallenges] = useState(false);
+
+  if (!isHydrated) {
+    return <LoadingSkeleton />;
+  }
 
   const handleTutorialComplete = useCallback(() => {
     setShowTutorial(false);

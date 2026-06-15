@@ -15,11 +15,39 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
   const [message, setMessage] = useState('');
   const [result, setResult] = useState<number | null>(null);
   const [outcome, setOutcome] = useState<'win' | 'lose' | 'point' | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(false);
 
   const controls1 = useAnimation();
   const controls2 = useAnimation();
 
+  const requestPermission = async () => {
+    const startAction = () => {
+        setPermissionGranted(true);
+        setGameActive(true);
+    };
+
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const response = await (DeviceOrientationEvent as any).requestPermission();
+        if (response === 'granted') {
+          startAction();
+        } else {
+          setPermissionGranted(false);
+          setGameActive(true);
+        }
+      } catch {
+        setPermissionGranted(false);
+        setGameActive(true);
+      }
+    } else {
+      startAction();
+    }
+  };
+
   useEffect(() => {
+    if (!gameActive || permissionGranted === false) return;
+
     let lastShake = 0;
     const handleMotion = (e: DeviceMotionEvent) => {
       if (isRolling || !selectedBet || result !== null) return;
@@ -34,7 +62,7 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
 
     window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [isRolling, selectedBet, result]);
+  }, [isRolling, selectedBet, result, gameActive, permissionGranted]);
 
   const rollDice = async () => {
     if (isRolling || !selectedBet || result !== null) return;
@@ -163,12 +191,31 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
   );
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
+    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono relative overflow-hidden ${
         outcome === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
         outcome === 'lose' ? 'border-red-500 bg-red-950/20' :
         outcome === 'point' ? 'border-blue-500 bg-blue-950/20' :
         'border-yellow-600'
     }`}>
+      {!gameActive && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm p-6">
+          <button
+            onClick={requestPermission}
+            className="w-full px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(234,179,8,0.3)] border-b-4 border-yellow-700 mb-4"
+          >
+            ACTIVATE MOTION
+          </button>
+          <button
+            onClick={() => {
+                setPermissionGranted(false);
+                setGameActive(true);
+            }}
+            className="text-[10px] text-slate-500 underline font-black uppercase tracking-widest"
+          >
+            Manual Mode (Click Only)
+          </button>
+        </div>
+      )}
       <h2 className="text-2xl font-black text-yellow-500 mb-8 uppercase tracking-tighter italic">DICE / CRAPS</h2>
 
       <div className="flex justify-center gap-10 mb-10 h-32 items-center">

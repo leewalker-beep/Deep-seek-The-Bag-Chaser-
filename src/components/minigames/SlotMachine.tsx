@@ -13,6 +13,32 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
   const [spinsLeft, setSpinsLeft] = useState(3);
   const [result, setResult] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'jackpot' | 'win' | 'lose' | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(false);
+
+  const requestPermission = async () => {
+    const startAction = () => {
+        setPermissionGranted(true);
+        setGameActive(true);
+    };
+
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const response = await (DeviceOrientationEvent as any).requestPermission();
+        if (response === 'granted') {
+          startAction();
+        } else {
+          setPermissionGranted(false);
+          setGameActive(true);
+        }
+      } catch {
+        setPermissionGranted(false);
+        setGameActive(true);
+      }
+    } else {
+      startAction();
+    }
+  };
 
   const spin = useCallback(() => {
     if (isSpinning || spinsLeft <= 0) return;
@@ -41,6 +67,8 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
   }, [isSpinning, spinsLeft]);
 
   useEffect(() => {
+    if (!gameActive || permissionGranted === false) return;
+
     let lastShake = 0;
     const handleMotion = (e: DeviceMotionEvent) => {
       if (isSpinning || spinsLeft <= 0) return;
@@ -55,7 +83,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
 
     window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [isSpinning, spinsLeft, spin]);
+  }, [isSpinning, spinsLeft, spin, gameActive, permissionGranted]);
 
   useEffect(() => {
     if (!isSpinning && spinsLeft < 3) {
@@ -84,11 +112,30 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
+    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono relative overflow-hidden ${
         feedback === 'jackpot' ? 'border-yellow-400 bg-yellow-950/20' :
         feedback === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
         'border-yellow-600'
     }`}>
+      {!gameActive && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm p-6">
+          <button
+            onClick={requestPermission}
+            className="w-full px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(234,179,8,0.3)] border-b-4 border-yellow-700 mb-4"
+          >
+            ACTIVATE MOTION
+          </button>
+          <button
+            onClick={() => {
+                setPermissionGranted(false);
+                setGameActive(true);
+            }}
+            className="text-[10px] text-slate-500 underline font-black uppercase tracking-widest"
+          >
+            Manual Mode (Click Only)
+          </button>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <motion.div animate={isSpinning ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">🎰</motion.div>
         <h2 className="text-2xl font-black text-yellow-500 uppercase tracking-tighter italic">SLOT MACHINE</h2>
