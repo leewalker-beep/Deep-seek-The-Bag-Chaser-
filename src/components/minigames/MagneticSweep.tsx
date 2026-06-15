@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MagneticSweepResult {
   multiplier: number;
@@ -54,7 +54,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
     // Rare metal visual trigger (only if outcome is RARE)
     if (outcome === 'RARE' && !rareFound && Math.random() < 0.05) {
       setRareFound(true);
-      console.log("💎 RARE METAL DISCOVERED!");
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     }
   };
 
@@ -105,51 +105,62 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
       onTouchEnd={handleEnd}
     >
       {/* Gold Flash Effect when rare found */}
-      {rareFound && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 1, repeat: Infinity }}
-          className="absolute inset-0 bg-yellow-500/10 pointer-events-none z-0"
-        />
-      )}
+      <AnimatePresence>
+        {rareFound && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.2, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1, repeat: Infinity }}
+            className="absolute inset-0 bg-yellow-500 pointer-events-none z-0"
+          />
+        )}
+      </AnimatePresence>
 
-      <div className="absolute top-12 text-center px-6 z-10">
+      <div className="absolute top-12 text-center px-6 z-10 w-full">
         <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter">MAGNETIC SWEEP</h2>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Drag your magnet across the yard!</p>
+        <div className="flex items-center justify-center gap-4">
+          <motion.span animate={{ x: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">←</motion.span>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Drag magnet to collect scrap!</p>
+          <motion.span animate={{ x: [10, -10, 10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">→</motion.span>
+        </div>
       </div>
 
       {/* Visual Magnet/Scanner */}
       <motion.div
-        className="w-40 h-40 border-4 border-cyan-500 rounded-full flex items-center justify-center relative z-10"
+        className="w-40 h-40 border-4 rounded-full flex items-center justify-center relative z-10"
         style={{ x: currentX - (window.innerWidth / 2) }}
         animate={{
           scale: isDragging ? 1.2 : 1,
-          borderColor: rareFound ? '#fbbf24' : '#06b6d4',
+          borderColor: rareFound ? '#fbbf24' : isDragging ? '#22d3ee' : '#0891b2',
           boxShadow: rareFound
             ? '0 0 60px rgba(251,191,36,0.8), inset 0 0 20px rgba(251,191,36,0.4)'
-            : '0 0 30px rgba(6,182,212,0.5)'
+            : isDragging ? '0 0 40px rgba(34,211,238,0.4)' : '0 0 20px rgba(8,145,178,0.2)'
         }}
       >
         <div className="text-6xl">🧲</div>
-        {isDragging && (
-          <motion.div
-            className="absolute inset-[-20px] rounded-full border-2 border-dashed border-cyan-400/30"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          />
-        )}
+        <AnimatePresence>
+          {isDragging && (
+            <motion.div
+              initial={{ opacity: 0, rotate: 0 }}
+              animate={{ opacity: 1, rotate: 360 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-[-20px] rounded-full border-2 border-dashed border-cyan-400/30"
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Speed Indicator */}
-      <div className="absolute bottom-24 w-64 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700 z-10">
+      <div className="absolute bottom-24 w-64 h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 z-10">
         <motion.div
           className="h-full bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500"
-          style={{ width: `${Math.min(100, (velocity / 6) * 100)}%` }}
+          animate={{ width: `${Math.min(100, (velocity / 6) * 100)}%` }}
         />
       </div>
       <p className="absolute bottom-16 text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] z-10">
-        Collection Speed: <span className={velocity > 4 ? 'text-amber-400' : velocity > 1 ? 'text-emerald-400' : 'text-blue-400'}>
+        SCAN SPEED: <span className={velocity > 4 ? 'text-amber-400' : velocity > 1 ? 'text-emerald-400' : 'text-blue-400'}>
           {velocity > 4 ? 'MAXIMUM' : velocity > 1 ? 'OPTIMAL' : 'SLOW'}
         </span>
       </p>
@@ -157,10 +168,11 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
       {rareFound && (
         <motion.div
           initial={{ scale: 0, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
+          animate={{ scale: [1, 1.1, 1], y: 0 }}
+          transition={{ repeat: Infinity, duration: 1 }}
           className="absolute top-1/4 text-amber-400 text-4xl font-black italic drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] z-10 text-center px-4"
         >
-          💎 RARE METAL DETECTED!
+          💎 RARE METAL!
         </motion.div>
       )}
     </div>

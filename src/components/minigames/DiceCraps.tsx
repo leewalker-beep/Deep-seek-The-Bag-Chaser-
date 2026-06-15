@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 
 interface DiceCrapsProps {
   onComplete: (multiplier: number) => void;
@@ -14,6 +14,7 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
   const [point, setPoint] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [result, setResult] = useState<number | null>(null);
+  const [outcome, setOutcome] = useState<'win' | 'lose' | 'point' | null>(null);
 
   const controls1 = useAnimation();
   const controls2 = useAnimation();
@@ -39,7 +40,9 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
     if (isRolling || !selectedBet || result !== null) return;
 
     setIsRolling(true);
-    setMessage('');
+    setMessage('ROLLING...');
+    setOutcome(null);
+    if (navigator.vibrate) navigator.vibrate(20);
 
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
@@ -47,8 +50,8 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
 
     const rollAnimation = (controls: any) => controls.start({
       rotate: [0, 90, 180, 270, 360, 450, 540],
-      x: [0, -20, 20, -10, 10, 0],
-      y: [0, -50, 0, -30, 0],
+      x: [0, -40, 40, -20, 20, 0],
+      y: [0, -80, 0, -40, 0],
       transition: { duration: 0.8, ease: "easeOut" }
     });
 
@@ -63,54 +66,69 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
   const handleOutcome = (total: number) => {
     let multiplier = 0.5;
     let ended = false;
+    let currentOutcome: 'win' | 'lose' | 'point' | null = null;
 
     if (selectedBet === 'PASS') {
       if (point === null) {
         if ([7, 11].includes(total)) {
           multiplier = 2.0;
           setMessage('WINNER! 7/11');
+          currentOutcome = 'win';
           ended = true;
         } else if ([2, 3, 12].includes(total)) {
           multiplier = 0.3;
           setMessage('CRAPS! LOSER');
+          currentOutcome = 'lose';
           ended = true;
         } else {
           setPoint(total);
           setMessage(`POINT IS ${total}`);
+          currentOutcome = 'point';
         }
       } else {
         if (total === point) {
           multiplier = 3.0;
           setMessage('HIT THE POINT! WIN');
+          currentOutcome = 'win';
           ended = true;
         } else if (total === 7) {
           multiplier = 0.2;
           setMessage('SEVEN OUT! LOSE');
+          currentOutcome = 'lose';
           ended = true;
         }
       }
     } else if (selectedBet === 'SEVEN') {
-      if (total === 7) { multiplier = 5.0; setMessage('BIG RED! WIN'); }
-      else { multiplier = 0.1; setMessage('NOT A SEVEN'); }
+      if (total === 7) { multiplier = 5.0; setMessage('BIG RED! WIN'); currentOutcome = 'win'; }
+      else { multiplier = 0.1; setMessage('NOT A SEVEN'); currentOutcome = 'lose'; }
       ended = true;
     } else if (selectedBet === 'SNAKE_EYES') {
-      if (total === 2) { multiplier = 30.0; setMessage('SNAKE EYES! JACKPOT'); }
-      else { multiplier = 0.0; setMessage('FAIL'); }
+      if (total === 2) { multiplier = 30.0; setMessage('SNAKE EYES! JACKPOT'); currentOutcome = 'win'; }
+      else { multiplier = 0.0; setMessage('FAIL'); currentOutcome = 'lose'; }
       ended = true;
     } else if (selectedBet === 'BOXCARS') {
-      if (total === 12) { multiplier = 30.0; setMessage('BOXCARS! JACKPOT'); }
-      else { multiplier = 0.0; setMessage('FAIL'); }
+      if (total === 12) { multiplier = 30.0; setMessage('BOXCARS! JACKPOT'); currentOutcome = 'win'; }
+      else { multiplier = 0.0; setMessage('FAIL'); currentOutcome = 'lose'; }
       ended = true;
     } else if (selectedBet === 'DONT_PASS') {
         if (point === null) {
-            if ([2, 3].includes(total)) { multiplier = 2.0; setMessage('WINNER'); ended = true; }
-            else if ([7, 11].includes(total)) { multiplier = 0.3; setMessage('LOSER'); ended = true; }
-            else if (total === 12) { multiplier = 1.0; setMessage('PUSH'); ended = true; }
-            else { setPoint(total); setMessage(`POINT IS ${total}`); }
+            if ([2, 3].includes(total)) { multiplier = 2.0; setMessage('WINNER'); currentOutcome = 'win'; ended = true; }
+            else if ([7, 11].includes(total)) { multiplier = 0.3; setMessage('LOSER'); currentOutcome = 'lose'; ended = true; }
+            else if (total === 12) { multiplier = 1.0; setMessage('PUSH'); currentOutcome = 'point'; ended = true; }
+            else { setPoint(total); setMessage(`POINT IS ${total}`); currentOutcome = 'point'; }
         } else {
-            if (total === 7) { multiplier = 3.0; setMessage('WIN'); ended = true; }
-            else if (total === point) { multiplier = 0.2; setMessage('LOSE'); ended = true; }
+            if (total === 7) { multiplier = 3.0; setMessage('WIN'); currentOutcome = 'win'; ended = true; }
+            else if (total === point) { multiplier = 0.2; setMessage('LOSE'); currentOutcome = 'lose'; ended = true; }
         }
+    }
+
+    setOutcome(currentOutcome);
+    if (currentOutcome === 'win') {
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    } else if (currentOutcome === 'lose') {
+        if (navigator.vibrate) navigator.vibrate(50);
+    } else if (currentOutcome === 'point') {
+        if (navigator.vibrate) navigator.vibrate(20);
     }
 
     if (ended) {
@@ -122,9 +140,9 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
   const Die = ({ value, controls }: { value: number; controls: any }) => (
     <motion.div
       animate={controls}
-      className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center border-2 border-slate-200 relative p-4"
+      className="w-24 h-24 bg-white rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-center border-4 border-slate-200 relative p-5"
     >
-      <div className="grid grid-cols-3 grid-rows-3 gap-2 w-full h-full">
+      <div className="grid grid-cols-3 grid-rows-3 gap-3 w-full h-full">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => {
            const dot = (
              value === 1 && i === 5 ||
@@ -134,26 +152,57 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
              value === 5 && (i === 1 || i === 3 || i === 5 || i === 7 || i === 9) ||
              value === 6 && (i === 1 || i === 3 || i === 4 || i === 6 || i === 7 || i === 9)
            );
-           return <div key={i} className={`rounded-full ${dot ? 'bg-black' : 'bg-transparent'} w-full h-full`} />;
+           return <motion.div
+                    key={i}
+                    animate={dot ? { scale: [0, 1], opacity: 1 } : { scale: 0, opacity: 0 }}
+                    className={`rounded-full bg-black w-full h-full shadow-inner`}
+                  />;
         })}
       </div>
     </motion.div>
   );
 
   return (
-    <div className="bg-slate-900 p-6 rounded-3xl border-4 border-yellow-500 shadow-2xl text-center max-w-sm mx-auto font-mono">
-      <h2 className="text-2xl font-black text-yellow-500 mb-6 uppercase tracking-tighter">Dice / Craps</h2>
+    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
+        outcome === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
+        outcome === 'lose' ? 'border-red-500 bg-red-950/20' :
+        outcome === 'point' ? 'border-blue-500 bg-blue-950/20' :
+        'border-yellow-600'
+    }`}>
+      <h2 className="text-2xl font-black text-yellow-500 mb-8 uppercase tracking-tighter italic">DICE / CRAPS</h2>
 
-      <div className="flex justify-center gap-8 mb-8 h-32 items-center">
+      <div className="flex justify-center gap-10 mb-10 h-32 items-center">
         <Die value={dice[0]} controls={controls1} />
         <Die value={dice[1]} controls={controls2} />
       </div>
 
-      <div className="mb-6 h-8 text-xl font-black text-white uppercase italic">
-        {message}
+      <div className="h-16 flex items-center justify-center mb-6">
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={message}
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`text-2xl font-black uppercase italic tracking-tighter ${
+                    outcome === 'win' ? 'text-emerald-400' :
+                    outcome === 'lose' ? 'text-red-400' :
+                    outcome === 'point' ? 'text-blue-400' :
+                    'text-white'
+                }`}
+            >
+                {message || 'CHOOSE A BET'}
+            </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      {point !== null && (
+          <div className="mb-6 bg-blue-500/10 border border-blue-500/30 py-2 rounded-xl">
+              <div className="text-[10px] text-blue-400 font-black uppercase tracking-widest">ACTIVE POINT</div>
+              <div className="text-3xl font-black text-white font-mono">{point}</div>
+          </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
         {[
           { id: 'PASS', label: 'PASS LINE (2x)', color: 'bg-emerald-600' },
           { id: 'DONT_PASS', label: "DON'T PASS (2x)", color: 'bg-red-600' },
@@ -163,7 +212,12 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
           <button
             key={bet.id}
             onClick={() => !isRolling && !result && setSelectedBet(bet.id as Bet)}
-            className={`py-3 rounded-lg font-bold border-2 transition-all text-[10px] ${selectedBet === bet.id ? 'border-white scale-105 ' + bet.color : 'bg-slate-900 border-slate-700 text-slate-500'}`}
+            disabled={isRolling || !!result}
+            className={`py-4 rounded-xl font-black border-2 transition-all active:scale-95 text-[10px] uppercase tracking-tighter ${
+                selectedBet === bet.id ?
+                'border-white ' + bet.color + ' shadow-[0_0_15px_rgba(255,255,255,0.3)]' :
+                'bg-slate-900 border-slate-800 text-slate-500 hover:border-white/20'
+            }`}
           >
             {bet.label}
           </button>
@@ -173,12 +227,23 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete }) => {
       <button
         onClick={rollDice}
         disabled={!selectedBet || isRolling || result !== null}
-        className={`w-full py-4 rounded-xl font-black transition-all ${!selectedBet || isRolling || result !== null ? 'bg-slate-800 text-slate-600' : 'bg-yellow-500 text-black shadow-[0_5px_0_rgb(161,98,7)] active:translate-y-1'}`}
+        className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 border-b-8 ${
+            !selectedBet || isRolling || result !== null ?
+            'bg-slate-800 text-slate-600 border-slate-950' :
+            'bg-yellow-500 text-black border-yellow-700 shadow-[0_0_30px_rgba(234,179,8,0.3)]'
+        } uppercase italic tracking-tighter text-xl`}
       >
-        {isRolling ? 'ROLLING...' : result !== null ? 'DONE' : 'ROLL DICE'}
+        {isRolling ? 'ROLLING...' : result !== null ? 'ROUND ENDED' : 'SHOOT DICE'}
       </button>
 
-      <p className="mt-4 text-[8px] text-slate-500 uppercase tracking-widest">Shake device to roll • Good luck</p>
+      <div className="mt-8 flex items-center justify-center gap-2 opacity-50">
+        <div className="h-px bg-slate-800 flex-1" />
+        <div className="flex flex-col items-center gap-1">
+             <motion.div animate={{ rotate: [0, 45, -45, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="text-xl">📱</motion.div>
+             <p className="text-[8px] text-slate-500 uppercase font-black tracking-widest">SHAKE TO ROLL</p>
+        </div>
+        <div className="h-px bg-slate-800 flex-1" />
+      </div>
     </div>
   );
 };

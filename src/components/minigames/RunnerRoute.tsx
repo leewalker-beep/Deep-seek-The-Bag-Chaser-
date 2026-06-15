@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProgressBar } from '../ui/ProgressBar';
 
 interface RunnerRouteProps {
   onComplete: (multiplier: number) => void;
@@ -11,6 +12,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
+  const [feedback, setFeedback] = useState<'hit' | 'score' | null>(null);
   const touchStart = useRef<number | null>(null);
   const nextId = useRef(0);
   const hitObstacles = useRef<Set<number>>(new Set());
@@ -54,12 +56,17 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete }) => {
         if (collision) {
           hitObstacles.current.add(collision.id);
           setScore(s => Math.max(0, s - 5));
+          setFeedback('hit');
+          setTimeout(() => setFeedback(null), 300);
+          if (navigator.vibrate) navigator.vibrate(50);
         }
 
         // Scoring
         next.forEach(o => {
           if (o.y > 90 && !prev.find(po => po.id === o.id && po.y > 90)) {
             setScore(s => s + 10);
+            setFeedback('score');
+            setTimeout(() => setFeedback(null), 300);
           }
         });
 
@@ -94,13 +101,19 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]"
+      className={`fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] transition-colors duration-300 ${
+        feedback === 'hit' ? 'bg-red-950/40' : feedback === 'score' ? 'bg-emerald-950/40' : 'bg-slate-950'
+      }`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="absolute top-12 text-center pointer-events-none">
+      <div className="absolute top-12 text-center pointer-events-none w-full px-8">
         <h2 className="text-3xl font-black text-slate-100 italic tracking-tighter">RUNNER FLEET</h2>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Swipe Left/Right to route!</p>
+        <div className="flex items-center justify-center gap-4 mt-1">
+          <motion.span animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-slate-500">←</motion.span>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Swipe Left/Right to route!</p>
+          <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-slate-500">→</motion.span>
+        </div>
         <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">DELIVERED: {score}</div>
       </div>
 
@@ -136,8 +149,13 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete }) => {
         </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-12 text-slate-500 font-bold uppercase text-[10px]">
-        FUEL REMAINING: {timeLeft.toFixed(1)}s
+      <div className="absolute bottom-12 w-full max-w-[300px] px-4">
+        <ProgressBar
+          value={timeLeft}
+          max={15}
+          label={`TIME LEFT: ${timeLeft.toFixed(1)}s`}
+          colorClass={timeLeft < 5 ? 'bg-red-500' : 'bg-emerald-500'}
+        />
       </div>
     </div>
   );

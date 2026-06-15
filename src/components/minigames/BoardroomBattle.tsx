@@ -19,12 +19,13 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   const [currentRivalBid, setCurrentRivalBid] = useState(initialRivalBid);
   const [playerPower, setPlayerPower] = useState(0); // 0 to 100
   const [gameState, setGameState] = useState<'PLAYING' | 'ENDED'>('PLAYING');
+  const [feedback, setFeedback] = useState<'bid' | 'rival' | null>(null);
 
   const timerRef = useRef<number | null>(null);
   const rivalRef = useRef<number | null>(null);
   const decayRef = useRef<number | null>(null);
 
-  // AI Rival Logic - FIXED: Using functional updates and refs to avoid interval churn
+  // AI Rival Logic
   const playerBidRef = useRef(currentPlayerBid);
   useEffect(() => { playerBidRef.current = currentPlayerBid; }, [currentPlayerBid]);
 
@@ -39,6 +40,9 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
         const outbidAmount = playerBidRef.current + (initialPlayerBid * 0.1);
         setCurrentRivalBid(outbidAmount);
         onOutbid(outbidAmount);
+        setFeedback('rival');
+        setTimeout(() => setFeedback(null), 300);
+        if (navigator.vibrate) navigator.vibrate([30, 20]);
       }
     }, 1500);
 
@@ -84,6 +88,7 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     if (gameState === 'ENDED') {
       const won = currentPlayerBid > currentRivalBid;
       let multiplier = won ? 4.0 : 0.5;
+      if (navigator.vibrate) navigator.vibrate(won ? 100 : 50);
 
       const timer = window.setTimeout(() => {
         onComplete(multiplier);
@@ -96,87 +101,98 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     if (gameState !== 'PLAYING') return;
 
     setPlayerPower(prev => {
-      const next = Math.min(100, prev + 8);
+      const next = Math.min(100, prev + 12);
+      if (navigator.vibrate) navigator.vibrate(10);
       if (next >= 100) {
-        // Power full! Auto-bid
         setCurrentPlayerBid(curr => curr + (initialPlayerBid * 0.15));
-        return 0; // Reset power
+        setFeedback('bid');
+        setTimeout(() => setFeedback(null), 300);
+        if (navigator.vibrate) navigator.vibrate(40);
+        return 0;
       }
       return next;
     });
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center p-4 z-[100] font-mono">
-      <div className="w-full max-w-md bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-        {/* Boardroom background effect */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-pulse" />
+    <div className={`fixed inset-0 transition-colors duration-200 bg-slate-950 flex flex-col items-center justify-center p-4 z-[100] font-mono ${
+        feedback === 'bid' ? 'bg-emerald-950/20' : feedback === 'rival' ? 'bg-red-950/20' : 'bg-slate-950'
+    }`}>
+      <div className="w-full max-w-md bg-slate-900 border-4 border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-pulse" />
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-10">
           <div>
-            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Boardroom Battle</div>
-            <div className="text-2xl font-black text-white">Hostile Takeover</div>
+            <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">ELITE TIER OPERATIONS</div>
+            <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Hostile Takeover</h2>
           </div>
-          <div className={`text-3xl font-black ${timeLeft < 4 ? 'text-red-500 animate-bounce' : 'text-slate-400'}`}>
+          <div className={`text-3xl font-black font-mono px-3 py-1 rounded-xl border-2 transition-colors duration-300 ${
+              timeLeft < 4 ? 'text-red-500 border-red-500/50 bg-red-500/10 animate-pulse' : 'text-slate-400 border-slate-800'
+          }`}>
             {timeLeft}s
           </div>
         </div>
 
-        {/* Rival Battle Visual */}
-        <div className="flex justify-between items-center mb-8 gap-4">
-          <div className="flex-1 text-center">
-            <div className="text-4xl mb-2">💼</div>
-            <div className="text-[8px] text-slate-500 uppercase font-bold mb-1">Your Bid</div>
-            <div className="text-lg font-black text-white truncate">${currentPlayerBid.toLocaleString()}</div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-10 gap-6">
+          <div className={`text-center transition-all duration-300 ${feedback === 'bid' ? 'scale-110' : ''}`}>
+            <div className="text-5xl mb-3">💼</div>
+            <div className="text-[10px] text-slate-500 font-black uppercase mb-1">YOU</div>
+            <div className={`text-lg font-black font-mono transition-colors duration-300 ${currentPlayerBid > currentRivalBid ? 'text-emerald-400' : 'text-white'}`}>
+                ${currentPlayerBid.toLocaleString()}
+            </div>
           </div>
-          <div className="text-2xl font-black text-slate-700">VS</div>
-          <div className="flex-1 text-center">
-            <div className="text-4xl mb-2">🧛</div>
-            <div className="text-[8px] text-slate-500 uppercase font-bold mb-1">Rival Bid</div>
-            <div className="text-lg font-black text-white truncate">${currentRivalBid.toLocaleString()}</div>
+
+          <div className="text-2xl font-black text-slate-800 italic">VS</div>
+
+          <div className={`text-center transition-all duration-300 ${feedback === 'rival' ? 'scale-110' : ''}`}>
+            <div className="text-5xl mb-3">🧛</div>
+            <div className="text-[10px] text-slate-500 font-black uppercase mb-1">RIVAL</div>
+            <div className={`text-lg font-black font-mono transition-colors duration-300 ${currentRivalBid > currentPlayerBid ? 'text-red-400' : 'text-white'}`}>
+                ${currentRivalBid.toLocaleString()}
+            </div>
           </div>
         </div>
 
-        {/* Power Meter */}
-        <div className="mb-8">
-          <div className="flex justify-between items-end mb-2">
-            <div className="text-[10px] text-slate-500 uppercase font-bold">Influence Power</div>
-            <div className="text-xs font-black text-blue-400">{Math.floor(playerPower)}%</div>
+        <div className="mb-10">
+          <div className="flex justify-between items-end mb-3">
+            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest">NEGOTIATION POWER</div>
+            <div className="text-sm font-black text-blue-400 font-mono">{Math.floor(playerPower)}%</div>
           </div>
-          <div className="h-4 bg-slate-950 rounded-full border border-slate-800 overflow-hidden p-0.5">
+          <div className="h-5 bg-slate-950 rounded-full border-2 border-slate-800 overflow-hidden p-0.5 shadow-inner">
             <motion.div
-              className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full"
+              className="h-full bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-500 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]"
               initial={{ width: '0%' }}
               animate={{ width: `${playerPower}%` }}
               transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
             />
           </div>
-          <div className="text-[8px] text-slate-600 mt-2 text-center uppercase tracking-tighter">
-            Tap rapidly to build influence and increase your bid
-          </div>
         </div>
 
-        {/* Tap Button */}
         {gameState === 'PLAYING' ? (
           <button
             onPointerDown={handleTap}
-            className="w-full bg-blue-600 hover:bg-blue-500 active:scale-90 py-8 rounded-2xl border-b-4 border-blue-800 transition-all group"
+            className="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 py-8 rounded-2xl border-b-8 border-blue-900 transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] group"
           >
-            <div className="text-xl font-black text-white uppercase tracking-widest group-active:translate-y-1">
+            <div className="text-2xl font-black text-white uppercase italic tracking-tighter group-active:translate-y-1">
               DOMINATE
             </div>
           </button>
         ) : (
-          <div className="text-center py-8">
-            <div className={`text-3xl font-black uppercase italic ${currentPlayerBid > currentRivalBid ? 'text-emerald-400' : 'text-red-500'}`}>
-              {currentPlayerBid > currentRivalBid ? 'Board Secured' : 'Takeover Failed'}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-8"
+          >
+            <div className={`text-4xl font-black uppercase italic tracking-tighter ${currentPlayerBid > currentRivalBid ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
+              {currentPlayerBid > currentRivalBid ? 'BOARD SECURED' : 'TAKEOVER FAILED'}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
-      <div className="mt-8 text-[10px] text-slate-500 text-center uppercase tracking-widest max-w-xs leading-relaxed">
-        Hammer the button to build influence. Every time the meter fills, you'll automatically raise your bid.
+      <div className="mt-8 text-[10px] text-slate-600 text-center font-black uppercase tracking-[0.2em] max-w-xs leading-relaxed opacity-50">
+        MASH THE BUTTON TO BUILD INFLUENCE<br/>
+        FILL THE METER TO AUTOMATICALLY RAISE BID
       </div>
     </div>
   );

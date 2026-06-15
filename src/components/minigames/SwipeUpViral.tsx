@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Topic {
   id: number;
@@ -71,8 +72,10 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
     if (isCorrect) {
       setScore(s => s + 1);
       setResult('correct');
+      if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setResult('wrong');
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
     setTotal(t => t + 1);
 
@@ -104,36 +107,59 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="bg-slate-900 p-6 rounded-2xl border border-purple-500/30 text-center select-none touch-none h-80 flex flex-col justify-center items-center relative overflow-hidden">
-      <div className="text-[10px] text-purple-400 font-bold uppercase mb-4 tracking-widest">
-        GO VIRAL ({score}/{total})
+    <div className={`bg-slate-900 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-80 flex flex-col justify-center items-center relative overflow-hidden ${
+      result === 'correct' ? 'border-emerald-500 bg-emerald-950/20' :
+      result === 'wrong' ? 'border-red-500 bg-red-950/20' :
+      'border-purple-500/30'
+    }`}>
+      <div className="absolute top-6 text-center z-20 w-full">
+        <h2 className="text-xl font-black text-purple-400 italic tracking-tighter">CONTENT CREATION</h2>
+        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+          VIRAL HITS: {score}/{total}
+        </div>
       </div>
 
-      {currentTopic && gameActive && (
-        <div
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onClick={() => !currentTopic.isViral && handleAction(false)}
-          className={`w-full max-w-[200px] aspect-video bg-slate-800 rounded-xl border-2 flex flex-col items-center justify-center p-4 transition-all ${
-            result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
-            result === 'wrong' ? 'border-red-500 bg-red-500/10' :
-            'border-slate-700'
-          }`}
-          style={{ transform: `translateY(${offsetY}px)` }}
-        >
-          <div className="text-4xl mb-2">{currentTopic.isViral ? '🔥' : '📄'}</div>
-          <div className="text-xs font-bold text-white">{currentTopic.label}</div>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {currentTopic && gameActive && (
+          <motion.div
+            key={topicIndex}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1, y: offsetY }}
+            exit={{ y: offsetY < -50 ? -300 : 0, opacity: 0 }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onClick={() => !currentTopic.isViral && handleAction(false)}
+            className={`w-full max-w-[220px] aspect-video bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-6 transition-all shadow-2xl ${
+              result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
+              result === 'wrong' ? 'border-red-500 bg-red-500/10' :
+              'border-slate-700 hover:border-purple-500/50'
+            }`}
+          >
+            <div className="text-5xl mb-3">{currentTopic.isViral ? '🔥' : '📄'}</div>
+            <div className="text-sm font-black text-white leading-tight">{currentTopic.label}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="mt-8 text-[10px] text-slate-500 uppercase font-mono">
-        Swipe UP to POST Viral • Tap to SKIP Boring
+      <div className="absolute bottom-6 w-full flex flex-col items-center gap-2 px-6">
+        <div className="flex justify-between w-full opacity-50">
+           <div className="flex flex-col items-center gap-1">
+              <motion.div animate={{ y: [-5, 0, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">⬆️</motion.div>
+              <span className="text-[8px] font-black text-purple-400 uppercase">SWIPE FOR VIRAL</span>
+           </div>
+           <div className="flex flex-col items-center gap-1">
+              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">👆</motion.div>
+              <span className="text-[8px] font-black text-slate-400 uppercase">TAP TO SKIP</span>
+           </div>
+        </div>
       </div>
 
       {!gameActive && (
-        <div className="absolute inset-0 bg-slate-950/90 flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 p-6">
+          <div className="text-6xl mb-4">📈</div>
           <div className="text-2xl font-black text-white italic">FEED UPDATED</div>
+          <div className="text-xs text-purple-400 font-bold uppercase tracking-widest mt-2">{score}/{total} VIRAL SUCCESS</div>
         </div>
       )}
     </div>

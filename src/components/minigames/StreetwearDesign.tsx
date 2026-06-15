@@ -20,6 +20,7 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
   const [targetColors, setTargetColors] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<(string | null)[]>([null, null, null]);
   const [gameActive, setGameActive] = useState(true);
+  const [feedback, setFeedback] = useState<'match' | null>(null);
 
   useEffect(() => {
     // Generate random target colors
@@ -28,9 +29,16 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
   }, []);
 
   const handleSelectColor = (partIndex: number, colorHex: string) => {
+    if (!gameActive) return;
     const next = [...selectedColors];
     next[partIndex] = colorHex;
     setSelectedColors(next);
+
+    if (colorHex === targetColors[partIndex]) {
+        setFeedback('match');
+        setTimeout(() => setFeedback(null), 200);
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
   };
 
   const handleFinish = () => {
@@ -45,43 +53,62 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
     else if (matches === 2) multiplier = 1.5;
     else if (matches === 1) multiplier = 1.0;
 
+    if (navigator.vibrate) navigator.vibrate(matches === 3 ? 100 : 50);
     setTimeout(() => onComplete(multiplier), 1000);
   };
 
   const allSelected = selectedColors.every(c => c !== null);
 
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
-      <div className="absolute top-12 text-center">
+    <div className={`fixed inset-0 transition-colors duration-300 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
+        feedback === 'match' ? 'bg-emerald-950/20' : 'bg-slate-950'
+    }`}>
+      <div className="absolute top-12 text-center w-full px-8">
         <h2 className="text-3xl font-black text-slate-100 italic tracking-tighter">STREETWEAR DESIGN</h2>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Match the target outfit colors!</p>
+        <div className="flex items-center justify-center gap-2 mt-1">
+            <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-slate-500">🎨</motion.span>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Match the target outfit colors!</p>
+        </div>
       </div>
 
-      <div className="flex gap-8 mb-12">
+      <div className="flex gap-12 mb-12 bg-slate-900/50 p-6 rounded-3xl border-2 border-slate-800">
         {/* Target Outfit */}
         <div className="text-center">
-          <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">Target</div>
-          <div className="space-y-2">
+          <div className="text-[10px] text-slate-500 font-black uppercase mb-4 tracking-widest">TARGET LOOK</div>
+          <div className="space-y-4">
             {targetColors.map((color, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full border border-slate-700" style={{ backgroundColor: color }} />
-                <span className="text-[10px] text-slate-400 uppercase font-bold">{PARTS[i]}</span>
+              <div key={i} className="flex items-center gap-3">
+                <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 2, delay: i * 0.2 }}
+                    className="w-10 h-10 rounded-xl border-2 border-white/20 shadow-lg"
+                    style={{ backgroundColor: color }}
+                />
+                <span className="text-[10px] text-slate-400 uppercase font-black">{PARTS[i]}</span>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="w-px bg-slate-800 self-stretch" />
+
         {/* Your Design */}
         <div className="text-center">
-          <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">Your Brand</div>
-          <div className="space-y-2">
+          <div className="text-[10px] text-slate-500 font-black uppercase mb-4 tracking-widest">YOUR BRAND</div>
+          <div className="space-y-4">
             {PARTS.map((part, i) => (
-              <div key={part} className="flex items-center gap-2">
+              <div key={part} className="flex items-center gap-3">
                 <div
-                  className={`w-8 h-8 rounded-full border-2 ${selectedColors[i] ? 'border-white' : 'border-dashed border-slate-700'}`}
+                  className={`w-10 h-10 rounded-xl border-2 transition-all duration-300 ${
+                    selectedColors[i] === targetColors[i] ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' :
+                    selectedColors[i] ? 'border-white' : 'border-dashed border-slate-700'
+                  }`}
                   style={{ backgroundColor: selectedColors[i] || 'transparent' }}
                 />
-                <span className="text-[10px] text-slate-400 uppercase font-bold">{part}</span>
+                <span className={`text-[10px] uppercase font-black ${selectedColors[i] === targetColors[i] ? 'text-emerald-500' : 'text-slate-400'}`}>
+                    {part}
+                </span>
               </div>
             ))}
           </div>
@@ -89,17 +116,19 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
       </div>
 
       {gameActive && (
-        <div className="w-full max-w-sm">
-          <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="w-full max-w-sm px-6">
+          <div className="grid grid-cols-3 gap-6 mb-10">
             {PARTS.map((part, partIndex) => (
-              <div key={part} className="flex flex-col items-center gap-2">
-                <div className="text-[8px] text-slate-500 uppercase font-bold">{part}</div>
-                <div className="grid grid-cols-2 gap-1">
+              <div key={part} className="flex flex-col items-center gap-3">
+                <div className="text-[8px] text-slate-500 uppercase font-black tracking-widest">{part}</div>
+                <div className="grid grid-cols-2 gap-2">
                   {COLORS.map(color => (
                     <button
                       key={color.hex}
                       onClick={() => handleSelectColor(partIndex, color.hex)}
-                      className={`w-6 h-6 rounded-md border ${selectedColors[partIndex] === color.hex ? 'border-white scale-110' : 'border-transparent opacity-60'}`}
+                      className={`w-8 h-8 rounded-lg border-2 transition-all active:scale-90 ${
+                        selectedColors[partIndex] === color.hex ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-40'
+                      }`}
                       style={{ backgroundColor: color.hex }}
                     />
                   ))}
@@ -111,8 +140,8 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
           <button
             onClick={handleFinish}
             disabled={!allSelected}
-            className={`w-full py-4 rounded-2xl font-black text-sm transition-all active:scale-95 ${
-              allSelected ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-slate-800 text-slate-600'
+            className={`w-full py-5 rounded-2xl font-black text-sm transition-all active:scale-95 border-b-4 ${
+              allSelected ? 'bg-emerald-600 text-white border-emerald-800 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-slate-800 text-slate-600 border-slate-900'
             }`}
           >
             APPROVE COLLECTION
@@ -123,12 +152,15 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
       <AnimatePresence>
         {!gameActive && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             className="text-center"
           >
-            <div className="text-5xl mb-4">✨</div>
-            <div className="text-2xl font-black text-white uppercase italic tracking-tighter">Collection Finalized</div>
+            <div className="text-7xl mb-6">✨</div>
+            <div className="text-3xl font-black text-white uppercase italic tracking-tighter">Collection Finalized</div>
+            <div className="text-emerald-500 font-black text-sm uppercase tracking-widest mt-2">
+                {selectedColors.filter((c, i) => c === targetColors[i]).length}/3 MATCHED
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

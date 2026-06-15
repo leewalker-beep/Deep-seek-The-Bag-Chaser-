@@ -26,6 +26,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete }) => {
   const [total, setTotal] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const touchStart = useRef<number | null>(null);
 
   const spawnOrder = useCallback(() => {
@@ -53,8 +54,14 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete }) => {
     const correctSide = currentOrder[0].side;
     if (direction === correctSide) {
       setScore(s => s + 1);
+      setFeedback('correct');
+      if (navigator.vibrate) navigator.vibrate(20);
+    } else {
+      setFeedback('wrong');
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
     setTotal(t => t + 1);
+    setTimeout(() => setFeedback(null), 200);
     spawnOrder();
   };
 
@@ -87,20 +94,28 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete }) => {
   }, [gameActive, score, total, onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-orange-950/20 backdrop-blur-md flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+    <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
+      feedback === 'correct' ? 'bg-emerald-950/20' : feedback === 'wrong' ? 'bg-red-950/20' : 'bg-orange-950/20'
+    } backdrop-blur-md`}>
       <div className="absolute top-12 text-center">
         <h2 className="text-3xl font-black text-orange-500 italic tracking-tighter">STREET EATS</h2>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Swipe LEFT or RIGHT for ingredients!</p>
+        <div className="flex items-center justify-center gap-4 mt-1">
+          <motion.span animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700">←</motion.span>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Swipe LEFT or RIGHT for ingredients!</p>
+          <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700">→</motion.span>
+        </div>
         <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">PREPPED: {score}/{total}</div>
       </div>
 
       <div
-        className="relative w-full max-w-sm h-64 bg-slate-900 rounded-3xl border-4 border-orange-900/50 flex items-center justify-center overflow-hidden"
+        className={`relative w-full max-w-sm h-64 bg-slate-900 rounded-3xl border-4 transition-colors duration-200 flex items-center justify-center overflow-hidden ${
+          feedback === 'correct' ? 'border-emerald-500' : feedback === 'wrong' ? 'border-red-500' : 'border-orange-900/50'
+        }`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-4xl opacity-20">⬅️</div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-20">➡️</div>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-4xl opacity-10">⬅️</div>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-4xl opacity-10">➡️</div>
 
         <AnimatePresence mode="wait">
           {currentOrder.map(item => (
@@ -128,8 +143,16 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete }) => {
         </div>
       </div>
 
-      <div className="absolute bottom-20 text-slate-500 font-bold uppercase text-[10px]">
-        SERVICE ENDS IN: {timeLeft.toFixed(1)}s
+      <div className="absolute bottom-12 w-full max-w-[300px] px-4">
+        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+           <motion.div
+             className="h-full bg-orange-500"
+             animate={{ width: `${(timeLeft / 15) * 100}%` }}
+           />
+        </div>
+        <div className="mt-2 text-center text-[10px] text-slate-500 font-bold uppercase">
+          SERVICE ENDS IN: {timeLeft.toFixed(1)}s
+        </div>
       </div>
     </div>
   );
