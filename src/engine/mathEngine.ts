@@ -86,7 +86,7 @@ export function calculateHustleMath(
   mentalHit = Math.max(-100, Math.min(100, mentalHit));
 
   // Profit safety net
-  if (isSuccess && yieldCash < cost && cost > 0) {
+  if (isSuccess && yieldCash < cost && cost > 0 && !hustleId.includes('vending')) {
     console.warn(`Profit safety applied to ${hustleId}`);
     yieldCash = Math.floor(cost * 1.3);
   }
@@ -99,6 +99,7 @@ export function calculateHustleMath(
     mentalHit,
     heatHit,
     shieldTurns: levelData.shieldTurns || 0,
+    passiveAdded: levelData.passiveYield,
     isBigWin,
     bigWinMessage
   };

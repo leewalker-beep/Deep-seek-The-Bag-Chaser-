@@ -146,11 +146,11 @@ HUSTLES.r_vending = {
   isPassive: true,
   isRepeatable: true,
   maxRepeat: Infinity,
-  startBranchId: 'l1',
+  startBranchId: 'vending',
   branches: {
-    l1: {
+    vending: {
       level: 1,
-      id: 'l1',
+      id: 'vending',
       name: 'Buy Vending Machine',
       cost: 2000,
       yieldCash: 0,

@@ -65,7 +65,9 @@ export function advanceMonth(
       if (hustleId === 'r_labor' && newPl.hustleBranchIds[hustleId] === 'l2b') {
         multiplier = newPl.rentalCount || 1;
       }
-      // Note: Vending is handled via FLEX_ASSETS below
+      if (hustleId === 'r_vending') {
+        multiplier = newPl.vendingCount || 0;
+      }
 
       passiveIncome += levelData.passiveYield * multiplier;
     }
@@ -88,8 +90,8 @@ export function advanceMonth(
     passiveIncome += asset.passiveYield * count;
   });
 
-  // 3. Vending Machine Bonus (from old logic)
-  const vendingCount = newPl.flexAssets['vending'] || 0;
+  // 3. Vending Machine Bonus
+  const vendingCount = newPl.vendingCount || 0;
   if (vendingCount >= 10) {
     passiveIncome += 500;
   }

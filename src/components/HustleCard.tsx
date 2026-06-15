@@ -131,13 +131,13 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           <div className="space-y-2">
             <div className="flex justify-between items-center px-1">
               <span className="text-[10px] font-bold text-slate-500 uppercase">Current owned: {player.vendingCount}</span>
-              <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * 250}/month</span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * (levelData.passiveYield || 250)}/month</span>
             </div>
             <button
-              onClick={() => handleAction('UPGRADE', 2000, 'vending')}
+              onClick={() => onExecute()}
               className="w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 bg-emerald-600 text-white hover:bg-emerald-500"
             >
-              BUY MACHINE ($2,000)
+              BUY MACHINE (${levelData.cost.toLocaleString()})
             </button>
           </div>
         ) : (
