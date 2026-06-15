@@ -425,7 +425,7 @@ HUSTLES.sw = {
   tier: 'STARTUP',
   icon: '👕',
   description: 'Building a global hype brand',
-  miniGame: 'SequenceRecall',
+  miniGame: 'StreetwearDesign',
   hasPanel: true,
   panelType: 'STREETWEAR',
   startBranchId: 'l1',
@@ -442,7 +442,7 @@ HUSTLES.smm = {
   tier: 'STARTUP',
   icon: '📈',
   description: 'Scale your agency with high-ticket clients',
-  miniGame: 'TapAssign',
+  miniGame: 'HashtagTap',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Freelance SMM', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
@@ -457,7 +457,7 @@ HUSTLES.gig = {
   tier: 'STARTUP',
   icon: '🚚',
   description: 'Scale your logistics and fleet management',
-  miniGame: 'PatternMemory',
+  miniGame: 'RunnerRoute',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
@@ -472,7 +472,7 @@ HUSTLES.meme = {
   tier: 'STARTUP',
   icon: '🪙',
   description: 'Manipulate the markets for high-tier gains',
-  miniGame: 'PatternMemory',
+  miniGame: 'MemeCoinPump',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
@@ -487,7 +487,7 @@ HUSTLES.saas_mvp = {
   tier: 'STARTUP',
   icon: '💻',
   description: 'Software as a Service',
-  miniGame: 'SequenceRecall',
+  miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 5000, nextBranches: ['l2'] },
@@ -518,7 +518,7 @@ HUSTLES.ecom_brand = {
   tier: 'STARTUP',
   icon: '🛒',
   description: 'Private label consumer goods',
-  miniGame: 'SequenceRecall',
+  miniGame: 'EcomCatch',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', cost: 40000, yieldCash: 25000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 100, auraReq: 80, passiveYield: 8000, nextBranches: ['l2'] },
@@ -533,7 +533,6 @@ HUSTLES.therapy_session = {
   tier: 'STARTUP',
   icon: '🛋️',
   description: 'Regain mental health',
-  miniGame: 'SequenceRecall',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
