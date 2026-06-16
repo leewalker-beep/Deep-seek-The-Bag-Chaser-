@@ -49,6 +49,11 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     campaignPlatform: 'economy',
     campaignVP: '',
     campaignDelegates: 0,
+    approvalRating: 50,
+    presidentMonth: 0,
+    isSecondTerm: false,
+    cabinet: {},
+    activeCrises: [],
     marketCycle: {
       realEstate: 'normal',
       vc: {

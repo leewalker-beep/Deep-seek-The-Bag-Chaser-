@@ -94,6 +94,50 @@ export interface Badge {
   };
 }
 
+export interface CabinetMember {
+  id: string;
+  name: string;
+  role: string;
+  bonus: {
+    type: 'approval' | 'cash' | 'clout' | 'aura';
+    value: number;
+  };
+}
+
+export interface PresidentCrisis {
+  id: string;
+  name: string;
+  description: string;
+  resolutionCost: {
+    cash?: number;
+    clout?: number;
+    aura?: number;
+  };
+  impact: {
+    approval: number;
+    cash?: number;
+    clout?: number;
+    aura?: number;
+    heat?: number;
+  };
+}
+
+export interface ExecutiveOrder {
+  id: string;
+  name: string;
+  description: string;
+  cost: {
+    clout?: number;
+    aura?: number;
+    cash?: number;
+  };
+  impact: {
+    approval: number;
+    passiveCash?: number;
+    heat?: number;
+  };
+}
+
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
 
 export interface Achievement {
@@ -163,6 +207,11 @@ export interface PlayerStats {
   campaignPlatform?: 'economy' | 'healthcare' | 'foreign';
   campaignVP?: string;
   campaignDelegates?: number;
+  approvalRating: number;
+  presidentMonth: number;
+  isSecondTerm: boolean;
+  cabinet: Record<string, CabinetMember>;
+  activeCrises: PresidentCrisis[];
   marketCycle: {
     realEstate: 'boom' | 'bust' | 'normal';
     vc: Record<string, 'boom' | 'bust' | 'normal'>;
@@ -207,7 +256,7 @@ export interface GameState {
   currentMarket: MarketType;
   news: (string | TickerMessage)[];
   unlockedHustles: Record<string, boolean>;
-  activeTab: Tier | 'FLEX';
+  activeTab: Tier | 'FLEX' | 'PRESIDENCY';
   activeHustleView: string | null;
   activeNarrative?: string | null;
   deathBadge: string | null;
@@ -218,7 +267,7 @@ export interface GameState {
   // Actions
   resetGame: (difficulty?: 1 | 2 | 3) => void;
   setPlayerName: (name: string) => void;
-  setActiveTab: (tab: Tier | 'FLEX') => void;
+  setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
   setActiveHustleView: (hustleId: string | null) => void;
   dismissNarrative: () => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean, defer?: boolean) => {
@@ -253,6 +302,10 @@ export interface GameState {
   setCampaignPlatform: (platform: 'economy' | 'healthcare' | 'foreign') => void;
   setCampaignVP: (vp: string) => void;
   setCampaignDelegates: (delegates: number) => void;
+  issueExecutiveOrder: (orderId: string) => void;
+  appointCabinetMember: (member: CabinetMember) => void;
+  resolveCrisis: (crisisId: string) => void;
+  advancePresidentialMonth: () => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: any) => void;

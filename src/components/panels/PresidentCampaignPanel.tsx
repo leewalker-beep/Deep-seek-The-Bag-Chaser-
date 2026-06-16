@@ -11,7 +11,7 @@ interface PresidentCampaignPanelProps {
 }
 
 export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ hustle }) => {
-  const { pl, setCampaignStage, setCampaignPlatform, setCampaignVP, setCampaignDelegates, executeHustle, setActiveHustleView, addTickerMessage } = useGameStore();
+  const { pl, setCampaignStage, setCampaignPlatform, setCampaignVP, setCampaignDelegates, executeHustle, setActiveHustleView, addTickerMessage, setActiveTab } = useGameStore();
   const stage = pl.campaignStage || 1;
   const platform = pl.campaignPlatform || 'economy';
   const vp = pl.campaignVP || '';
@@ -28,6 +28,8 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
         if (stage < 7) {
           setCampaignStage(stage + 1);
         } else {
+          setCampaignStage(8);
+          setActiveTab('PRESIDENCY');
           setActiveHustleView(null);
         }
       }
