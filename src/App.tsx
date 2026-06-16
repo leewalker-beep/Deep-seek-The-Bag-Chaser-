@@ -74,6 +74,7 @@ import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
+import { PresidentDashboard } from './components/PresidentDashboard';
 import { ShakeForHype } from './components/minigames/ShakeForHype';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
@@ -425,14 +426,16 @@ function App() {
         activeTab={activeTab}
         currentTier={pl.currentTier}
         onTabChange={(tab) => {
-          setActiveTab(tab);
+          setActiveTab(tab as any);
           setShowMinigame(false);
         }}
       />
 
       {/* Main Content */}
       <div className="max-w-md mx-auto px-4 py-4 pb-24">
-        {!activeHustleView ? (
+        {activeTab === 'PRESIDENCY' ? (
+          <PresidentDashboard />
+        ) : !activeHustleView ? (
           <>
             {/* Advance Tier Button */}
             {canAdvance && activeTab !== 'FLEX' && (

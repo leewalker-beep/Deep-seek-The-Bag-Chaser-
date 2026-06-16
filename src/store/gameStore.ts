@@ -7,6 +7,7 @@ import { createPlayerStatsSlice } from './slices/playerStatsSlice';
 import { createHustleSlice } from './slices/hustleSlice';
 import { createAchievementSlice } from './slices/achievementSlice';
 import { createChallengeSlice } from './slices/challengeSlice';
+import { createPresidentSlice } from './slices/presidentSlice';
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -17,6 +18,7 @@ export const useGameStore = create<GameState>()(
       ...createHustleSlice(...a),
       ...createAchievementSlice(...a),
       ...createChallengeSlice(...a),
+      ...createPresidentSlice(...a),
     }),
     {
       name: 'bag-chaser-save',
