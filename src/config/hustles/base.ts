@@ -785,6 +785,34 @@ HUSTLES.philanthropy_empire = {
   ]
 };
 
+HUSTLES.media_empire = {
+  id: 'media_empire',
+  name: 'Media Empire',
+  tier: 'MOGUL',
+  icon: '📺',
+  description: 'Control the narrative across TV and streaming',
+  levels: [
+    { level: 1, cost: 75000000, yieldCash: 40000000, yieldClout: 500, yieldAura: 150, mentalHit: -15, cloutReq: 800, auraReq: 400, passiveYield: 8000000 },
+    { level: 2, cost: 150000000, yieldCash: 80000000, yieldClout: 1000, yieldAura: 300, mentalHit: -20, cloutReq: 1200, auraReq: 600, passiveYield: 15000000 },
+    { level: 3, cost: 300000000, yieldCash: 160000000, yieldClout: 2000, yieldAura: 600, mentalHit: -25, cloutReq: 1600, auraReq: 800, passiveYield: 30000000 }
+  ],
+  miniGame: 'TapApprove'
+};
+
+HUSTLES.luxury_conglomerate = {
+  id: 'luxury_conglomerate',
+  name: 'Luxury Conglomerate',
+  tier: 'MOGUL',
+  icon: '💎',
+  description: 'Acquire high-end fashion brands',
+  levels: [
+    { level: 1, cost: 50000000, yieldCash: 25000000, yieldClout: 300, yieldAura: 200, mentalHit: -12, cloutReq: 700, auraReq: 350, passiveYield: 5000000 },
+    { level: 2, cost: 100000000, yieldCash: 50000000, yieldClout: 600, yieldAura: 400, mentalHit: -18, cloutReq: 1000, auraReq: 500, passiveYield: 10000000 },
+    { level: 3, cost: 200000000, yieldCash: 100000000, yieldClout: 1200, yieldAura: 800, mentalHit: -22, cloutReq: 1400, auraReq: 700, passiveYield: 20000000 }
+  ],
+  miniGame: 'DragMerge'
+};
+
 // PRESIDENT Tier Hustles (Campaign: ShakeForHype)
 HUSTLES.data_monopoly = {
   id: 'data_monopoly',

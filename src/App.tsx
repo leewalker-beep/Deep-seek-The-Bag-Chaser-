@@ -46,6 +46,8 @@ import { HashtagTap } from './components/minigames/HashtagTap';
 import { RunnerRoute } from './components/minigames/RunnerRoute';
 import { MemeCoinPump } from './components/minigames/MemeCoinPump';
 import { EcomCatch } from './components/minigames/EcomCatch';
+import { TapApprove } from './components/minigames/TapApprove';
+import { DragMerge } from './components/minigames/DragMerge';
 import { PatternMemory } from './components/minigames/PatternMemory';
 import { BalanceScale } from './components/minigames/BalanceScale';
 import { ReactionGrid } from './components/minigames/ReactionGrid';
@@ -565,6 +567,8 @@ function App() {
                 if (activeMiniGame === 'RunnerRoute') return <RunnerRoute onComplete={onComplete} />;
                 if (activeMiniGame === 'MemeCoinPump') return <MemeCoinPump onComplete={onComplete} />;
                 if (activeMiniGame === 'EcomCatch') return <EcomCatch onComplete={onComplete} />;
+                if (activeMiniGame === 'TapApprove') return <TapApprove onComplete={onComplete} />;
+                if (activeMiniGame === 'DragMerge') return <DragMerge onComplete={onComplete} />;
                 if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} />;
                 if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} />;
                 if (activeMiniGame === 'RiskMeter') return <RiskMeter onComplete={onComplete} />;

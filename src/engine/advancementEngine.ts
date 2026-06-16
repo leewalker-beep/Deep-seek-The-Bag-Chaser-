@@ -84,10 +84,19 @@ export function advanceMonth(
     passiveIncome += Math.floor(monthlyPassive * newPl.rentalCount);
   }
 
-  // 2. Flex Assets (including Vending Machines)
+  // 2. Flex Assets
+  const techConglomerateCount = newPl.flexAssets['tech_conglomerate'] || 0;
+  const flexBonusMultiplier = 1 + (techConglomerateCount * 0.1);
+
   FLEX_ASSETS.forEach(asset => {
     const count = newPl.flexAssets[asset.id] || 0;
-    passiveIncome += asset.passiveYield * count;
+    if (count > 0) {
+      let assetPassive = asset.passiveYield * count;
+      if (asset.id !== 'tech_conglomerate') {
+        assetPassive *= flexBonusMultiplier;
+      }
+      passiveIncome += assetPassive;
+    }
   });
 
   // 3. Vending Machine Bonus
@@ -134,7 +143,15 @@ export function advanceMonth(
   newPl.month += 1;
 
   // Decay heat (cool down over time)
-  newPl.heat = Math.max(0, newPl.heat - 10);
+  let heatDecay = 10;
+  const jetCount = newPl.flexAssets['jet'] || 0;
+  if (jetCount > 0) {
+    let jetBonus = (FLEX_ASSETS.find(a => a.id === 'jet')?.heatDecayBonus || 0) * jetCount;
+    // Boost bonus by Tech Conglomerate
+    jetBonus *= flexBonusMultiplier;
+    heatDecay = heatDecay * Math.max(0, (1 - (jetBonus / 100)));
+  }
+  newPl.heat = Math.max(0, newPl.heat - heatDecay);
 
   // Rival AI Updates
   if (newPl.rivals) {
