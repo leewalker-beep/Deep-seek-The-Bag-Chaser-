@@ -17,6 +17,49 @@ import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 
+const calculateFlexBonuses = (pl: GameState['pl']) => {
+  const techConglomerateCount = pl.flexAssets['tech_conglomerate'] || 0;
+  const flexBonusMultiplier = 1 + (techConglomerateCount * 0.1);
+
+  let cashBonus = 0;
+  let cloutBonus = 0;
+  let auraBonus = 0;
+  let mentalBonus = 0;
+
+  FLEX_ASSETS.forEach(asset => {
+    const count = pl.flexAssets[asset.id] || 0;
+    if (count > 0) {
+      const bonusScale = count * flexBonusMultiplier;
+      if (asset.allGainsBonus) {
+        cashBonus += asset.allGainsBonus * bonusScale;
+        cloutBonus += asset.allGainsBonus * bonusScale;
+        auraBonus += asset.allGainsBonus * bonusScale;
+      }
+      if (asset.cloutBonus) cloutBonus += asset.cloutBonus * bonusScale;
+      if (asset.auraBonus) auraBonus += asset.auraBonus * bonusScale;
+      if (asset.mentalRecoveryBonus) mentalBonus += asset.mentalRecoveryBonus * bonusScale;
+    }
+  });
+
+  return { cashBonus, cloutBonus, auraBonus, mentalBonus };
+};
+
+const applyFlexBonuses = (result: any, bonuses: ReturnType<typeof calculateFlexBonuses>) => {
+  const { cashBonus, cloutBonus, auraBonus, mentalBonus } = bonuses;
+
+  result.yieldCash = Math.floor(result.yieldCash * (1 + cashBonus / 100));
+  result.yieldClout = Math.floor(result.yieldClout * (1 + cloutBonus / 100));
+  result.yieldAura = Math.floor(result.yieldAura * (1 + auraBonus / 100));
+
+  if (result.mentalHit < 0) {
+    // Reduce mental drain
+    result.mentalHit = Math.ceil(result.mentalHit * (1 - mentalBonus / 100));
+  } else if (result.mentalHit > 0) {
+    // Increase mental recovery
+    result.mentalHit = Math.floor(result.mentalHit * (1 + mentalBonus / 100));
+  }
+};
+
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
   pendingUpdate: PendingUpdate | null;
@@ -209,6 +252,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       state.pl.mentalShieldTurns
     );
 
+    // Apply Flex Asset Bonuses
+    applyFlexBonuses(result, calculateFlexBonuses(state.pl));
+
     if (state.pl.bag < result.cost) return { success: false, message: `Need $${result.cost.toLocaleString()}` };
 
     // Backup if spending > 10%
@@ -393,6 +439,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       minigameMultiplier,
       forceSuccess
     );
+
+    // Apply Flex Asset Bonuses
+    applyFlexBonuses(result, calculateFlexBonuses(state.pl));
 
     const newBag = state.pl.bag - result.cost + result.yieldCash;
     const newDynamicPassives = { ...state.pl.dynamicPassives };
@@ -683,6 +732,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       true,
       state.pl.mentalShieldTurns
     );
+
+    // Apply Flex Asset Bonuses
+    applyFlexBonuses(result, calculateFlexBonuses(state.pl));
 
     if (state.pl.bag < result.cost) return false;
 
