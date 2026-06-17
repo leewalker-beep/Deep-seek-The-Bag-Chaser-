@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
 
-interface ShakeForHypeProps {
+interface PresidentialCampaignProps {
   onComplete: (multiplier: number) => void;
 }
 
-export const ShakeForHype: React.FC<ShakeForHypeProps> = ({ onComplete }) => {
+export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onComplete }) => {
   const [hype, setHype] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
@@ -34,17 +34,17 @@ export const ShakeForHype: React.FC<ShakeForHypeProps> = ({ onComplete }) => {
   }, [gameActive]);
 
   const requestPermission = async () => {
-    const startAction = () => {
-        setPermissionGranted(true);
-        setGameActive(true);
-        window.addEventListener('devicemotion', handleMotion);
+    const DeviceMotion = (window.DeviceMotionEvent as unknown) as {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
     };
 
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+    if (typeof DeviceMotion.requestPermission === 'function') {
       try {
-        const response = await (DeviceMotionEvent as any).requestPermission();
+        const response = await DeviceMotion.requestPermission();
         if (response === 'granted') {
-          startAction();
+          setPermissionGranted(true);
+          setGameActive(true);
+          window.addEventListener('devicemotion', handleMotion);
         } else {
           setPermissionGranted(false);
           setGameActive(true);
@@ -54,7 +54,14 @@ export const ShakeForHype: React.FC<ShakeForHypeProps> = ({ onComplete }) => {
         setGameActive(true);
       }
     } else {
-      startAction();
+      if (window.DeviceMotionEvent) {
+         setPermissionGranted(true);
+         setGameActive(true);
+         window.addEventListener('devicemotion', handleMotion);
+      } else {
+         setPermissionGranted(false);
+         setGameActive(true);
+      }
     }
   };
 

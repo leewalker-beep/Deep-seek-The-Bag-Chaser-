@@ -20,11 +20,11 @@ const TOPICS: Topic[] = [
   { id: 10, label: 'Dusting the Shelves', isViral: false },
 ];
 
-interface SwipeUpViralProps {
+interface ContentCreationProps {
   onComplete: (multiplier: number) => void;
 }
 
-export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
+export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) => {
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicIndex, setTopicIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -65,10 +65,10 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
     }
   }, [topicIndex, shuffledTopics, gameActive, endGame]);
 
-  const handleAction = (isSwipedUp: boolean) => {
+  const handleAction = (isSwiped: boolean) => {
     if (!gameActive || !currentTopic || result !== null) return;
 
-    const isCorrect = (isSwipedUp && currentTopic.isViral) || (!isSwipedUp && !currentTopic.isViral);
+    const isCorrect = (isSwiped && currentTopic.isViral) || (!isSwiped && !currentTopic.isViral);
     if (isCorrect) {
       setScore(s => s + 1);
       setResult('correct');
@@ -91,14 +91,14 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
   const onTouchMove = (e: React.TouchEvent) => {
     if (touchStart.current !== null) {
       const diff = e.targetTouches[0].clientY - touchStart.current;
-      setOffsetY(Math.min(0, Math.max(diff, -150)));
+      setOffsetY(Math.max(-150, Math.min(150, diff)));
     }
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current === null) return;
     const diff = e.changedTouches[0].clientY - touchStart.current;
-    if (diff < -50) {
+    if (Math.abs(diff) > 50) {
       handleAction(true);
     } else {
       setOffsetY(0);
@@ -125,7 +125,7 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
             key={topicIndex}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1, y: offsetY }}
-            exit={{ y: offsetY < -50 ? -300 : 0, opacity: 0 }}
+            exit={{ y: offsetY < -50 ? -300 : offsetY > 50 ? 300 : 0, opacity: 0 }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -145,7 +145,7 @@ export const SwipeUpViral: React.FC<SwipeUpViralProps> = ({ onComplete }) => {
       <div className="absolute bottom-6 w-full flex flex-col items-center gap-2 px-6">
         <div className="flex justify-between w-full opacity-50">
            <div className="flex flex-col items-center gap-1">
-              <motion.div animate={{ y: [-5, 0, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">⬆️</motion.div>
+              <motion.div animate={{ y: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">↕️</motion.div>
               <span className="text-[8px] font-black text-purple-400 uppercase">SWIPE FOR VIRAL</span>
            </div>
            <div className="flex flex-col items-center gap-1">

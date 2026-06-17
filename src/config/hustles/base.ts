@@ -172,12 +172,12 @@ HUSTLES.r_ghost_mode = {
   tier: 'MUD',
   icon: '👻',
   description: 'Low-heat operations',
-  miniGame: 'GhostTap',
+  miniGame: 'GhostMode',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'], miniGame: 'GhostTap' },
-    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'], miniGame: 'GhostTap' },
-    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'GhostTap' }
+    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'], miniGame: 'GhostMode' },
+    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'], miniGame: 'GhostMode' },
+    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'GhostMode' }
   },
 };
 
@@ -303,12 +303,12 @@ HUSTLES.cc = {
   tier: 'STREET',
   icon: '📱',
   description: 'Build your audience',
-  miniGame: 'SwipeUpViral',
+  miniGame: 'ContentCreation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'SwipeUpViral' },
-    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 2000, yieldClout: 300, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'SwipeUpViral' },
-    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'SwipeUpViral' },
+    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'ContentCreation' },
+    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 2000, yieldClout: 300, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'ContentCreation' },
+    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'ContentCreation' },
   },
 };
 
@@ -425,7 +425,7 @@ HUSTLES.sw = {
   tier: 'STARTUP',
   icon: '👕',
   description: 'Building a global hype brand',
-  miniGame: 'StreetwearDesign',
+  miniGame: 'StreetwearMatch',
   hasPanel: true,
   panelType: 'STREETWEAR',
   startBranchId: 'l1',
@@ -813,14 +813,14 @@ HUSTLES.luxury_conglomerate = {
   miniGame: 'DragMerge'
 };
 
-// PRESIDENT Tier Hustles (Campaign: ShakeForHype)
+// PRESIDENT Tier Hustles (Campaign: PresidentialCampaign)
 HUSTLES.data_monopoly = {
   id: 'data_monopoly',
   name: 'Data Monopoly',
   tier: 'PRESIDENT',
   icon: '🔒',
   description: 'Own every byte of personal information',
-  miniGame: 'ShakeForHype',
+  miniGame: 'PresidentialCampaign',
   levels: [
     { level: 1, id: 'l1', cost: 500000000, yieldCash: 100000000, yieldClout: 3000, yieldAura: 1000, mentalHit: -60, cloutReq: 2000, auraReq: 1500, passiveYield: 50000000 },
   ]
@@ -832,7 +832,7 @@ HUSTLES.central_bank_play = {
   tier: 'PRESIDENT',
   icon: '🏦',
   description: 'Influence interest rates for profit',
-  miniGame: 'ShakeForHype',
+  miniGame: 'PresidentialCampaign',
   levels: [
     { level: 1, id: 'l1', cost: 1000000000, yieldCash: 500000000, yieldClout: 4000, yieldAura: 2000, mentalHit: -70, cloutReq: 3000, auraReq: 2000 },
   ]
@@ -844,7 +844,7 @@ HUSTLES.legacy_fund = {
   tier: 'PRESIDENT',
   icon: '🏛️',
   description: 'Ensuring your name lasts forever',
-  miniGame: 'ShakeForHype',
+  miniGame: 'PresidentialCampaign',
   levels: [
     { level: 1, id: 'l1', cost: 2000000000, yieldCash: 0, yieldClout: 5000, yieldAura: 10000, mentalHit: 100, cloutReq: 5000, auraReq: 5000 },
   ]
@@ -856,7 +856,7 @@ HUSTLES.president_campaign = {
   tier: 'PRESIDENT',
   icon: '🇺🇸',
   description: 'Run for the highest office in the land',
-  miniGame: 'ShakeForHype',
+  miniGame: 'PresidentialCampaign',
   hasPanel: true,
   panelType: 'PRESIDENT_CAMPAIGN',
   levels: [

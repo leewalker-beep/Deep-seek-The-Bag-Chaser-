@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface StreetwearDesignProps {
+interface StreetwearMatchProps {
+  level?: number;
   onComplete: (multiplier: number) => void;
 }
 
@@ -14,19 +15,23 @@ const COLORS = [
   { name: 'Pink', hex: '#ec4899' },
 ];
 
-const PARTS = ['Hat', 'Shirt', 'Pants'];
+const PARTS_LIST = ['Hat', 'Shirt', 'Pants', 'Shoes', 'Hoodie'];
 
-export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }) => {
+export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onComplete }) => {
+  const partsCount = level === 1 ? 2 : level === 2 ? 3 : level === 3 ? 4 : 5;
+  const parts = PARTS_LIST.slice(0, partsCount);
+
   const [targetColors, setTargetColors] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<(string | null)[]>([null, null, null]);
+  const [selectedColors, setSelectedColors] = useState<(string | null)[]>(new Array(partsCount).fill(null));
+  const [mistakes, setMistakes] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [feedback, setFeedback] = useState<'match' | null>(null);
 
   useEffect(() => {
     // Generate random target colors
-    const targets = PARTS.map(() => COLORS[Math.floor(Math.random() * COLORS.length)].hex);
+    const targets = parts.map(() => COLORS[Math.floor(Math.random() * COLORS.length)].hex);
     setTargetColors(targets);
-  }, []);
+  }, [level]);
 
   const handleSelectColor = (partIndex: number, colorHex: string) => {
     if (!gameActive) return;
@@ -38,22 +43,29 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
         setFeedback('match');
         setTimeout(() => setFeedback(null), 200);
         if (navigator.vibrate) navigator.vibrate(20);
+    } else {
+        if (level === 5) {
+            setMistakes(m => m + 1);
+        }
     }
   };
 
   const handleFinish = () => {
     setGameActive(false);
-    let matches = 0;
+    let currentMistakes = mistakes;
     selectedColors.forEach((color, i) => {
-      if (color === targetColors[i]) matches++;
+      if (color !== targetColors[i]) {
+          if (level < 5) currentMistakes++;
+      }
     });
 
     let multiplier = 0.5;
-    if (matches === 3) multiplier = 3.0;
-    else if (matches === 2) multiplier = 1.5;
-    else if (matches === 1) multiplier = 1.0;
+    if (currentMistakes === 0) multiplier = 3.0;
+    else if (currentMistakes === 1) multiplier = 2.0;
+    else if (currentMistakes === 2) multiplier = 1.0;
+    else multiplier = 0.5;
 
-    if (navigator.vibrate) navigator.vibrate(matches === 3 ? 100 : 50);
+    if (navigator.vibrate) navigator.vibrate(currentMistakes === 0 ? 100 : 50);
     setTimeout(() => onComplete(multiplier), 1000);
   };
 
@@ -84,7 +96,7 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
                     className="w-10 h-10 rounded-xl border-2 border-white/20 shadow-lg"
                     style={{ backgroundColor: color }}
                 />
-                <span className="text-[10px] text-slate-400 uppercase font-black">{PARTS[i]}</span>
+                <span className="text-[10px] text-slate-400 uppercase font-black">{parts[i]}</span>
               </div>
             ))}
           </div>
@@ -97,7 +109,7 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
         <div className="text-center">
           <div className="text-[10px] text-slate-500 font-black uppercase mb-4 tracking-widest">YOUR BRAND</div>
           <div className="space-y-4">
-            {PARTS.map((part, i) => (
+            {parts.map((part, i) => (
               <div key={part} className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-xl border-2 transition-all duration-300 ${
@@ -117,8 +129,14 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
 
       {gameActive && (
         <div className="w-full max-w-sm px-6">
-          <div className="grid grid-cols-3 gap-6 mb-10">
-            {PARTS.map((part, partIndex) => (
+          {level === 5 && (
+            <div className="text-center mb-4">
+                <div className="text-[10px] text-red-500 font-black uppercase tracking-widest">PENALTY MODE: MISTAKES TRACKED</div>
+                <div className="text-2xl font-black text-red-600">{mistakes}</div>
+            </div>
+          )}
+          <div className={`grid ${partsCount > 3 ? 'grid-cols-5' : 'grid-cols-3'} gap-4 mb-10`}>
+            {parts.map((part, partIndex) => (
               <div key={part} className="flex flex-col items-center gap-3">
                 <div className="text-[8px] text-slate-500 uppercase font-black tracking-widest">{part}</div>
                 <div className="grid grid-cols-2 gap-2">
@@ -159,7 +177,8 @@ export const StreetwearDesign: React.FC<StreetwearDesignProps> = ({ onComplete }
             <div className="text-7xl mb-6">✨</div>
             <div className="text-3xl font-black text-white uppercase italic tracking-tighter">Collection Finalized</div>
             <div className="text-emerald-500 font-black text-sm uppercase tracking-widest mt-2">
-                {selectedColors.filter((c, i) => c === targetColors[i]).length}/3 MATCHED
+                {selectedColors.filter((c, i) => c === targetColors[i]).length}/{partsCount} MATCHED
+                {level === 5 && ` • ${mistakes} PENALTIES`}
             </div>
           </motion.div>
         )}

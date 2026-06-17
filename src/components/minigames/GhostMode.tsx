@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
 
-interface GhostTapProps {
+interface GhostModeProps {
+  level?: number;
   onComplete: (multiplier: number) => void;
 }
 
-export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
+export const GhostMode: React.FC<GhostModeProps> = ({ level = 1, onComplete }) => {
   const [targets, setTargets] = useState<{ id: number; top: number; left: number }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -16,6 +17,9 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
 
   useEffect(() => {
     if (!gameActive) return;
+
+    const speedMultiplier = 1 + (level - 1) * 0.3;
+    const spawnRate = 800 / speedMultiplier;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -36,13 +40,13 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
           left: Math.random() * 70 + 15
         }];
       });
-    }, 800);
+    }, spawnRate);
 
     return () => {
       clearInterval(timer);
       clearInterval(spawner);
     };
-  }, [gameActive]);
+  }, [gameActive, level]);
 
   const handleTap = (id: number) => {
     if (!gameActive) return;
@@ -55,15 +59,16 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
 
   useEffect(() => {
     if (!gameActive) {
+      const targetScore = 12 + (level - 1) * 2;
       let multiplier = 0.5;
-      if (score >= 12) multiplier = 3.0;
-      else if (score >= 8) multiplier = 2.0;
-      else if (score >= 4) multiplier = 1.0;
+      if (score >= targetScore) multiplier = 3.0;
+      else if (score >= targetScore * 0.6) multiplier = 2.0;
+      else if (score >= targetScore * 0.3) multiplier = 1.0;
 
       const timeout = setTimeout(() => onComplete(multiplier), 1000);
       return () => clearTimeout(timeout);
     }
-  }, [gameActive, score, onComplete]);
+  }, [gameActive, score, level, onComplete]);
 
   return (
     <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${feedback ? 'bg-purple-950/20' : 'bg-black'}`}>
@@ -101,7 +106,7 @@ export const GhostTap: React.FC<GhostTapProps> = ({ onComplete }) => {
           colorClass="bg-purple-500"
         />
         <div className="mt-2 text-center text-[10px] text-slate-600 font-black uppercase">
-          Target: 12+ for 3x Yield
+          Target: {12 + (level - 1) * 2}+ for 3x Yield
         </div>
       </div>
     </div>

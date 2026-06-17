@@ -1,5 +1,5 @@
 import React from 'react';
-import { StreetwearDesign } from '../../minigames/StreetwearDesign';
+import { StreetwearMatch } from '../../minigames/StreetwearMatch';
 import { useGameStore } from '../../../store/gameStore';
 import type { Hustle } from '../../../config/hustles/base';
 
@@ -38,7 +38,10 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
           </p>
         </div>
 
-        <StreetwearDesign onComplete={handleComplete} />
+        <StreetwearMatch
+          level={useGameStore.getState().pl.hustleLevels[hustle.id] || 1}
+          onComplete={handleComplete}
+        />
       </div>
 
       <button
