@@ -37,8 +37,30 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="font-bold text-white">
               {metadata.hustleName}
             </div>
-            <div className={`text-[10px] mt-1 font-mono ${metadata.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {metadata.profit >= 0 ? '+' : ''}${metadata.profit.toLocaleString()}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 font-mono text-[9px]">
+              <div className={`${metadata.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                CASH: {metadata.profit >= 0 ? '+' : ''}${metadata.profit.toLocaleString()}
+              </div>
+              {metadata.yieldClout !== 0 && (
+                <div className="text-blue-400">
+                  CLOUT: {metadata.yieldClout > 0 ? '+' : ''}{metadata.yieldClout}
+                </div>
+              )}
+              {metadata.yieldAura !== 0 && (
+                <div className="text-purple-400">
+                  AURA: {metadata.yieldAura > 0 ? '+' : ''}{metadata.yieldAura}
+                </div>
+              )}
+              {metadata.mentalHit !== 0 && (
+                <div className={metadata.mentalHit > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                  MENTAL: {metadata.mentalHit > 0 ? '+' : ''}{metadata.mentalHit}%
+                </div>
+              )}
+              {metadata.heatHit !== 0 && (
+                <div className="text-orange-400">
+                  HEAT: {metadata.heatHit > 0 ? '+' : ''}{metadata.heatHit}%
+                </div>
+              )}
             </div>
           </div>
         );

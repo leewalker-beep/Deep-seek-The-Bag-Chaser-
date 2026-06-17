@@ -336,6 +336,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleName: hustle.name,
       success: true,
       profit: result.yieldCash - result.cost,
+      yieldClout: result.yieldClout,
+      yieldAura: result.yieldAura,
+      mentalHit: result.mentalHit,
+      heatHit: result.heatHit,
       branchId,
       miniGame: hustle.miniGame || branch.miniGame,
       multiplier: 1.0
@@ -594,6 +598,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         hustleName: hustle.name,
         success: result.success,
         profit: result.yieldCash - result.cost,
+        yieldClout: result.yieldClout,
+        yieldAura: result.yieldAura,
+        mentalHit: result.mentalHit,
+        heatHit: result.heatHit,
         level: currentLevel,
         miniGame: hustle.miniGame || levelData.miniGame,
         multiplier: minigameMultiplier
