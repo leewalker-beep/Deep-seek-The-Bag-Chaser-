@@ -13,7 +13,7 @@ import { EndingModal } from './components/EndingModal';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import { SwipeOrder } from './components/minigames/SwipeOrder';
-import { SwipeUpViral } from './components/minigames/SwipeUpViral';
+import { ContentCreation } from './components/minigames/ContentCreation';
 import { SwipeAuthentic } from './components/minigames/SwipeAuthentic';
 import { BeatSequence } from './components/minigames/BeatSequence';
 import { TechRepairDrag } from './components/minigames/TechRepairDrag';
@@ -39,9 +39,9 @@ import { StruggleMash } from './components/minigames/StruggleMash';
 import { LaborBuild } from './components/minigames/LaborBuild';
 import { TrafficDodge } from './components/minigames/TrafficDodge';
 import { PlasmaDonation } from './components/minigames/PlasmaDonation';
-import { GhostTap } from './components/minigames/GhostTap';
+import { GhostMode } from './components/minigames/GhostMode';
 import { StreetEats } from './components/minigames/StreetEats';
-import { StreetwearDesign } from './components/minigames/StreetwearDesign';
+import { StreetwearMatch } from './components/minigames/StreetwearMatch';
 import { HashtagTap } from './components/minigames/HashtagTap';
 import { RunnerRoute } from './components/minigames/RunnerRoute';
 import { MemeCoinPump } from './components/minigames/MemeCoinPump';
@@ -75,7 +75,7 @@ import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
 import { PresidentDashboard } from './components/PresidentDashboard';
-import { ShakeForHype } from './components/minigames/ShakeForHype';
+import { PresidentialCampaign } from './components/minigames/PresidentialCampaign';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -539,7 +539,7 @@ function App() {
                 };
 
                 if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} />;
-                if (activeMiniGame === 'SwipeUpViral') return <SwipeUpViral onComplete={onComplete} />;
+                if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} />;
                 if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} />;
                 if (activeMiniGame === 'BeatSequence') return <BeatSequence onComplete={onComplete} />;
                 if (activeMiniGame === 'TechRepairDrag') return <TechRepairDrag onComplete={onComplete} />;
@@ -561,11 +561,23 @@ function App() {
                 if (activeMiniGame === 'LaborBuild') return <LaborBuild onComplete={onComplete} />;
                 if (activeMiniGame === 'TrafficDodge') return <TrafficDodge onComplete={onComplete} />;
                 if (activeMiniGame === 'PlasmaDonation') return <PlasmaDonation onComplete={onComplete} />;
-                if (activeMiniGame === 'GhostTap') return <GhostTap onComplete={onComplete} />;
+                if (activeMiniGame === 'GhostTap' || activeMiniGame === 'GhostMode') return (
+                  <GhostMode
+                    key={pl.hustleLevels[hustle.id] || 1}
+                    level={pl.hustleLevels[hustle.id] || 1}
+                    onComplete={onComplete}
+                  />
+                );
                 if (activeMiniGame === 'StreetEats') return <StreetEats onComplete={onComplete} />;
                 if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} />;
                 if (activeMiniGame === 'SequenceRecall') return <SequenceRecall onComplete={onComplete} />;
-                if (activeMiniGame === 'StreetwearDesign') return <StreetwearDesign onComplete={onComplete} />;
+                if (activeMiniGame === 'StreetwearDesign' || activeMiniGame === 'StreetwearMatch') return (
+                  <StreetwearMatch
+                    key={pl.hustleLevels[hustle.id] || 1}
+                    level={pl.hustleLevels[hustle.id] || 1}
+                    onComplete={onComplete}
+                  />
+                );
                 if (activeMiniGame === 'HashtagTap') return <HashtagTap onComplete={onComplete} />;
                 if (activeMiniGame === 'RunnerRoute') return <RunnerRoute onComplete={onComplete} />;
                 if (activeMiniGame === 'MemeCoinPump') return <MemeCoinPump onComplete={onComplete} />;
@@ -597,8 +609,8 @@ function App() {
                   );
                 }
 
-                if (activeMiniGame === 'ShakeForHype') {
-                  return <ShakeForHype onComplete={onComplete} />;
+                if (activeMiniGame === 'ShakeForHype' || activeMiniGame === 'PresidentialCampaign') {
+                  return <PresidentialCampaign onComplete={onComplete} />;
                 }
 
                 if (activeMiniGame === 'BoardroomBattle') {

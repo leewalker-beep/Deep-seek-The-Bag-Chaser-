@@ -38,9 +38,9 @@
 }
 
 .startup-tier {
-  background: linear-gradient(to bottom, #f8fafc, #eff6ff);
+  background: #0f172a;
   font-family: 'Geist', 'Inter', sans-serif;
-  color: #0f172a;
+  color: #f8fafc;
 }
 
 .corporate-tier {
