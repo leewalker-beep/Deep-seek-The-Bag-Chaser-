@@ -35,12 +35,21 @@ export const HoldHype: React.FC<HoldHypeProps> = ({ onComplete }) => {
     setIsHolding(false);
 
     // Target is exactly 2000ms (2 seconds)
+    const diff = Math.abs(2000 - elapsed);
     let multiplier = 0.5;
 
-    if (elapsed >= 1800 && elapsed <= 2200) {
-      multiplier = 2.0;
+    if (diff <= 50) {
+      multiplier = 4.0;
       setFeedback('success');
       if (navigator.vibrate) navigator.vibrate(100);
+    } else if (diff <= 100) {
+      multiplier = 2.5;
+      setFeedback('success');
+      if (navigator.vibrate) navigator.vibrate(50);
+    } else if (diff <= 300) {
+      multiplier = 1.5;
+      setFeedback('success');
+      if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setFeedback('fail');
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);

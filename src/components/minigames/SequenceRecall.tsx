@@ -53,7 +53,11 @@ export const SequenceRecall: React.FC<SequenceRecallProps> = ({ onComplete }) =>
       setFeedback('fail');
       setMessage('WRONG SEQUENCE!');
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-      const multiplier = Math.max(0.5, 0.5 + (round - 1) * 0.5);
+
+      let multiplier = 0.5;
+      if (round === 2) multiplier = 1.5;
+      else if (round === 3) multiplier = 2.5;
+
       setTimeout(() => onComplete(multiplier), 1000);
       return;
     }
@@ -66,7 +70,7 @@ export const SequenceRecall: React.FC<SequenceRecallProps> = ({ onComplete }) =>
       if (round >= 3) {
         setMessage('PERFECT RECALL!');
         if (navigator.vibrate) navigator.vibrate(100);
-        setTimeout(() => onComplete(3.0), 1000);
+        setTimeout(() => onComplete(4.0), 1000);
       } else {
         setMessage('GOOD! Next level...');
         setTimeout(() => {

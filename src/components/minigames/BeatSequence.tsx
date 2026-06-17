@@ -60,7 +60,7 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
     if (newUserSequence.length === sequence.length) {
       if (round === totalRounds) {
         if (navigator.vibrate) navigator.vibrate(100);
-        setTimeout(() => onComplete(3.0), 500);
+        setTimeout(() => onComplete(4.0), 500);
       } else {
         setRound(prev => prev + 1);
         setTimeout(() => startNewRound(round + 1), 500);
@@ -75,7 +75,12 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
         <h2 className="text-3xl font-black text-red-500 mb-2 italic tracking-tighter">OFF BEAT</h2>
         <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">Rhythm lost at round {round}</p>
         <button
-          onClick={() => onComplete(0.5)}
+          onClick={() => {
+            let multiplier = 0.5;
+            if (round === 2) multiplier = 1.2;
+            else if (round === 3) multiplier = 2.0;
+            onComplete(multiplier);
+          }}
           className="px-10 py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-500 transition-all uppercase tracking-tighter border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
         >
           CUT THE TRACK
