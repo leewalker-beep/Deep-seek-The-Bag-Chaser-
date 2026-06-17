@@ -6,6 +6,7 @@ interface PinchToInspectProps {
 }
 
 export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete }) => {
+  const [startTime] = useState(() => Date.now());
   const [zoom, setZoom] = useState(1);
   const [gameActive, setGameActive] = useState(true);
   const lastDistanceRef = useRef<number | null>(null);
@@ -13,9 +14,16 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete }) =>
 
   const handleComplete = useCallback(() => {
     setGameActive(false);
+    const elapsed = (Date.now() - startTime) / 1000;
+
+    let multiplier = 1.0;
+    if (elapsed < 3) multiplier = 4.0;
+    else if (elapsed < 6) multiplier = 2.0;
+    else multiplier = 1.0;
+
     if (navigator.vibrate) navigator.vibrate(100);
-    onComplete(3.0);
-  }, [onComplete]);
+    onComplete(multiplier);
+  }, [onComplete, startTime]);
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!gameActive) return;

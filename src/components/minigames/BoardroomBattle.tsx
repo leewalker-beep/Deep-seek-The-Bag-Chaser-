@@ -87,7 +87,12 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   useEffect(() => {
     if (gameState === 'ENDED') {
       const won = currentPlayerBid > currentRivalBid;
-      let multiplier = won ? 4.0 : 0.5;
+      let multiplier = 0.5;
+
+      if (won) {
+        multiplier = Math.min(4.0, 2.0 + (timeLeft / 2));
+      }
+
       if (navigator.vibrate) navigator.vibrate(won ? 100 : 50);
 
       const timer = window.setTimeout(() => {
@@ -95,7 +100,7 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [gameState, currentPlayerBid, currentRivalBid, onComplete]);
+  }, [gameState, currentPlayerBid, currentRivalBid, onComplete, timeLeft]);
 
   const handleTap = () => {
     if (gameState !== 'PLAYING') return;

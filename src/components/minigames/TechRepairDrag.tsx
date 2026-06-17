@@ -21,6 +21,7 @@ const PARTS: Part[] = [
 ];
 
 export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete }) => {
+  const [startTime] = useState(() => Date.now());
   const [assembled, setAssembled] = useState<string[]>([]);
   const [activePart, setActivePart] = useState<Part | null>(null);
   const [feedback, setFeedback] = useState<'success' | null>(null);
@@ -46,8 +47,14 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete }) =>
           if (navigator.vibrate) navigator.vibrate(20);
 
           if (newAssembled.length === PARTS.length) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            let multiplier = 0.7;
+            if (elapsed < 5) multiplier = 4.0;
+            else if (elapsed < 12) multiplier = 2.0;
+            else multiplier = 0.7;
+
             if (navigator.vibrate) navigator.vibrate(100);
-            setTimeout(() => onComplete(3.0), 1000);
+            setTimeout(() => onComplete(multiplier), 1000);
           }
         }
       }
