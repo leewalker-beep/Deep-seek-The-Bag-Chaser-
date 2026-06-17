@@ -80,13 +80,13 @@ HUSTLES.r_labor = {
       id: 'l2b',
       name: 'Rent Portfolio',
       cost: 50000,
-      yieldCash: 5000,
+      yieldCash: 57000,
       yieldClout: 10,
       yieldAura: 5,
       mentalHit: -5,
       cloutReq: 50,
       auraReq: 25,
-      passiveYield: 1500,
+      passiveYield: 1000,
       nextBranches: ['l3a'],
       isRepeatable: true,
       maxRepeat: 10,
@@ -306,9 +306,9 @@ HUSTLES.cc = {
   miniGame: 'ContentCreation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 0, yieldClout: 100, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'ContentCreation' },
-    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 2000, yieldClout: 300, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'ContentCreation' },
-    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 15000, yieldClout: 800, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'ContentCreation' },
+    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 600, yieldClout: 80, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'ContentCreation' },
+    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 3000, yieldClout: 240, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'ContentCreation' },
+    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 22500, yieldClout: 640, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'ContentCreation' },
   },
 };
 
@@ -792,9 +792,9 @@ HUSTLES.media_empire = {
   icon: '📺',
   description: 'Control the narrative across TV and streaming',
   levels: [
-    { level: 1, cost: 75000000, yieldCash: 40000000, yieldClout: 500, yieldAura: 150, mentalHit: -15, cloutReq: 800, auraReq: 400, passiveYield: 8000000 },
-    { level: 2, cost: 150000000, yieldCash: 80000000, yieldClout: 1000, yieldAura: 300, mentalHit: -20, cloutReq: 1200, auraReq: 600, passiveYield: 15000000 },
-    { level: 3, cost: 300000000, yieldCash: 160000000, yieldClout: 2000, yieldAura: 600, mentalHit: -25, cloutReq: 1600, auraReq: 800, passiveYield: 30000000 }
+    { level: 1, cost: 75000000, yieldCash: 24000000, yieldClout: 500, yieldAura: 150, mentalHit: -15, cloutReq: 800, auraReq: 400, passiveYield: 4800000 },
+    { level: 2, cost: 150000000, yieldCash: 48000000, yieldClout: 1000, yieldAura: 300, mentalHit: -20, cloutReq: 1200, auraReq: 600, passiveYield: 9000000 },
+    { level: 3, cost: 300000000, yieldCash: 96000000, yieldClout: 2000, yieldAura: 600, mentalHit: -25, cloutReq: 1600, auraReq: 800, passiveYield: 18000000 }
   ],
   miniGame: 'TapApprove'
 };
@@ -806,9 +806,9 @@ HUSTLES.luxury_conglomerate = {
   icon: '💎',
   description: 'Acquire high-end fashion brands',
   levels: [
-    { level: 1, cost: 50000000, yieldCash: 25000000, yieldClout: 300, yieldAura: 200, mentalHit: -12, cloutReq: 700, auraReq: 350, passiveYield: 5000000 },
-    { level: 2, cost: 100000000, yieldCash: 50000000, yieldClout: 600, yieldAura: 400, mentalHit: -18, cloutReq: 1000, auraReq: 500, passiveYield: 10000000 },
-    { level: 3, cost: 200000000, yieldCash: 100000000, yieldClout: 1200, yieldAura: 800, mentalHit: -22, cloutReq: 1400, auraReq: 700, passiveYield: 20000000 }
+    { level: 1, cost: 50000000, yieldCash: 15000000, yieldClout: 300, yieldAura: 200, mentalHit: -12, cloutReq: 700, auraReq: 350, passiveYield: 3000000 },
+    { level: 2, cost: 100000000, yieldCash: 30000000, yieldClout: 600, yieldAura: 400, mentalHit: -18, cloutReq: 1000, auraReq: 500, passiveYield: 6000000 },
+    { level: 3, cost: 200000000, yieldCash: 60000000, yieldClout: 1200, yieldAura: 800, mentalHit: -22, cloutReq: 1400, auraReq: 700, passiveYield: 12000000 }
   ],
   miniGame: 'DragMerge'
 };

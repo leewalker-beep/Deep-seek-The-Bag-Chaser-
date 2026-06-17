@@ -15,13 +15,13 @@ export const PROGRESSION_ORDER: Tier[] = ['MUD', 'STREET', 'STARTUP', 'CORPORATE
 
 export const getTierMax = (tier: string): { clout: number; aura: number } => {
   switch (tier) {
-    case 'MUD': return { clout: 50, aura: 50 };
-    case 'STREET': return { clout: 100, aura: 100 };
-    case 'STARTUP': return { clout: 200, aura: 200 };
-    case 'CORPORATE': return { clout: 500, aura: 500 };
-    case 'ELITE': return { clout: 1000, aura: 1000 };
-    case 'MOGUL': return { clout: 2000, aura: 2000 };
-    case 'PRESIDENT': return { clout: 5000, aura: 5000 };
-    default: return { clout: 50, aura: 50 };
+    case 'MUD': return { clout: 63, aura: 63 };
+    case 'STREET': return { clout: 125, aura: 125 };
+    case 'STARTUP': return { clout: 250, aura: 250 };
+    case 'CORPORATE': return { clout: 625, aura: 625 };
+    case 'ELITE': return { clout: 1250, aura: 1250 };
+    case 'MOGUL': return { clout: 2500, aura: 2500 };
+    case 'PRESIDENT': return { clout: 6250, aura: 6250 };
+    default: return { clout: 63, aura: 63 };
   }
 };
