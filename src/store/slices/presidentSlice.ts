@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, CabinetMember } from '../../types/game';
+import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
 import { EXECUTIVE_ORDERS, generateCrisis } from '../../engine/presidentEngine';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
@@ -41,12 +41,29 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
     });
 
+    const diaryEntry = {
+      id: Math.random().toString(36).substring(7),
+      month: state.pl.presidentMonth,
+      event: order.name,
+      outcome: `Successfully issued the ${order.name}. Approval adjusted by ${approvalImpact > 0 ? '+' : ''}${approvalImpact}%.`,
+      type: 'ORDER' as const
+    };
+
+    const newDemographics = { ...state.pl.demographicApproval };
+    if (order.impact.demographics) {
+      Object.entries(order.impact.demographics).forEach(([key, val]) => {
+        newDemographics[key] = (newDemographics[key] || 50) + val;
+      });
+    }
+
     const newPl = {
       ...state.pl,
       bag: state.pl.bag - (order.cost.cash || 0),
       clout: state.pl.clout - (order.cost.clout || 0),
       aura: state.pl.aura - (order.cost.aura || 0),
       approvalRating: state.pl.approvalRating + approvalImpact,
+      demographicApproval: newDemographics,
+      presidentialDiary: [diaryEntry, ...state.pl.presidentialDiary],
       heat: state.pl.heat + (order.impact.heat || 0),
       dynamicPassives: {
         ...state.pl.dynamicPassives,
@@ -55,7 +72,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     };
 
     set({ pl: enforceStatCaps(newPl) });
-    state.addTickerMessage(`Executive Order Issued: ${order.name}`, 'text-blue-400');
+    state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
     state.logEvent('LAW_PASSED', { orderId, name: order.name });
   },
 
@@ -84,6 +101,14 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       return;
     }
 
+    const diaryEntry = {
+      id: Math.random().toString(36).substring(7),
+      month: state.pl.presidentMonth,
+      event: `Crisis Resolved: ${crisis.name}`,
+      outcome: `The administration successfully managed the ${crisis.name} through decisive action.`,
+      type: 'CRISIS' as const
+    };
+
     const newCrises = [...state.pl.activeCrises];
     newCrises.splice(crisisIndex, 1);
 
@@ -92,11 +117,12 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       bag: state.pl.bag - (crisis.resolutionCost.cash || 0),
       clout: state.pl.clout - (crisis.resolutionCost.clout || 0),
       aura: state.pl.aura - (crisis.resolutionCost.aura || 0),
-      activeCrises: newCrises
+      activeCrises: newCrises,
+      presidentialDiary: [diaryEntry, ...state.pl.presidentialDiary]
     };
 
     set({ pl: enforceStatCaps(newPl) });
-    state.addTickerMessage(`Crisis Resolved: ${crisis.name}`, 'text-emerald-400');
+    state.addTickerMessage(`NEWS: ${crisis.name} resolved by Oval Office`, 'text-emerald-400 font-bold');
     state.logEvent('SPECIAL_EVENT', { type: 'CRISIS_RESOLVED', crisisId, name: crisis.name });
   },
 
@@ -104,10 +130,41 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const state = get();
     const { pl, currentMarket } = state;
 
-    // 1. Apply unresolved crisis penalties
+    // 1. Manage Crises (Timers and Penalties)
     let approvalHit = 0;
-    pl.activeCrises.forEach(c => {
+    const updatedCrises: PresidentCrisis[] = pl.activeCrises.map(c => ({
+      ...c,
+      monthsRemaining: c.monthsRemaining !== undefined ? c.monthsRemaining - 1 : undefined
+    }));
+
+    const expiredCrises = updatedCrises.filter(c => c.monthsRemaining !== undefined && (c.monthsRemaining as number) <= 0);
+    const activeCrises = updatedCrises.filter(c => c.monthsRemaining === undefined || c.monthsRemaining > 0);
+    const newDiaryEntries = [...pl.presidentialDiary];
+
+    expiredCrises.forEach(c => {
+      approvalHit += (c.impact.approval * 1.5); // 50% extra penalty for expiration
+      newDiaryEntries.unshift({
+        id: Math.random().toString(36).substring(7),
+        month: pl.presidentMonth,
+        event: `CRISIS FAILURE: ${c.name}`,
+        outcome: `The administration failed to resolve ${c.name} in time. Massive approval hit.`,
+        type: 'CRISIS' as const
+      });
+      state.addTickerMessage(`DISASTER: ${c.name} worsens after administration inaction!`, 'text-red-500 font-black');
+    });
+
+    activeCrises.forEach(c => {
       approvalHit += c.impact.approval;
+    });
+
+    // Update demographics based on active crises
+    const newDemographics = { ...pl.demographicApproval };
+    activeCrises.forEach(c => {
+      if (c.impact.demographics) {
+        Object.entries(c.impact.demographics).forEach(([key, val]) => {
+          newDemographics[key] = (newDemographics[key] || 50) + val;
+        });
+      }
     });
 
     // Apply Cabinet Passive Bonuses
@@ -131,6 +188,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       clout: pl.clout + cabinetClout,
       aura: pl.aura + cabinetAura,
       approvalRating: pl.approvalRating + approvalHit + cabinetApproval,
+      demographicApproval: newDemographics,
+      presidentialDiary: newDiaryEntries,
+      activeCrises: activeCrises,
       presidentMonth: pl.presidentMonth + 1
     };
 

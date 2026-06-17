@@ -62,9 +62,9 @@
 }
 
 .president-tier {
-  background: linear-gradient(135deg, #1e3a8a 0%, #f1f5f9 50%, #b91c1c 100%);
+  background: #020617;
   font-family: 'Times New Roman', Times, serif;
-  color: #1e3a8a;
+  color: #f1f5f9;
 }
 
 .open-tier {
