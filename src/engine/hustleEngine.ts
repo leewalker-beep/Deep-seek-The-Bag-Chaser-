@@ -512,15 +512,17 @@ export const executeHustleAction = (
     const variance = 0.5 + Math.random(); // 0.5x to 1.5x
     result.yieldCash = Math.floor(result.yieldCash * variance);
   } else if (state.currentTier === 'ELITE') {
-    // Boardroom pressure: Higher mental hits but higher potential clout
-    result.mentalHit = Math.floor(result.mentalHit * 1.3);
+    // Boardroom pressure: Higher potential clout
+    result.mentalHit = Math.floor(result.mentalHit * 0.9);
     result.yieldClout = Math.floor(result.yieldClout * 1.2);
   } else if (state.currentTier === 'MOGUL') {
-    // Big Swings: Higher yield but much higher heat
-    result.yieldCash = Math.floor(result.yieldCash * 1.5);
+    // Big Swings: Yield rebalanced
+    result.mentalHit = Math.floor(result.mentalHit * 0.7);
+    result.yieldCash = Math.floor(result.yieldCash * 0.9);
     result.heatHit = Math.floor(result.heatHit * 1.5);
   } else if (state.currentTier === 'PRESIDENT') {
     // Campaign intensity: Aura acts as multiplier for Clout
+    result.mentalHit = Math.floor(result.mentalHit * 0.7);
     const auraBonus = 1 + (state.aura / 5000);
     result.yieldClout = Math.floor(result.yieldClout * auraBonus);
   }

@@ -12,8 +12,13 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
     currentAura = maxAura;
   }
 
+  const excessClout = Math.max(0, pl.clout - maxClout);
+  const excessAura = Math.max(0, currentAura - maxAura);
+  const overflowBagBonus = Math.floor((excessClout + excessAura) * 0.1);
+
   return {
     ...pl,
+    bag: pl.bag + overflowBagBonus,
     clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
     aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
     mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),

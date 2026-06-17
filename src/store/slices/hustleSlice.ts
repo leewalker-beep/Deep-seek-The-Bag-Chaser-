@@ -569,10 +569,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const finalStat = getDominantStat(cappedPl);
       const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
-      const savedEndings = JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]');
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
       if (!savedEndings.includes(ending.title)) {
         savedEndings.push(ending.title);
-        localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
       }
 
       get().logEvent('SPECIAL_EVENT', {

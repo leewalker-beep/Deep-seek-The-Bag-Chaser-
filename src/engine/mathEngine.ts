@@ -85,8 +85,14 @@ export function calculateHustleMath(
   yieldAura = Math.floor(Math.max(0, Math.min(1000, yieldAura)));
   mentalHit = Math.max(-100, Math.min(100, mentalHit));
 
+  // Music Production floor ($5k)
+  if (isSuccess && (hustleId === 'audio' || levelData.id?.includes('audio'))) {
+    yieldCash = Math.max(yieldCash, 5000);
+  }
+
   // Profit safety net
-  if (isSuccess && yieldCash < cost && cost > 0 && !hustleId.includes('vending')) {
+  const isRentPortfolio = hustleId === 'r_labor' && levelData.id === 'l2b';
+  if (isSuccess && yieldCash < cost && cost > 0 && !hustleId.includes('vending') && !isRentPortfolio) {
     console.warn(`Profit safety applied to ${hustleId}`);
     yieldCash = Math.floor(cost * 1.3);
   }

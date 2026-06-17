@@ -70,6 +70,7 @@ const ConfettiInternal: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
 };
 
 export const showConfetti = () => {
+  if (typeof document === 'undefined') return;
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
