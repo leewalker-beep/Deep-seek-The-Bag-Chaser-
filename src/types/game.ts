@@ -108,6 +108,7 @@ export interface PresidentCrisis {
   id: string;
   name: string;
   description: string;
+  monthsRemaining?: number;
   resolutionCost: {
     cash?: number;
     clout?: number;
@@ -115,6 +116,7 @@ export interface PresidentCrisis {
   };
   impact: {
     approval: number;
+    demographics?: Record<string, number>;
     cash?: number;
     clout?: number;
     aura?: number;
@@ -126,6 +128,7 @@ export interface ExecutiveOrder {
   id: string;
   name: string;
   description: string;
+  quotes?: Record<string, string>; // cabinetRoleId -> quote
   cost: {
     clout?: number;
     aura?: number;
@@ -133,6 +136,7 @@ export interface ExecutiveOrder {
   };
   impact: {
     approval: number;
+    demographics?: Record<string, number>;
     passiveCash?: number;
     heat?: number;
   };
@@ -208,6 +212,14 @@ export interface PlayerStats {
   campaignVP?: string;
   campaignDelegates?: number;
   approvalRating: number;
+  demographicApproval: Record<string, number>;
+  presidentialDiary: {
+    id: string;
+    month: number;
+    event: string;
+    outcome: string;
+    type: 'ORDER' | 'CRISIS' | 'ELECTION';
+  }[];
   presidentMonth: number;
   isSecondTerm: boolean;
   cabinet: Record<string, CabinetMember>;

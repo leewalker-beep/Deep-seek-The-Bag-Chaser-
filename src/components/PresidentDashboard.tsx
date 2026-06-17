@@ -1,139 +1,318 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CABINET_ROLES, EXECUTIVE_ORDERS } from '../engine/presidentEngine';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PresidentialNewsTicker } from './PresidentialNewsTicker';
+import { ConfirmationModal } from './ui/ConfirmationModal';
+import type { ExecutiveOrder, PresidentCrisis } from '../types/game';
 
 export const PresidentDashboard: React.FC = () => {
   const { pl, issueExecutiveOrder, appointCabinetMember, resolveCrisis, advancePresidentialMonth } = useGameStore();
+  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'DIARY' | 'POLLING'>('MANAGEMENT');
+  const [pendingOrder, setPendingOrder] = useState<ExecutiveOrder | null>(null);
+  const [pendingCrisis, setPendingCrisis] = useState<PresidentCrisis | null>(null);
 
   const approvalColor = pl.approvalRating > 60 ? 'text-emerald-400' : pl.approvalRating > 40 ? 'text-yellow-400' : 'text-red-400';
 
+  const headlines = pl.presidentialDiary.slice(0, 5).map(d => d.event);
+
+  const handleOrderClick = (order: ExecutiveOrder) => {
+    setPendingOrder(order);
+  };
+
+  const confirmOrder = () => {
+    if (pendingOrder) {
+      issueExecutiveOrder(pendingOrder.id);
+      setPendingOrder(null);
+    }
+  };
+
+  const confirmCrisis = () => {
+    if (pendingCrisis) {
+      resolveCrisis(pendingCrisis.id);
+      setPendingCrisis(null);
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-32">
+      {/* Background Decorative Element */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center overflow-hidden z-0">
+        <div className="w-[800px] h-[800px] border-[40px] border-white rounded-full flex items-center justify-center">
+          <div className="text-[400px] font-black">E</div>
+        </div>
+      </div>
+
+      <PresidentialNewsTicker headlines={headlines} />
+
       {/* Header Stats */}
-      <div className="bg-slate-900 border border-blue-500/30 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+      <div className="bg-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 relative z-10">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-2xl font-black tracking-tighter text-white">THE OVAL OFFICE</h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">United States of America</p>
+            <h1 className="text-3xl font-serif font-black tracking-tighter text-white">THE OVAL OFFICE</h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">United States of America</p>
           </div>
           <div className="text-right">
-            <div className={`text-3xl font-black ${approvalColor}`}>{pl.approvalRating}%</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase">Approval Rating</div>
+            <div className={`text-4xl font-serif font-black ${approvalColor}`}>{pl.approvalRating}%</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase">National Approval</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
           <div>
             <div className="text-[10px] text-slate-500 font-bold uppercase">Term Progress</div>
-            <div className="text-sm font-bold text-white">
-              {pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth} / 48 Months
+            <div className="text-sm font-bold text-white font-serif">
+              Month {pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth} of 48
             </div>
             <div className="w-full bg-slate-800 h-1 rounded-full mt-1 overflow-hidden">
               <div
-                className="bg-blue-500 h-full transition-all duration-1000"
+                className="bg-blue-500 h-full transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                 style={{ width: `${((pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth) / 48) * 100}%` }}
               />
             </div>
           </div>
           <div>
             <div className="text-[10px] text-slate-500 font-bold uppercase">Status</div>
-            <div className="text-sm font-bold text-blue-400">{pl.isSecondTerm ? 'Second Term' : 'First Term'}</div>
+            <div className="text-sm font-bold text-blue-400 uppercase tracking-widest">{pl.isSecondTerm ? 'Second Term' : 'First Term'}</div>
           </div>
         </div>
       </div>
 
-      {/* Crises Section */}
-      {pl.activeCrises.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-xs font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
-            <span className="animate-pulse">⚠️</span> NATIONAL EMERGENCIES
-          </h2>
-          {pl.activeCrises.map(crisis => (
-            <motion.div
-              key={crisis.id}
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="bg-red-950/20 border border-red-500/40 rounded-xl p-4"
-            >
-              <h3 className="text-sm font-bold text-red-400">{crisis.name}</h3>
-              <p className="text-xs text-slate-400 mb-3">{crisis.description}</p>
-              <button
-                onClick={() => resolveCrisis(crisis.id)}
-                className="w-full py-2 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase rounded-lg transition-all"
-              >
-                Resolve Crisis
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      {/* Navigation Tabs */}
+      <div className="flex gap-2 relative z-10">
+        {['MANAGEMENT', 'POLLING', 'DIARY'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as any)}
+            className={`flex-1 py-2 text-[10px] font-black tracking-widest rounded-lg transition-all border ${
+              activeTab === tab
+                ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/20'
+                : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
-      {/* Cabinet Section */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">THE CABINET</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {CABINET_ROLES.map(role => {
-            const appointee = pl.cabinet[role.id];
-            return (
-              <div key={role.id} className="bg-slate-900 border border-slate-800 rounded-xl p-3">
-                <div className="text-[8px] text-slate-500 font-bold uppercase mb-1">{role.role}</div>
-                {appointee ? (
-                  <div>
-                    <div className="text-xs font-bold text-white">{appointee.name}</div>
-                    <div className="text-[8px] text-emerald-400 font-bold">+{appointee.bonus.value}% {appointee.bonus.type}</div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => appointCabinetMember({
-                      id: role.id,
-                      name: 'Advisor ' + Math.floor(Math.random() * 100),
-                      role: role.role,
-                      bonus: { type: role.bonusType, value: 10 }
-                    })}
-                    className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
+      <AnimatePresence mode="wait">
+        {activeTab === 'MANAGEMENT' && (
+          <motion.div
+            key="mgmt"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6 relative z-10"
+          >
+            {/* Crises Section */}
+            {pl.activeCrises.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                  <span className="animate-pulse">⚠️</span> NATIONAL EMERGENCIES
+                </h2>
+                {pl.activeCrises.map(crisis => (
+                  <motion.div
+                    key={crisis.id}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    className="bg-red-950/20 border border-red-500/40 rounded-xl p-4 shadow-lg shadow-red-900/10"
                   >
-                    + Appoint
-                  </button>
-                )}
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-sm font-bold text-red-400 uppercase tracking-tight">{crisis.name}</h3>
+                      {crisis.monthsRemaining !== undefined && (
+                        <div className={`text-[10px] font-black px-2 py-0.5 rounded ${crisis.monthsRemaining <= 1 ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-800 text-red-400'}`}>
+                          {crisis.monthsRemaining} MONTHS REMAINING
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-300 mb-4 font-serif leading-relaxed italic">"{crisis.description}"</p>
+                    <div className="flex gap-4 items-center">
+                      <button
+                        onClick={() => setPendingCrisis(crisis)}
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase rounded-lg transition-all shadow-lg shadow-red-900/20 active:scale-95"
+                      >
+                        Authorize Federal Response
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
 
-      {/* Executive Orders */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">EXECUTIVE ORDERS</h2>
-        <div className="space-y-2">
-          {EXECUTIVE_ORDERS.map(order => (
-            <button
-              key={order.id}
-              onClick={() => issueExecutiveOrder(order.id)}
-              className="w-full bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-4 text-left transition-all active:scale-[0.98] group"
-            >
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{order.name}</h3>
-                <div className="text-[10px] font-bold text-emerald-400">+{order.impact.approval}% Appr</div>
+            {/* Cabinet Section */}
+            <div className="space-y-3">
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">THE CABINET</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {CABINET_ROLES.map(role => {
+                  const appointee = pl.cabinet[role.id];
+                  return (
+                    <div key={role.id} className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-xl p-3 hover:border-slate-700 transition-colors">
+                      <div className="text-[8px] text-slate-500 font-bold uppercase mb-1">{role.role}</div>
+                      {appointee ? (
+                        <div>
+                          <div className="text-xs font-bold text-white">{appointee.name}</div>
+                          <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase">+{appointee.bonus.value}% {appointee.bonus.type}</div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => appointCabinetMember({
+                            id: role.id,
+                            name: 'Advisor ' + Math.floor(Math.random() * 100),
+                            role: role.role,
+                            bonus: { type: role.bonusType, value: 10 }
+                          })}
+                          className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest"
+                        >
+                          + Appoint
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-[10px] text-slate-500 mb-2">{order.description}</p>
-              <div className="flex gap-2">
-                {order.cost.cash && <span className="text-[8px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">-${(order.cost.cash/1000000).toFixed(1)}M</span>}
-                {order.cost.clout && <span className="text-[8px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">-{order.cost.clout} Clout</span>}
-                {order.cost.aura && <span className="text-[8px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">-{order.cost.aura} Aura</span>}
+            </div>
+
+            {/* Executive Orders */}
+            <div className="space-y-3">
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">EXECUTIVE ORDERS</h2>
+              <div className="space-y-3">
+                {EXECUTIVE_ORDERS.map(order => (
+                  <button
+                    key={order.id}
+                    onClick={() => handleOrderClick(order)}
+                    className="w-full bg-slate-900/60 backdrop-blur-sm border border-slate-800 hover:border-blue-500/50 rounded-xl p-5 text-left transition-all active:scale-[0.99] group shadow-xl"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-md font-serif font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{order.name}</h3>
+                      <div className="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">+{order.impact.approval}% PROJ. APPR</div>
+                    </div>
+                    <p className="text-xs text-slate-400 mb-4 font-serif italic leading-snug">"{order.description}"</p>
+
+                    {/* Advisor Quote */}
+                    <div className="mb-4 pl-3 border-l-2 border-slate-700">
+                      <div className="text-[8px] text-slate-500 font-black uppercase mb-1">
+                        {order.id === 'tax_cut' || order.id === 'deregulation' ? 'Treasury Sec' :
+                         order.id === 'healthcare' ? 'Press Sec' :
+                         order.id === 'infrastructure' ? 'State Sec' : 'Chief Advisor'} Input:
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-serif italic">
+                        "{order.quotes?.[order.id === 'tax_cut' || order.id === 'deregulation' ? 'treasury' :
+                                      order.id === 'healthcare' ? 'press' :
+                                      order.id === 'infrastructure' ? 'state' : ''] ||
+                          order.quotes?.treasury || "We should proceed with caution, Mr. President."}"
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {order.cost.cash && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">INVEST: ${(order.cost.cash/1000000).toFixed(1)}M</span>}
+                      {order.cost.clout && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">CLOUT: {order.cost.clout}</span>}
+                      {order.cost.aura && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">AURA: {order.cost.aura}</span>}
+                    </div>
+                  </button>
+                ))}
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'POLLING' && (
+          <motion.div
+            key="polling"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4 relative z-10"
+          >
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">DEMOGRAPHIC APPROVAL</h2>
+            <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
+              {Object.entries(pl.demographicApproval).map(([group, score]) => (
+                <div key={group} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{group}</span>
+                    <span className={`text-sm font-black ${score > 60 ? 'text-emerald-400' : score > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {score}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${score}%` }}
+                      className={`h-full ${score > 60 ? 'bg-emerald-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'DIARY' && (
+          <motion.div
+            key="diary"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4 relative z-10"
+          >
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">PRESIDENTIAL DIARY</h2>
+            <div className="space-y-4">
+              {pl.presidentialDiary.length === 0 ? (
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-600 font-serif italic">
+                  No records yet. History awaits your decisions.
+                </div>
+              ) : (
+                pl.presidentialDiary.map((entry) => (
+                  <div key={entry.id} className="relative pl-6 border-l-2 border-slate-800 py-2">
+                    <div className="absolute left-[-5px] top-4 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                    <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-xl p-4 shadow-lg">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Month {entry.month}</span>
+                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
+                          entry.type === 'ORDER' ? 'bg-emerald-900/30 text-emerald-400' :
+                          entry.type === 'CRISIS' ? 'bg-red-900/30 text-red-400' :
+                          'bg-blue-900/30 text-blue-400'
+                        }`}>
+                          {entry.type}
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-serif font-black text-white uppercase mb-2">{entry.event}</h4>
+                      <p className="text-[10px] text-slate-400 font-serif leading-relaxed italic">"{entry.outcome}"</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Next Month Button */}
       <button
         onClick={() => advancePresidentialMonth()}
-        className="fixed bottom-20 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95 z-40"
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md py-5 bg-blue-700 hover:bg-blue-600 text-white font-black uppercase tracking-[0.3em] rounded-2xl shadow-2xl shadow-blue-900/40 border border-blue-400/30 transition-all active:scale-95 z-40 group"
       >
-        Advance Month
+        <span className="relative z-10">Conclude Month</span>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
       </button>
+
+      <ConfirmationModal
+        isOpen={!!pendingOrder}
+        title="Confirm Executive Action"
+        message={`Are you sure you want to issue the ${pendingOrder?.name}? This will use your administration's resources and have a permanent impact on your legacy.`}
+        onConfirm={confirmOrder}
+        onCancel={() => setPendingOrder(null)}
+        confirmLabel="Authorize Order"
+      />
+
+      <ConfirmationModal
+        isOpen={!!pendingCrisis}
+        title="Resolve National Crisis"
+        message={`Confirm the mobilization of federal resources to address the ${pendingCrisis?.name}. Failure to act could lead to total instability.`}
+        onConfirm={confirmCrisis}
+        onCancel={() => setPendingCrisis(null)}
+        confirmLabel="Mobilize Resources"
+        isHighStakes
+      />
     </div>
   );
 };
