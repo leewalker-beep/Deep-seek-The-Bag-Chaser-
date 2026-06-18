@@ -7,12 +7,12 @@ import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
-  STREET: 300,
-  STARTUP: 800,
-  CORPORATE: 2000,
-  ELITE: 5000,
-  MOGUL: 10000,
-  PRESIDENT: 20000,
+  STREET: 1000,
+  STARTUP: 5000,
+  CORPORATE: 20000,
+  ELITE: 100000,
+  MOGUL: 500000,
+  PRESIDENT: 2000000,
   OPEN: 0,
 };
 

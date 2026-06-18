@@ -100,12 +100,6 @@ export function calculateHustleMath(
     yieldCash = Math.max(yieldCash, 5000);
   }
 
-  // Profit safety net
-  const isRentPortfolio = hustleId === 'r_labor' && levelData.id === 'l2b';
-  if (isSuccess && yieldCash < cost && cost > 0 && !hustleId.includes('vending') && !isRentPortfolio) {
-    console.warn(`Profit safety applied to ${hustleId}`);
-    yieldCash = Math.floor(cost * 1.3);
-  }
 
   return {
     cost,
