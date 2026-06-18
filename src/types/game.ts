@@ -288,6 +288,7 @@ export interface PlayerStats {
   milestones: Milestone[];
   events: GameEvent[];
   collectedDeathBadges: string[];
+  deathCount: number;
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   stats?: {
