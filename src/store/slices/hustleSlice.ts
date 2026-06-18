@@ -204,7 +204,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         const isRepeatableMastery = node?.isRepeatable && (
           (hId === 'r_vending' && state.pl.vendingCount >= 10) ||
           (hId === 'street_eats' && node.level >= 5) ||
-          (node.id === 'l2b' && state.pl.rentalCount >= 10)
+          (node.id === 'l2b' && state.pl.rentPortfolioCount >= 10)
         );
 
         if (isTerminal || isRepeatableMastery) {
@@ -277,7 +277,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (branch.isRepeatable) {
       const currentCount = (hustleId === 'r_vending')
         ? state.pl.vendingCount
-        : (branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentalCount);
+        : (branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentPortfolioCount);
 
       if (branch.maxRepeat !== undefined && currentCount >= branch.maxRepeat) {
         return { success: false, message: `Maximum ${branch.maxRepeat} reached` };
@@ -291,6 +291,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newHeat = state.pl.heat + result.heatHit;
 
     let newRentalCount = state.pl.rentalCount || 0;
+    let newRentPortfolioCount = state.pl.rentPortfolioCount || 0;
     let newFlipCount = state.pl.flipCount || 0;
     let newVendingCount = state.pl.vendingCount || 0;
 
@@ -299,7 +300,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     } else if (branch.id === 'l2a') {
       newFlipCount++;
     } else if (branch.id === 'l2b') {
-      newRentalCount++;
+      newRentPortfolioCount++;
     }
 
     const newStats = state.pl.stats
@@ -319,6 +320,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       heat: newHeat,
       mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
       rentalCount: newRentalCount,
+      rentPortfolioCount: newRentPortfolioCount,
       flipCount: newFlipCount,
       vendingCount: newVendingCount,
       hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
@@ -505,6 +507,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       dynamicPassives: newDynamicPassives,
       vendingCount: state.pl.vendingCount + (hustleId === 'r_vending' ? 1 : 0),
       rentalCount: state.pl.rentalCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'hold' ? 1 : 0),
+      rentPortfolioCount: state.pl.rentPortfolioCount + (hustleId === 'r_labor' && state.pl.hustleBranchIds[hustleId] === 'l2b' ? 1 : 0),
       flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
       stats: newStats,
       lastExecutedHustleId: hustleId,
@@ -732,7 +735,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         else if (branchId === currentNodeId && currentNode?.isRepeatable) {
           const currentCount = (hustleId === 'r_vending')
             ? state.pl.vendingCount
-            : (branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentalCount : 0));
+            : (branchId === 'l2a' ? state.pl.flipCount : (branchId === 'l2b' ? state.pl.rentPortfolioCount : 0));
 
           if (!currentNode.maxRepeat || currentCount < currentNode.maxRepeat) {
             targetNodeData = currentNode;
@@ -812,7 +815,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         newPl.vendingCount += 1;
       } else {
         if (nodeId === 'l2a') newPl.flipCount += 1;
-        if (nodeId === 'l2b') newPl.rentalCount += 1;
+        if (nodeId === 'l2b') newPl.rentPortfolioCount += 1;
       }
     } else {
       newPl.hustleLevels = {

@@ -16,6 +16,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     flexAssets: {},
     unlockedAchievements: [],
     rentalCount: 0,
+    rentPortfolioCount: 0,
     flipCount: 0,
     vendingCount: 0,
     passiveLaborYield: 0,
