@@ -15,10 +15,12 @@ const rentByTier: Record<Tier, number> = {
   OPEN: 0,
 };
 
+import type { TickerMessage } from '../types/game';
+
 export interface AdvancementResult {
   newPl: PlayerStats;
   newMarket: MarketType;
-  news: string[];
+  news: (string | TickerMessage)[];
   shouldDie: boolean;
   deathCause: string | null;
 }
@@ -27,7 +29,7 @@ export function advanceMonth(
   pl: PlayerStats,
   currentMarket: MarketType
 ): AdvancementResult {
-  const news: string[] = [];
+  const news: (string | TickerMessage)[] = [];
   const newPl = { ...pl };
   let newMarket = currentMarket;
 
@@ -155,10 +157,43 @@ export function advanceMonth(
 
   // Rival AI Updates
   if (newPl.rivals) {
+    newPl.rivalThreats = {};
     newPl.rivals = newPl.rivals.map(rival => {
       // Net worth fluctuations (-2% to +5%)
       const fluctuation = 1 + (Math.random() * 0.07 - 0.02);
       const newNetWorth = Math.floor(rival.netWorth * fluctuation);
+
+      // Update threat level
+      const ratio = newNetWorth / Math.max(1, newPl.bag);
+      let threat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL';
+
+      if (ratio > 2) {
+        threat = 'RIVAL_DOMINANT';
+        if (rival.tier === newPl.currentTier) {
+          news.push({ text: `⚠️ ${rival.name} is dominating the market. Costs are up 25% in ${rival.tier} tier.`, colorClass: 'text-red-400 font-bold' });
+        }
+      } else if (ratio < 0.5) {
+        threat = 'PLAYER_DOMINANT';
+        if (rival.tier === newPl.currentTier) {
+          news.push({ text: `🚀 You are crushing ${rival.name}. Your reputation is soaring. Yields up 15%.`, colorClass: 'text-emerald-400 font-bold' });
+
+          // Trigger Challenge (20% chance if not already challenged by this rival)
+          const isChallenged = newPl.activeChallenges.some(c => c.rivalId === rival.id);
+          if (!isChallenged && Math.random() < 0.20) {
+            newPl.activeChallenges.push({
+              rivalId: rival.id,
+              rivalName: rival.name,
+              tier: rival.tier as Tier,
+              hustlesCompleted: 0,
+              hustlesRequired: 3,
+              monthsRemaining: 5
+            });
+            news.push({ text: `⚔️ CHALLENGE: ${rival.name} has challenged you! Complete 3 hustles in ${rival.tier} tier within 5 months or lose 10% of your bag!`, colorClass: 'text-orange-400 font-black animate-pulse' });
+          }
+        }
+      }
+
+      newPl.rivalThreats[rival.tier] = threat;
 
       // Random bidding challenge (5% chance per rival per month if player is ELITE+)
       let currentBid = 0;
@@ -170,6 +205,27 @@ export function advanceMonth(
       }
 
       return { ...rival, netWorth: newNetWorth, currentBid };
+    });
+  }
+
+  // Update Challenges
+  if (newPl.activeChallenges.length > 0) {
+    newPl.activeChallenges = newPl.activeChallenges.map(challenge => {
+      return { ...challenge, monthsRemaining: challenge.monthsRemaining - 1 };
+    }).filter(challenge => {
+      if (challenge.monthsRemaining < 0) {
+        // Challenge Failed
+        const penalty = Math.floor(newPl.bag * 0.1);
+        newPl.bag -= penalty;
+        news.push({ text: `❌ CHALLENGE FAILED: ${challenge.rivalName} won the challenge. You lost $${penalty.toLocaleString()} (10% of bag).`, colorClass: 'text-red-500 font-bold' });
+
+        // Rival wins, they gain 10% net worth
+        newPl.rivals = newPl.rivals.map(r =>
+          r.id === challenge.rivalId ? { ...r, netWorth: Math.floor(r.netWorth * 1.1) } : r
+        );
+        return false;
+      }
+      return true;
     });
   }
 

@@ -28,10 +28,11 @@ export type HustleStrategy = (
   levelData: HustleLevel,
   currentLevel: number,
   minigameMultiplier: number,
-  forceSuccess?: boolean
+  forceSuccess?: boolean,
+  rivalThreat?: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'
 ) => HustleExecutionResult;
 
-const defaultStrategy: HustleStrategy = (state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess) => {
+const defaultStrategy: HustleStrategy = (state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat = 'NEUTRAL') => {
   const market = MARKET_CONFIGS[marketType];
   const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
   const isVending = levelData.id?.includes('vending');
@@ -45,7 +46,8 @@ const defaultStrategy: HustleStrategy = (state, marketType, levelData, currentLe
     market.heatMultiplier,
     minigameMultiplier,
     success,
-    state.mentalShieldTurns
+    state.mentalShieldTurns,
+    rivalThreat
   );
 
   return {
@@ -479,10 +481,20 @@ export const executeHustleAction = (
   levelData: HustleLevel,
   currentLevel: number,
   minigameMultiplier: number,
-  forceSuccess?: boolean
+  forceSuccess?: boolean,
+  rivalThreat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL'
 ): HustleExecutionResult => {
   const strategy = getHustleStrategy(hustleId);
-  const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess);
+  const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+
+  // Apply Rival Impact to non-default strategies that might not use calculateHustleMath internally
+  if (hustleId !== 'default' && strategy !== defaultStrategy) {
+    if (rivalThreat === 'RIVAL_DOMINANT') {
+      result.cost = Math.floor(result.cost * 1.25);
+    } else if (rivalThreat === 'PLAYER_DOMINANT') {
+      result.yieldCash = Math.floor(result.yieldCash * 1.15);
+    }
+  }
 
   // Apply Badge Buffs
   let finalYieldMult = 1.0;

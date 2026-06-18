@@ -16,8 +16,16 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
   const excessAura = Math.max(0, currentAura - maxAura);
   const overflowBagBonus = Math.floor((excessClout + excessAura) * 0.1);
 
+  // Ensure rival system fields exist for save compatibility
+  const rivals = pl.rivals || [];
+  const rivalThreats = pl.rivalThreats || {};
+  const activeChallenges = pl.activeChallenges || [];
+
   return {
     ...pl,
+    rivals,
+    rivalThreats,
+    activeChallenges,
     bag: pl.bag + overflowBagBonus,
     clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
     aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),

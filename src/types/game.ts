@@ -72,6 +72,16 @@ export interface Rival {
   netWorth: number;
   currentBid: number;
   isNpc: boolean;
+  tier: Tier;
+}
+
+export interface Challenge {
+  rivalId: string;
+  rivalName: string;
+  tier: Tier;
+  hustlesCompleted: number;
+  hustlesRequired: number;
+  monthsRemaining: number;
 }
 
 export interface Milestone {
@@ -231,6 +241,8 @@ export interface PlayerStats {
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
   rivals: Rival[];
+  rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
+  activeChallenges: Challenge[];
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -325,4 +337,5 @@ export interface GameState {
   processLogin: () => void;
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
+  retaliateRival: (rivalId: string) => void;
 }

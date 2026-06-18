@@ -450,9 +450,13 @@ function App() {
             {/* Flex Market */}
             {showFlexMarket && <FlexMarket />}
 
-            {/* Rival Leaderboard in ELITE tab */}
-            {!showFlexMarket && activeTab === 'ELITE' && (
-              <RivalLeaderboard playerBag={pl.bag} playerName={pl.name || 'You'} rivals={pl.rivals} />
+            {/* Rival Leaderboard */}
+            {!showFlexMarket && activeTab !== ('PRESIDENCY' as any) && (
+              <RivalLeaderboard
+                playerBag={pl.bag}
+                playerName={pl.name || 'You'}
+                rivals={pl.rivals.filter(r => r.tier === activeTab || r.tier === pl.currentTier)}
+              />
             )}
 
             {/* Hustle Grid */}

@@ -15,10 +15,10 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerName,
   rivals = []
 }) => {
-  const { addTickerMessage, pl } = useGameStore();
+  const { addTickerMessage, pl, retaliateRival } = useGameStore();
   const allParticipants = [
     ...(rivals || []),
-    { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false }
+    { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false, tier: pl.currentTier }
   ].sort((a, b) => b.netWorth - a.netWorth);
 
   const handleSabotage = (rivalName: string) => {
@@ -41,6 +41,7 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
       <div className="space-y-3">
         {allParticipants.map((p, index) => {
           const isPlayer = p.id === 'player';
+          const pAsRival = p as Rival;
           return (
             <div
               key={p.id}
@@ -64,6 +65,12 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                         Active Bid: ${p.currentBid.toLocaleString()}
                       </div>
                     )}
+                    {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && !isPlayer && pAsRival.tier === pl.currentTier && (
+                      <div className="text-[8px] text-red-500 font-black uppercase">DOMINATING MARKET</div>
+                    )}
+                    {pl.rivalThreats?.[pAsRival.tier] === 'PLAYER_DOMINANT' && !isPlayer && pAsRival.tier === pl.currentTier && (
+                      <div className="text-[8px] text-emerald-500 font-black uppercase">BEING CRUSHED</div>
+                    )}
                   </div>
                 </div>
                 <div className={`text-xs font-mono font-bold ${isPlayer ? 'text-emerald-400' : 'text-slate-400'}`}>
@@ -71,16 +78,49 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                 </div>
               </div>
 
-              {!isPlayer && p.netWorth > playerBag && (
-                <div className="mt-2 flex gap-2">
-                  <BaseButton
-                    variant="ghost"
-                    size="sm"
-                    className="text-[8px] py-1 h-auto bg-red-500/10 border border-red-500/20 hover:bg-red-500/20"
-                    onClick={() => handleSabotage(p.name)}
-                  >
-                    Spy/Sabotage (${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}k)
-                  </BaseButton>
+              {!isPlayer && (
+                <div className="mt-2 space-y-2">
+                  {pl.activeChallenges.find(c => c.rivalId === p.id) && (
+                    <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                      <div className="flex justify-between text-[8px] font-black text-orange-400 uppercase mb-1">
+                        <span>Active Challenge</span>
+                        <span>{pl.activeChallenges.find(c => c.rivalId === p.id)?.monthsRemaining}m Left</span>
+                      </div>
+                      <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                        <div
+                          className="bg-orange-500 h-full transition-all duration-500"
+                          style={{ width: `${(pl.activeChallenges.find(c => c.rivalId === p.id)!.hustlesCompleted / 3) * 100}%` }}
+                        />
+                      </div>
+                      <div className="text-[8px] text-slate-400 mt-1">
+                        Hustles: {pl.activeChallenges.find(c => c.rivalId === p.id)?.hustlesCompleted}/3
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    {p.netWorth > playerBag && (
+                      <BaseButton
+                        variant="ghost"
+                        size="sm"
+                        className="text-[8px] py-1 h-auto bg-red-500/10 border border-red-500/20 hover:bg-red-500/20"
+                        onClick={() => handleSabotage(p.name)}
+                      >
+                        Spy/Sabotage (${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}k)
+                      </BaseButton>
+                    )}
+
+                    {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && (
+                       <BaseButton
+                        variant="ghost"
+                        size="sm"
+                        className="text-[8px] py-1 h-auto bg-orange-500/20 border border-orange-500/40 hover:bg-orange-500/30 text-orange-400"
+                        onClick={() => retaliateRival(p.id)}
+                      >
+                        🔥 RETALIATE (10% Bag)
+                      </BaseButton>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

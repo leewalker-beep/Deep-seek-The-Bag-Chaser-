@@ -606,5 +606,21 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 5000000 }
+  },
+
+  // RIVALS
+  {
+    id: 'RIVAL_CRUSHED',
+    name: 'Rival Crushed',
+    description: 'Defeat a rival by completing their challenge.',
+    category: 'PROGRESSION',
+    requirement: {
+      check: (_state: GameState, event?: GameEvent) => event?.type === 'RIVAL_DEFEATED',
+      progress: (state: GameState) => {
+        const defeatEvents = state.pl.events.filter(e => e.type === 'RIVAL_DEFEATED').length;
+        return { current: defeatEvents, target: 1 };
+      }
+    },
+    reward: { aura: 100 }
   }
 ];
