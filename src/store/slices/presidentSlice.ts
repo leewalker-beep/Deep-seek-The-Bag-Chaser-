@@ -5,7 +5,8 @@ import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
-import { calculateEnding } from '../../engine/endingEngine';
+import { getDominantStat } from '../../utils/endingUtils';
+import { getEnding } from '../../config/endings';
 
 export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
@@ -462,7 +463,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const lastHustleId = updatedPl.lastExecutedHustleId || 'president_campaign';
       const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
 
-      const ending = calculateEnding(updatedPl);
+      const dominantStat = getDominantStat(updatedPl);
+      const ending = getEnding(updatedPl.legacyPoints || 0, dominantStat);
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -524,7 +526,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     );
 
     if (shouldDie) {
-      const ending = calculateEnding(advancedPl);
+      const dominantStat = getDominantStat(advancedPl);
+      const ending = getEnding(advancedPl.legacyPoints || 0, dominantStat);
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
