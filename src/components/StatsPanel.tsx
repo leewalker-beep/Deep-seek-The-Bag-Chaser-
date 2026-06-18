@@ -179,6 +179,27 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
         </div>
       )}
 
+      {/* Active Sentiment */}
+      {stats.activeSentiment && (
+        <div className="mb-3 pt-2 border-t border-slate-800">
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-slate-500 uppercase tracking-wider">ACTIVE SENTIMENT</span>
+            <span className={`font-black animate-pulse ${stats.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {stats.activeSentiment.label}
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-1">
+             <span className="text-[8px] text-slate-400">Yield Modifier:</span>
+             <span className={`text-[10px] font-bold ${stats.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+               {stats.activeSentiment.multiplier}x
+             </span>
+          </div>
+          <div className="text-[8px] text-slate-500 text-right italic mt-0.5">
+            {stats.activeSentiment.monthsRemaining} months remaining
+          </div>
+        </div>
+      )}
+
       {/* Month Counter */}
       <div className="mt-3 pt-2 border-t border-slate-800 text-[8px] text-slate-600 text-center">
         MONTH {stats.month}

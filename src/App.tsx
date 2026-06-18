@@ -353,7 +353,13 @@ function App() {
       <div className="sticky top-0 z-30 bg-slate-950 border-b border-slate-800 px-4 py-2">
         <div className="max-w-md mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
           <div>RANK: <span className="text-white">{pl.currentTier}</span></div>
-          <div>OP: <span className="text-white">{pl.name}</span></div>
+          {pl.activeSentiment ? (
+            <div className={`animate-pulse ${pl.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+              📰 {pl.activeSentiment.label} ({pl.activeSentiment.monthsRemaining}m)
+            </div>
+          ) : (
+            <div>OP: <span className="text-white">{pl.name}</span></div>
+          )}
           <div className="flex items-center gap-1">
             {MARKET_CONFIGS[currentMarket].icon} <span className="text-white">{MARKET_CONFIGS[currentMarket].name}</span>
           </div>

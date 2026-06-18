@@ -3,6 +3,7 @@ import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLE_BADGES } from '../config/badges';
+import { SENTIMENT_CATEGORIES } from '../config/sentiment';
 
 export interface HustleExecutionResult {
   success: boolean;
@@ -486,6 +487,19 @@ export const executeHustleAction = (
 ): HustleExecutionResult => {
   const strategy = getHustleStrategy(hustleId);
   const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+
+  // Apply Sentiment Multiplier
+  if (state.activeSentiment) {
+    const category = SENTIMENT_CATEGORIES.find(c => c.id === state.activeSentiment?.category);
+    if (category && category.hustleIds.includes(hustleId)) {
+      result.yieldCash = Math.floor(result.yieldCash * state.activeSentiment.multiplier);
+      if (!result.tickerMessages) result.tickerMessages = [];
+      result.tickerMessages.push({
+        text: `📰 ${state.activeSentiment.label}: ${state.activeSentiment.multiplier}x yield`,
+        colorClass: state.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'
+      });
+    }
+  }
 
   // Apply Rival Impact to non-default strategies that might not use calculateHustleMath internally
   if (hustleId !== 'default' && strategy !== defaultStrategy) {

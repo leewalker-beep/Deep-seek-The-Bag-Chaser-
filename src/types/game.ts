@@ -243,6 +243,7 @@ export interface PlayerStats {
   rivals: Rival[];
   rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
   activeChallenges: Challenge[];
+  activeSentiment: Sentiment | null;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -261,6 +262,13 @@ export interface PlayerStats {
 export interface TickerMessage {
   text: string;
   colorClass?: string;
+}
+
+export interface Sentiment {
+  category: string;
+  label: string;
+  multiplier: number;
+  monthsRemaining: number;
 }
 
 export interface PendingUpdate {
