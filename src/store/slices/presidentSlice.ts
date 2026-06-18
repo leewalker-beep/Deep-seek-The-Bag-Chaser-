@@ -11,6 +11,7 @@ export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
   appointCabinetMember: (member: CabinetMember) => void;
   resolveCrisis: (crisisId: string) => void;
+  investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;
 }
 
@@ -20,16 +21,31 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const order = EXECUTIVE_ORDERS.find(o => o.id === orderId);
     if (!order) return;
 
-    if ((order.cost.cash && state.pl.bag < order.cost.cash) ||
-        (order.cost.clout && state.pl.clout < order.cost.clout) ||
+    // Apply Opposition/Congress support multiplier to Clout costs
+    const scaledCloutCost = order.cost.clout
+      ? Math.floor(order.cost.clout * (1 + (100 - state.pl.congressSupport) / 100))
+      : 0;
+
+    if ((order.cost.cash && state.pl.federalBudget < order.cost.cash) ||
+        (scaledCloutCost && state.pl.clout < scaledCloutCost) ||
         (order.cost.aura && state.pl.aura < order.cost.aura)) {
       state.addTickerMessage(`Need more resources to issue ${order.name}`, 'text-red-400');
       return;
     }
 
-    // Apply Cabinet Bonuses to order outcomes
+    // Apply Cabinet Bonuses and Economic Penalties to order outcomes
     let approvalImpact = order.impact.approval;
     let passiveCashImpact = order.impact.passiveCash || 0;
+    let gdpImpact = order.impact.gdp || 0;
+    let inflationImpact = order.impact.inflation || 0;
+    let debtImpact = order.impact.debt || 0;
+
+    // Penalty: tax policies less effective if GDP < 80
+    if (state.pl.gdp < 80 && (order.id.includes('tax') || order.id === 'deregulation')) {
+      approvalImpact = Math.floor(approvalImpact * 0.5);
+      passiveCashImpact = Math.floor(passiveCashImpact * 0.5);
+      gdpImpact = Math.floor(gdpImpact * 0.5);
+    }
 
     Object.values(state.pl.cabinet).forEach(member => {
       if (member.bonus.type === 'approval') {
@@ -66,10 +82,13 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     const newPl = {
       ...state.pl,
-      bag: state.pl.bag - (order.cost.cash || 0),
-      clout: state.pl.clout - (order.cost.clout || 0),
+      federalBudget: state.pl.federalBudget - (order.cost.cash || 0),
+      clout: state.pl.clout - scaledCloutCost,
       aura: state.pl.aura - (order.cost.aura || 0),
       approvalRating: state.pl.approvalRating + approvalImpact,
+      gdp: state.pl.gdp + gdpImpact,
+      inflation: state.pl.inflation + inflationImpact,
+      nationalDebt: state.pl.nationalDebt + debtImpact,
       demographicApproval: newDemographics,
       presidentialDiary: [diaryEntry, ...state.pl.presidentialDiary],
       heat: state.pl.heat + (order.impact.heat || 0),
@@ -111,7 +130,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     const crisis = state.pl.activeCrises[crisisIndex];
 
-    if ((crisis.resolutionCost.cash && state.pl.bag < crisis.resolutionCost.cash) ||
+    if ((crisis.resolutionCost.cash && state.pl.federalBudget < crisis.resolutionCost.cash) ||
         (crisis.resolutionCost.clout && state.pl.clout < crisis.resolutionCost.clout) ||
         (crisis.resolutionCost.aura && state.pl.aura < crisis.resolutionCost.aura)) {
       state.addTickerMessage(`Inadequate resources to resolve ${crisis.name}`, 'text-red-400');
@@ -131,7 +150,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     const newPl = {
       ...state.pl,
-      bag: state.pl.bag - (crisis.resolutionCost.cash || 0),
+      federalBudget: state.pl.federalBudget - (crisis.resolutionCost.cash || 0),
       clout: state.pl.clout - (crisis.resolutionCost.clout || 0),
       aura: state.pl.aura - (crisis.resolutionCost.aura || 0),
       activeCrises: newCrises,
@@ -141,6 +160,33 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`NEWS: ${crisis.name} resolved by Oval Office`, 'text-emerald-400 font-bold');
     state.logEvent('SPECIAL_EVENT', { type: 'CRISIS_RESOLVED', crisisId, name: crisis.name });
+  },
+
+  investPersonalFunds: (amount) => {
+    const state = get();
+    if (state.pl.bag < amount) {
+      state.addTickerMessage("Insufficient personal funds to invest in federal budget", "text-red-400");
+      return;
+    }
+
+    const newPl = {
+      ...state.pl,
+      bag: state.pl.bag - amount,
+      federalBudget: (state.pl.federalBudget || 0) + amount,
+      presidentialDiary: [
+        {
+          id: Math.random().toString(36).substring(7),
+          month: state.pl.presidentMonth,
+          event: 'PERSONAL INVESTMENT',
+          outcome: `The President invested $${(amount/1000000).toFixed(1)}M of personal wealth into the federal budget.`,
+          type: 'ORDER' as const
+        },
+        ...state.pl.presidentialDiary
+      ]
+    };
+
+    set({ pl: enforceStatCaps(newPl) });
+    state.addTickerMessage(`BREAKING: President bails out Treasury with $${(amount/1000000).toFixed(1)}M personal wealth!`, 'text-emerald-400 font-black');
   },
 
   advancePresidentialMonth: () => {
@@ -172,6 +218,14 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     activeCrises.forEach(c => {
       approvalHit += c.impact.approval;
+      // Crisis impacts federal budget instead of personal bag
+      if (c.impact.cash) {
+        updatedPl.federalBudget -= c.impact.cash;
+      }
+      // Apply Macro Impacts from Crises
+      if (c.impact.gdp) updatedPl.gdp += c.impact.gdp;
+      if (c.impact.inflation) updatedPl.inflation += c.impact.inflation;
+      if (c.impact.debt) updatedPl.nationalDebt += c.impact.debt;
     });
 
     // 1.1 Process Pending Presidential Impacts
@@ -191,6 +245,12 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         type: 'ORDER' as const
       });
     });
+
+    // 1.4 Economic Feedback Loops
+    if (pl.inflation > 5) {
+      approvalHit -= 2;
+      state.addTickerMessage("PUBLIC UNREST: High inflation is hurting your approval!", "text-red-400 animate-pulse");
+    }
 
     // 1.2 Manage Market Control
     let updatedMarketControl = pl.presidentialMarketControl || null;
@@ -243,6 +303,23 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       presidentialMarketControl: updatedMarketControl,
       pendingPresidentialImpacts: remainingImpacts
     };
+
+    // 1.3 Midterm Elections
+    if (updatedPl.presidentMonth === 24) {
+      let newSupport = 50;
+      if (updatedPl.approvalRating > 60) newSupport = 70;
+      else if (updatedPl.approvalRating < 40) newSupport = 30;
+
+      updatedPl.congressSupport = newSupport;
+      state.addTickerMessage(`MIDTERMS: Congress support adjusted to ${newSupport}% based on approval.`, 'text-blue-300 font-bold');
+      updatedPl.presidentialDiary.unshift({
+        id: Math.random().toString(36).substring(7),
+        month: 24,
+        event: 'MIDTERM ELECTIONS',
+        outcome: `The people have spoken. Congress support is now ${newSupport}%.`,
+        type: 'ELECTION' as const
+      });
+    }
 
     // 2. Manage re-election and term limits
     let isGameOver = false;
@@ -319,7 +396,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     }
 
     // 3. Generate new crisis
-    const newCrisis = generateCrisis(updatedPl.isSecondTerm);
+    const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt);
     if (newCrisis) {
       updatedPl.activeCrises = [...updatedPl.activeCrises, newCrisis];
       state.addTickerMessage(`CRISIS ALERT: ${newCrisis.name}!`, "text-red-500 font-black");
