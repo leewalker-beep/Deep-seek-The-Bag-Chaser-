@@ -268,8 +268,8 @@ export function advanceMonth(
     news.push({ text: `📰 ${message}`, colorClass: isHype ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold' });
   }
 
-  // Random market shift (15% chance)
-  if (Math.random() < 0.15) {
+  // Random market shift (15% chance) - Skipped if President has Market Control
+  if (!newPl.presidentialMarketControl && Math.random() < 0.15) {
     const markets: MarketType[] = ['NORMAL', 'RECESSION', 'BULL_MARKET', 'CRACKDOWN'];
     const newMarketType = markets[Math.floor(Math.random() * markets.length)];
     if (newMarketType !== currentMarket) {

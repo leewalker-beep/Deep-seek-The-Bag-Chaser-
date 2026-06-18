@@ -58,6 +58,19 @@ export const PresidentDashboard: React.FC = () => {
           </div>
         </div>
 
+        {pl.presidentialMarketControl && (
+          <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-xl flex justify-between items-center animate-pulse">
+            <div>
+              <div className="text-[8px] text-orange-500 font-black uppercase tracking-widest">Market Intervention Active</div>
+              <div className="text-xs font-serif font-black text-white uppercase">{pl.presidentialMarketControl.type.replace('_', ' ')}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[8px] text-slate-500 font-bold uppercase">Stability Duration</div>
+              <div className="text-xs font-black text-orange-400">{pl.presidentialMarketControl.monthsRemaining} Months</div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
           <div>
             <div className="text-[10px] text-slate-500 font-bold uppercase">Term Progress</div>

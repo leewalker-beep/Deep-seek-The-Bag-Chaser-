@@ -25,6 +25,9 @@ describe('News Sentiment Engine', () => {
   });
 
   it('should decrement monthsRemaining and normalize sentiment', () => {
+    // Mock random to prevent immediate re-trigger of another sentiment
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+
     let pl = getInitialStats(3);
     pl.activeSentiment = {
       category: 'crypto',
@@ -36,6 +39,8 @@ describe('News Sentiment Engine', () => {
     const result = advanceMonth(pl, 'NORMAL');
     expect(result.newPl.activeSentiment).toBeNull();
     expect(result.news.some(n => typeof n === 'object' && n.text.includes('Normalized'))).toBe(true);
+
+    randomSpy.mockRestore();
   });
 
   it('should apply multiplier to matching hustles', () => {
