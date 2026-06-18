@@ -83,6 +83,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const persistentStats = {
       totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
       collectedDeathBadges: currentState.pl.collectedDeathBadges || [],
+      deathCount: currentState.pl.deathCount || 0,
     };
 
     if (typeof window !== 'undefined') {
@@ -92,6 +93,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newPl = enforceStatCaps(getInitialStats(difficulty));
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
+    newPl.deathCount = persistentStats.deathCount;
 
     set({
       pl: newPl,
@@ -598,6 +600,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalPh = 'POST_MORTEM';
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
+
+      cappedPl.deathCount = (cappedPl.deathCount || 0) + 1;
 
       if (finalDeathBadge && !cappedPl.collectedDeathBadges.includes(finalDeathBadge)) {
         cappedPl.collectedDeathBadges.push(finalDeathBadge);

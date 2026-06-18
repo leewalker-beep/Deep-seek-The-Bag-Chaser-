@@ -498,6 +498,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
 
       updatedPl.legacyScore = calculateLegacyScore(updatedPl);
+      updatedPl.deathCount = (updatedPl.deathCount || 0) + 1;
 
       set({
         pl: enforceStatCaps(updatedPl),
@@ -559,6 +560,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
 
       advancedPl.legacyScore = calculateLegacyScore(advancedPl);
+      advancedPl.deathCount = (advancedPl.deathCount || 0) + 1;
 
       set({
         pl: enforceStatCaps(advancedPl),

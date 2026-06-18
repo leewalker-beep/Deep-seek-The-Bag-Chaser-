@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
 import { StatCard } from './ui/StatCard';
+import { HUSTLES } from '../config/hustles/base';
 
 interface EndgameSummaryProps {
   onRestart: () => void;
@@ -10,10 +11,38 @@ interface EndgameSummaryProps {
 
 export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => {
   const { pl } = useGameStore();
+  const [copied, setCopied] = useState(false);
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
     ? Math.floor((stats.successfulHustles / stats.totalHustles) * 100)
     : 0;
+
+  const lastHustleName = pl.lastExecutedHustleId ? (HUSTLES[pl.lastExecutedHustleId]?.name || 'a mystery') : 'doing nothing';
+  const personalizedSummary = `You hit ${pl.currentTier} tier, died ${pl.deathCount || 1} times, and your final act was ${lastHustleName}.`;
+
+  const shareText = `I just finished a run of Bag Chaser! Hit ${pl.currentTier} tier with $${pl.bag.toLocaleString()} bag. Legacy score: ${(pl.legacyScore || 0).toLocaleString()}. Can you beat me?`;
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Bag Chaser Run',
+          text: shareText,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error('Share failed:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Clipboard failed:', err);
+      }
+    }
+  };
 
   const summary = {
     date: new Date().toISOString(),
@@ -44,9 +73,13 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white mb-2">Run Summary</h2>
           <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">The Final Ledger</div>
+        </div>
+
+        <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 mb-6 text-center">
+          <p className="text-slate-300 text-sm font-medium italic">"{personalizedSummary}"</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
@@ -58,19 +91,50 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
           </div>
 
           <StatCard label="Highest Tier" value={pl.currentTier} colorClass="text-purple-400" />
-          <StatCard label="Total Profit" value={`$${stats.lifetimeEarnings.toLocaleString()}`} colorClass="text-emerald-400" />
+          <StatCard label="Final Bag" value={`$${pl.bag.toLocaleString()}`} colorClass="text-emerald-400" />
           <StatCard label="Hustles" value={stats.totalHustles} />
-          <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
+          <StatCard label="Deaths" value={pl.deathCount || 1} colorClass="text-red-400" />
           <StatCard label="Achievements" value={pl.unlockedAchievements?.length || 0} icon="🏆" />
           <StatCard label="Death Badges" value={pl.collectedDeathBadges?.length || 0} icon="💀" />
           <StatCard label="Time Played" value={`${pl.month} Months`} icon="📅" />
-          <StatCard label="Best Streak" value={`${pl.loginStreak || 0} Days`} icon="🔥" />
+          <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
         </div>
 
         <div className="space-y-4">
-          <BaseButton variant="primary" onClick={onRestart} className="w-full py-4 text-lg">
-            RUN IT BACK
-          </BaseButton>
+          <div className="flex gap-3">
+            <BaseButton variant="primary" onClick={onRestart} className="flex-[2] py-4 text-lg">
+              RUN IT BACK
+            </BaseButton>
+            <BaseButton
+              variant="secondary"
+              onClick={handleShare}
+              className="flex-1 py-4 text-lg relative overflow-hidden"
+            >
+              <AnimatePresence mode="wait">
+                {copied ? (
+                  <motion.span
+                    key="copied"
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
+                    exit={{ y: -20 }}
+                    className="flex items-center justify-center gap-2 text-emerald-400"
+                  >
+                    COPIED!
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="share"
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
+                    exit={{ y: -20 }}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    SHARE
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </BaseButton>
+          </div>
           <p className="text-[10px] text-slate-600 text-center uppercase font-bold tracking-widest">
             Your progress has been etched into history.
           </p>
