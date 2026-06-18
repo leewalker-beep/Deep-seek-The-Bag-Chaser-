@@ -92,6 +92,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     events: [],
     collectedDeathBadges: [],
     completedDailyChallengesCount: 0,
+    totalChallengesCompleted: 0,
     stats: {
       totalHustles: 0,
       successfulHustles: 0,

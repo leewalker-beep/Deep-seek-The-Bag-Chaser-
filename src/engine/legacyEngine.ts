@@ -58,5 +58,9 @@ export function calculateLegacyScore(pl: PlayerStats): number {
   const highestTierReached: Tier = pl.stats?.bestRunTier || pl.currentTier;
   const tierMultiplier = TIER_MULTIPLIERS[highestTierReached] || 1;
 
-  return Math.floor((baseScore + streakBonus) * tierMultiplier);
+  // 9. Legacy Momentum (from total challenges completed)
+  // +0.1% per 10 challenges
+  const momentumBoost = Math.floor((pl.totalChallengesCompleted || 0) / 10) * 0.001;
+
+  return Math.floor((baseScore + streakBonus) * tierMultiplier * (1 + momentumBoost));
 }

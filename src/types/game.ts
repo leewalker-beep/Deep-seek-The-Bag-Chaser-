@@ -267,6 +267,7 @@ export interface PlayerStats {
   events: GameEvent[];
   collectedDeathBadges: string[];
   completedDailyChallengesCount: number;
+  totalChallengesCompleted: number;
   stats?: {
     totalHustles: number;
     successfulHustles: number;
