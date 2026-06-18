@@ -108,6 +108,7 @@ export interface CabinetMember {
   id: string;
   name: string;
   role: string;
+  loyalty: number;
   bonus: {
     type: 'approval' | 'cash' | 'clout' | 'aura';
     value: number;
@@ -160,11 +161,12 @@ export interface ExecutiveOrder {
     type: MarketType;
     duration: number;
   };
-  delayedImpact?: {
-    approval: number;
+  delayedImpacts?: {
     delay: number;
+    impact: Partial<ExecutiveOrder['impact']>;
     message: string;
-  };
+  }[];
+  regionalImpacts?: Record<string, number>;
 }
 
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
@@ -260,8 +262,16 @@ export interface PlayerStats {
   } | null;
   pendingPresidentialImpacts: {
     monthToTrigger: number;
-    approvalImpact: number;
+    impact: Partial<ExecutiveOrder['impact']>;
     message: string;
+  }[];
+  regionalApproval: Record<string, number>;
+  sotuHistory: {
+    month: number;
+    gdp: number;
+    inflation: number;
+    debt: number;
+    approval: number;
   }[];
   marketCycle: {
     realEstate: 'boom' | 'bust' | 'normal';
@@ -353,6 +363,7 @@ export interface GameState {
   setCampaignDelegates: (delegates: number) => void;
   issueExecutiveOrder: (orderId: string) => void;
   appointCabinetMember: (member: CabinetMember) => void;
+  fireCabinetMember: (roleId: string) => void;
   resolveCrisis: (crisisId: string) => void;
   investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;

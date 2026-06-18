@@ -62,6 +62,13 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
       'National Security': 50,
       'Civil Rights': 50
     },
+    regionalApproval: {
+      'Northeast': 50,
+      'South': 50,
+      'Midwest': 50,
+      'West': 50
+    },
+    sotuHistory: [],
     presidentialDiary: [],
     presidentMonth: 0,
     isSecondTerm: false,
