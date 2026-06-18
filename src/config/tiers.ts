@@ -22,6 +22,7 @@ export const getTierMax = (tier: string): { clout: number; aura: number } => {
     case 'ELITE': return { clout: 1250, aura: 1250 };
     case 'MOGUL': return { clout: 2500, aura: 2500 };
     case 'PRESIDENT': return { clout: 6250, aura: 6250 };
+    case 'OPEN': return { clout: 999999, aura: 999999 };
     default: return { clout: 63, aura: 63 };
   }
 };

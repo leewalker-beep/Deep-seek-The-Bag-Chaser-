@@ -5,8 +5,7 @@ import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
-import { getDominantStat } from '../../utils/endingUtils';
-import { getEnding } from '../../config/endings';
+import { calculateEnding } from '../../engine/endingEngine';
 
 export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
@@ -273,8 +272,40 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const lastHustleId = updatedPl.lastExecutedHustleId || 'president_campaign';
       const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
 
-      const finalStat = getDominantStat(updatedPl);
-      getEnding(updatedPl.legacyPoints || 0, finalStat);
+      const ending = calculateEnding(updatedPl);
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
+      if (!savedEndings.includes(ending.title)) {
+        savedEndings.push(ending.title);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
+      }
+
+      state.logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: updatedPl.legacyPoints || 0
+      });
+
+      if (deathInfo.badge && !updatedPl.collectedDeathBadges.includes(deathInfo.badge)) {
+        updatedPl.collectedDeathBadges.push(deathInfo.badge);
+      }
+
+      // Update best run
+      if (updatedPl.stats) {
+        if (!updatedPl.stats.bestRunBag || updatedPl.bag > updatedPl.stats.bestRunBag) {
+          updatedPl.stats.bestRunBag = updatedPl.bag;
+          updatedPl.stats.bestRunTier = updatedPl.currentTier;
+          updatedPl.stats.bestRunEnding = ending.title;
+        }
+      }
 
       updatedPl.legacyScore = calculateLegacyScore(updatedPl);
 
@@ -302,6 +333,43 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     );
 
     if (shouldDie) {
+      const ending = calculateEnding(advancedPl);
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
+      if (!savedEndings.includes(ending.title)) {
+        savedEndings.push(ending.title);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
+      }
+
+      state.logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: advancedPl.legacyPoints || 0
+      });
+
+      if (!advancedPl.collectedDeathBadges.includes('CORRUPTION')) {
+        advancedPl.collectedDeathBadges.push('CORRUPTION');
+      }
+
+      // Update best run
+      if (advancedPl.stats) {
+        if (!advancedPl.stats.bestRunBag || advancedPl.bag > advancedPl.stats.bestRunBag) {
+          advancedPl.stats.bestRunBag = advancedPl.bag;
+          advancedPl.stats.bestRunTier = advancedPl.currentTier;
+          advancedPl.stats.bestRunEnding = ending.title;
+        }
+      }
+
+      advancedPl.legacyScore = calculateLegacyScore(advancedPl);
+
       set({
         pl: enforceStatCaps(advancedPl),
         ph: 'POST_MORTEM',

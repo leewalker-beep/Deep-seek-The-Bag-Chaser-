@@ -290,17 +290,6 @@ export interface Sentiment {
   monthsRemaining: number;
 }
 
-export interface PendingUpdate {
-  pl: PlayerStats;
-  news: (string | TickerMessage)[];
-  currentMarket: MarketType;
-  ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE';
-  deathBadge: string | null;
-  fatalCause: string | null;
-  action: Omit<GameAction, 'id' | 'timestamp'>;
-  event?: { type: GameEventType; metadata: any };
-}
-
 export interface GameState {
   pl: PlayerStats;
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE';
@@ -313,7 +302,6 @@ export interface GameState {
   deathBadge: string | null;
   fatalCause: string | null;
   difficulty: 1 | 2 | 3;
-  pendingUpdate: PendingUpdate | null;
 
   // Actions
   resetGame: (difficulty?: 1 | 2 | 3) => void;
@@ -321,7 +309,7 @@ export interface GameState {
   setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
   setActiveHustleView: (hustleId: string | null) => void;
   dismissNarrative: () => void;
-  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean, defer?: boolean) => {
+  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;
     message: string;
@@ -332,7 +320,6 @@ export interface GameState {
     mentalHit: number;
     heatHit: number;
   };
-  applyPendingUpdate: () => void;
   executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;

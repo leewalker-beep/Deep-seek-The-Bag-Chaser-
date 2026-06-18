@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PendingUpdate, GameAction } from '../../types/game';
+import type { GameState, GameAction } from '../../types/game';
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath } from '../../engine/mathEngine';
@@ -62,10 +62,8 @@ const applyFlexBonuses = (result: any, bonuses: ReturnType<typeof calculateFlexB
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
-  pendingUpdate: PendingUpdate | null;
 
-  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean, defer?: boolean) => any;
-  applyPendingUpdate: () => void;
+  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => any;
   executeBranch: (hustleId: string, branchId: string) => any;
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
@@ -79,7 +77,6 @@ export interface HustleSlice {
 
 export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (set, get) => ({
   unlockedHustles: getUnlockedHustles(3),
-  pendingUpdate: null,
 
   resetGame: (difficulty = 3) => {
     const currentState = get();
@@ -108,7 +105,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       deathBadge: null,
       fatalCause: null,
       difficulty,
-      pendingUpdate: null,
     });
   },
 
@@ -408,7 +404,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     return { success: true, message: '' };
   },
 
-  executeHustle: (hustleId, minigameMultiplier = 1, forceSuccess, defer) => {
+  executeHustle: (hustleId, minigameMultiplier = 1, forceSuccess) => {
     const state = get();
     const hustle = HUSTLES[hustleId];
 
@@ -654,108 +650,66 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     };
 
-    if (defer) {
-      set({
-        pendingUpdate: {
-          pl: enforceStatCaps(cappedPl),
-          news: finalNews,
-          currentMarket: newMarket,
-          ph: finalPh,
-          deathBadge: finalDeathBadge,
-          fatalCause: finalFatalCause,
-          action: actionLogData,
-          event: eventToLog
-        }
-      });
-    } else {
-      set({
-        pl: cappedPl,
-        currentMarket: newMarket,
-        news: finalNews,
-        ph: finalPh,
-        deathBadge: finalDeathBadge,
-        fatalCause: finalFatalCause,
-      });
-
-      get().logEvent(eventToLog.type, eventToLog.metadata);
-
-      // Update active challenges
-      if (result.success && state.pl.activeChallenges.length > 0) {
-        const updatedChallenges = state.pl.activeChallenges.map(c => {
-          if (c.tier === hustle.tier) {
-            const newCompleted = c.hustlesCompleted + 1;
-            if (newCompleted >= c.hustlesRequired) {
-              // Challenge Won
-              const bonus = Math.floor(state.pl.bag * 0.1);
-              get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
-              set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
-              get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
-              return null; // Remove challenge
-            }
-            return { ...c, hustlesCompleted: newCompleted };
-          }
-          return c;
-        }).filter(Boolean) as any[];
-
-        set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
-      }
-
-      if (result.success) {
-        if (hustleId === 'real_estate_empire') {
-          get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
-        } else if (hustleId === 'privateequity') {
-          get().logEvent('COMPANY_ACQUIRED', { level: currentLevel, cost: result.cost });
-        } else if (hustleId === 'venture_capital') {
-          get().logEvent('INVESTMENT_MADE', { sector: state.pl.vcSector, investment: result.cost });
-          if (result.yieldCash > result.cost) {
-            get().logEvent('MARKET_WIN', { type: 'VC_EXIT', profit: result.yieldCash - result.cost });
-          }
-        } else if (hustleId === 'hedgefund') {
-          if (result.yieldCash > result.cost) {
-            get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
-          }
-        } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
-          get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
-        }
-
-        const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);
-        if (activeRival) {
-          get().logEvent('RIVAL_DEFEATED', { rivalName: activeRival.name, bid: activeRival.currentBid });
-        }
-      }
-
-      get().logAction(actionLogData);
-      get().checkMilestones();
-    }
-
-    return result;
-  },
-
-  applyPendingUpdate: () => {
-    const state = get();
-    if (!state.pendingUpdate) return;
-
-    const { pl, news, currentMarket, ph, deathBadge, fatalCause, action, event } = state.pendingUpdate;
-    const updatedPl = enforceStatCaps(pl);
-    updatedPl.legacyScore = calculateLegacyScore(updatedPl);
-
     set({
-      pl: updatedPl,
-      news,
-      currentMarket,
-      ph,
-      deathBadge,
-      fatalCause,
-      pendingUpdate: null,
-      activeHustleView: null,
+      pl: cappedPl,
+      currentMarket: newMarket,
+      news: finalNews,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
     });
 
-    if (event) {
-      get().logEvent(event.type, event.metadata);
+    get().logEvent(eventToLog.type, eventToLog.metadata);
+
+    // Update active challenges
+    if (result.success && state.pl.activeChallenges.length > 0) {
+      const updatedChallenges = state.pl.activeChallenges.map(c => {
+        if (c.tier === hustle.tier) {
+          const newCompleted = c.hustlesCompleted + 1;
+          if (newCompleted >= c.hustlesRequired) {
+            // Challenge Won
+            const bonus = Math.floor(state.pl.bag * 0.1);
+            get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
+            set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
+            get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            return null; // Remove challenge
+          }
+          return { ...c, hustlesCompleted: newCompleted };
+        }
+        return c;
+      }).filter(Boolean) as any[];
+
+      set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
     }
 
-    get().logAction(action);
+    if (result.success) {
+      if (hustleId === 'real_estate_empire') {
+        get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
+      } else if (hustleId === 'privateequity') {
+        get().logEvent('COMPANY_ACQUIRED', { level: currentLevel, cost: result.cost });
+      } else if (hustleId === 'venture_capital') {
+        get().logEvent('INVESTMENT_MADE', { sector: state.pl.vcSector, investment: result.cost });
+        if (result.yieldCash > result.cost) {
+          get().logEvent('MARKET_WIN', { type: 'VC_EXIT', profit: result.yieldCash - result.cost });
+        }
+      } else if (hustleId === 'hedgefund') {
+        if (result.yieldCash > result.cost) {
+          get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
+        }
+      } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
+        get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
+      }
+
+      const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);
+      if (activeRival) {
+        get().logEvent('RIVAL_DEFEATED', { rivalName: activeRival.name, bid: activeRival.currentBid });
+      }
+    }
+
+    get().logAction(actionLogData);
     get().checkMilestones();
+
+    return result;
   },
 
   upgradeHustle: (hustleId, branchId) => {
