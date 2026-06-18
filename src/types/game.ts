@@ -126,6 +126,9 @@ export interface PresidentCrisis {
   };
   impact: {
     approval: number;
+    gdp?: number;
+    inflation?: number;
+    debt?: number;
     demographics?: Record<string, number>;
     cash?: number;
     clout?: number;
@@ -146,6 +149,9 @@ export interface ExecutiveOrder {
   };
   impact: {
     approval: number;
+    gdp?: number;
+    inflation?: number;
+    debt?: number;
     demographics?: Record<string, number>;
     passiveCash?: number;
     heat?: number;
@@ -231,6 +237,11 @@ export interface PlayerStats {
   campaignVP?: string;
   campaignDelegates?: number;
   approvalRating: number;
+  gdp: number;
+  inflation: number;
+  nationalDebt: number;
+  federalBudget: number;
+  congressSupport: number;
   demographicApproval: Record<string, number>;
   presidentialDiary: {
     id: string;
@@ -343,6 +354,7 @@ export interface GameState {
   issueExecutiveOrder: (orderId: string) => void;
   appointCabinetMember: (member: CabinetMember) => void;
   resolveCrisis: (crisisId: string) => void;
+  investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;

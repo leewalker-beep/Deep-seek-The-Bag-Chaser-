@@ -23,6 +23,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { clout: 50, aura: 20 },
     impact: {
       approval: 10,
+      gdp: 5,
+      inflation: 1,
+      debt: 2,
       demographics: { economy: 15, foreign: -5 },
       passiveCash: 50000,
       heat: 5
@@ -41,6 +44,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { cash: 10000000, clout: 100 },
     impact: {
       approval: 15,
+      gdp: 10,
+      inflation: 0.5,
+      debt: 5,
       demographics: { economy: 10, healthcare: 5 },
       passiveCash: 100000,
       heat: 10
@@ -59,6 +65,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { clout: 20 },
     impact: {
       approval: 5,
+      gdp: 8,
+      inflation: 2,
+      debt: -2,
       demographics: { economy: 20, foreign: 5 },
       passiveCash: 250000,
       heat: 20
@@ -78,6 +87,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { clout: 50 },
     impact: {
       approval: 5,
+      gdp: 12,
+      inflation: 4,
+      debt: 5,
       demographics: { economy: 15 }
     },
     marketEffect: { type: 'BULL_MARKET', duration: 6 },
@@ -100,6 +112,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { clout: 30 },
     impact: {
       approval: -10,
+      gdp: -2,
+      inflation: 3,
+      debt: -1,
       demographics: { economy: -5, foreign: -10 }
     },
     marketEffect: { type: 'RECESSION', duration: 6 },
@@ -122,6 +137,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { cash: 5000000, clout: 40 },
     impact: {
       approval: 10,
+      gdp: 5,
+      inflation: 5,
+      debt: 8,
       demographics: { economy: 10, healthcare: 5 }
     },
     marketEffect: { type: 'NORMAL', duration: 3 }
@@ -139,6 +157,9 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     cost: { cash: 50000000, clout: 200, aura: 100 },
     impact: {
       approval: 30,
+      gdp: 15,
+      inflation: 2,
+      debt: 15,
       demographics: { healthcare: 40, economy: -10 },
       passiveCash: -500000,
       heat: -10
@@ -155,6 +176,9 @@ export const CRISES: PresidentCrisis[] = [
     resolutionCost: { cash: 20000000, clout: 50 },
     impact: {
       approval: -15,
+      gdp: -10,
+      inflation: -2,
+      debt: 10,
       demographics: { economy: -25 },
       cash: -5000000
     }
@@ -167,6 +191,8 @@ export const CRISES: PresidentCrisis[] = [
     resolutionCost: { clout: 100, aura: 50 },
     impact: {
       approval: -20,
+      gdp: -2,
+      debt: 2,
       demographics: { foreign: -10 },
       aura: -50
     }
@@ -179,14 +205,18 @@ export const CRISES: PresidentCrisis[] = [
     resolutionCost: { aura: 100, cash: 5000000 },
     impact: {
       approval: -10,
+      gdp: -5,
+      inflation: 2,
+      debt: 5,
       demographics: { healthcare: -5, economy: -5 },
       heat: 30
     }
   }
 ];
 
-export function generateCrisis(isSecondTerm: boolean): PresidentCrisis | null {
-  const chance = isSecondTerm ? 0.11 : 0.06;
+export function generateCrisis(isSecondTerm: boolean, debt: number = 0): PresidentCrisis | null {
+  let chance = isSecondTerm ? 0.11 : 0.06;
+  if (debt > 80) chance += 0.10;
   if (Math.random() > chance) return null;
 
   const crisis = CRISES[Math.floor(Math.random() * CRISES.length)];

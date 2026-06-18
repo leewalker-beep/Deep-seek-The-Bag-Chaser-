@@ -50,6 +50,11 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     campaignVP: '',
     campaignDelegates: 0,
     approvalRating: 50,
+    gdp: 100,
+    inflation: 2,
+    nationalDebt: 60,
+    federalBudget: 50000000,
+    congressSupport: 50,
     demographicApproval: {
       'Economy': 50,
       'Healthcare': 50,

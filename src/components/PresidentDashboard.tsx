@@ -16,6 +16,10 @@ export const PresidentDashboard: React.FC = () => {
 
   const headlines = pl.presidentialDiary.slice(0, 5).map(d => d.event);
 
+  const handleInvest = (amount: number) => {
+    useGameStore.getState().investPersonalFunds(amount);
+  };
+
   const handleOrderClick = (order: ExecutiveOrder) => {
     setPendingOrder(order);
   };
@@ -71,6 +75,47 @@ export const PresidentDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* Macro Indicators */}
+        <div className="grid grid-cols-3 gap-2 mb-6 pt-4 border-t border-slate-800">
+          <div className="text-center p-2 bg-slate-800/40 rounded-xl">
+            <div className="text-[8px] text-slate-500 font-bold uppercase">GDP Growth</div>
+            <div className={`text-lg font-serif font-black ${pl.gdp >= 100 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {pl.gdp >= 100 ? '+' : ''}{(pl.gdp - 100).toFixed(1)}%
+            </div>
+          </div>
+          <div className="text-center p-2 bg-slate-800/40 rounded-xl">
+            <div className="text-[8px] text-slate-500 font-bold uppercase">Inflation</div>
+            <div className={`text-lg font-serif font-black ${pl.inflation < 3 ? 'text-emerald-400' : pl.inflation < 5 ? 'text-yellow-400' : 'text-red-500 animate-pulse'}`}>
+              {pl.inflation.toFixed(1)}%
+            </div>
+          </div>
+          <div className="text-center p-2 bg-slate-800/40 rounded-xl">
+            <div className="text-[8px] text-slate-500 font-bold uppercase">National Debt</div>
+            <div className={`text-lg font-serif font-black ${pl.nationalDebt < 60 ? 'text-emerald-400' : pl.nationalDebt < 80 ? 'text-yellow-400' : 'text-red-500'}`}>
+              {pl.nationalDebt.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Economic Warnings */}
+        <AnimatePresence>
+          {pl.inflation > 5 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-[9px] text-red-400 font-black uppercase text-center animate-pulse">
+              ⚠️ CRITICAL INFLATION: Approval decaying -2%/mo
+            </motion.div>
+          )}
+          {pl.nationalDebt > 80 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg text-[9px] text-orange-400 font-black uppercase text-center animate-pulse">
+              ⚠️ HIGH DEBT: National instability risk +10%
+            </motion.div>
+          )}
+          {pl.gdp < 80 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg text-[9px] text-blue-300 font-black uppercase text-center animate-pulse">
+              ⚠️ STAGNANT ECONOMY: Tax policies 50% less effective
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
           <div>
             <div className="text-[10px] text-slate-500 font-bold uppercase">Term Progress</div>
@@ -87,6 +132,35 @@ export const PresidentDashboard: React.FC = () => {
           <div>
             <div className="text-[10px] text-slate-500 font-bold uppercase">Status</div>
             <div className="text-sm font-bold text-blue-400 uppercase tracking-widest">{pl.isSecondTerm ? 'Second Term' : 'First Term'}</div>
+          </div>
+        </div>
+
+        {/* Federal Budget & Investment */}
+        <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Federal Treasury</div>
+              <div className={`text-xl font-mono font-black ${pl.federalBudget > 0 ? 'text-emerald-400' : 'text-red-500 animate-pulse'}`}>
+                ${(pl.federalBudget / 1000000).toFixed(1)}M
+              </div>
+            </div>
+            <div className="flex gap-2">
+               <button
+                onClick={() => handleInvest(5000000)}
+                className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 rounded-lg text-[8px] font-black uppercase text-emerald-400 transition-all active:scale-95"
+               >
+                 Invest $5M
+               </button>
+               <button
+                onClick={() => handleInvest(50000000)}
+                className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 rounded-lg text-[8px] font-black uppercase text-emerald-400 transition-all active:scale-95"
+               >
+                 Invest $50M
+               </button>
+            </div>
+          </div>
+          <div className="text-[8px] text-slate-500 italic">
+            Administration costs and crises draw from the Federal Treasury. Invest personal wealth to prevent bankruptcy.
           </div>
         </div>
       </div>
@@ -218,7 +292,12 @@ export const PresidentDashboard: React.FC = () => {
 
                     <div className="flex gap-2">
                       {order.cost.cash && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">INVEST: ${(order.cost.cash/1000000).toFixed(1)}M</span>}
-                      {order.cost.clout && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">CLOUT: {order.cost.clout}</span>}
+                      {order.cost.clout && (
+                        <span className={`text-[9px] font-black bg-slate-800 px-2 py-1 rounded ${pl.congressSupport < 50 ? 'text-red-400' : 'text-slate-300'}`}>
+                          CLOUT: {Math.floor(order.cost.clout * (1 + (100 - pl.congressSupport) / 100))}
+                          {pl.congressSupport < 50 && ' ⚠️'}
+                        </span>
+                      )}
                       {order.cost.aura && <span className="text-[9px] font-black bg-slate-800 px-2 py-1 rounded text-slate-300">AURA: {order.cost.aura}</span>}
                     </div>
                   </button>
