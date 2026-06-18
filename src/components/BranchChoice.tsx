@@ -37,7 +37,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
 
   const canAffordExecute = pl.bag >= currentBranch.cost;
   const isRepeatable = currentBranch.isRepeatable;
-  const currentCount = hustle.id === 'r_vending' ? pl.vendingCount : (currentBranch.id === 'l2a' ? pl.flipCount : pl.rentalCount);
+  const currentCount = hustle.id === 'r_vending' ? pl.vendingCount : (currentBranch.id === 'l2a' ? pl.flipCount : pl.rentPortfolioCount);
   const canRepeat = isRepeatable && pl.bag >= currentBranch.cost && (!currentBranch.maxRepeat || currentCount < currentBranch.maxRepeat);
 
   const handleAction = (type: 'EXECUTE' | 'SELECT', cost: number, branchId?: string) => {

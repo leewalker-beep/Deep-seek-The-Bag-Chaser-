@@ -66,7 +66,7 @@ export function advanceMonth(
       let multiplier = 1;
       // Handle repeatable hustle multipliers
       if (hustleId === 'r_labor' && newPl.hustleBranchIds[hustleId] === 'l2b') {
-        multiplier = newPl.rentalCount || 1;
+        multiplier = newPl.rentPortfolioCount || 1;
       }
       if (hustleId === 'r_vending') {
         multiplier = newPl.vendingCount || 0;

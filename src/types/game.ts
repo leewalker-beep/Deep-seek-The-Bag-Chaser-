@@ -203,6 +203,7 @@ export interface PlayerStats {
   lastExecutedHustleId?: string;
   streak?: number;
   rentalCount: number;
+  rentPortfolioCount: number;
   flipCount: number;
   vendingCount: number;
   passiveLaborYield: number;
