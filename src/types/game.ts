@@ -150,6 +150,15 @@ export interface ExecutiveOrder {
     passiveCash?: number;
     heat?: number;
   };
+  marketEffect?: {
+    type: MarketType;
+    duration: number;
+  };
+  delayedImpact?: {
+    approval: number;
+    delay: number;
+    message: string;
+  };
 }
 
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
@@ -234,6 +243,15 @@ export interface PlayerStats {
   isSecondTerm: boolean;
   cabinet: Record<string, CabinetMember>;
   activeCrises: PresidentCrisis[];
+  presidentialMarketControl: {
+    type: MarketType;
+    monthsRemaining: number;
+  } | null;
+  pendingPresidentialImpacts: {
+    monthToTrigger: number;
+    approvalImpact: number;
+    message: string;
+  }[];
   marketCycle: {
     realEstate: 'boom' | 'bust' | 'normal';
     vc: Record<string, 'boom' | 'bust' | 'normal'>;

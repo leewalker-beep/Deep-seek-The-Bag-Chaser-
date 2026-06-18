@@ -56,6 +56,15 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       });
     }
 
+    const newPendingImpacts = [...(state.pl.pendingPresidentialImpacts || [])];
+    if (order.delayedImpact) {
+      newPendingImpacts.push({
+        monthToTrigger: state.pl.presidentMonth + order.delayedImpact.delay,
+        approvalImpact: order.delayedImpact.approval,
+        message: order.delayedImpact.message
+      });
+    }
+
     const newPl = {
       ...state.pl,
       bag: state.pl.bag - (order.cost.cash || 0),
@@ -68,11 +77,20 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       dynamicPassives: {
         ...state.pl.dynamicPassives,
         [order.id]: (state.pl.dynamicPassives[order.id] || 0) + passiveCashImpact
-      }
+      },
+      presidentialMarketControl: order.marketEffect ? {
+        type: order.marketEffect.type,
+        monthsRemaining: order.marketEffect.duration
+      } : state.pl.presidentialMarketControl,
+      pendingPresidentialImpacts: newPendingImpacts
     };
 
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
+    if (order.marketEffect) {
+      set({ currentMarket: order.marketEffect.type });
+      state.addTickerMessage(`MARKET SHIFT: Administration forces ${order.marketEffect.type} for ${order.marketEffect.duration} months.`, 'text-orange-400 font-bold');
+    }
     state.logEvent('LAW_PASSED', { orderId, name: order.name });
   },
 
@@ -157,6 +175,37 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       approvalHit += c.impact.approval;
     });
 
+    // 1.1 Process Pending Presidential Impacts
+    const currentMonth = pl.presidentMonth;
+    const pendingImpacts = pl.pendingPresidentialImpacts || [];
+    const dueImpacts = pendingImpacts.filter(i => i.monthToTrigger <= currentMonth);
+    const remainingImpacts = pendingImpacts.filter(i => i.monthToTrigger > currentMonth);
+
+    dueImpacts.forEach(i => {
+      approvalHit += i.approvalImpact;
+      state.addTickerMessage(`LEGACY IMPACT: ${i.message} (${i.approvalImpact > 0 ? '+' : ''}${i.approvalImpact}% Approval)`, 'text-slate-300 font-bold');
+      newDiaryEntries.unshift({
+        id: Math.random().toString(36).substring(7),
+        month: currentMonth,
+        event: "POLICY IMPACT",
+        outcome: `${i.message}. Approval adjusted by ${i.approvalImpact}%.`,
+        type: 'ORDER' as const
+      });
+    });
+
+    // 1.2 Manage Market Control
+    let updatedMarketControl = pl.presidentialMarketControl || null;
+    if (updatedMarketControl) {
+      updatedMarketControl = {
+        ...updatedMarketControl,
+        monthsRemaining: updatedMarketControl.monthsRemaining - 1
+      };
+      if (updatedMarketControl.monthsRemaining <= 0) {
+        state.addTickerMessage(`MARKET ADVISORY: Presidential market control period has expired.`, 'text-slate-400');
+        updatedMarketControl = null;
+      }
+    }
+
     // Update demographics based on active crises
     const newDemographics = { ...pl.demographicApproval };
     activeCrises.forEach(c => {
@@ -191,7 +240,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       demographicApproval: newDemographics,
       presidentialDiary: newDiaryEntries,
       activeCrises: activeCrises,
-      presidentMonth: pl.presidentMonth + 1
+      presidentMonth: pl.presidentMonth + 1,
+      presidentialMarketControl: updatedMarketControl,
+      pendingPresidentialImpacts: remainingImpacts
     };
 
     // 2. Manage re-election and term limits

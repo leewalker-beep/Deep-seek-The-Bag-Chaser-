@@ -56,13 +56,75 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       state: "Foreign investors are already lining up.",
       defense: "A strong financial sector is a tool of national power."
     },
-    cost: { aura: 50 },
+    cost: { clout: 20 },
     impact: {
-      approval: -5,
+      approval: 5,
       demographics: { economy: 20, foreign: 5 },
       passiveCash: 250000,
       heat: 20
+    },
+    marketEffect: { type: 'CRACKDOWN', duration: 3 }
+  },
+  {
+    id: 'qe',
+    name: 'Quantitative Easing',
+    description: 'Federal Reserve announces quantitative easing. Markets are surging.',
+    quotes: {
+      treasury: "This will stimulate growth but may lead to inflation later.",
+      press: "Cheap money for everyone. The headline practically writes itself.",
+      state: "A strong dollar is good for our global standing.",
+      defense: "Economic dominance is key to national security."
+    },
+    cost: { clout: 50 },
+    impact: {
+      approval: 5,
+      demographics: { economy: 15 }
+    },
+    marketEffect: { type: 'BULL_MARKET', duration: 6 },
+    delayedImpact: {
+      approval: -10,
+      delay: 6,
+      message: "Inflation hit from Quantitative Easing."
     }
+  },
+  {
+    id: 'tariffs',
+    name: 'Trade Tariffs',
+    description: 'New trade tariffs imposed. Markets are bracing for impact.',
+    quotes: {
+      treasury: "This will disrupt supply chains in the short term.",
+      press: "Protectionism is popular in the rust belt, but hurts the coasts.",
+      state: "Our trading partners are already drafting retaliatory measures.",
+      defense: "Reducing reliance on foreign manufacturing is a strategic win."
+    },
+    cost: { clout: 30 },
+    impact: {
+      approval: -10,
+      demographics: { economy: -5, foreign: -10 }
+    },
+    marketEffect: { type: 'RECESSION', duration: 6 },
+    delayedImpact: {
+      approval: 15,
+      delay: 12,
+      message: "Domestic manufacturing boost from Trade Tariffs."
+    }
+  },
+  {
+    id: 'stimulus',
+    name: 'Stimulus Package',
+    description: 'Massive stimulus package approved. Economy is stabilizing.',
+    quotes: {
+      treasury: "A necessary injection of liquidity to prevent total collapse.",
+      press: "Checks in pockets mean votes in boxes.",
+      state: "Showing the world we can take care of our own.",
+      defense: "Internal stability is our greatest defense."
+    },
+    cost: { cash: 5000000, clout: 40 },
+    impact: {
+      approval: 10,
+      demographics: { economy: 10, healthcare: 5 }
+    },
+    marketEffect: { type: 'NORMAL', duration: 3 }
   },
   {
     id: 'healthcare',

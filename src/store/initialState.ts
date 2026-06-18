@@ -62,6 +62,8 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     isSecondTerm: false,
     cabinet: {},
     activeCrises: [],
+    presidentialMarketControl: null,
+    pendingPresidentialImpacts: [],
     marketCycle: {
       realEstate: 'normal',
       vc: {
