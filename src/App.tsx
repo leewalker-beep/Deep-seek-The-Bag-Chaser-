@@ -145,7 +145,6 @@ function App() {
     setActiveHustleView,
     setPlayerName,
     resetGame,
-    applyPendingUpdate,
     addTickerMessage,
     processLogin,
   } = useGameStore();
@@ -807,10 +806,6 @@ function App() {
             },
           ].filter(s => s.value !== 0)}
           onDismiss={() => {
-            const isDeferred = activeHustleResult.hustleId === 'lobbying' || activeHustleResult.hustleId === 'disaster';
-            if (isDeferred) {
-              applyPendingUpdate();
-            }
             setActiveHustleResult(null);
             setActiveHustleView(null);
           }}

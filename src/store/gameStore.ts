@@ -32,6 +32,7 @@ export const useGameStore = create<GameState>()(
         achievements: (state as any).achievements,
         loginStreak: (state as any).loginStreak,
         lastLoginDate: (state as any).lastLoginDate,
+        dailyChallenges: (state as any).dailyChallenges,
       }),
     }
   )
