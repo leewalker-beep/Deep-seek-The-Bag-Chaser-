@@ -37,7 +37,7 @@ export interface Hustle {
 
 export const HUSTLES: Record<string, Hustle> = {};
 
-// MUD Tier Hustles (Unique Survival Controls)
+// MUD Tier Hustles (Target: ~$1,000 profit/month, ~10 months)
 HUSTLES.r_labor = {
   id: 'r_labor',
   name: 'Labor & Property',
@@ -47,65 +47,10 @@ HUSTLES.r_labor = {
   startBranchId: 'l1',
   miniGame: 'LaborBuild',
   branches: {
-    l1: {
-      level: 1,
-      id: 'l1',
-      name: 'Manual Labor',
-      cost: 0,
-      yieldCash: 2400,
-      yieldClout: 0,
-      yieldAura: 0,
-      mentalHit: -8,
-      cloutReq: 0,
-      auraReq: 0,
-      nextBranches: ['l2a', 'l2b'],
-      miniGame: 'LaborBuild'
-    },
-    l2a: {
-      level: 2,
-      id: 'l2a',
-      name: 'House Flip',
-      cost: 15000,
-      yieldCash: 22000,
-      yieldClout: 25,
-      yieldAura: 10,
-      mentalHit: -15,
-      cloutReq: 40,
-      auraReq: 20,
-      nextBranches: ['l3a'],
-      miniGame: 'LaborBuild'
-    },
-    l2b: {
-      level: 2,
-      id: 'l2b',
-      name: 'Rent Portfolio',
-      cost: 50000,
-      yieldCash: 57000,
-      yieldClout: 10,
-      yieldAura: 5,
-      mentalHit: -5,
-      cloutReq: 50,
-      auraReq: 25,
-      passiveYield: 1000,
-      nextBranches: ['l3a'],
-      isRepeatable: true,
-      maxRepeat: 10,
-      miniGame: 'LaborBuild'
-    },
-    l3a: {
-      level: 3,
-      id: 'l3a',
-      name: 'Commercial Real Estate',
-      cost: 250000,
-      yieldCash: 0,
-      yieldClout: 50,
-      yieldAura: 25,
-      mentalHit: -20,
-      cloutReq: 200,
-      auraReq: 100,
-      passiveYield: 15000,
-      miniGame: 'LaborBuild'
-    },
+    l1: { level: 1, id: 'l1', name: 'Manual Labor', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 2, mentalHit: -8, cloutReq: 0, auraReq: 0, nextBranches: ['l2a', 'l2b'], miniGame: 'LaborBuild' },
+    l2a: { level: 2, id: 'l2a', name: 'House Flip', cost: 5000, yieldCash: 8000, yieldClout: 8, yieldAura: 8, mentalHit: -15, cloutReq: 30, auraReq: 20, nextBranches: ['l3a'], miniGame: 'LaborBuild' },
+    l2b: { level: 2, id: 'l2b', name: 'Rent Portfolio', cost: 15000, yieldCash: 25000, yieldClout: 4, yieldAura: 4, mentalHit: -5, cloutReq: 40, auraReq: 25, passiveYield: 500, nextBranches: ['l3a'], isRepeatable: true, maxRepeat: 10, miniGame: 'LaborBuild' },
+    l3a: { level: 3, id: 'l3a', name: 'Commercial Real Estate', cost: 100000, yieldCash: 150000, yieldClout: 15, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50, passiveYield: 8000, miniGame: 'LaborBuild' },
   },
 };
 
@@ -118,9 +63,9 @@ HUSTLES.r_delivery = {
   miniGame: 'TrafficDodge',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'TrafficDodge' },
-    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 8000, yieldCash: 6000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'TrafficDodge' },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 40000, yieldCash: 25000, yieldClout: 20, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TrafficDodge' },
+    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 1800, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'TrafficDodge' },
+    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 2000, yieldCash: 4500, yieldClout: 4, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'TrafficDodge' },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 10000, yieldCash: 18000, yieldClout: 12, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TrafficDodge' },
   }
 };
 
@@ -133,7 +78,7 @@ HUSTLES.r_plasma = {
   miniGame: 'PlasmaDonation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Plasma Donation', cost: 0, yieldCash: 500, yieldClout: 0, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, miniGame: 'PlasmaDonation' },
+    l1: { level: 1, id: 'l1', name: 'Plasma Donation', cost: 0, yieldCash: 300, yieldClout: 0, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, miniGame: 'PlasmaDonation' },
   },
 };
 
@@ -142,27 +87,13 @@ HUSTLES.r_vending = {
   name: 'Vending Machine',
   tier: 'MUD',
   icon: '🥤',
-  description: 'Passive income. Buy machines, get $250/month each.',
+  description: 'Passive income. Buy machines, get $150/month each.',
   isPassive: true,
   isRepeatable: true,
   maxRepeat: Infinity,
   startBranchId: 'vending',
   branches: {
-    vending: {
-      level: 1,
-      id: 'vending',
-      name: 'Buy Vending Machine',
-      cost: 2000,
-      yieldCash: 0,
-      yieldClout: 0,
-      yieldAura: 0,
-      mentalHit: 0,
-      cloutReq: 0,
-      auraReq: 0,
-      passiveYield: 250,
-      isRepeatable: true,
-      maxRepeat: Infinity,
-    },
+    vending: { level: 1, id: 'vending', name: 'Buy Vending Machine', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, cloutReq: 0, auraReq: 0, passiveYield: 150, isRepeatable: true, maxRepeat: Infinity },
   },
 };
 
@@ -175,9 +106,9 @@ HUSTLES.r_ghost_mode = {
   miniGame: 'GhostMode',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 800, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'], miniGame: 'GhostMode' },
-    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 1500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'], miniGame: 'GhostMode' },
-    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 4000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'GhostMode' }
+    l1: { level: 1, id: 'l1', name: 'Ghost Mode', cost: 1000, yieldCash: 1400, yieldClout: 0, yieldAura: 5, mentalHit: -2, cloutReq: 0, auraReq: 0, heatHit: -5, nextBranches: ['l2'], miniGame: 'GhostMode' },
+    l2: { level: 2, id: 'l2', name: 'Stealth Ops', cost: 3000, yieldCash: 4500, yieldClout: 0, yieldAura: 10, mentalHit: -5, cloutReq: 25, auraReq: 10, heatHit: -8, nextBranches: ['l3'], miniGame: 'GhostMode' },
+    l3: { level: 3, id: 'l3', name: 'Dark Web Presence', cost: 12000, yieldCash: 18000, yieldClout: 0, yieldAura: 25, mentalHit: -8, cloutReq: 60, auraReq: 30, heatHit: -12, miniGame: 'GhostMode' }
   },
 };
 
@@ -191,9 +122,9 @@ HUSTLES.r_scrap = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Scavenger', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Yard Owner', cost: 3000, yieldCash: 2000, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 8000, yieldClout: 15, yieldAura: 5, mentalHit: -15, cloutReq: 50, auraReq: 20, nextBranches: ['l4'] },
-    l4: { level: 4, id: 'l4', name: 'Industrial Network', cost: 50000, yieldCash: 25000, yieldClout: 40, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50 }
+    l2: { level: 2, id: 'l2', name: 'Yard Owner', cost: 3000, yieldCash: 4500, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 22000, yieldClout: 15, yieldAura: 5, mentalHit: -15, cloutReq: 50, auraReq: 20, nextBranches: ['l4'] },
+    l4: { level: 4, id: 'l4', name: 'Industrial Network', cost: 50000, yieldCash: 75000, yieldClout: 40, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50 }
   },
 };
 
@@ -206,8 +137,8 @@ HUSTLES.r_sleep = {
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 1, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 1000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
+    l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 200, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
 };
 
@@ -220,83 +151,15 @@ HUSTLES.street_eats = {
   startBranchId: 'l1',
   miniGame: 'StreetEats',
   branches: {
-    l1: {
-      level: 1,
-      id: 'l1',
-      name: 'Taco Cart',
-      cost: 500,
-      yieldCash: 1200,
-      yieldClout: 5,
-      yieldAura: 3,
-      mentalHit: -5,
-      cloutReq: 0,
-      auraReq: 0,
-      nextBranches: ['l2'],
-      miniGame: 'StreetEats'
-    },
-    l2: {
-      level: 2,
-      id: 'l2',
-      name: 'Food Truck',
-      cost: 8000,
-      yieldCash: 5000,
-      yieldClout: 15,
-      yieldAura: 8,
-      mentalHit: -8,
-      cloutReq: 20,
-      auraReq: 10,
-      nextBranches: ['l3'],
-      passiveYield: 500,
-      miniGame: 'StreetEats'
-    },
-    l3: {
-      level: 3,
-      id: 'l3',
-      name: 'Ghost Kitchen',
-      cost: 25000,
-      yieldCash: 15000,
-      yieldClout: 30,
-      yieldAura: 15,
-      mentalHit: -12,
-      cloutReq: 50,
-      auraReq: 25,
-      nextBranches: ['l4'],
-      passiveYield: 2000,
-      miniGame: 'StreetEats'
-    },
-    l4: {
-      level: 4,
-      id: 'l4',
-      name: 'Brick & Mortar',
-      cost: 80000,
-      yieldCash: 40000,
-      yieldClout: 60,
-      yieldAura: 30,
-      mentalHit: -15,
-      cloutReq: 100,
-      auraReq: 50,
-      nextBranches: ['l5'],
-      passiveYield: 8000,
-      miniGame: 'StreetEats'
-    },
-    l5: {
-      level: 5,
-      id: 'l5',
-      name: 'Mini-Chain',
-      cost: 250000,
-      yieldCash: 100000,
-      yieldClout: 120,
-      yieldAura: 60,
-      mentalHit: -20,
-      cloutReq: 200,
-      auraReq: 100,
-      passiveYield: 25000,
-      miniGame: 'StreetEats'
-    }
+    l1: { level: 1, id: 'l1', name: 'Taco Cart', cost: 500, yieldCash: 1000, yieldClout: 5, yieldAura: 3, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'StreetEats' },
+    l2: { level: 2, id: 'l2', name: 'Food Truck', cost: 8000, yieldCash: 12000, yieldClout: 15, yieldAura: 8, mentalHit: -8, cloutReq: 20, auraReq: 10, nextBranches: ['l3'], passiveYield: 500, miniGame: 'StreetEats' },
+    l3: { level: 3, id: 'l3', name: 'Ghost Kitchen', cost: 25000, yieldCash: 35000, yieldClout: 30, yieldAura: 15, mentalHit: -12, cloutReq: 50, auraReq: 25, nextBranches: ['l4'], passiveYield: 2000, miniGame: 'StreetEats' },
+    l4: { level: 4, id: 'l4', name: 'Brick & Mortar', cost: 80000, yieldCash: 110000, yieldClout: 60, yieldAura: 30, mentalHit: -15, cloutReq: 100, auraReq: 50, nextBranches: ['l5'], passiveYield: 8000, miniGame: 'StreetEats' },
+    l5: { level: 5, id: 'l5', name: 'Mini-Chain', cost: 250000, yieldCash: 350000, yieldClout: 120, yieldAura: 60, mentalHit: -20, cloutReq: 200, auraReq: 100, passiveYield: 25000, miniGame: 'StreetEats' }
   }
 };
 
-// STREET Tier Hustles (Unique Control Schemes)
+// STREET Tier Hustles (Target: ~$3,000 profit/month, ~30 months)
 HUSTLES.cc = {
   id: 'cc',
   name: 'Content Creation',
@@ -306,9 +169,9 @@ HUSTLES.cc = {
   miniGame: 'ContentCreation',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 400, yieldCash: 600, yieldClout: 80, yieldAura: 0, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'ContentCreation' },
-    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 5000, yieldCash: 3000, yieldClout: 240, yieldAura: 50, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'ContentCreation' },
-    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 25000, yieldCash: 22500, yieldClout: 640, yieldAura: 200, mentalHit: -25, cloutReq: 500, auraReq: 200, miniGame: 'ContentCreation' },
+    l1: { level: 1, id: 'l1', name: 'Create Content', cost: 0, yieldCash: 4000, yieldClout: 3, yieldAura: 1, mentalHit: -10, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'ContentCreation' },
+    l2: { level: 2, id: 'l2', name: 'Viral Series', cost: 15000, yieldCash: 35000, yieldClout: 12, yieldAura: 8, mentalHit: -15, cloutReq: 150, auraReq: 50, nextBranches: ['l3'], miniGame: 'ContentCreation' },
+    l3: { level: 3, id: 'l3', name: 'Media Channel', cost: 100000, yieldCash: 220000, yieldClout: 35, yieldAura: 20, mentalHit: -25, cloutReq: 400, auraReq: 200, miniGame: 'ContentCreation' },
   },
 };
 
@@ -321,10 +184,10 @@ HUSTLES.pod = {
   miniGame: 'TapRhythm',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 200, yieldCash: 1500, yieldClout: 30, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 2000, nextBranches: ['l2'], miniGame: 'TapRhythm' },
-    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 4000, yieldCash: 5000, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 80, auraReq: 40, passiveYield: 5000, nextBranches: ['l3'], miniGame: 'TapRhythm' },
-    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 30000, yieldCash: 25000, yieldClout: 500, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 10000, nextBranches: ['l4'], miniGame: 'TapRhythm' },
-    l4: { level: 4, id: 'l4', name: 'Global Network', cost: 120000, yieldCash: 80000, yieldClout: 1500, yieldAura: 800, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 20000, miniGame: 'TapRhythm' }
+    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 3000, yieldCash: 12000, yieldClout: 3, yieldAura: 1, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 200, nextBranches: ['l2'], miniGame: 'TapRhythm' },
+    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 25000, yieldCash: 60000, yieldClout: 10, yieldAura: 5, mentalHit: -10, cloutReq: 80, auraReq: 40, passiveYield: 800, nextBranches: ['l3'], miniGame: 'TapRhythm' },
+    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 120000, yieldCash: 280000, yieldClout: 28, yieldAura: 15, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 3000, nextBranches: ['l4'], miniGame: 'TapRhythm' },
+    l4: { level: 4, id: 'l4', name: 'Global Network', cost: 500000, yieldCash: 1100000, yieldClout: 85, yieldAura: 45, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 15000, miniGame: 'TapRhythm' }
   },
 };
 
@@ -337,9 +200,9 @@ HUSTLES.drop = {
   miniGame: 'SwipeAuthentic',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 2000, yieldCash: 4000, yieldClout: 5, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeAuthentic' },
-    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 15000, yieldCash: 12000, yieldClout: 30, yieldAura: 10, mentalHit: -18, cloutReq: 40, auraReq: 20, nextBranches: ['l3'], miniGame: 'SwipeAuthentic' },
-    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 50000, yieldCash: 45000, yieldClout: 80, yieldAura: 30, mentalHit: -25, cloutReq: 80, auraReq: 40, miniGame: 'SwipeAuthentic' }
+    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 4000, yieldCash: 15000, yieldClout: 2, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeAuthentic' },
+    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 30000, yieldCash: 85000, yieldClout: 6, yieldAura: 4, mentalHit: -18, cloutReq: 80, auraReq: 40, nextBranches: ['l3'], miniGame: 'SwipeAuthentic' },
+    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 200000, yieldCash: 500000, yieldClout: 18, yieldAura: 10, mentalHit: -25, cloutReq: 250, auraReq: 150, miniGame: 'SwipeAuthentic' }
   }
 };
 
@@ -352,9 +215,9 @@ HUSTLES.vintage = {
   miniGame: 'PinchToInspect',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Thrift Flip', cost: 1000, yieldCash: 3000, yieldClout: 15, yieldAura: 10, mentalHit: -8, cloutReq: 30, auraReq: 20, nextBranches: ['l2'], miniGame: 'PinchToInspect' },
-    l2: { level: 2, id: 'l2', name: 'Showroom Space', cost: 12000, yieldCash: 10000, yieldClout: 50, yieldAura: 40, mentalHit: -15, cloutReq: 60, auraReq: 40, nextBranches: ['l3'], miniGame: 'PinchToInspect' },
-    l3: { level: 3, id: 'l3', name: 'Archival Gallery', cost: 45000, yieldCash: 40000, yieldClout: 150, yieldAura: 120, mentalHit: -22, cloutReq: 120, auraReq: 80, miniGame: 'PinchToInspect' }
+    l1: { level: 1, id: 'l1', name: 'Thrift Flip', cost: 1000, yieldCash: 1500, yieldClout: 5, yieldAura: 5, mentalHit: -8, cloutReq: 30, auraReq: 20, nextBranches: ['l2'], miniGame: 'PinchToInspect' },
+    l2: { level: 2, id: 'l2', name: 'Showroom Space', cost: 12000, yieldCash: 18000, yieldClout: 15, yieldAura: 15, mentalHit: -15, cloutReq: 60, auraReq: 40, nextBranches: ['l3'], miniGame: 'PinchToInspect' },
+    l3: { level: 3, id: 'l3', name: 'Archival Gallery', cost: 45000, yieldCash: 65000, yieldClout: 40, yieldAura: 40, mentalHit: -22, cloutReq: 120, auraReq: 80, miniGame: 'PinchToInspect' }
   }
 };
 
@@ -367,9 +230,9 @@ HUSTLES.techFlip = {
   miniGame: 'TechRepairDrag',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Basic Refurb', cost: 1500, yieldCash: 3500, yieldClout: 10, yieldAura: 5, mentalHit: -9, cloutReq: 25, auraReq: 15, nextBranches: ['l2'], miniGame: 'TechRepairDrag' },
-    l2: { level: 2, id: 'l2', name: 'Bulk Repair Shop', cost: 18000, yieldCash: 15000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 50, auraReq: 30, nextBranches: ['l3'], miniGame: 'TechRepairDrag' },
-    l3: { level: 3, id: 'l3', name: 'Hardware Customization', cost: 55000, yieldCash: 50000, yieldClout: 120, yieldAura: 60, mentalHit: -25, cloutReq: 100, auraReq: 60, miniGame: 'TechRepairDrag' }
+    l1: { level: 1, id: 'l1', name: 'Basic Refurb', cost: 1500, yieldCash: 2200, yieldClout: 5, yieldAura: 2, mentalHit: -9, cloutReq: 25, auraReq: 15, nextBranches: ['l2'], miniGame: 'TechRepairDrag' },
+    l2: { level: 2, id: 'l2', name: 'Bulk Repair Shop', cost: 18000, yieldCash: 26000, yieldClout: 15, yieldAura: 8, mentalHit: -18, cloutReq: 50, auraReq: 30, nextBranches: ['l3'], miniGame: 'TechRepairDrag' },
+    l3: { level: 3, id: 'l3', name: 'Hardware Customization', cost: 55000, yieldCash: 80000, yieldClout: 35, yieldAura: 15, mentalHit: -25, cloutReq: 100, auraReq: 60, miniGame: 'TechRepairDrag' }
   }
 };
 
@@ -384,10 +247,10 @@ HUSTLES.audio = {
   panelType: 'MUSIC_PRODUCTION',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Bedroom Producer', cost: 2500, yieldCash: 1200, yieldClout: 40, yieldAura: 30, mentalHit: -12, cloutReq: 40, auraReq: 30, nextBranches: ['l2'], miniGame: 'BeatSequence' },
-    l2: { level: 2, id: 'l2', name: 'Independent Label', cost: 10000, yieldCash: 2000, yieldClout: 80, yieldAura: 40, mentalHit: -15, cloutReq: 80, auraReq: 50, nextBranches: ['l3'], miniGame: 'BeatSequence' },
-    l3: { level: 3, id: 'l3', name: 'Major Distribution', cost: 75000, yieldCash: 15000, yieldClout: 250, yieldAura: 150, mentalHit: -25, cloutReq: 250, auraReq: 150, nextBranches: ['l4'], miniGame: 'BeatSequence' },
-    l4: { level: 4, id: 'l4', name: 'Global Records', cost: 250000, yieldCash: 60000, yieldClout: 800, yieldAura: 400, mentalHit: -40, cloutReq: 600, auraReq: 400, miniGame: 'BeatSequence' }
+    l1: { level: 1, id: 'l1', name: 'Bedroom Producer', cost: 2500, yieldCash: 3500, yieldClout: 20, yieldAura: 15, mentalHit: -12, cloutReq: 40, auraReq: 30, nextBranches: ['l2'], miniGame: 'BeatSequence' },
+    l2: { level: 2, id: 'l2', name: 'Independent Label', cost: 10000, yieldCash: 15000, yieldClout: 40, yieldAura: 30, mentalHit: -15, cloutReq: 80, auraReq: 50, nextBranches: ['l3'], miniGame: 'BeatSequence' },
+    l3: { level: 3, id: 'l3', name: 'Major Distribution', cost: 75000, yieldCash: 110000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 250, auraReq: 150, nextBranches: ['l4'], miniGame: 'BeatSequence' },
+    l4: { level: 4, id: 'l4', name: 'Global Records', cost: 250000, yieldCash: 380000, yieldClout: 400, yieldAura: 200, mentalHit: -40, cloutReq: 600, auraReq: 400, miniGame: 'BeatSequence' }
   }
 };
 
@@ -400,9 +263,9 @@ HUSTLES.r_pr_campaign = {
   miniGame: 'WordTap',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 1000, yieldCash: 0, yieldClout: 50, yieldAura: 20, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'WordTap' },
-    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 100, yieldAura: 40, mentalHit: -8, cloutReq: 30, auraReq: 15, nextBranches: ['l3'], miniGame: 'WordTap' },
-    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 250, yieldAura: 100, mentalHit: -12, cloutReq: 80, auraReq: 40, miniGame: 'WordTap' },
+    l1: { level: 1, id: 'l1', name: 'PR Campaign', cost: 1000, yieldCash: 0, yieldClout: 15, yieldAura: 10, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'WordTap' },
+    l2: { level: 2, id: 'l2', name: 'Regional PR', cost: 5000, yieldCash: 0, yieldClout: 40, yieldAura: 25, mentalHit: -8, cloutReq: 50, auraReq: 30, nextBranches: ['l3'], miniGame: 'WordTap' },
+    l3: { level: 3, id: 'l3', name: 'National PR Firm', cost: 20000, yieldCash: 0, yieldClout: 100, yieldAura: 60, mentalHit: -12, cloutReq: 100, auraReq: 60, miniGame: 'WordTap' },
   },
 };
 
@@ -418,7 +281,7 @@ HUSTLES.power_nap = {
   },
 };
 
-// STARTUP Tier Hustles (Planning: PatternMemory, SequenceRecall, TapAssign)
+// STARTUP Tier Hustles (Target: ~$25,000 profit/month, ~30 months)
 HUSTLES.sw = {
   id: 'sw',
   name: 'Streetwear',
@@ -430,9 +293,9 @@ HUSTLES.sw = {
   panelType: 'STREETWEAR',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 3000, yieldCash: 5000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Pop-Up Tour', level: 2, cost: 25000, yieldCash: 15000, yieldClout: 50, yieldAura: 25, mentalHit: -15, cloutReq: 45, auraReq: 20, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Flagship Store', level: 3, cost: 75000, yieldCash: 45000, yieldClout: 120, yieldAura: 60, mentalHit: -22, cloutReq: 90, auraReq: 45 }
+    l1: { level: 1, id: 'l1', name: 'Screenprint Tees', cost: 0, yieldCash: 12000, yieldClout: 4, yieldAura: 2, mentalHit: -15, cloutReq: 50, auraReq: 40, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Pop-Up Tour', level: 2, cost: 100000, yieldCash: 350000, yieldClout: 40, yieldAura: 25, mentalHit: -15, cloutReq: 120, auraReq: 80, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Flagship Store', level: 3, cost: 500000, yieldCash: 1800000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 400, auraReq: 400 }
   }
 };
 
@@ -445,9 +308,9 @@ HUSTLES.smm = {
   miniGame: 'HashtagTap',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Freelance SMM', cost: 500, yieldCash: 2500, yieldClout: 20, yieldAura: 10, mentalHit: -10, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Agency Partner', cost: 8000, yieldCash: 12000, yieldClout: 60, yieldAura: 30, mentalHit: -15, cloutReq: 80, auraReq: 40, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Full Scale Agency', cost: 35000, yieldCash: 30000, yieldClout: 150, yieldAura: 100, mentalHit: -22, cloutReq: 150, auraReq: 100 }
+    l1: { level: 1, id: 'l1', name: 'Freelance SMM', cost: 15000, yieldCash: 40000, yieldClout: 6, yieldAura: 4, mentalHit: -10, cloutReq: 30, auraReq: 20, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Agency Partner', cost: 120000, yieldCash: 350000, yieldClout: 18, yieldAura: 12, mentalHit: -15, cloutReq: 120, auraReq: 80, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Full Scale Agency', cost: 500000, yieldCash: 1200000, yieldClout: 45, yieldAura: 30, mentalHit: -22, cloutReq: 400, auraReq: 400 }
   }
 };
 
@@ -460,9 +323,9 @@ HUSTLES.gig = {
   miniGame: 'RunnerRoute',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 5000, yieldCash: 2000, yieldClout: 15, yieldAura: 5, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 500, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'City Dispatch', cost: 25000, yieldCash: 10000, yieldClout: 40, yieldAura: 15, mentalHit: -15, cloutReq: 100, auraReq: 50, passiveYield: 2500, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Logistics Hub', cost: 100000, yieldCash: 40000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 250, auraReq: 120, passiveYield: 10000 }
+    l1: { level: 1, id: 'l1', name: 'Hire Runner', cost: 20000, yieldCash: 50000, yieldClout: 4, yieldAura: 2, mentalHit: -10, cloutReq: 40, auraReq: 20, passiveYield: 1000, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'City Dispatch', cost: 150000, yieldCash: 400000, yieldClout: 12, yieldAura: 8, mentalHit: -15, cloutReq: 120, auraReq: 80, passiveYield: 4000, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Logistics Hub', cost: 700000, yieldCash: 1600000, yieldClout: 35, yieldAura: 20, mentalHit: -20, cloutReq: 400, auraReq: 400, passiveYield: 20000 }
   }
 };
 
@@ -475,9 +338,9 @@ HUSTLES.meme = {
   miniGame: 'MemeCoinPump',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 10000, yieldClout: 10, yieldAura: 50, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Influencer Launch', cost: 15000, yieldCash: 50000, yieldClout: 100, yieldAura: 150, mentalHit: -40, cloutReq: 100, auraReq: 100, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Exchange Listing', cost: 100000, yieldCash: 500000, yieldClout: 500, yieldAura: 500, mentalHit: -60, cloutReq: 500, auraReq: 300 }
+    l1: { level: 1, id: 'l1', name: 'Shitcoin Gamble', cost: 1000, yieldCash: 1500, yieldClout: 1, yieldAura: 4, mentalHit: -25, cloutReq: 20, auraReq: 50, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Influencer Launch', cost: 15000, yieldCash: 22000, yieldClout: 3, yieldAura: 10, mentalHit: -40, cloutReq: 100, auraReq: 100, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Exchange Listing', cost: 100000, yieldCash: 150000, yieldClout: 10, yieldAura: 25, mentalHit: -60, cloutReq: 600, auraReq: 400 }
   }
 };
 
@@ -490,10 +353,10 @@ HUSTLES.saas_mvp = {
   miniGame: 'DragScale',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 15000, yieldCash: 2000, yieldClout: 50, yieldAura: 20, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 5000, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Series A', level: 2, cost: 50000, yieldCash: 15000, yieldClout: 100, yieldAura: 40, mentalHit: -20, cloutReq: 60, auraReq: 30, passiveYield: 15000, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Unicorn', level: 3, cost: 200000, yieldCash: 60000, yieldClout: 250, yieldAura: 100, mentalHit: -30, cloutReq: 120, auraReq: 60, passiveYield: 30000, nextBranches: ['l4'] },
-    l4: { id: 'l4', name: 'Tech Hegemony', level: 4, cost: 800000, yieldCash: 250000, yieldClout: 800, yieldAura: 400, mentalHit: -45, cloutReq: 400, auraReq: 200, passiveYield: 60000 }
+    l1: { level: 1, id: 'l1', cost: 30000, yieldCash: 50000, yieldClout: 5, yieldAura: 2, mentalHit: -15, cloutReq: 50, auraReq: 50, passiveYield: 2000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Series A', level: 2, cost: 100000, yieldCash: 160000, yieldClout: 15, yieldAura: 10, mentalHit: -20, cloutReq: 120, auraReq: 80, passiveYield: 6000, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Unicorn', level: 3, cost: 400000, yieldCash: 650000, yieldClout: 40, yieldAura: 20, mentalHit: -30, cloutReq: 250, auraReq: 150, passiveYield: 15000, nextBranches: ['l4'] },
+    l4: { id: 'l4', name: 'Tech Hegemony', level: 4, cost: 1500000, yieldCash: 2500000, yieldClout: 100, yieldAura: 50, mentalHit: -45, cloutReq: 600, auraReq: 300, passiveYield: 50000 }
   }
 };
 
@@ -506,9 +369,9 @@ HUSTLES.agency_scale = {
   miniGame: 'TapAssign',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 25000, yieldCash: 15000, yieldClout: 80, yieldAura: 40, mentalHit: -20, cloutReq: 80, auraReq: 60, passiveYield: 3000, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Regional Agency', level: 2, cost: 30000, yieldCash: 20000, yieldClout: 80, yieldAura: 30, mentalHit: -18, cloutReq: 50, auraReq: 25, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'National Network', level: 3, cost: 100000, yieldCash: 75000, yieldClout: 200, yieldAura: 80, mentalHit: -25, cloutReq: 100, auraReq: 50 }
+    l1: { level: 1, id: 'l1', cost: 50000, yieldCash: 85000, yieldClout: 15, yieldAura: 10, mentalHit: -20, cloutReq: 150, auraReq: 100, passiveYield: 4000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Regional Agency', level: 2, cost: 200000, yieldCash: 350000, yieldClout: 30, yieldAura: 20, mentalHit: -18, cloutReq: 200, auraReq: 125, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'National Network', level: 3, cost: 800000, yieldCash: 1400000, yieldClout: 60, yieldAura: 40, mentalHit: -25, cloutReq: 300, auraReq: 200 }
   }
 };
 
@@ -521,9 +384,9 @@ HUSTLES.ecom_brand = {
   miniGame: 'EcomCatch',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 40000, yieldCash: 25000, yieldClout: 100, yieldAura: 60, mentalHit: -22, cloutReq: 100, auraReq: 80, passiveYield: 8000, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Warehouse Automation', level: 2, cost: 80000, yieldCash: 40000, yieldClout: 60, yieldAura: 20, mentalHit: -22, cloutReq: 70, auraReq: 35, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Global Fulfillment', level: 3, cost: 250000, yieldCash: 120000, yieldClout: 150, yieldAura: 60, mentalHit: -30, cloutReq: 140, auraReq: 70 }
+    l1: { level: 1, id: 'l1', cost: 40000, yieldCash: 65000, yieldClout: 40, yieldAura: 25, mentalHit: -22, cloutReq: 200, auraReq: 150, passiveYield: 4000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Warehouse Automation', level: 2, cost: 100000, yieldCash: 160000, yieldClout: 80, yieldAura: 40, mentalHit: -22, cloutReq: 300, auraReq: 200, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Global Fulfillment', level: 3, cost: 300000, yieldCash: 500000, yieldClout: 200, yieldAura: 100, mentalHit: -30, cloutReq: 500, auraReq: 300 }
   }
 };
 
@@ -535,11 +398,11 @@ HUSTLES.therapy_session = {
   description: 'Regain mental health',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 500, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
+    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 10000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
   },
 };
 
-// CORPORATE Tier Hustles (Casino: HigherLower, Blackjack, Roulette, SlotMachine, DiceCraps)
+// CORPORATE Tier Hustles (Target: ~$250,000 profit/month, ~40 months)
 HUSTLES.festival = {
   id: 'festival',
   name: 'Music Festival',
@@ -550,7 +413,7 @@ HUSTLES.festival = {
   hasPanel: true,
   panelType: 'FESTIVAL',
   levels: [
-    { level: 1, id: 'l1', cost: 200000, yieldCash: 350000, yieldClout: 200, yieldAura: 100, mentalHit: -40, cloutReq: 100, auraReq: 100 },
+    { level: 1, id: 'l1', cost: 200000, yieldCash: 350000, yieldClout: 20, yieldAura: 20, mentalHit: -40, cloutReq: 300, auraReq: 300 },
   ]
 };
 
@@ -562,10 +425,10 @@ HUSTLES.global_franchise = {
   description: 'Scalable standardized success',
   miniGame: 'Roulette',
   levels: [
-    { level: 1, id: 'l1', cost: 500000, yieldCash: 150000, yieldClout: 100, yieldAura: 50, mentalHit: -30, cloutReq: 150, auraReq: 100, passiveYield: 15000 },
-    { level: 2, id: 'l2', cost: 2000000, yieldCash: 500000, yieldClout: 300, yieldAura: 150, mentalHit: -40, cloutReq: 300, auraReq: 200, passiveYield: 40000 },
-    { level: 3, id: 'l3', cost: 8000000, yieldCash: 1500000, yieldClout: 800, yieldAura: 400, mentalHit: -50, cloutReq: 800, auraReq: 500, passiveYield: 80000 },
-    { level: 4, id: 'l4', cost: 25000000, yieldCash: 5000000, yieldClout: 2000, yieldAura: 1000, mentalHit: -65, cloutReq: 2000, auraReq: 1200, passiveYield: 150000 },
+    { level: 1, id: 'l1', cost: 500000, yieldCash: 1000000, yieldClout: 12, yieldAura: 6, mentalHit: -30, cloutReq: 400, auraReq: 400, passiveYield: 20000 },
+    { level: 2, id: 'l2', cost: 3000000, yieldCash: 6500000, yieldClout: 30, yieldAura: 15, mentalHit: -40, cloutReq: 800, auraReq: 800, passiveYield: 60000 },
+    { level: 3, id: 'l3', cost: 12000000, yieldCash: 28000000, yieldClout: 70, yieldAura: 40, mentalHit: -50, cloutReq: 1500, auraReq: 1200, passiveYield: 150000 },
+    { level: 4, id: 'l4', cost: 40000000, yieldCash: 100000000, yieldClout: 200, yieldAura: 120, mentalHit: -65, cloutReq: 3000, auraReq: 2500, passiveYield: 400000 },
   ]
 };
 
@@ -579,9 +442,9 @@ HUSTLES.data_analytics = {
   hasPanel: true,
   panelType: 'DATA_ANALYTICS',
   levels: [
-    { level: 1, id: 'l1', cost: 60000, yieldCash: 45000, yieldClout: 120, yieldAura: 80, mentalHit: -25, cloutReq: 150, auraReq: 100, passiveYield: 12000 },
-    { level: 2, id: 'l2', cost: 120000, yieldCash: 90000, yieldClout: 250, yieldAura: 160, mentalHit: -35, cloutReq: 250, auraReq: 150, passiveYield: 25000 },
-    { level: 3, id: 'l3', cost: 250000, yieldCash: 200000, yieldClout: 500, yieldAura: 350, mentalHit: -50, cloutReq: 500, auraReq: 300, passiveYield: 60000 },
+    { level: 1, id: 'l1', cost: 1000000, yieldCash: 2500000, yieldClout: 15, yieldAura: 8, mentalHit: -25, cloutReq: 400, auraReq: 400, passiveYield: 25000 },
+    { level: 2, id: 'l2', cost: 5000000, yieldCash: 12000000, yieldClout: 40, yieldAura: 20, mentalHit: -35, cloutReq: 1200, auraReq: 1200, passiveYield: 80000 },
+    { level: 3, id: 'l3', cost: 20000000, yieldCash: 50000000, yieldClout: 100, yieldAura: 60, mentalHit: -50, cloutReq: 3000, auraReq: 3000, passiveYield: 250000 },
   ]
 };
 
@@ -595,9 +458,9 @@ HUSTLES.crypto_mining = {
   hasPanel: true,
   panelType: 'CRYPTO_MINING',
   levels: [
-    { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 100, auraReq: 150, passiveYield: 25000 },
-    { level: 2, id: 'l2', cost: 300000, yieldCash: 0, yieldClout: 120, yieldAura: 250, mentalHit: -20, cloutReq: 300, auraReq: 300, passiveYield: 75000 },
-    { level: 3, id: 'l3', cost: 1000000, yieldCash: 0, yieldClout: 300, yieldAura: 600, mentalHit: -40, cloutReq: 600, auraReq: 600, passiveYield: 200000 },
+    { level: 1, id: 'l1', cost: 100000, yieldCash: 0, yieldClout: 20, yieldAura: 50, mentalHit: -10, cloutReq: 400, auraReq: 400, passiveYield: 10000 },
+    { level: 2, id: 'l2', cost: 500000, yieldCash: 0, yieldClout: 40, yieldAura: 100, mentalHit: -20, cloutReq: 600, auraReq: 600, passiveYield: 35000 },
+    { level: 3, id: 'l3', cost: 2000000, yieldCash: 0, yieldClout: 120, yieldAura: 250, mentalHit: -40, cloutReq: 800, auraReq: 800, passiveYield: 120000 },
   ]
 };
 
@@ -611,7 +474,7 @@ HUSTLES.virtual_assistant_agency = {
   hasPanel: true,
   panelType: 'VA_AGENCY',
   levels: [
-    { level: 1, id: 'l1', cost: 20000, yieldCash: 12000, yieldClout: 40, yieldAura: 20, mentalHit: -18, cloutReq: 60, auraReq: 40, passiveYield: 4000 },
+    { level: 1, id: 'l1', cost: 50000, yieldCash: 80000, yieldClout: 15, yieldAura: 10, mentalHit: -18, cloutReq: 400, auraReq: 400, passiveYield: 2000 },
   ]
 };
 
@@ -624,9 +487,9 @@ HUSTLES.lobbying = {
   miniGame: 'HigherLower',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 150, auraReq: 75, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'National Reach', cost: 10000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 250, auraReq: 125, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Global Influence', cost: 20000000, yieldCash: 0, yieldClout: 400, yieldAura: 200, mentalHit: -20, cloutReq: 400, auraReq: 200 },
+    l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 500, auraReq: 500, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'National Reach', cost: 10000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 800, auraReq: 800, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Global Influence', cost: 20000000, yieldCash: 0, yieldClout: 400, yieldAura: 200, mentalHit: -20, cloutReq: 1200, auraReq: 1200 },
   },
 };
 
@@ -639,9 +502,9 @@ HUSTLES.disaster = {
   miniGame: 'Roulette',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 120, auraReq: 60, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Crisis Team', cost: 10000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -12, cloutReq: 200, auraReq: 100, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'PR Empire', cost: 20000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 350, auraReq: 175 },
+    l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 500, auraReq: 500, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Crisis Team', cost: 10000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -12, cloutReq: 800, auraReq: 800, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'PR Empire', cost: 20000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 1200, auraReq: 1200 },
   },
 };
 
@@ -654,11 +517,11 @@ HUSTLES.wellness_retreat = {
   miniGame: 'SlotMachine',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 2000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0, shieldTurns: 4 },
+    l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 100000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0, shieldTurns: 4 },
   },
 };
 
-// ELITE Tier Hustles (Pressure: QuickReaction, BalanceScale, ReactionGrid, BoardroomBattle)
+// ELITE Tier Hustles (Target: ~$1.5M profit/month, ~33 months)
 HUSTLES.psychiatrist = {
   id: 'psychiatrist',
   name: 'Psychiatrist',
@@ -668,7 +531,7 @@ HUSTLES.psychiatrist = {
   miniGame: 'QuickReaction',
   startBranchId: 'l1',
   branches: {
-    l1: { id: 'l1', name: 'Psychiatrist Session', level: 1, cost: 1000000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 80, cloutReq: 0, auraReq: 0, shieldTurns: 6 },
+    l1: { id: 'l1', name: 'Psychiatrist Session', level: 1, cost: 5000000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 80, cloutReq: 0, auraReq: 0, shieldTurns: 6 },
   },
 };
 
@@ -682,7 +545,7 @@ HUSTLES.real_estate_empire = {
   hasPanel: true,
   panelType: 'REAL_ESTATE',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 500, yieldAura: 300, mentalHit: -30, cloutReq: 200, auraReq: 200 },
+    l1: { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 80, mentalHit: -30, cloutReq: 1000, auraReq: 1000 },
   }
 };
 
@@ -696,7 +559,7 @@ HUSTLES.venture_capital = {
   hasPanel: true,
   panelType: 'VENTURE_CAPITAL',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 0, yieldCash: 0, yieldClout: 800, yieldAura: 400, mentalHit: -25, cloutReq: 400, auraReq: 300 },
+    l1: { level: 1, id: 'l1', cost: 1000000, yieldCash: 0, yieldClout: 120, yieldAura: 100, mentalHit: -25, cloutReq: 1200, auraReq: 1200 },
   }
 };
 
@@ -709,9 +572,9 @@ HUSTLES.hedgefund = {
   miniGame: 'ReactionGrid',
   startBranchId: 'l1',
   branches: {
-    l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 10000000, yieldCash: 5000000, yieldClout: 100, yieldAura: 50, mentalHit: -15, cloutReq: 300, auraReq: 150, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Global Macro', level: 2, cost: 25000000, yieldCash: 15000000, yieldClout: 200, yieldAura: 100, mentalHit: -20, cloutReq: 500, auraReq: 250, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Aggressive Strategies', level: 3, cost: 50000000, yieldCash: 35000000, yieldClout: 400, yieldAura: 200, mentalHit: -25, cloutReq: 800, auraReq: 400 },
+    l1: { id: 'l1', name: 'Long/Short Equity', level: 1, cost: 20000000, yieldCash: 35000000, yieldClout: 40, yieldAura: 25, mentalHit: -15, cloutReq: 1000, auraReq: 1000, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Global Macro', level: 2, cost: 80000000, yieldCash: 150000000, yieldClout: 100, yieldAura: 60, mentalHit: -20, cloutReq: 2500, auraReq: 2500, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Aggressive Strategies', level: 3, cost: 300000000, yieldCash: 650000000, yieldClout: 300, yieldAura: 150, mentalHit: -25, cloutReq: 8000, auraReq: 8000 },
   },
 };
 
@@ -724,13 +587,13 @@ HUSTLES.privateequity = {
   miniGame: 'BoardroomBattle',
   startBranchId: 'l1',
   branches: {
-    l1: { id: 'l1', name: 'Small Buyouts', level: 1, cost: 20000000, yieldCash: 10000000, yieldClout: 150, yieldAura: 75, mentalHit: -18, cloutReq: 350, auraReq: 175, nextBranches: ['l2'] },
-    l2: { id: 'l2', name: 'Mid Market', level: 2, cost: 50000000, yieldCash: 30000000, yieldClout: 300, yieldAura: 150, mentalHit: -22, cloutReq: 600, auraReq: 300, nextBranches: ['l3'] },
-    l3: { id: 'l3', name: 'Leveraged Buyouts', level: 3, cost: 100000000, yieldCash: 70000000, yieldClout: 600, yieldAura: 300, mentalHit: -28, cloutReq: 1000, auraReq: 500 },
+    l1: { id: 'l1', name: 'Small Buyouts', level: 1, cost: 30000000, yieldCash: 55000000, yieldClout: 60, yieldAura: 40, mentalHit: -18, cloutReq: 1200, auraReq: 1200, nextBranches: ['l2'] },
+    l2: { id: 'l2', name: 'Mid Market', level: 2, cost: 120000000, yieldCash: 250000000, yieldClout: 150, yieldAura: 100, mentalHit: -22, cloutReq: 3500, auraReq: 3500, nextBranches: ['l3'] },
+    l3: { id: 'l3', name: 'Leveraged Buyouts', level: 3, cost: 500000000, yieldCash: 1200000000, yieldClout: 500, yieldAura: 350, mentalHit: -28, cloutReq: 10000, auraReq: 10000 },
   },
 };
 
-// MOGUL Tier Hustles (Strategy: MarketPredictor, ShakeToInfluence)
+// MOGUL Tier Hustles (Target: ~$5M profit/month, ~40 months)
 HUSTLES.film_studio = {
   id: 'film_studio',
   name: 'Film Studio',
@@ -741,7 +604,7 @@ HUSTLES.film_studio = {
   hasPanel: true,
   panelType: 'FILM_STUDIO',
   levels: [
-    { level: 1, cost: 25000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 500, auraReq: 300, passiveYield: 0 }
+    { level: 1, cost: 500000000, yieldCash: 1250000000, yieldClout: 500, yieldAura: 500, mentalHit: -15, cloutReq: 2500, auraReq: 2500, passiveYield: 0 }
   ]
 };
 
@@ -753,7 +616,7 @@ HUSTLES.fight_promoter = {
   description: 'The biggest cards in history. Shake for hype!',
   miniGame: 'MarketPredictor',
   levels: [
-    { level: 1, cost: 15000000, yieldCash: 0, yieldClout: 300, yieldAura: 150, mentalHit: -10, cloutReq: 400, auraReq: 250, passiveYield: 0 }
+    { level: 1, cost: 800000000, yieldCash: 2200000000, yieldClout: 800, yieldAura: 400, mentalHit: -10, cloutReq: 3000, auraReq: 3000, passiveYield: 0 }
   ]
 };
 
@@ -767,7 +630,7 @@ HUSTLES.space_investment = {
   hasPanel: true,
   panelType: 'SPACE_INVESTMENT',
   levels: [
-    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 400, yieldAura: 300, mentalHit: -20, cloutReq: 800, auraReq: 600, passiveYield: 0 }
+    { level: 1, cost: 500000000, yieldCash: 1250000000, yieldClout: 250, yieldAura: 200, mentalHit: -20, cloutReq: 4000, auraReq: 4000, passiveYield: 0 }
   ]
 };
 
@@ -781,7 +644,7 @@ HUSTLES.philanthropy_empire = {
   hasPanel: true,
   panelType: 'PHILANTHROPY',
   levels: [
-    { level: 1, cost: 50000000, yieldCash: 0, yieldClout: 500, yieldAura: 1000, mentalHit: 20, cloutReq: 600, auraReq: 500, passiveYield: 0 }
+    { level: 1, cost: 50000000, yieldCash: 0, yieldClout: 200, yieldAura: 500, mentalHit: 20, cloutReq: 4000, auraReq: 4000, passiveYield: 0 }
   ]
 };
 
@@ -792,9 +655,9 @@ HUSTLES.media_empire = {
   icon: '📺',
   description: 'Control the narrative across TV and streaming',
   levels: [
-    { level: 1, cost: 75000000, yieldCash: 24000000, yieldClout: 500, yieldAura: 150, mentalHit: -15, cloutReq: 800, auraReq: 400, passiveYield: 4800000 },
-    { level: 2, cost: 150000000, yieldCash: 48000000, yieldClout: 1000, yieldAura: 300, mentalHit: -20, cloutReq: 1200, auraReq: 600, passiveYield: 9000000 },
-    { level: 3, cost: 300000000, yieldCash: 96000000, yieldClout: 2000, yieldAura: 600, mentalHit: -25, cloutReq: 1600, auraReq: 800, passiveYield: 18000000 }
+    { level: 1, cost: 200000000, yieldCash: 450000000, yieldClout: 100, yieldAura: 60, mentalHit: -15, cloutReq: 3500, auraReq: 3500, passiveYield: 5000000 },
+    { level: 2, cost: 800000000, yieldCash: 1800000000, yieldClout: 250, yieldAura: 150, mentalHit: -20, cloutReq: 8000, auraReq: 8000, passiveYield: 25000000 },
+    { level: 3, cost: 2500000000, yieldCash: 6000000000, yieldClout: 600, yieldAura: 400, mentalHit: -25, cloutReq: 25000, auraReq: 25000, passiveYield: 150000000 }
   ],
   miniGame: 'TapApprove'
 };
@@ -806,14 +669,14 @@ HUSTLES.luxury_conglomerate = {
   icon: '💎',
   description: 'Acquire high-end fashion brands',
   levels: [
-    { level: 1, cost: 50000000, yieldCash: 15000000, yieldClout: 300, yieldAura: 200, mentalHit: -12, cloutReq: 700, auraReq: 350, passiveYield: 3000000 },
-    { level: 2, cost: 100000000, yieldCash: 30000000, yieldClout: 600, yieldAura: 400, mentalHit: -18, cloutReq: 1000, auraReq: 500, passiveYield: 6000000 },
-    { level: 3, cost: 200000000, yieldCash: 60000000, yieldClout: 1200, yieldAura: 800, mentalHit: -22, cloutReq: 1400, auraReq: 700, passiveYield: 12000000 }
+    { level: 1, cost: 150000000, yieldCash: 350000000, yieldClout: 60, yieldAura: 100, mentalHit: -12, cloutReq: 3500, auraReq: 3500, passiveYield: 4000000 },
+    { level: 2, cost: 600000000, yieldCash: 1400000000, yieldClout: 180, yieldAura: 250, mentalHit: -18, cloutReq: 8000, auraReq: 8000, passiveYield: 20000000 },
+    { level: 3, cost: 2000000000, yieldCash: 5000000000, yieldClout: 500, yieldAura: 800, mentalHit: -22, cloutReq: 25000, auraReq: 25000, passiveYield: 100000000 }
   ],
   miniGame: 'DragMerge'
 };
 
-// PRESIDENT Tier Hustles (Campaign: PresidentialCampaign)
+// PRESIDENT Tier Hustles (Target: Pinnacle, high scale)
 HUSTLES.data_monopoly = {
   id: 'data_monopoly',
   name: 'Data Monopoly',
@@ -822,7 +685,7 @@ HUSTLES.data_monopoly = {
   description: 'Own every byte of personal information',
   miniGame: 'PresidentialCampaign',
   levels: [
-    { level: 1, id: 'l1', cost: 500000000, yieldCash: 100000000, yieldClout: 3000, yieldAura: 1000, mentalHit: -60, cloutReq: 2000, auraReq: 1500, passiveYield: 50000000 },
+    { level: 1, id: 'l1', cost: 10000000000, yieldCash: 35000000000, yieldClout: 2500, yieldAura: 1500, mentalHit: -60, cloutReq: 20000, auraReq: 20000, passiveYield: 5000000000 },
   ]
 };
 
@@ -834,7 +697,7 @@ HUSTLES.central_bank_play = {
   description: 'Influence interest rates for profit',
   miniGame: 'PresidentialCampaign',
   levels: [
-    { level: 1, id: 'l1', cost: 1000000000, yieldCash: 500000000, yieldClout: 4000, yieldAura: 2000, mentalHit: -70, cloutReq: 3000, auraReq: 2000 },
+    { level: 1, id: 'l1', cost: 5000000000, yieldCash: 15000000000, yieldClout: 2500, yieldAura: 1200, mentalHit: -70, cloutReq: 40000, auraReq: 40000 },
   ]
 };
 
@@ -846,7 +709,7 @@ HUSTLES.legacy_fund = {
   description: 'Ensuring your name lasts forever',
   miniGame: 'PresidentialCampaign',
   levels: [
-    { level: 1, id: 'l1', cost: 2000000000, yieldCash: 0, yieldClout: 5000, yieldAura: 10000, mentalHit: 100, cloutReq: 5000, auraReq: 5000 },
+    { level: 1, id: 'l1', cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 5000, mentalHit: 100, cloutReq: 20000, auraReq: 20000 },
   ]
 };
 
@@ -860,7 +723,7 @@ HUSTLES.president_campaign = {
   hasPanel: true,
   panelType: 'PRESIDENT_CAMPAIGN',
   levels: [
-    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 1000, yieldAura: 1000, mentalHit: -50, cloutReq: 1000, auraReq: 1000, passiveYield: 0 }
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 500, yieldAura: 500, mentalHit: -50, cloutReq: 6000, auraReq: 6000, passiveYield: 0 }
   ]
 };
 

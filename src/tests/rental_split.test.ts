@@ -11,14 +11,14 @@ describe('Rental Split Bugfix', () => {
     pl.rentPortfolioCount = 5;
     pl.rentalCount = 0; // Should not affect Rent Portfolio
 
-    // Rent Portfolio (l2b) has passiveYield: 1000
-    // Expected passive income: 1000 * 5 = 5000
+    // Rent Portfolio (l2b) has passiveYield: 500
+    // Expected passive income: 500 * 5 = 2500
     // Rent for MUD is 200.
-    // Net change: 5000 - 200 = 4800
+    // Net change: 2500 - 200 = 2300
 
     const result = advanceMonth(pl, 'NORMAL');
     const passiveIncome = result.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(passiveIncome).toContain('Passive +$5,000');
+    expect(passiveIncome).toContain('Passive +$2,500');
   });
 
   it('correctly calculates passive income for Real Estate Empire using rentalCount', () => {
@@ -50,16 +50,14 @@ describe('Rental Split Bugfix', () => {
     pl.rentPortfolioCount = 1;
     pl.rentalCount = 100; // This used to cause the bug ($50M+ passive income)
 
-    // Expected passive: 1000 * 1 = 1000 (from Rent Portfolio)
+    // Expected passive: 500 * 1 = 500 (from Rent Portfolio)
     // Plus 1,000,000 * 0.5 * 100 = 50,000,000 (from Real Estate Empire logic if rentalCount is 100)
-    // Wait, if I have rentalCount = 100, Real Estate Empire logic WILL trigger.
-    // The bug was that Rent Portfolio ALSO used rentalCount as its multiplier.
 
     // Let's test that Rent Portfolio only uses rentPortfolioCount.
     pl.rentalCount = 0;
     pl.rentPortfolioCount = 1;
     const result = advanceMonth(pl, 'NORMAL');
     const passiveIncome = result.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(passiveIncome).toContain('Passive +$1,000');
+    expect(passiveIncome).toContain('Passive +$500');
   });
 });
