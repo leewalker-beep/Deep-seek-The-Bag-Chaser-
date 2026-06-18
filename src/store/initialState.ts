@@ -84,6 +84,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     ],
     rivalThreats: {},
     activeChallenges: [],
+    activeSentiment: null,
     actionLog: [],
     milestones: [],
     events: [],

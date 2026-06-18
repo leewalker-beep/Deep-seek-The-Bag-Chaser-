@@ -3,6 +3,7 @@ import { FLEX_ASSETS } from '../config/flexAssets';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLES } from '../config/hustles/base';
 import { enforceStatCaps } from './statEngine';
+import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -232,6 +233,39 @@ export function advanceMonth(
   // Decrement mental shield
   if (newPl.mentalShieldTurns > 0) {
     newPl.mentalShieldTurns--;
+  }
+
+  // Sentiment Engine Lifecycle
+  if (newPl.activeSentiment) {
+    newPl.activeSentiment.monthsRemaining--;
+    if (newPl.activeSentiment.monthsRemaining <= 0) {
+      news.push({ text: `📰 Sentiment Normalized: The ${newPl.activeSentiment.label} period has ended.`, colorClass: 'text-slate-400' });
+      newPl.activeSentiment = null;
+    }
+  }
+
+  // 25% chance to trigger sentiment if none active
+  if (!newPl.activeSentiment && Math.random() < 0.25) {
+    const category = SENTIMENT_CATEGORIES[Math.floor(Math.random() * SENTIMENT_CATEGORIES.length)];
+    const isHype = Math.random() < 0.5;
+    const multiplier = isHype ? 1.5 : 0.5;
+    const duration = 3 + Math.floor(Math.random() * 4); // 3-6 months
+    const templates = isHype ? SENTIMENT_TEMPLATES.hype : SENTIMENT_TEMPLATES.fud;
+    const template = templates[Math.floor(Math.random() * templates.length)];
+
+    const label = isHype ? 'Hype' : 'FUD';
+    const message = template
+      .replace(/{category}/g, category.name)
+      .replace(/{duration}/g, duration.toString());
+
+    newPl.activeSentiment = {
+      category: category.id,
+      label: category.name + ' ' + label,
+      multiplier,
+      monthsRemaining: duration
+    };
+
+    news.push({ text: `📰 ${message}`, colorClass: isHype ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold' });
   }
 
   // Random market shift (15% chance)
