@@ -7,8 +7,8 @@ import { ConfirmationModal } from './ui/ConfirmationModal';
 import type { ExecutiveOrder, PresidentCrisis } from '../types/game';
 
 export const PresidentDashboard: React.FC = () => {
-  const { pl, issueExecutiveOrder, appointCabinetMember, resolveCrisis, advancePresidentialMonth } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'DIARY' | 'POLLING'>('MANAGEMENT');
+  const { pl, issueExecutiveOrder, appointCabinetMember, fireCabinetMember, resolveCrisis, advancePresidentialMonth } = useGameStore();
+  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'DIARY' | 'POLLING' | 'SOTU'>('MANAGEMENT');
   const [pendingOrder, setPendingOrder] = useState<ExecutiveOrder | null>(null);
   const [pendingCrisis, setPendingCrisis] = useState<PresidentCrisis | null>(null);
 
@@ -167,7 +167,7 @@ export const PresidentDashboard: React.FC = () => {
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 relative z-10">
-        {['MANAGEMENT', 'POLLING', 'DIARY'].map((tab) => (
+        {['MANAGEMENT', 'POLLING', 'SOTU', 'DIARY'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -234,11 +234,37 @@ export const PresidentDashboard: React.FC = () => {
                   const appointee = pl.cabinet[role.id];
                   return (
                     <div key={role.id} className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-xl p-3 hover:border-slate-700 transition-colors">
-                      <div className="text-[8px] text-slate-500 font-bold uppercase mb-1">{role.role}</div>
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="text-[8px] text-slate-500 font-bold uppercase">{role.role}</div>
+                        {appointee && (
+                          <button
+                            onClick={() => fireCabinetMember(role.id)}
+                            className="text-[8px] font-black text-red-500 hover:text-red-400 uppercase"
+                          >
+                            Fire
+                          </button>
+                        )}
+                      </div>
                       {appointee ? (
                         <div>
                           <div className="text-xs font-bold text-white">{appointee.name}</div>
-                          <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase">+{appointee.bonus.value}% {appointee.bonus.type}</div>
+                          <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-2">+{appointee.bonus.value}% {appointee.bonus.type}</div>
+
+                          {/* Loyalty Bar */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[7px] font-black uppercase">
+                              <span className="text-slate-500">Loyalty</span>
+                              <span className={appointee.loyalty > 60 ? 'text-emerald-400' : appointee.loyalty > 40 ? 'text-yellow-400' : 'text-red-400 animate-pulse'}>
+                                {appointee.loyalty}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-500 ${appointee.loyalty > 60 ? 'bg-emerald-500' : appointee.loyalty > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                style={{ width: `${appointee.loyalty}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <button
@@ -246,6 +272,7 @@ export const PresidentDashboard: React.FC = () => {
                             id: role.id,
                             name: 'Advisor ' + Math.floor(Math.random() * 100),
                             role: role.role,
+                            loyalty: 70,
                             bonus: { type: role.bonusType, value: 10 }
                           })}
                           className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest"
@@ -313,27 +340,102 @@ export const PresidentDashboard: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            className="space-y-6 relative z-10"
+          >
+            <div className="space-y-4">
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">REGIONAL APPROVAL</h2>
+              <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 grid grid-cols-2 gap-6 shadow-xl">
+                {Object.entries(pl.regionalApproval || {}).map(([region, score]) => (
+                  <div key={region} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{region}</span>
+                      <span className={`text-xs font-black ${score > 60 ? 'text-emerald-400' : score > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {score}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${score}%` }}
+                        className={`h-full ${score > 60 ? 'bg-emerald-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">DEMOGRAPHIC APPROVAL</h2>
+              <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
+                {Object.entries(pl.demographicApproval).map(([group, score]) => (
+                  <div key={group} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{group}</span>
+                      <span className={`text-sm font-black ${score > 60 ? 'text-emerald-400' : score > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {score}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${score}%` }}
+                        className={`h-full ${score > 60 ? 'bg-emerald-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'SOTU' && (
+          <motion.div
+            key="sotu"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             className="space-y-4 relative z-10"
           >
-            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">DEMOGRAPHIC APPROVAL</h2>
-            <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              {Object.entries(pl.demographicApproval).map(([group, score]) => (
-                <div key={group} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{group}</span>
-                    <span className={`text-sm font-black ${score > 60 ? 'text-emerald-400' : score > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                      {score}%
-                    </span>
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">STATE OF THE UNION</h2>
+            <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+              <div className="p-6 bg-blue-900/20 border-b border-slate-800">
+                <h3 className="text-lg font-serif font-black text-white uppercase tracking-tight">Economic Summary</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase">Biannual Performance Tracking</p>
+              </div>
+              <div className="p-0">
+                {pl.sotuHistory?.length === 0 ? (
+                  <div className="p-12 text-center text-slate-600 font-serif italic">
+                    First economic summary scheduled for Month 6.
                   </div>
-                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${score}%` }}
-                      className={`h-full ${score > 60 ? 'bg-emerald-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                    />
+                ) : (
+                  <div className="divide-y divide-slate-800">
+                    {[...(pl.sotuHistory || [])].reverse().map((report, idx) => (
+                      <div key={idx} className="p-6 hover:bg-slate-800/30 transition-colors">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-xs font-black text-blue-400 uppercase tracking-widest">Month {report.month}</span>
+                          <span className={`text-lg font-serif font-black ${report.approval > 50 ? 'text-emerald-400' : 'text-red-400'}`}>{report.approval}% Approval</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <div className="text-[8px] text-slate-500 font-bold uppercase">GDP</div>
+                            <div className="text-sm font-mono text-white">{report.gdp.toFixed(1)}%</div>
+                          </div>
+                          <div>
+                            <div className="text-[8px] text-slate-500 font-bold uppercase">Inflation</div>
+                            <div className="text-sm font-mono text-white">{report.inflation.toFixed(1)}%</div>
+                          </div>
+                          <div>
+                            <div className="text-[8px] text-slate-500 font-bold uppercase">Debt</div>
+                            <div className="text-sm font-mono text-white">{report.debt.toFixed(1)}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
           </motion.div>
         )}

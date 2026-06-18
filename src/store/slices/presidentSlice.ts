@@ -10,6 +10,7 @@ import { calculateEnding } from '../../engine/endingEngine';
 export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
   appointCabinetMember: (member: CabinetMember) => void;
+  fireCabinetMember: (roleId: string) => void;
   resolveCrisis: (crisisId: string) => void;
   investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;
@@ -47,12 +48,31 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       gdpImpact = Math.floor(gdpImpact * 0.5);
     }
 
-    Object.values(state.pl.cabinet).forEach(member => {
+    const newCabinet = { ...state.pl.cabinet };
+    Object.keys(newCabinet).forEach(roleId => {
+      const member = newCabinet[roleId];
+      // Loyalty scales the bonus. If loyalty < 40, bonus is significantly reduced.
+      const loyaltyFactor = member.loyalty / 100;
+      const effectiveBonusValue = member.loyalty < 40 ? member.bonus.value * 0.2 : member.bonus.value * loyaltyFactor;
+
       if (member.bonus.type === 'approval') {
-        approvalImpact = Math.ceil(approvalImpact * (1 + member.bonus.value / 100));
+        approvalImpact = Math.ceil(approvalImpact * (1 + effectiveBonusValue / 100));
       }
       if (member.bonus.type === 'cash') {
-        passiveCashImpact = Math.ceil(passiveCashImpact * (1 + member.bonus.value / 100));
+        passiveCashImpact = Math.ceil(passiveCashImpact * (1 + effectiveBonusValue / 100));
+      }
+
+      // Update Loyalty based on advisor sentiment
+      if (order.quotes?.[roleId]) {
+        const quote = order.quotes[roleId].toLowerCase();
+        // Simple sentiment: words like 'love', 'win', 'dividends', 'modernized', 'envy', 'surge' are positive
+        // Words like 'increase the deficit', 'worry our allies', 'disrupt', 'BRACING FOR IMPACT', 'Checks in pockets', 'checks' are neutral/positive
+        // Words like 'astronomical', 'print money', 'hurts the coasts', 'worry' are negative
+        if (quote.includes('love') || quote.includes('win') || quote.includes('dividends') || quote.includes('envy') || quote.includes('surge') || quote.includes('stabilizing') || quote.includes('legacy')) {
+          newCabinet[roleId] = { ...member, loyalty: Math.min(100, member.loyalty + 5) };
+        } else if (quote.includes('worry') || quote.includes('disrupt') || quote.includes('hurts') || quote.includes('deficit') || quote.includes('astronomical')) {
+          newCabinet[roleId] = { ...member, loyalty: Math.max(0, member.loyalty - 5) };
+        }
       }
     });
 
@@ -72,11 +92,20 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     }
 
     const newPendingImpacts = [...(state.pl.pendingPresidentialImpacts || [])];
-    if (order.delayedImpact) {
-      newPendingImpacts.push({
-        monthToTrigger: state.pl.presidentMonth + order.delayedImpact.delay,
-        approvalImpact: order.delayedImpact.approval,
-        message: order.delayedImpact.message
+    if (order.delayedImpacts) {
+      order.delayedImpacts.forEach(di => {
+        newPendingImpacts.push({
+          monthToTrigger: state.pl.presidentMonth + di.delay,
+          impact: di.impact,
+          message: di.message
+        });
+      });
+    }
+
+    const newRegionalApproval = { ...state.pl.regionalApproval };
+    if (order.regionalImpacts) {
+      Object.entries(order.regionalImpacts).forEach(([region, impact]) => {
+        newRegionalApproval[region] = Math.min(100, Math.max(0, (newRegionalApproval[region] || 50) + impact));
       });
     }
 
@@ -90,6 +119,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       inflation: state.pl.inflation + inflationImpact,
       nationalDebt: state.pl.nationalDebt + debtImpact,
       demographicApproval: newDemographics,
+      regionalApproval: newRegionalApproval,
+      cabinet: newCabinet,
       presidentialDiary: [diaryEntry, ...state.pl.presidentialDiary],
       heat: state.pl.heat + (order.impact.heat || 0),
       dynamicPassives: {
@@ -113,14 +144,54 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
   },
 
   appointCabinetMember: (member) => {
-    set((state) => ({
-      pl: enforceStatCaps({
-        ...state.pl,
-        cabinet: { ...state.pl.cabinet, [member.id]: member }
-      })
-    }));
+    set((state) => {
+      // If the role was previously occupied (even if currently empty in cabinet),
+      // check if it's a replacement. Since we delete on fire, we can check diary.
+      // Requirements: "fire cabinet member (costs 10 Clout, resets loyalty to 60%)"
+      const previouslyOccupied = state.pl.presidentialDiary.some(d => d.event === 'CABINET SHAKEUP' && d.outcome.includes(member.role));
+      const initialLoyalty = previouslyOccupied ? 60 : 70;
+
+      return {
+        pl: enforceStatCaps({
+          ...state.pl,
+          cabinet: { ...state.pl.cabinet, [member.id]: { ...member, loyalty: initialLoyalty } }
+        })
+      };
+    });
     get().addTickerMessage(`Cabinet Appointed: ${member.name} as ${member.role}`, 'text-emerald-400');
     get().logEvent('CABINET_APPOINTED', { memberId: member.id, name: member.name, role: member.role });
+  },
+
+  fireCabinetMember: (roleId) => {
+    const state = get();
+    if (state.pl.clout < 10) {
+      state.addTickerMessage("Insufficient Clout to fire cabinet member", "text-red-400");
+      return;
+    }
+    const member = state.pl.cabinet[roleId];
+    if (!member) return;
+
+    const newCabinet = { ...state.pl.cabinet };
+    delete newCabinet[roleId];
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        clout: state.pl.clout - 10,
+        cabinet: newCabinet,
+        presidentialDiary: [
+          {
+            id: Math.random().toString(36).substring(7),
+            month: state.pl.presidentMonth,
+            event: 'CABINET SHAKEUP',
+            outcome: `President fired ${member.name} (${member.role}).`,
+            type: 'ORDER' as const
+          },
+          ...state.pl.presidentialDiary
+        ]
+      })
+    });
+    state.addTickerMessage(`NEWS: President fires ${member.role} ${member.name}!`, 'text-orange-500 font-bold');
   },
 
   resolveCrisis: (crisisId) => {
@@ -193,8 +264,10 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const state = get();
     const { pl, currentMarket } = state;
 
-    // 1. Manage Crises (Timers and Penalties)
+    let updatedPl = { ...pl };
     let approvalHit = 0;
+
+    // 1. Manage Crises (Timers and Penalties)
     const updatedCrises: PresidentCrisis[] = pl.activeCrises.map(c => ({
       ...c,
       monthsRemaining: c.monthsRemaining !== undefined ? c.monthsRemaining - 1 : undefined
@@ -235,13 +308,19 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const remainingImpacts = pendingImpacts.filter(i => i.monthToTrigger > currentMonth);
 
     dueImpacts.forEach(i => {
-      approvalHit += i.approvalImpact;
-      state.addTickerMessage(`LEGACY IMPACT: ${i.message} (${i.approvalImpact > 0 ? '+' : ''}${i.approvalImpact}% Approval)`, 'text-slate-300 font-bold');
+      if (i.impact.approval) approvalHit += i.impact.approval;
+      if (i.impact.gdp) updatedPl.gdp += i.impact.gdp;
+      if (i.impact.inflation) updatedPl.inflation += i.impact.inflation;
+      if (i.impact.debt) updatedPl.nationalDebt += i.impact.debt;
+      if (i.impact.heat) updatedPl.heat += i.impact.heat;
+
+      const appImpact = i.impact.approval || 0;
+      state.addTickerMessage(`LEGACY IMPACT: ${i.message} (${appImpact > 0 ? '+' : ''}${appImpact}% Approval)`, 'text-slate-300 font-bold');
       newDiaryEntries.unshift({
         id: Math.random().toString(36).substring(7),
         month: currentMonth,
         event: "POLICY IMPACT",
-        outcome: `${i.message}. Approval adjusted by ${i.approvalImpact}%.`,
+        outcome: `${i.message}. Impacts applied.`,
         type: 'ORDER' as const
       });
     });
@@ -250,6 +329,36 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     if (pl.inflation > 5) {
       approvalHit -= 2;
       state.addTickerMessage("PUBLIC UNREST: High inflation is hurting your approval!", "text-red-400 animate-pulse");
+    }
+
+    // 1.5 Cabinet Scandals
+    Object.values(pl.cabinet).forEach(member => {
+      if (member.loyalty < 40 && Math.random() < 0.2) {
+        const appPenalty = 10 + Math.floor(Math.random() * 11);
+        approvalHit -= appPenalty;
+        state.addTickerMessage(`SCANDAL: ${member.name} (${member.role}) leaked damaging info! Approval -${appPenalty}%`, 'text-red-600 font-black');
+        newDiaryEntries.unshift({
+          id: Math.random().toString(36).substring(7),
+          month: currentMonth,
+          event: "CABINET SCANDAL",
+          outcome: `${member.name} leaked damaging info to the press. Approval plummeted.`,
+          type: 'CRISIS' as const
+        });
+        state.logEvent('SCANDAL_TRIGGERED', { type: 'CABINET_LEAK', memberName: member.name });
+      }
+    });
+
+    // 1.6 State of the Union History
+    const newSotuHistory = [...(pl.sotuHistory || [])];
+    if (currentMonth > 0 && currentMonth % 6 === 0) {
+      newSotuHistory.push({
+        month: currentMonth,
+        gdp: pl.gdp,
+        inflation: pl.inflation,
+        debt: pl.nationalDebt,
+        approval: pl.approvalRating
+      });
+      state.addTickerMessage("📊 STATE OF THE UNION: New economic summary available.", "text-blue-300 font-bold");
     }
 
     // 1.2 Manage Market Control
@@ -282,26 +391,30 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     let cabinetApproval = 0;
 
     Object.values(pl.cabinet).forEach(member => {
+      const loyaltyFactor = member.loyalty / 100;
+      const effectiveBonus = member.loyalty < 40 ? member.bonus.value * 0.2 : member.bonus.value * loyaltyFactor;
+
       switch (member.bonus.type) {
-        case 'cash': cabinetCash += member.bonus.value; break;
-        case 'clout': cabinetClout += member.bonus.value; break;
-        case 'aura': cabinetAura += member.bonus.value; break;
-        case 'approval': cabinetApproval += member.bonus.value; break;
+        case 'cash': cabinetCash += effectiveBonus; break;
+        case 'clout': cabinetClout += effectiveBonus; break;
+        case 'aura': cabinetAura += effectiveBonus; break;
+        case 'approval': cabinetApproval += effectiveBonus; break;
       }
     });
 
-    let updatedPl = {
-      ...pl,
-      bag: pl.bag + cabinetCash,
-      clout: pl.clout + cabinetClout,
-      aura: pl.aura + cabinetAura,
-      approvalRating: pl.approvalRating + approvalHit + cabinetApproval,
+    updatedPl = {
+      ...updatedPl,
+      bag: updatedPl.bag + cabinetCash,
+      clout: updatedPl.clout + cabinetClout,
+      aura: updatedPl.aura + cabinetAura,
+      approvalRating: updatedPl.approvalRating + approvalHit + cabinetApproval,
       demographicApproval: newDemographics,
       presidentialDiary: newDiaryEntries,
       activeCrises: activeCrises,
-      presidentMonth: pl.presidentMonth + 1,
+      presidentMonth: updatedPl.presidentMonth + 1,
       presidentialMarketControl: updatedMarketControl,
-      pendingPresidentialImpacts: remainingImpacts
+      pendingPresidentialImpacts: remainingImpacts,
+      sotuHistory: newSotuHistory
     };
 
     // 1.3 Midterm Elections

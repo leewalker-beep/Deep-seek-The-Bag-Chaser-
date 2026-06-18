@@ -50,7 +50,8 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       demographics: { economy: 10, healthcare: 5 },
       passiveCash: 100000,
       heat: 10
-    }
+    },
+    regionalImpacts: { 'Northeast': 10, 'South': 10, 'Midwest': 10, 'West': 10 }
   },
   {
     id: 'deregulation',
@@ -72,7 +73,19 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       passiveCash: 250000,
       heat: 20
     },
-    marketEffect: { type: 'CRACKDOWN', duration: 3 }
+    marketEffect: { type: 'CRACKDOWN', duration: 3 },
+    delayedImpacts: [
+      {
+        delay: 3,
+        impact: { demographics: { economy: 5 } },
+        message: "Financial sectors reporting increased efficiency from deregulation."
+      },
+      {
+        delay: 9,
+        impact: { approval: -5, heat: 15 },
+        message: "Market volatility increasing due to lack of oversight."
+      }
+    ]
   },
   {
     id: 'qe',
@@ -93,11 +106,13 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       demographics: { economy: 15 }
     },
     marketEffect: { type: 'BULL_MARKET', duration: 6 },
-    delayedImpact: {
-      approval: -10,
-      delay: 6,
-      message: "Inflation hit from Quantitative Easing."
-    }
+    delayedImpacts: [
+      {
+        delay: 6,
+        impact: { approval: -10, inflation: 2 },
+        message: "Inflation hit from Quantitative Easing."
+      }
+    ]
   },
   {
     id: 'tariffs',
@@ -118,11 +133,14 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       demographics: { economy: -5, foreign: -10 }
     },
     marketEffect: { type: 'RECESSION', duration: 6 },
-    delayedImpact: {
-      approval: 15,
-      delay: 12,
-      message: "Domestic manufacturing boost from Trade Tariffs."
-    }
+    regionalImpacts: { 'Midwest': 5, 'Northeast': -10 },
+    delayedImpacts: [
+      {
+        delay: 12,
+        impact: { approval: 15, gdp: 2 },
+        message: "Domestic manufacturing boost from Trade Tariffs."
+      }
+    ]
   },
   {
     id: 'stimulus',
