@@ -118,7 +118,8 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
         pl: {
           ...state.pl,
           bag: state.pl.bag + bonusCash,
-          completedDailyChallengesCount: (state.pl.completedDailyChallengesCount || 0) + completedChallenges.length
+          completedDailyChallengesCount: (state.pl.completedDailyChallengesCount || 0) + completedChallenges.length,
+          totalChallengesCompleted: (state.pl.totalChallengesCompleted || 0) + completedChallenges.length
         },
         news: [`🎁 CHALLENGE COMPLETE: +$${bonusCash.toLocaleString()}`, ...state.news.slice(0, 49)]
       } as any);

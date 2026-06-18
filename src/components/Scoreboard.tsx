@@ -69,6 +69,28 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
                 <StatCard label="Vending Machines" value={pl.vendingCount || 0} icon="🥤" />
                 <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
+                <div className="col-span-2 p-4 bg-slate-950 border border-yellow-500/20 rounded-2xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Legacy Momentum</div>
+                    <div className="text-[10px] font-black text-yellow-400">
+                      +{(Math.floor((pl.totalChallengesCompleted || 0) / 10) * 0.1).toFixed(1)}% Multiplier
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[8px] font-bold text-slate-400 uppercase">
+                      <span>Next Boost</span>
+                      <span>{(pl.totalChallengesCompleted || 0) % 10} / 10 Challenges</span>
+                    </div>
+                    <ProgressBar
+                      value={((pl.totalChallengesCompleted || 0) % 10) * 10}
+                      colorClass="bg-yellow-500"
+                      className="h-1.5"
+                    />
+                  </div>
+                  <p className="text-[7px] text-slate-600 uppercase font-bold mt-2 text-center">
+                    Permanent cross-run boost for every 10 challenges completed
+                  </p>
+                </div>
               </motion.div>
             )}
 

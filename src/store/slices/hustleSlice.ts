@@ -82,11 +82,22 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
   pendingUpdate: null,
 
   resetGame: (difficulty = 3) => {
+    const currentState = get();
+    const persistentStats = {
+      totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
+      collectedDeathBadges: currentState.pl.collectedDeathBadges || [],
+    };
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('bag-chaser-save');
     }
+
+    const newPl = enforceStatCaps(getInitialStats(difficulty));
+    newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
+    newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
+
     set({
-      pl: enforceStatCaps(getInitialStats(difficulty)),
+      pl: newPl,
       ph: 'PROLOGUE',
       currentMarket: 'NORMAL',
       news: ['Game reset. Welcome back.'],
