@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "preview:prod": "vite preview --mode production"
   },
@@ -27,6 +28,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.9",
     "@vitest/ui": "^4.1.8",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.3.0",
