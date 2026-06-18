@@ -70,6 +70,7 @@ export interface HustleSlice {
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
+  retaliateRival: (rivalId: string) => boolean;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: any, metadata?: any) => void;
   checkMilestones: () => void;
@@ -239,6 +240,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const market = MARKET_CONFIGS[state.currentMarket];
     const isVending = hustleId === 'r_vending';
+    const rivalThreat = state.pl.rivalThreats?.[hustle.tier] || 'NEUTRAL';
 
     const result = calculateHustleMath(
       hustleId,
@@ -249,7 +251,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       market.heatMultiplier,
       1,
       true,
-      state.pl.mentalShieldTurns
+      state.pl.mentalShieldTurns,
+      rivalThreat
     );
 
     // Apply Flex Asset Bonuses
@@ -345,6 +348,27 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       multiplier: 1.0
     });
 
+    // Update active challenges
+    if (state.pl.activeChallenges.length > 0) {
+      const updatedChallenges = state.pl.activeChallenges.map(c => {
+        if (c.tier === hustle.tier) {
+          const newCompleted = c.hustlesCompleted + 1;
+          if (newCompleted >= c.hustlesRequired) {
+            // Challenge Won
+            const bonus = Math.floor(state.pl.bag * 0.1);
+            get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
+            set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
+            get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            return null; // Remove challenge
+          }
+          return { ...c, hustlesCompleted: newCompleted };
+        }
+        return c;
+      }).filter(Boolean) as any[];
+
+      set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
+    }
+
     (get() as any).updateChallengeProgress('hustle_count', 1);
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
@@ -434,6 +458,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       backupSave();
     }
 
+    const rivalThreat = state.pl.rivalThreats?.[hustle.tier] || 'NEUTRAL';
     const result = executeHustleAction(
       hustleId,
       state.pl,
@@ -441,7 +466,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       levelData,
       currentLevel,
       minigameMultiplier,
-      forceSuccess
+      forceSuccess,
+      rivalThreat
     );
 
     // Apply Flex Asset Bonuses
@@ -642,6 +668,27 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       get().logEvent(eventToLog.type, eventToLog.metadata);
 
+      // Update active challenges
+      if (result.success && state.pl.activeChallenges.length > 0) {
+        const updatedChallenges = state.pl.activeChallenges.map(c => {
+          if (c.tier === hustle.tier) {
+            const newCompleted = c.hustlesCompleted + 1;
+            if (newCompleted >= c.hustlesRequired) {
+              // Challenge Won
+              const bonus = Math.floor(state.pl.bag * 0.1);
+              get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
+              set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
+              get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+              return null; // Remove challenge
+            }
+            return { ...c, hustlesCompleted: newCompleted };
+          }
+          return c;
+        }).filter(Boolean) as any[];
+
+        set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
+      }
+
       if (result.success) {
         if (hustleId === 'real_estate_empire') {
           get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
@@ -738,6 +785,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const market = MARKET_CONFIGS[state.currentMarket];
     const isVending = hustleId === 'r_vending';
 
+    const rivalThreat = state.pl.rivalThreats?.[hustle.tier] || 'NEUTRAL';
     const result = calculateHustleMath(
       hustleId,
       targetNodeData,
@@ -747,7 +795,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       market.heatMultiplier,
       1,
       true,
-      state.pl.mentalShieldTurns
+      state.pl.mentalShieldTurns,
+      rivalThreat
     );
 
     // Apply Flex Asset Bonuses
@@ -919,6 +968,34 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
 
+    return true;
+  },
+
+  retaliateRival: (rivalId) => {
+    const state = get();
+    const rival = state.pl.rivals.find(r => r.id === rivalId);
+    if (!rival) return false;
+
+    const cost = Math.floor(state.pl.bag * 0.1);
+    if (state.pl.bag < cost) {
+      get().addTickerMessage("Not enough cash to retaliate!", "text-red-400");
+      return false;
+    }
+
+    const nextPl = enforceStatCaps({
+      ...state.pl,
+      bag: state.pl.bag - cost,
+      rivals: state.pl.rivals.map(r =>
+        r.id === rivalId ? { ...r, netWorth: Math.floor(r.netWorth * 0.4) } : r
+      ),
+    });
+
+    set({
+      pl: nextPl,
+      news: [{ text: `🔥 RETALIATION: You hit ${rival.name}'s bottom line. Their net worth plummeted! (-$${cost.toLocaleString()})`, colorClass: 'text-orange-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_RETALIATION', rivalId, rivalName: rival.name, cost });
     return true;
   },
 });

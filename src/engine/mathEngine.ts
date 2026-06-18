@@ -30,12 +30,22 @@ export function calculateHustleMath(
   marketHeatMult: number,
   minigameMult: number,
   isSuccess: boolean,
-  mentalShieldTurns: number = 0
+  mentalShieldTurns: number = 0,
+  rivalThreat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL'
 ): MathResult {
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
 
-  const cost = levelData.cost * levelMult * marketExpenseMult;
-  let yieldCash = Math.floor(levelData.yieldCash * levelMult * marketYieldMult * minigameMult);
+  let costMult = marketExpenseMult;
+  let yieldMult = marketYieldMult * minigameMult;
+
+  if (rivalThreat === 'RIVAL_DOMINANT') {
+    costMult *= 1.25;
+  } else if (rivalThreat === 'PLAYER_DOMINANT') {
+    yieldMult *= 1.15;
+  }
+
+  const cost = levelData.cost * levelMult * costMult;
+  let yieldCash = Math.floor(levelData.yieldCash * levelMult * yieldMult);
   let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult);
   let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
   // Cap minigame impact on mental health to prevent extreme hits or weird gains from negative multipliers
