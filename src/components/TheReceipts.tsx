@@ -41,6 +41,16 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className={`${metadata.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 CASH: {metadata.profit >= 0 ? '+' : ''}${metadata.profit.toLocaleString()}
               </div>
+              {metadata.rentDeducted > 0 && (
+                <div className="text-red-500">
+                  RENT: -${metadata.rentDeducted.toLocaleString()}
+                </div>
+              )}
+              {metadata.passiveIncomeTotal > 0 && (
+                <div className="text-emerald-500">
+                  PASSIVE: +${metadata.passiveIncomeTotal.toLocaleString()}
+                </div>
+              )}
               {metadata.yieldClout !== 0 && (
                 <div className="text-blue-400">
                   CLOUT: {metadata.yieldClout > 0 ? '+' : ''}{metadata.yieldClout}

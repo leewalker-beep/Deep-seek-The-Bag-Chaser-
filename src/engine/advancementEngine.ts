@@ -25,6 +25,33 @@ export interface AdvancementResult {
   news: (string | TickerMessage)[];
   shouldDie: boolean;
   deathCause: string | null;
+  totalRent: number;
+  passiveIncome: number;
+}
+
+export function checkDeathConditions(pl: PlayerStats): { shouldDie: boolean; deathCause: string | null } {
+  if (pl.bag < 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Bankruptcy: You ran out of money and the creditors came for everything.'
+    };
+  } else if (pl.mentalHealth <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Burnout: Your mind and body collapsed under the pressure.'
+    };
+  } else if (pl.aura <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Canceled: Your reputation is destroyed. No one will work with you.'
+    };
+  } else if (pl.clout <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Irrelevant: The world has moved on without you.'
+    };
+  }
+  return { shouldDie: false, deathCause: null };
 }
 
 export function advanceMonth(
@@ -319,22 +346,15 @@ export function advanceMonth(
   news.unshift(`📅 Month ${newPl.month}: Rent -$${totalRent.toLocaleString()} | Passive +$${passiveIncome.toLocaleString()} | Net: ${netChange >= 0 ? '+' : ''}$${netChange.toLocaleString()}`);
 
   // Check for death conditions
-  let shouldDie = false;
-  let deathCause: string | null = null;
+  const { shouldDie, deathCause } = checkDeathConditions(newPl);
 
-  if (newPl.bag < 0) {
-    shouldDie = true;
-    deathCause = 'Bankruptcy: You ran out of money and the creditors came for everything.';
-  } else if (newPl.mentalHealth <= 0) {
-    shouldDie = true;
-    deathCause = 'Burnout: Your mind and body collapsed under the pressure.';
-  } else if (newPl.aura <= 0) {
-    shouldDie = true;
-    deathCause = 'Canceled: Your reputation is destroyed. No one will work with you.';
-  } else if (newPl.clout <= 0) {
-    shouldDie = true;
-    deathCause = 'Irrelevant: The world has moved on without you.';
-  }
-
-  return { newPl: enforceStatCaps(newPl), newMarket, news, shouldDie, deathCause };
+  return {
+    newPl: enforceStatCaps(newPl),
+    newMarket,
+    news,
+    shouldDie,
+    deathCause,
+    totalRent,
+    passiveIncome
+  };
 }
