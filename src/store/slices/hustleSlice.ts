@@ -291,7 +291,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const result = calculateHustleMath(
       hustleId,
       branch,
-      branch.level,
+      1, // Upgrades/Branching uses base cost, not scaled by target level
       isVending ? 1 : market.expenseMultiplier,
       market.yieldMultiplier,
       market.heatMultiplier,
@@ -323,7 +323,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     }
 
-    const newBag = state.pl.bag - result.cost + result.yieldCash;
+    const newBag = state.pl.bag - result.cost;
     const newClout = state.pl.clout + result.yieldClout;
     const newAura = state.pl.aura + result.yieldAura;
     const newMental = state.pl.mentalHealth + result.mentalHit;
@@ -348,7 +348,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
-    newStats.lifetimeEarnings += result.yieldCash;
 
     const nextPl = enforceStatCaps({
       ...state.pl,
@@ -421,7 +420,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       ph: finalPh,
       deathBadge: finalDeathBadge,
       fatalCause: finalFatalCause,
-      news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
+      news: [`⬆️ Upgraded: ${branch.name} (-$${result.cost.toLocaleString()})`, ...state.news.slice(0, 49)],
     });
 
     const isVendingBuy = hustleId === 'r_vending';
@@ -437,7 +436,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleId,
       hustleName: hustle.name,
       success: true,
-      profit: result.yieldCash - result.cost,
+      profit: -result.cost,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
       mentalHit: result.mentalHit,
@@ -481,10 +480,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       branchId,
       branchName: branch.name || hustle.name,
       cost: result.cost,
-      yieldCash: result.yieldCash,
+      yieldCash: 0,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
-      netCash: result.yieldCash - result.cost,
+      netCash: -result.cost,
       success: true,
       passiveAdded: branch.passiveYield || 0,
       marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
@@ -862,7 +861,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const result = calculateHustleMath(
       hustleId,
       targetNodeData,
-      targetNodeData.level,
+      1, // Level upgrades use base cost
       isVending ? 1 : market.expenseMultiplier,
       market.yieldMultiplier,
       market.heatMultiplier,
@@ -891,7 +890,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
-    newStats.lifetimeEarnings += result.yieldCash;
 
     const newPl = enforceStatCaps({
       ...state.pl,
@@ -982,7 +980,20 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       ph: finalPh,
       deathBadge: finalDeathBadge,
       fatalCause: finalFatalCause,
-      news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name}`, ...state.news.slice(0, 49)]
+      news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name} (-$${result.cost.toLocaleString()})`, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('HUSTLE_COMPLETED', {
+      hustleId,
+      hustleName: hustle.name,
+      success: true,
+      profit: -result.cost,
+      yieldClout: result.yieldClout,
+      yieldAura: result.yieldAura,
+      mentalHit: result.mentalHit,
+      heatHit: result.heatHit,
+      level: targetNodeData.level,
+      multiplier: 1.0
     });
 
     get().logAction({
@@ -994,10 +1005,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       branchId: targetNodeData.id || '',
       branchName: targetNodeData.name || hustle.name,
       cost: result.cost,
-      yieldCash: result.yieldCash,
+      yieldCash: 0,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
-      netCash: result.yieldCash - result.cost,
+      netCash: -result.cost,
       success: true,
       passiveAdded: targetNodeData.passiveYield || 0,
       marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
