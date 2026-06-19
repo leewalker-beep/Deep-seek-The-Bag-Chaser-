@@ -10,7 +10,11 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const filteredEvents = filterType === 'ALL'
     ? events
-    : events.filter(e => e.type === filterType || (filterType === 'HUSTLES' && e.type === 'HUSTLE_COMPLETED'));
+    : events.filter(e => {
+        if (filterType === 'HUSTLES' && e.type === 'HUSTLE_COMPLETED') return true;
+        if (filterType === 'GOVERNMENT' && ['LAW_PASSED', 'CRISIS_RESOLVED', 'CABINET_APPOINTED'].includes(e.type)) return true;
+        return e.type === filterType;
+      });
 
   // Calculate stats from events
   const totalProfit = events
@@ -123,6 +127,43 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-xs font-bold text-white">→ {metadata.to}</div>
           </div>
         );
+      case 'LAW_PASSED':
+        return (
+          <div key={event.id} className="bg-blue-900/40 rounded-lg p-3 border border-blue-400/50 shadow-lg shadow-blue-900/20">
+            <div className="flex justify-between items-start mb-1">
+              <div className="text-[10px] text-blue-300 font-black uppercase tracking-tighter">EXECUTIVE ORDER</div>
+              <span className="text-[10px] text-emerald-400 font-bold">+{metadata.approvalImpact}% APPR</span>
+            </div>
+            <div className="font-serif text-white text-lg italic leading-tight mb-2 underline decoration-blue-500/30">
+              {metadata.name}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-[9px]">
+              <div className="text-red-400">TREASURY: -${(metadata.cost/1000000).toFixed(1)}M</div>
+              <div className="text-blue-400">CLOUT: -{metadata.cloutCost}</div>
+            </div>
+          </div>
+        );
+      case 'CRISIS_RESOLVED':
+        return (
+          <div key={event.id} className="bg-emerald-900/40 rounded-lg p-3 border border-emerald-400/50 shadow-lg shadow-emerald-900/20">
+            <div className="text-[10px] text-emerald-300 font-black uppercase tracking-tighter mb-1">CRISIS RESOLVED</div>
+            <div className="font-black text-white text-md uppercase tracking-tight">
+              {metadata.name}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-[9px]">
+              <div className="text-red-400">TREASURY: -${(metadata.cost/1000000).toFixed(1)}M</div>
+              <div className="text-blue-400 text-right">ACTION: SUCCESS</div>
+            </div>
+          </div>
+        );
+      case 'CABINET_APPOINTED':
+        return (
+          <div key={event.id} className="bg-slate-800 rounded-lg p-3 border border-slate-600">
+            <div className="text-[10px] text-slate-400 font-black uppercase mb-1">CABINET APPOINTMENT</div>
+            <div className="font-bold text-white text-sm uppercase">{metadata.role}</div>
+            <div className="text-xs text-slate-300 italic">"I appoint {metadata.name} to this office."</div>
+          </div>
+        );
       default:
         return (
           <div key={event.id} className="bg-slate-900/50 rounded-lg p-2 border border-slate-800">
@@ -139,6 +180,7 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     { label: 'RANKS', value: 'PROMOTION_EARNED' },
     { label: 'ASSETS', value: 'BUSINESS_PURCHASED' },
     { label: 'MARKET', value: 'ECONOMIC_EVENT' },
+    { label: 'GOVERNMENT', value: 'GOVERNMENT' },
   ];
 
   return (
