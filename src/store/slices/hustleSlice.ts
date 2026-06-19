@@ -457,6 +457,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
             set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
             get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            set((s) => ({ pl: { ...s.pl, crushedRivals: [...s.pl.crushedRivals, c.rivalId] } }));
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -779,6 +780,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
             set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
             get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            set((s) => ({ pl: { ...s.pl, crushedRivals: [...s.pl.crushedRivals, c.rivalId] } }));
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -1050,6 +1052,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         clout: Math.floor(state.pl.clout * 0.6),
         aura: Math.floor(state.pl.aura * 0.6),
         currentTier: nextTier,
+        prePresidencyTier: nextTier === 'PRESIDENT' ? state.pl.currentTier : state.pl.prePresidencyTier,
+        congressSupport: nextTier === 'PRESIDENT' && state.pl.clout > 500 ? state.pl.congressSupport + 10 : state.pl.congressSupport,
+        approvalFloor: nextTier === 'PRESIDENT' && state.pl.aura > 500 ? 5 : state.pl.approvalFloor,
+        scandalRiskBonus: nextTier === 'PRESIDENT' && state.pl.heat > 70 ? 0.1 : state.pl.scandalRiskBonus,
       });
       nextPl.legacyScore = calculateLegacyScore(nextPl);
 

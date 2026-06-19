@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
-import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
+import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails, RIVAL_CABINET_MAP } from '../../engine/presidentEngine';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
@@ -25,14 +25,32 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const order = EXECUTIVE_ORDERS.find(o => o.id === orderId);
     if (!order) return;
 
+    // Policy Alignment Discount
+    let costMultiplier = 1;
+    const techHustles = ['techFlip'];
+    const housingHustles = ['real_estate_empire'];
+    const mediaHustles = ['media_empire'];
+
+    const hasTechMastery = state.pl.masteredHustles.some(h => techHustles.includes(h));
+    const hasHousingMastery = state.pl.masteredHustles.some(h => housingHustles.includes(h));
+    const hasMediaMastery = state.pl.masteredHustles.some(h => mediaHustles.includes(h));
+
+    if ((order.id === 'data_analytics' || order.id === 'crypto_mining') && hasTechMastery) costMultiplier = 0.9;
+    if (order.id === 'housing_policy' && hasHousingMastery) costMultiplier = 0.9;
+    if (order.id === 'media_policy' && hasMediaMastery) costMultiplier = 0.9;
+
+    const finalCashCost = (order.cost.cash || 0) * costMultiplier;
+    const finalAuraCost = (order.cost.aura || 0) * costMultiplier;
+    const baseCloutCost = (order.cost.clout || 0) * costMultiplier;
+
     // Apply Opposition/Congress support multiplier to Clout costs
-    const scaledCloutCost = order.cost.clout
-      ? Math.floor(order.cost.clout * (1 + (100 - state.pl.congressSupport) / 100))
+    const scaledCloutCost = baseCloutCost
+      ? Math.floor(baseCloutCost * (1 + (100 - state.pl.congressSupport) / 100))
       : 0;
 
-    if ((order.cost.cash && state.pl.federalBudget < order.cost.cash) ||
+    if ((finalCashCost && state.pl.federalBudget < finalCashCost) ||
         (scaledCloutCost && state.pl.clout < scaledCloutCost) ||
-        (order.cost.aura && state.pl.aura < order.cost.aura)) {
+        (finalAuraCost && state.pl.aura < finalAuraCost)) {
       state.addTickerMessage(`Need more resources to issue ${order.name}`, 'text-red-400');
       return;
     }
@@ -126,9 +144,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     const newPl = {
       ...state.pl,
-      federalBudget: state.pl.federalBudget - (order.cost.cash || 0),
+      federalBudget: state.pl.federalBudget - finalCashCost,
       clout: state.pl.clout - scaledCloutCost,
-      aura: state.pl.aura - (order.cost.aura || 0),
+      aura: state.pl.aura - finalAuraCost,
       approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + approvalImpact)),
       gdp: state.pl.gdp + gdpImpact,
       inflation: state.pl.inflation + inflationImpact,
@@ -161,9 +179,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     state.logEvent('LAW_PASSED', {
       orderId,
       name: order.name,
-      cost: order.cost.cash || 0,
+      cost: finalCashCost,
       cloutCost: scaledCloutCost,
-      auraCost: order.cost.aura || 0,
+      auraCost: finalAuraCost,
       approvalImpact
     });
     state.logAction({
@@ -174,11 +192,11 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       level: 1,
       branchId: 'EXECUTIVE_ORDER',
       branchName: 'Executive Order',
-      cost: order.cost.cash || 0,
+      cost: finalCashCost,
       yieldCash: 0,
       yieldClout: -scaledCloutCost,
-      yieldAura: -(order.cost.aura || 0),
-      netCash: -(order.cost.cash || 0),
+      yieldAura: -finalAuraCost,
+      netCash: -finalCashCost,
       success: true
     });
   },
@@ -189,12 +207,18 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       // check if it's a replacement. Since we delete on fire, we can check diary.
       // Requirements: "fire cabinet member (costs 10 Clout, resets loyalty to 60%)"
       const previouslyOccupied = state.pl.presidentialDiary.some(d => d.event === 'CABINET SHAKEUP' && d.outcome.includes(member.role));
-      const initialLoyalty = previouslyOccupied ? 60 : 70;
+      let initialLoyalty = previouslyOccupied ? 60 : 70;
+
+      // Cabinet Loyalty: Influenced by past rival relationships
+      const alliedRivalId = Object.keys(RIVAL_CABINET_MAP).find(rivalId => RIVAL_CABINET_MAP[rivalId] === member.id);
+      if (alliedRivalId && state.pl.crushedRivals.includes(alliedRivalId)) {
+        initialLoyalty += 20;
+      }
 
       return {
         pl: enforceStatCaps({
           ...state.pl,
-          cabinet: { ...state.pl.cabinet, [member.id]: { ...member, loyalty: initialLoyalty } }
+          cabinet: { ...state.pl.cabinet, [member.id]: { ...member, loyalty: Math.min(100, initialLoyalty) } }
         })
       };
     });
@@ -597,7 +621,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     state.addTickerMessage(`TREASURY: Monthly tax revenue of $${(taxRevenue/1000000).toFixed(1)}M collected.`, 'text-emerald-500/80 text-[10px]');
 
     // 3. Generate new crisis
-    const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt);
+    const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt, updatedPl.scandalRiskBonus || 0);
     if (newCrisis) {
       updatedPl.activeCrises = [...updatedPl.activeCrises, newCrisis];
       state.addTickerMessage(`CRISIS ALERT: ${newCrisis.name}!`, "text-red-500 font-black");

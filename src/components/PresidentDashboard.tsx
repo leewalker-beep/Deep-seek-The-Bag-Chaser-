@@ -32,6 +32,14 @@ export const PresidentDashboard: React.FC = () => {
 
   const headlines = pl.presidentialDiary.slice(0, 5).map(d => d.event);
 
+  const techHustles = ['techFlip'];
+  const housingHustles = ['real_estate_empire'];
+  const mediaHustles = ['media_empire'];
+
+  const hasTechMastery = pl.masteredHustles.some(h => techHustles.includes(h));
+  const hasHousingMastery = pl.masteredHustles.some(h => housingHustles.includes(h));
+  const hasMediaMastery = pl.masteredHustles.some(h => mediaHustles.includes(h));
+
   const handleInvest = (amount: number) => {
     useGameStore.getState().investPersonalFunds(amount);
   };
@@ -127,6 +135,23 @@ export const PresidentDashboard: React.FC = () => {
 
       <PresidentialNewsTicker headlines={headlines} />
 
+      {/* Career Trace */}
+      {pl.presidentMonth === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-blue-900/40 border border-blue-400/50 rounded-2xl p-6 shadow-2xl relative z-10"
+        >
+          <h2 className="text-xl font-serif font-black text-white uppercase tracking-tighter mb-2">The People's Choice</h2>
+          <p className="text-blue-200 font-serif italic leading-relaxed">
+            "You came from <span className="text-white font-black">{pl.prePresidencyTier || 'MOGUL'}</span>,
+            mastered <span className="text-white font-black">{pl.masteredHustles.length}</span> hustles,
+            crushed <span className="text-white font-black">{pl.crushedRivals.length}</span> rivals,
+            and now you're President."
+          </p>
+        </motion.div>
+      )}
+
       {/* Header Stats */}
       <div className="bg-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 relative z-10">
         <div className="flex justify-between items-center mb-4">
@@ -177,6 +202,16 @@ export const PresidentDashboard: React.FC = () => {
 
         {/* Economic Warnings */}
         <AnimatePresence>
+          {pl.approvalFloor > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[9px] text-emerald-400 font-black uppercase text-center">
+              🛡️ POPULAR MANDATE: Approval Floor at {pl.approvalFloor}%
+            </motion.div>
+          )}
+          {pl.scandalRiskBonus > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-[9px] text-red-400 font-black uppercase text-center animate-pulse">
+              ⚠️ PAST GHOSTS: Scandal Risk +{Math.round(pl.scandalRiskBonus * 100)}%
+            </motion.div>
+          )}
           {pl.inflation > 5 && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-[9px] text-red-400 font-black uppercase text-center animate-pulse">
               ⚠️ CRITICAL INFLATION: Approval decaying -2%/mo
@@ -363,6 +398,33 @@ export const PresidentDashboard: React.FC = () => {
                 })}
               </div>
             </div>
+
+            {/* Journey Bonuses Section */}
+            {(hasTechMastery || hasHousingMastery || hasMediaMastery) && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest text-center">JOURNEY DISCOUNTS</h2>
+                <div className="grid grid-cols-3 gap-2">
+                  {hasTechMastery && (
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-2 text-center">
+                      <div className="text-[7px] text-blue-400 font-black uppercase">Tech Policies</div>
+                      <div className="text-xs font-black text-white">-10% COST</div>
+                    </div>
+                  )}
+                  {hasHousingMastery && (
+                    <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-xl p-2 text-center">
+                      <div className="text-[7px] text-emerald-400 font-black uppercase">Housing Policies</div>
+                      <div className="text-xs font-black text-white">-10% COST</div>
+                    </div>
+                  )}
+                  {hasMediaMastery && (
+                    <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-2 text-center">
+                      <div className="text-[7px] text-purple-400 font-black uppercase">Media Policies</div>
+                      <div className="text-xs font-black text-white">-10% COST</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Executive Orders */}
             <div className="space-y-3">

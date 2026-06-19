@@ -29,7 +29,7 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
     bag: pl.bag + overflowBagBonus,
     clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
     aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
-    approvalRating: Math.max(0, Math.min(100, pl.approvalRating)),
+    approvalRating: Math.max(pl.approvalFloor || 0, Math.min(100, pl.approvalRating)),
     mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),
     heat: Math.floor(Math.max(0, Math.min(pl.heat, maxHeat))),
     mentalShieldTurns: Math.floor(Math.max(0, pl.mentalShieldTurns || 0)),

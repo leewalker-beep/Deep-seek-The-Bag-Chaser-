@@ -80,6 +80,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
       'Midwest': 50,
       'West': 50
     },
+    prePresidencyTier: null,
+    crushedRivals: [],
+    approvalFloor: 0,
+    scandalRiskBonus: 0,
     sotuHistory: [],
     presidentialDiary: [],
     presidentMonth: 0,

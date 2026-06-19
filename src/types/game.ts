@@ -278,6 +278,10 @@ export interface PlayerStats {
     message: string;
   }[];
   regionalApproval: Record<string, number>;
+  prePresidencyTier: Tier | null;
+  crushedRivals: string[];
+  approvalFloor: number;
+  scandalRiskBonus: number;
   sotuHistory: {
     month: number;
     gdp: number;

@@ -29,6 +29,13 @@ const MASTERY_DISPLAY_NAMES: Record<string, string> = {
   'ghost_mode': 'Ghost Mode',
 };
 
+export const RIVAL_CABINET_MAP: Record<string, string> = {
+  'rival_corp': 'treasury',
+  'rival_startup': 'state',
+  'rival_2': 'defense',
+  'rival_1': 'press',
+};
+
 export const getMasteryBonusDetails = (player: PlayerStats, orderId: string) => {
   let bonus = 0;
   const appliedMasteries: string[] = [];
@@ -354,9 +361,11 @@ export const CRISES: PresidentCrisis[] = [
   }
 ];
 
-export function generateCrisis(isSecondTerm: boolean, debt: number = 0): PresidentCrisis | null {
+export function generateCrisis(isSecondTerm: boolean, debt: number = 0, extraRisk: number = 0): PresidentCrisis | null {
   let chance = isSecondTerm ? 0.11 : 0.06;
   if (debt > 80) chance += 0.10;
+  chance += extraRisk;
+
   if (Math.random() > chance) return null;
 
   const crisis = CRISES[Math.floor(Math.random() * CRISES.length)];
