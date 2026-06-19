@@ -117,7 +117,14 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div key={event.id} className="bg-red-900/20 rounded-lg p-3 border border-red-500/30">
             <div className="text-[10px] text-red-400 font-black mb-1 uppercase tracking-widest">RIVAL SMOKED</div>
             <div className="font-bold text-white">{metadata.rivalName} defeated</div>
-            <div className="text-[9px] text-slate-400">Their bid: ${metadata.bid.toLocaleString()}</div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 font-mono text-[9px]">
+              {metadata.bid != null && (
+                <div className="text-slate-400">Their bid: ${metadata.bid.toLocaleString()}</div>
+              )}
+              {metadata.bonus != null && (
+                <div className="text-emerald-400">Bonus: +${metadata.bonus.toLocaleString()}</div>
+              )}
+            </div>
           </div>
         );
       case 'ECONOMIC_EVENT':
