@@ -47,6 +47,18 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
           setCampaignStage(stage + 1);
         } else {
           setCampaignStage(8);
+          if (pl.isReElectionPhase) {
+            useGameStore.setState((state) => ({
+              pl: {
+                ...state.pl,
+                isSecondTerm: true,
+                isReElectionPhase: false,
+                approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating - 10))
+              }
+            }));
+            addTickerMessage("RE-ELECTED! Four more years!", "text-yellow-400 font-black");
+            useGameStore.getState().logEvent('ELECTION_WON', { term: 'SECOND' });
+          }
           setActiveTab('PRESIDENCY');
           setActiveHustleView(null);
         }
@@ -287,7 +299,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
         <div className="text-right">
           <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Status</div>
           <div className="bg-slate-800 px-3 py-1 rounded-full text-[10px] font-black text-white border border-slate-700 uppercase">
-            Stage {stage}/7
+            {pl.isReElectionPhase ? 'Re-election' : 'Stage'} {stage}/7
           </div>
         </div>
       </div>

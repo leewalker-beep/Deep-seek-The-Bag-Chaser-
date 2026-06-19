@@ -264,6 +264,7 @@ export interface PlayerStats {
   }[];
   presidentMonth: number;
   isSecondTerm: boolean;
+  isReElectionPhase: boolean;
   cabinet: Record<string, CabinetMember>;
   activeCrises: PresidentCrisis[];
   presidentialMarketControl: {

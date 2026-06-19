@@ -393,7 +393,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       approvalHit += c.impact.approval;
       // Crisis impacts federal budget instead of personal bag
       if (c.impact.cash) {
-        updatedPl.federalBudget -= c.impact.cash;
+        updatedPl.federalBudget += (c.impact.cash || 0);
       }
       // Apply Macro Impacts from Crises
       if (c.impact.gdp) updatedPl.gdp += c.impact.gdp;
@@ -502,9 +502,12 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
     });
 
+    const isPresident = pl.currentTier === 'PRESIDENT';
+
     updatedPl = {
       ...updatedPl,
-      bag: updatedPl.bag + cabinetCash,
+      bag: updatedPl.bag + (isPresident ? 0 : cabinetCash),
+      federalBudget: updatedPl.federalBudget + (isPresident ? cabinetCash : 0),
       clout: updatedPl.clout + cabinetClout,
       aura: updatedPl.aura + cabinetAura,
       approvalRating: Math.max(0, Math.min(100, updatedPl.approvalRating + approvalHit + cabinetApproval)),
@@ -540,10 +543,12 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     if (updatedPl.presidentMonth === 48 && !updatedPl.isSecondTerm) {
       if (updatedPl.approvalRating > 50) {
-        state.addTickerMessage("RE-ELECTED! Four more years!", "text-yellow-400 font-black");
-        updatedPl.isSecondTerm = true;
-        updatedPl.approvalRating = Math.max(0, Math.min(100, updatedPl.approvalRating - 10));
-        state.logEvent('ELECTION_WON', { term: 'SECOND' });
+        state.addTickerMessage("TERM COMPLETE: Launching re-election campaign!", "text-yellow-400 font-black");
+        updatedPl.isReElectionPhase = true;
+        updatedPl.campaignStage = 1;
+        updatedPl.campaignDelegates = 0;
+        state.setActiveTab('PRESIDENT');
+        state.setActiveHustleView('president_campaign');
       } else {
         gameOverCause = "Election Lost: The people have spoken. Your approval was too low for a second term.";
         isGameOver = true;
