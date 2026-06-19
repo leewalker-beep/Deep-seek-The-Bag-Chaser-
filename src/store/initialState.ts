@@ -2,12 +2,14 @@ import type { PlayerStats } from '../types/game';
 import { HUSTLES } from '../config/hustles/base';
 import { BACKGROUNDS } from '../config/backgrounds';
 
-export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string): PlayerStats => {
+export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, categoryId?: string, variationId?: string): PlayerStats => {
   const baseStats: PlayerStats = {
     bag: 0,
     clout: 0,
     aura: 0,
     chosenBackground: undefined,
+    chosenBackgroundCategory: categoryId,
+    chosenBackgroundVariation: variationId,
     mentalHealth: 100,
     heat: 0,
     month: 0,
