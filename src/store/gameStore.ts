@@ -29,6 +29,7 @@ export const useGameStore = create<GameState>()(
         unlockedHustles: state.unlockedHustles,
         activeTab: state.activeTab,
         difficulty: state.difficulty,
+        chosenBackground: state.chosenBackground,
         achievements: (state as any).achievements,
         loginStreak: (state as any).loginStreak,
         lastLoginDate: (state as any).lastLoginDate,
