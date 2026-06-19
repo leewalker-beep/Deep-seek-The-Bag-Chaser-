@@ -199,8 +199,8 @@ function App() {
   if (ph === 'PROLOGUE') {
     return (
       <PrologueScreen
-        onStart={(name, backgroundId) => {
-          resetGame(backgroundId);
+        onStart={(name, backgroundId, categoryId, variationId) => {
+          resetGame(backgroundId, 3, categoryId, variationId);
           setPlayerName(name);
         }}
       />

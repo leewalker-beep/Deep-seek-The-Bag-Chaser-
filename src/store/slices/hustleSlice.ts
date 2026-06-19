@@ -72,13 +72,13 @@ export interface HustleSlice {
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: any, metadata?: any) => void;
   checkMilestones: () => void;
-  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3) => void;
+  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
 }
 
 export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (set, get) => ({
   unlockedHustles: getUnlockedHustles(3),
 
-  resetGame: (backgroundId, difficulty = 3) => {
+  resetGame: (backgroundId, difficulty = 3, categoryId, variationId) => {
     const currentState = get();
     const persistentStats = {
       totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
@@ -90,7 +90,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       localStorage.removeItem('bag-chaser-save');
     }
 
-    const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId));
+    const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId));
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;
@@ -108,6 +108,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       fatalCause: null,
       difficulty,
       chosenBackground: backgroundId,
+      chosenBackgroundCategory: categoryId,
+      chosenBackgroundVariation: variationId,
     });
   },
 
