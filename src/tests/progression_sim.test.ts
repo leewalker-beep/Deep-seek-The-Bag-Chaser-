@@ -65,7 +65,7 @@ describe('Progression Simulation', () => {
             const levelMult = LEVEL_MULTIPLIERS[lvl.level] || 1;
             const cost = lvl.cost * levelMult;
 
-            if (lvl.cloutReq <= clout && lvl.auraReq <= aura && cost <= bag + 10000) {
+            if (lvl.cloutReq <= clout && lvl.auraReq <= aura && cost <= bag) {
               const yieldCash = lvl.yieldCash * levelMult;
               const profit = yieldCash - cost;
 
@@ -128,6 +128,12 @@ describe('Progression Simulation', () => {
           tierMonths++;
           totalMonths++;
           bag -= (rentByTier[tier] || 0); // extra rent for recovery month
+        }
+
+        // Death check (match advancementEngine.ts)
+        if (bag < 0) {
+          console.log(`DIED in ${tier} at Month ${tierMonths}: Bag=${bag.toLocaleString()}`);
+          return; // End simulation completely on death
         }
       }
 
