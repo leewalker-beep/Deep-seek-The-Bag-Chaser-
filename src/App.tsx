@@ -199,8 +199,8 @@ function App() {
   if (ph === 'PROLOGUE') {
     return (
       <PrologueScreen
-        onStart={(name, difficulty) => {
-          resetGame(difficulty);
+        onStart={(name, backgroundId) => {
+          resetGame(backgroundId);
           setPlayerName(name);
         }}
       />

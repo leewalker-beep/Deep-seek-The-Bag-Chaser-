@@ -1,11 +1,13 @@
 import type { PlayerStats } from '../types/game';
 import { HUSTLES } from '../config/hustles/base';
+import { BACKGROUNDS } from '../config/backgrounds';
 
-export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
+export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string): PlayerStats => {
   const baseStats: PlayerStats = {
     bag: 0,
     clout: 0,
     aura: 0,
+    chosenBackground: undefined,
     mentalHealth: 100,
     heat: 0,
     month: 0,
@@ -114,8 +116,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
     },
   };
 
+  let stats: PlayerStats;
+
   if (difficulty === 1) { // Trust Fund
-    return {
+    stats = {
       ...baseStats,
       bag: 25000,
       clout: 30,
@@ -123,7 +127,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
       currentTier: 'STREET',
     };
   } else if (difficulty === 2) { // Middle Grind
-    return {
+    stats = {
       ...baseStats,
       bag: 5000,
       clout: 15,
@@ -131,7 +135,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
       currentTier: 'MUD',
     };
   } else { // Grinder (default)
-    return {
+    stats = {
       ...baseStats,
       bag: 1000,
       clout: 5,
@@ -139,6 +143,18 @@ export const getInitialStats = (difficulty: 1 | 2 | 3): PlayerStats => {
       currentTier: 'MUD',
     };
   }
+
+  if (backgroundId) {
+    const bg = BACKGROUNDS.find(b => b.id === backgroundId);
+    if (bg) {
+      stats.bag += bg.starterBag;
+      stats.clout += bg.starterClout;
+      stats.aura += bg.starterAura;
+      stats.chosenBackground = bg.id;
+    }
+  }
+
+  return stats;
 };
 
 export const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {

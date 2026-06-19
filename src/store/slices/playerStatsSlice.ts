@@ -6,6 +6,7 @@ import { enforceStatCaps } from '../../engine/statEngine';
 export interface PlayerStatsSlice {
   pl: PlayerStats;
   difficulty: 1 | 2 | 3;
+  chosenBackground?: string;
 
   setPlayerName: (name: string) => void;
   setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;

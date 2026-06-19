@@ -18,7 +18,7 @@ describe('Death and Ending Logic', () => {
   beforeEach(() => {
     // Basic mock of Zustand's set/get for the slice
     const state: any = {
-      pl: getInitialStats(3),
+      pl: getInitialStats(3, 'street_kid'),
       currentMarket: 'NORMAL',
       news: [],
       ph: 'PLAYING',

@@ -4,6 +4,7 @@ import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLES } from '../config/hustles/base';
 import { enforceStatCaps } from './statEngine';
 import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
+import { BACKGROUNDS } from '../config/backgrounds';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -302,6 +303,15 @@ export function advanceMonth(
     });
 
     newPl.monthsSinceCycleChange = 0;
+  }
+
+  // Occasional Background News Reference (~5% chance per month)
+  if (newPl.chosenBackground && Math.random() < 0.05) {
+    const bg = BACKGROUNDS.find(b => b.id === newPl.chosenBackground);
+    if (bg && bg.newsReferences.length > 0) {
+      const ref = bg.newsReferences[Math.floor(Math.random() * bg.newsReferences.length)];
+      news.push({ text: `📰 ${ref}`, colorClass: 'text-emerald-400 font-bold' });
+    }
   }
 
   // Add monthly summary to news

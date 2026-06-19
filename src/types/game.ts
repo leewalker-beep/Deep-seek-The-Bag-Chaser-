@@ -261,6 +261,7 @@ export interface PlayerStats {
     type: MarketType;
     monthsRemaining: number;
   } | null;
+  chosenBackground?: string;
   pendingPresidentialImpacts: {
     monthToTrigger: number;
     impact: Partial<ExecutiveOrder['impact']>;
@@ -325,9 +326,10 @@ export interface GameState {
   deathBadge: string | null;
   fatalCause: string | null;
   difficulty: 1 | 2 | 3;
+  chosenBackground?: string;
 
   // Actions
-  resetGame: (difficulty?: 1 | 2 | 3) => void;
+  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3) => void;
   setPlayerName: (name: string) => void;
   setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
   setActiveHustleView: (hustleId: string | null) => void;
