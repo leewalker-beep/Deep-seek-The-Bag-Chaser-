@@ -124,9 +124,10 @@ export function advanceMonth(
     passiveIncome += val;
   });
 
-  // Apply Legacy Multiplier (0.1% per point)
+  // Apply Market and Legacy Multipliers (0.1% per legacy point)
   const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
-  passiveIncome = Math.floor(passiveIncome * legacyMultiplier);
+  const yieldMult = MARKET_CONFIGS[currentMarket].yieldMultiplier;
+  passiveIncome = Math.floor(passiveIncome * legacyMultiplier * yieldMult);
 
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly

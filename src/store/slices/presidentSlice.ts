@@ -88,7 +88,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const newDemographics = { ...state.pl.demographicApproval };
     if (order.impact.demographics) {
       Object.entries(order.impact.demographics).forEach(([key, val]) => {
-        newDemographics[key] = (newDemographics[key] || 50) + val;
+        newDemographics[key] = Math.max(0, Math.min(100, (newDemographics[key] || 50) + val));
       });
     }
 
@@ -115,7 +115,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       federalBudget: state.pl.federalBudget - (order.cost.cash || 0),
       clout: state.pl.clout - scaledCloutCost,
       aura: state.pl.aura - (order.cost.aura || 0),
-      approvalRating: state.pl.approvalRating + approvalImpact,
+      approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + approvalImpact)),
       gdp: state.pl.gdp + gdpImpact,
       inflation: state.pl.inflation + inflationImpact,
       nationalDebt: state.pl.nationalDebt + debtImpact,
@@ -380,7 +380,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     activeCrises.forEach(c => {
       if (c.impact.demographics) {
         Object.entries(c.impact.demographics).forEach(([key, val]) => {
-          newDemographics[key] = (newDemographics[key] || 50) + val;
+          newDemographics[key] = Math.max(0, Math.min(100, (newDemographics[key] || 50) + val));
         });
       }
     });
@@ -408,7 +408,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       bag: updatedPl.bag + cabinetCash,
       clout: updatedPl.clout + cabinetClout,
       aura: updatedPl.aura + cabinetAura,
-      approvalRating: updatedPl.approvalRating + approvalHit + cabinetApproval,
+      approvalRating: Math.max(0, Math.min(100, updatedPl.approvalRating + approvalHit + cabinetApproval)),
       demographicApproval: newDemographics,
       presidentialDiary: newDiaryEntries,
       activeCrises: activeCrises,
@@ -443,7 +443,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       if (updatedPl.approvalRating > 50) {
         state.addTickerMessage("RE-ELECTED! Four more years!", "text-yellow-400 font-black");
         updatedPl.isSecondTerm = true;
-        updatedPl.approvalRating -= 10;
+        updatedPl.approvalRating = Math.max(0, Math.min(100, updatedPl.approvalRating - 10));
         state.logEvent('ELECTION_WON', { term: 'SECOND' });
       } else {
         gameOverCause = "Election Lost: The people have spoken. Your approval was too low for a second term.";

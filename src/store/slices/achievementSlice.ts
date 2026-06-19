@@ -39,6 +39,7 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
             bag: state.pl.bag + (achievement.reward?.cash || 0),
             clout: state.pl.clout + (achievement.reward?.clout || 0),
             aura: state.pl.aura + (achievement.reward?.aura || 0),
+            unlockedAchievements: Array.from(new Set([...(state.pl.unlockedAchievements || []), id])),
           }
         };
       }

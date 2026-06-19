@@ -685,7 +685,7 @@ HUSTLES.data_monopoly = {
   description: 'Own every byte of personal information',
   miniGame: 'PresidentialCampaign',
   levels: [
-    { level: 1, id: 'l1', cost: 10000000000, yieldCash: 35000000000, yieldClout: 2500, yieldAura: 1500, mentalHit: -60, cloutReq: 20000, auraReq: 20000, passiveYield: 5000000000 },
+    { level: 1, id: 'l1', cost: 10000000000, yieldCash: 18000000000, yieldClout: 1500, yieldAura: 800, mentalHit: -60, cloutReq: 20000, auraReq: 20000, passiveYield: 300000000 },
   ]
 };
 
@@ -697,7 +697,7 @@ HUSTLES.central_bank_play = {
   description: 'Influence interest rates for profit',
   miniGame: 'PresidentialCampaign',
   levels: [
-    { level: 1, id: 'l1', cost: 5000000000, yieldCash: 15000000000, yieldClout: 2500, yieldAura: 1200, mentalHit: -70, cloutReq: 40000, auraReq: 40000 },
+    { level: 1, id: 'l1', cost: 5000000000, yieldCash: 9000000000, yieldClout: 1500, yieldAura: 600, mentalHit: -70, cloutReq: 40000, auraReq: 40000 },
   ]
 };
 
