@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
+import { getMasteryCount } from '../../utils/masteryUtils';
+import { getElectionTitle } from '../../config/electionTitles';
 import { BaseButton } from '../ui/BaseButton';
 import { ProgressBar } from '../ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -244,6 +246,28 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
           {renderStage()}
         </div>
       </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="mt-6 pt-6 border-t border-slate-800"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Candidate Profile</div>
+            <div className="text-sm text-white font-bold italic">"{getElectionTitle(getMasteryCount(pl))}"</div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              Your mastery of {getMasteryCount(pl)} hustles makes you {getElectionTitle(getMasteryCount(pl)) === 'The Specialist' ? 'a' : ''} <span className="text-blue-400">{getElectionTitle(getMasteryCount(pl))}</span>.
+            </div>
+            <div className="text-[10px] text-emerald-400 font-black uppercase mt-1">Voters trust your expertise.</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Expertise Bonus</div>
+            <div className="text-lg font-black text-emerald-400">+{Math.min(15, getMasteryCount(pl) * 1.5).toFixed(1)}%</div>
+            <div className="text-[8px] text-slate-500 font-bold uppercase mt-1">Approval per trail</div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

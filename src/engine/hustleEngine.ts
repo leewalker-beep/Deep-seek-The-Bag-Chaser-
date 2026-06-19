@@ -4,6 +4,7 @@ import { calculateHustleMath } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLE_BADGES } from '../config/badges';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
+import { getMasteryCount } from '../utils/masteryUtils';
 
 export interface HustleExecutionResult {
   success: boolean;
@@ -21,6 +22,7 @@ export interface HustleExecutionResult {
   isRare?: boolean;
   bigWinMessage?: string;
   tickerMessages?: { text: string; colorClass?: string }[];
+  approvalBonus?: number;
 }
 
 export type HustleStrategy = (
@@ -551,6 +553,11 @@ export const executeHustleAction = (
     result.mentalHit = Math.floor(result.mentalHit * 0.7);
     const auraBonus = 1 + (state.aura / 5000);
     result.yieldClout = Math.floor(result.yieldClout * auraBonus);
+
+    // Mastery Bonus for Election
+    const masteryCount = getMasteryCount(state);
+    const masteryApprovalBonus = Math.min(15, masteryCount * 1.5);
+    result.approvalBonus = (result.approvalBonus || 0) + masteryApprovalBonus;
   }
 
   const legacyMultiplier = 1 + ((state.legacyPoints || 0) * 0.001);
