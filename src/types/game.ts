@@ -18,6 +18,7 @@ export type GameEventType =
   | 'CRISIS_RESOLVED'
   | 'SCANDAL_TRIGGERED'
   | 'ECONOMIC_EVENT'
+  | 'REFLECTION'
   | 'SPECIAL_EVENT';
 
 export interface GameEvent {
