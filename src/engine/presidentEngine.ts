@@ -1,6 +1,51 @@
-import type { CabinetMember, PresidentCrisis, ExecutiveOrder } from '../types/game';
+import type { CabinetMember, PresidentCrisis, ExecutiveOrder, PlayerStats } from '../types/game';
+import { MASTERY_ORDER_MAP } from '../config/masteryOrderMap';
 
 export type { CabinetMember, PresidentCrisis, ExecutiveOrder };
+
+const MASTERY_TO_HUSTLE_ID: Record<string, string> = {
+  'music_production': 'audio',
+  'tech_flipping': 'techFlip',
+  'real_estate': 'real_estate_empire',
+  'media_empire': 'media_empire',
+  'scrap_metal': 'r_scrap',
+  'dropshipping': 'drop',
+  'street_eats': 'street_eats',
+  'labor': 'r_labor',
+  'delivery': 'r_delivery',
+  'ghost_mode': 'r_ghost_mode',
+};
+
+const MASTERY_DISPLAY_NAMES: Record<string, string> = {
+  'music_production': 'Music Production',
+  'tech_flipping': 'Tech Flipping',
+  'real_estate': 'Real Estate',
+  'media_empire': 'Media Empire',
+  'scrap_metal': 'Scrap Metal',
+  'dropshipping': 'Dropshipping',
+  'street_eats': 'Street Eats',
+  'labor': 'Labor',
+  'delivery': 'Delivery',
+  'ghost_mode': 'Ghost Mode',
+};
+
+export const getMasteryBonusDetails = (player: PlayerStats, orderId: string) => {
+  let bonus = 0;
+  const appliedMasteries: string[] = [];
+
+  for (const [masteryKey, orders] of Object.entries(MASTERY_ORDER_MAP)) {
+    const hustleId = MASTERY_TO_HUSTLE_ID[masteryKey];
+    if (orders.includes(orderId) && player.masteredHustles?.includes(hustleId)) {
+      bonus += 0.05;
+      appliedMasteries.push(MASTERY_DISPLAY_NAMES[masteryKey] || masteryKey);
+    }
+  }
+
+  return {
+    bonus: Math.min(0.15, bonus),
+    masteries: appliedMasteries
+  };
+};
 
 export const CABINET_ROLES = [
   { id: 'treasury', role: 'Secretary of Treasury', bonusType: 'cash' as const },
@@ -182,6 +227,83 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
       passiveCash: -500000,
       heat: -10
     }
+  },
+  {
+    id: 'festival',
+    name: 'National Arts Festival',
+    description: 'A massive celebration of culture and music.',
+    cost: { cash: 5000000, clout: 40 },
+    impact: { approval: 12, gdp: 2, demographics: { economy: 5, foreign: 10 } }
+  },
+  {
+    id: 'data_analytics',
+    name: 'National Data Initiative',
+    description: 'Modernizing government data infrastructure.',
+    cost: { cash: 10000000, clout: 60 },
+    impact: { approval: 5, gdp: 8, demographics: { economy: 15 } }
+  },
+  {
+    id: 'crypto_mining',
+    name: 'Federal Crypto Reserve',
+    description: 'Establishing a national digital asset reserve.',
+    cost: { cash: 25000000, clout: 100 },
+    impact: { approval: 2, gdp: 10, demographics: { economy: 20 }, heat: 15 }
+  },
+  {
+    id: 'housing_policy',
+    name: 'Affordable Housing Act',
+    description: 'Subsidies and deregulation to boost housing supply.',
+    cost: { cash: 15000000, clout: 80 },
+    impact: { approval: 20, gdp: 5, demographics: { economy: 10, healthcare: 5 } }
+  },
+  {
+    id: 'media_policy',
+    name: 'Public Media Grant',
+    description: 'Funding for independent and public broadcasting.',
+    cost: { cash: 2000000, clout: 30 },
+    impact: { approval: 8, demographics: { economy: 5 } }
+  },
+  {
+    id: 'crisis_response',
+    name: 'Emergency Relief Fund',
+    description: 'Pre-emptive funding for disaster response.',
+    cost: { cash: 20000000, clout: 50 },
+    impact: { approval: 10, heat: -10 }
+  },
+  {
+    id: 'trade_policy',
+    name: 'Open Trade Agreement',
+    description: 'Reducing tariffs and boosting global trade.',
+    cost: { clout: 60 },
+    impact: { approval: 5, gdp: 12, demographics: { foreign: 20, economy: 10 } }
+  },
+  {
+    id: 'working_class_policy',
+    name: 'Street Vendor Protection',
+    description: 'Legalizing and supporting small scale street commerce.',
+    cost: { clout: 20 },
+    impact: { approval: 15, demographics: { economy: 5 } }
+  },
+  {
+    id: 'labor_policy',
+    name: 'Workers Rights Reform',
+    description: 'Strengthening unions and labor protections.',
+    cost: { clout: 70 },
+    impact: { approval: 18, demographics: { economy: -5, healthcare: 10 } }
+  },
+  {
+    id: 'infrastructure_policy',
+    name: 'National Highway System',
+    description: 'Massive upgrade to national logistics networks.',
+    cost: { cash: 30000000, clout: 120 },
+    impact: { approval: 10, gdp: 15, demographics: { economy: 15 } }
+  },
+  {
+    id: 'security_policy',
+    name: 'Cybersecurity Act',
+    description: 'Protecting national infrastructure from digital threats.',
+    cost: { cash: 12000000, clout: 90 },
+    impact: { approval: 5, aura: 20, demographics: { foreign: 5 } }
   }
 ];
 

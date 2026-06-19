@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
-import { EXECUTIVE_ORDERS, generateCrisis } from '../../engine/presidentEngine';
+import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
@@ -51,6 +51,13 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       gdpImpact = Math.floor(gdpImpact * 0.5);
     }
 
+    // Mastery Bonuses
+    const { bonus: masteryBonus, masteries: masteredHustlesNames } = getMasteryBonusDetails(state.pl, orderId);
+    if (masteryBonus > 0) {
+      approvalImpact = Math.ceil(approvalImpact * (1 + masteryBonus));
+      passiveCashImpact = Math.ceil(passiveCashImpact * (1 + masteryBonus));
+    }
+
     const newCabinet = { ...state.pl.cabinet };
     Object.keys(newCabinet).forEach(roleId => {
       const member = newCabinet[roleId];
@@ -79,11 +86,16 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
     });
 
+    let masteryOutcomeMsg = "";
+    if (masteredHustlesNames.length > 0) {
+      masteryOutcomeMsg = ` Mastery bonus: +${Math.round(masteryBonus * 100)}% from ${masteredHustlesNames.join(', ')}.`;
+    }
+
     const diaryEntry = {
       id: Math.random().toString(36).substring(7),
       month: state.pl.presidentMonth,
       event: order.name,
-      outcome: `Successfully issued the ${order.name}. Approval adjusted by ${approvalImpact > 0 ? '+' : ''}${approvalImpact}%.`,
+      outcome: `Successfully issued the ${order.name}. Approval adjusted by ${approvalImpact > 0 ? '+' : ''}${approvalImpact}%.${masteryOutcomeMsg}`,
       type: 'ORDER' as const
     };
 
@@ -139,6 +151,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
+    if (masteryBonus > 0) {
+      state.addTickerMessage(`Your ${masteredHustlesNames[0]} mastery boosted this order by +${Math.round(masteryBonus * 100)}%.`, 'text-emerald-400 text-xs');
+    }
     if (order.marketEffect) {
       set({ currentMarket: order.marketEffect.type });
       state.addTickerMessage(`MARKET SHIFT: Administration forces ${order.marketEffect.type} for ${order.marketEffect.duration} months.`, 'text-orange-400 font-bold');

@@ -158,6 +158,7 @@ export interface ExecutiveOrder {
     demographics?: Record<string, number>;
     passiveCash?: number;
     heat?: number;
+    aura?: number;
   };
   marketEffect?: {
     type: MarketType;
