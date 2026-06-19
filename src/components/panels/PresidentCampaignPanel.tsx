@@ -7,19 +7,35 @@ import { BaseButton } from '../ui/BaseButton';
 import { ProgressBar } from '../ui/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_CONSTANTS } from '../../config/gameConstants';
+import { PersuadeVoters } from '../campaign/PersuadeVoters';
+import { SwingStateSweep } from '../campaign/SwingStateSweep';
+import { CabinetApproval } from '../campaign/CabinetApproval';
 
 interface PresidentCampaignPanelProps {
   hustle: Hustle;
 }
 
 export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ hustle }) => {
-  const { pl, setCampaignStage, setCampaignPlatform, setCampaignVP, setCampaignDelegates, executeHustle, setActiveHustleView, addTickerMessage, setActiveTab } = useGameStore();
+  const {
+    pl,
+    setCampaignStage,
+    setCampaignPlatform,
+    setCampaignVP,
+    setCampaignDelegates,
+    executeHustle,
+    setActiveHustleView,
+    addTickerMessage,
+    setActiveTab,
+    updatePresidentialStat,
+    updateDemographicApproval
+  } = useGameStore();
   const stage = pl.campaignStage || 1;
   const platform = pl.campaignPlatform || 'economy';
   const vp = pl.campaignVP || '';
   const delegates = pl.campaignDelegates || 0;
 
   const [isCasting, setIsCasting] = useState(false);
+  const [activeMinigame, setActiveMinigame] = useState<string | null>(null);
 
   const handleStageComplete = (multiplier: number = 1.0) => {
     setIsCasting(true);
@@ -37,6 +53,33 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
       }
     }, 1000);
   };
+
+  if (activeMinigame === 'PersuadeVoters') {
+    return <PersuadeVoters demographic="Latinos" onComplete={(mult) => {
+      const gain = Math.floor(mult * 5);
+      updateDemographicApproval('Latinos', gain);
+      addTickerMessage(`You won over key voters in the Latino community: +${gain}% Approval`, 'text-emerald-400');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'SwingStateSweep') {
+    return <SwingStateSweep onComplete={(res: any) => {
+      const votes = Math.floor(res.multiplier * 20);
+      updatePresidentialStat('electoralVotes', votes);
+      addTickerMessage(`Swing State Sweep complete: +${votes} Electoral Votes`, 'text-blue-400 font-bold');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'CabinetApproval') {
+    return <CabinetApproval onComplete={(mult) => {
+      const gain = Math.floor(mult * 10);
+      updatePresidentialStat('congressSupport', gain);
+      addTickerMessage(`Cabinet Approval process: +${gain} Congress Support`, 'text-purple-400');
+      setActiveMinigame(null);
+    }} />;
+  }
 
   const renderStage = () => {
     switch(stage) {
@@ -69,6 +112,10 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
       case 2:
         return (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-4">
+                <h3 className="text-xs font-black text-blue-500 uppercase mb-2">Campaign Action</h3>
+                <BaseButton onClick={() => setActiveMinigame('CabinetApproval')} className="w-full text-xs py-2">VET CABINET NOMINEES</BaseButton>
+             </div>
              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
               <h3 className="text-lg font-black text-white mb-2">Stage 2: Running Mate</h3>
               <p className="text-slate-400 text-xs mb-4">A Vice President can shore up your weaknesses or double down on your strengths.</p>
@@ -153,6 +200,10 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
       case 5:
         return (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-4 flex gap-2">
+                <BaseButton onClick={() => setActiveMinigame('PersuadeVoters')} className="flex-1 text-[10px] py-2">PERSUADE VOTERS</BaseButton>
+                <BaseButton onClick={() => setActiveMinigame('SwingStateSweep')} className="flex-1 text-[10px] py-2">SWING STATE SWEEP</BaseButton>
+             </div>
             <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center">
               <h3 className="text-lg font-black text-white mb-2">Stage 5: General Election Trail</h3>
               <p className="text-slate-400 text-xs mb-6">Barnstorming the swing states. Your Clout and Aura determine the momentum.</p>

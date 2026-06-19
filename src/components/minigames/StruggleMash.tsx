@@ -3,9 +3,15 @@ import { motion } from 'framer-motion';
 
 interface StruggleMashProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
 }
 
-export const StruggleMash: React.FC<StruggleMashProps> = ({ onComplete }) => {
+export const StruggleMash: React.FC<StruggleMashProps> = ({
+  onComplete,
+  title = "THE STRUGGLE",
+  instruction = "Mash to survive the grind"
+}) => {
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [isActive, setIsActive] = useState(true);
@@ -53,10 +59,10 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({ onComplete }) => {
 
   return (
     <div className={`transition-colors duration-100 p-8 rounded-3xl border-4 shadow-2xl text-center ${feedback ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
-      <h2 className="text-2xl font-black text-zinc-400 mb-2 uppercase tracking-tighter italic">THE STRUGGLE</h2>
+      <h2 className="text-2xl font-black text-zinc-400 mb-2 uppercase tracking-tighter italic">{title}</h2>
       <div className="flex items-center justify-center gap-2 mb-6">
         <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} className="text-emerald-500 text-xl">⚡</motion.span>
-        <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">Mash to survive the grind</p>
+        <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">{instruction}</p>
       </div>
 
       <div className="relative h-48 w-full bg-zinc-900 rounded-2xl border-2 border-zinc-800 overflow-hidden mb-6 flex items-end">

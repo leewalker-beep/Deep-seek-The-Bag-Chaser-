@@ -3,9 +3,15 @@ import { motion } from 'framer-motion';
 
 interface SequenceRecallProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
 }
 
-export const SequenceRecall: React.FC<SequenceRecallProps> = ({ onComplete }) => {
+export const SequenceRecall: React.FC<SequenceRecallProps> = ({
+  onComplete,
+  title = "SEQUENCE RECALL",
+  instruction = "Watch closely..."
+}) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userInput, setUserInput] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -91,10 +97,10 @@ export const SequenceRecall: React.FC<SequenceRecallProps> = ({ onComplete }) =>
         feedback === 'fail' ? 'border-red-500 bg-red-950/20' :
         'border-blue-400/30'
     }`}>
-      <h2 className="text-2xl font-black text-blue-400 mb-2 uppercase italic tracking-tighter">SEQUENCE RECALL</h2>
+      <h2 className="text-2xl font-black text-blue-400 mb-2 uppercase italic tracking-tighter">{title}</h2>
       <div className="flex flex-col items-center gap-1 mb-8">
         <p className={`text-[10px] uppercase tracking-widest font-black transition-colors duration-200 ${isPlaying ? 'text-blue-500' : 'text-emerald-500'}`}>
-            {message}
+            {isPlaying ? instruction : message}
         </p>
         <div className="flex gap-2">
             {[1, 2, 3].map((r) => (

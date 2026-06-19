@@ -15,6 +15,8 @@ export interface PresidentSlice {
   resolveCrisis: (crisisId: string) => void;
   investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;
+  updatePresidentialStat: (stat: string, value: number) => void;
+  updateDemographicApproval: (demographic: string, value: number) => void;
 }
 
 export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlice> = (set, get) => ({
@@ -580,6 +582,28 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       pl: enforceStatCaps(advancedPl),
       currentMarket: newMarket,
       news: [...monthNews, ...state.news].slice(0, 50)
+    });
+  },
+
+  updatePresidentialStat: (stat, value) => {
+    const state = get();
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        [stat]: (state.pl[stat as keyof typeof state.pl] as number || 0) + value
+      })
+    });
+  },
+
+  updateDemographicApproval: (demographic, value) => {
+    const state = get();
+    const newDemographics = { ...state.pl.demographicApproval };
+    newDemographics[demographic] = Math.max(0, Math.min(100, (newDemographics[demographic] || 50) + value));
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        demographicApproval: newDemographics
+      })
     });
   }
 });

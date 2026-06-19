@@ -235,6 +235,10 @@ export interface PlayerStats {
   spaceCompany?: 'asteroid' | 'tourism' | 'mining';
   philanthropyDonation?: number;
   loginStreak?: number;
+  electoralVotes?: number;
+  foreignRelations?: number;
+  worldPeace?: number;
+  voterTurnout?: number;
   campaignStage?: number;
   campaignPlatform?: 'economy' | 'healthcare' | 'foreign';
   campaignVP?: string;
@@ -375,6 +379,8 @@ export interface GameState {
   resolveCrisis: (crisisId: string) => void;
   investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;
+  updatePresidentialStat: (stat: string, value: number) => void;
+  updateDemographicApproval: (demographic: string, value: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: any) => void;

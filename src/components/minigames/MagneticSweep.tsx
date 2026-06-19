@@ -11,9 +11,17 @@ interface MagneticSweepResult {
 
 interface MagneticSweepProps {
   onComplete: (result: MagneticSweepResult) => void;
+  title?: string;
+  instruction?: string;
+  icon?: string;
 }
 
-export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
+export const MagneticSweep: React.FC<MagneticSweepProps> = ({
+  onComplete,
+  title = "MAGNETIC SWEEP",
+  instruction = "Drag magnet to collect scrap!",
+  icon = "🧲"
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [currentX, setCurrentX] = useState(0);
   const [velocity, setVelocity] = useState(0);
@@ -118,10 +126,10 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
       </AnimatePresence>
 
       <div className="absolute top-12 text-center px-6 z-10 w-full">
-        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter">MAGNETIC SWEEP</h2>
+        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter uppercase">{title}</h2>
         <div className="flex items-center justify-center gap-4">
           <motion.span animate={{ x: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">←</motion.span>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Drag magnet to collect scrap!</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{instruction}</p>
           <motion.span animate={{ x: [10, -10, 10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">→</motion.span>
         </div>
       </div>
@@ -138,7 +146,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({ onComplete }) => {
             : isDragging ? '0 0 40px rgba(34,211,238,0.4)' : '0 0 20px rgba(8,145,178,0.2)'
         }}
       >
-        <div className="text-6xl">🧲</div>
+        <div className="text-6xl">{icon}</div>
         <AnimatePresence>
           {isDragging && (
             <motion.div

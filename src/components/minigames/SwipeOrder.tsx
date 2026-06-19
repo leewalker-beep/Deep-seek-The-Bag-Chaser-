@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface Product {
+export interface SwipeItem {
   id: number;
   name: string;
   type: 'real' | 'fake' | 'random';
   timeLimit: number;
 }
 
-const PRODUCTS: Product[] = [
+const PRODUCTS: SwipeItem[] = [
   // Level 1 - Streetwear (Obvious)
   { id: 1, name: 'NIKE', type: 'real', timeLimit: 1.5 },
   { id: 2, name: 'NAH-KE', type: 'fake', timeLimit: 1.5 },
@@ -68,10 +68,24 @@ const PRODUCTS: Product[] = [
 
 interface SwipeOrderProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
+  leftLabel?: string;
+  rightLabel?: string;
+  icon?: string;
+  items?: SwipeItem[];
 }
 
-export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
-  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+export const SwipeOrder: React.FC<SwipeOrderProps> = ({
+  onComplete,
+  title = "SORT THE GOODS",
+  instruction = "QUALITY CONTROL",
+  leftLabel = "FAKE",
+  rightLabel = "REAL",
+  icon = "📦",
+  items = PRODUCTS
+}) => {
+  const [currentProduct, setCurrentProduct] = useState<SwipeItem | null>(null);
   const [productIndex, setProductIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
@@ -85,7 +99,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
 
   // Shuffle products at start
   const [shuffledProducts] = useState(() => {
-    const shuffled = [...PRODUCTS];
+    const shuffled = [...items];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -160,7 +174,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productIndex, shuffledProducts]);
 
-  const isProductReal = (product: Product): boolean => {
+  const isProductReal = (product: SwipeItem): boolean => {
     if (product.type === 'real') return true;
     if (product.type === 'fake') return false;
     return isRealForRandom.get(product.id) ?? false;
@@ -222,8 +236,8 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-8 left-0 right-0 text-center">
-        <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mb-1">QUALITY CONTROL</div>
-        <div className="text-2xl font-black text-white italic">SORT THE GOODS</div>
+        <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mb-1">{instruction}</div>
+        <div className="text-2xl font-black text-white italic uppercase">{title}</div>
         <div className="flex justify-center gap-12 mt-4">
           <div className="text-center">
             <div className="text-[8px] text-slate-500 font-bold uppercase">UNITS</div>
@@ -252,11 +266,11 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="text-7xl mb-6 filter drop-shadow-xl">📦</div>
+          <div className="text-7xl mb-6 filter drop-shadow-xl">{icon}</div>
             <div className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">{currentProduct.name}</div>
             <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-8">
-              Swipe <span className="text-emerald-500">RIGHT</span> for REAL<br/>
-              Swipe <span className="text-red-500">LEFT</span> for FAKE
+            Swipe <span className="text-emerald-500">RIGHT</span> for {rightLabel}<br/>
+            Swipe <span className="text-red-500">LEFT</span> for {leftLabel}
             </div>
 
             <div className="relative w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -291,11 +305,11 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({ onComplete }) => {
           <div className="flex justify-between items-center max-w-sm mx-auto">
             <div className="flex flex-col items-center gap-1 opacity-40">
                <motion.div animate={{ x: [-5, 0, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-4xl">⬅️</motion.div>
-               <span className="text-[10px] font-black text-red-500 uppercase">FAKE</span>
+               <span className="text-[10px] font-black text-red-500 uppercase">{leftLabel}</span>
             </div>
             <div className="flex flex-col items-center gap-1 opacity-40">
                <motion.div animate={{ x: [5, 0, 5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-4xl">➡️</motion.div>
-               <span className="text-[10px] font-black text-emerald-500 uppercase">REAL</span>
+               <span className="text-[10px] font-black text-emerald-500 uppercase">{rightLabel}</span>
             </div>
           </div>
         </div>
