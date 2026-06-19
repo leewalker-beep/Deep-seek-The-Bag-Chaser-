@@ -3,9 +3,15 @@ import { motion } from 'framer-motion';
 
 interface PatternMemoryProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
 }
 
-export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
+export const PatternMemory: React.FC<PatternMemoryProps> = ({
+  onComplete,
+  title = "ENCRYPTION SEQUENCE",
+  instruction = "WATCH CLOSELY..."
+}) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [isDisplaying, setIsDisplaying] = useState(true);
@@ -92,8 +98,8 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
         isDisplaying ? 'border-blue-500' : feedback ? 'border-emerald-500' : 'border-slate-800'
     }`}>
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter">ENCRYPTION SEQUENCE</h2>
-        <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mt-1">Node {round} / {totalRounds}</p>
+        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter uppercase">{title}</h2>
+        <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mt-1">ROUND {round} / {totalRounds}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 w-full max-w-[260px]">
@@ -129,7 +135,7 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({ onComplete }) => {
         {isDisplaying ? (
             <>
                 <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 1 }}>📡</motion.span>
-                <span>WATCH CLOSELY...</span>
+                <span>{instruction}</span>
             </>
         ) : (
             <>

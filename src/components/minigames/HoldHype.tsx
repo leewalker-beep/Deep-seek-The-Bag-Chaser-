@@ -3,9 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface HoldHypeProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
 }
 
-export const HoldHype: React.FC<HoldHypeProps> = ({ onComplete }) => {
+export const HoldHype: React.FC<HoldHypeProps> = ({
+  onComplete,
+  title = "BUILD HYPE",
+  instruction = "Hold for exactly 2.0 seconds"
+}) => {
   const [progress, setProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
@@ -71,11 +77,11 @@ export const HoldHype: React.FC<HoldHypeProps> = ({ onComplete }) => {
       'border-slate-800'
     }`}>
       <div className="text-[10px] text-slate-500 uppercase font-bold mb-4 tracking-widest">
-        BUILD HYPE
+        {title}
       </div>
 
       <div className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-tighter">
-        Hold for exactly <span className="text-white">2.0 seconds</span>
+        {instruction}
       </div>
 
       <div className="w-full bg-slate-800 h-6 rounded-full overflow-hidden mb-8 border border-slate-700 relative">

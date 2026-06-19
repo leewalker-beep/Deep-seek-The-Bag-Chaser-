@@ -5,12 +5,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PresidentialNewsTicker } from './PresidentialNewsTicker';
 import { ConfirmationModal } from './ui/ConfirmationModal';
 import type { ExecutiveOrder, PresidentCrisis } from '../types/game';
+import { StateOfTheUnion } from './presidency/StateOfTheUnion';
+import { DebatePrep } from './presidency/DebatePrep';
+import { NegotiateTreaty } from './presidency/NegotiateTreaty';
+import { CrisisRiskAssessment } from './presidency/CrisisRiskAssessment';
+import { GOTV } from './presidency/GOTV';
+import { LegislativeAgenda } from './presidency/LegislativeAgenda';
 
 export const PresidentDashboard: React.FC = () => {
-  const { pl, issueExecutiveOrder, appointCabinetMember, fireCabinetMember, resolveCrisis, advancePresidentialMonth } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'DIARY' | 'POLLING' | 'SOTU'>('MANAGEMENT');
+  const {
+    pl,
+    issueExecutiveOrder,
+    appointCabinetMember,
+    fireCabinetMember,
+    resolveCrisis,
+    advancePresidentialMonth,
+    updatePresidentialStat,
+    addTickerMessage
+  } = useGameStore();
+  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'DIARY' | 'POLLING' | 'SOTU' | 'ACTIONS'>('MANAGEMENT');
   const [pendingOrder, setPendingOrder] = useState<ExecutiveOrder | null>(null);
   const [pendingCrisis, setPendingCrisis] = useState<PresidentCrisis | null>(null);
+  const [activeMinigame, setActiveMinigame] = useState<string | null>(null);
 
   const approvalColor = pl.approvalRating > 60 ? 'text-emerald-400' : pl.approvalRating > 40 ? 'text-yellow-400' : 'text-red-400';
 
@@ -37,6 +53,68 @@ export const PresidentDashboard: React.FC = () => {
       setPendingCrisis(null);
     }
   };
+
+  if (activeMinigame === 'StateOfTheUnion') {
+    return <StateOfTheUnion onComplete={(mult) => {
+      const gain = Math.floor(mult * 8);
+      updatePresidentialStat('approvalRating', gain);
+      addTickerMessage(`State of the Union: +${gain}% Approval`, 'text-emerald-400 font-bold');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'DebatePrep') {
+    return <DebatePrep onComplete={(mult) => {
+      const appGain = Math.floor(mult * 5);
+      const conGain = Math.floor(mult * 5);
+      updatePresidentialStat('approvalRating', appGain);
+      updatePresidentialStat('congressSupport', conGain);
+      addTickerMessage(`Debate Prep: +${appGain}% Approval, +${conGain} Congress Support`, 'text-blue-400');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'NegotiateTreaty') {
+    return <NegotiateTreaty onComplete={(mult) => {
+      const relGain = Math.floor(mult * 10);
+      const peaceGain = Math.floor(mult * 5);
+      updatePresidentialStat('foreignRelations', relGain);
+      updatePresidentialStat('worldPeace', peaceGain);
+      addTickerMessage(`Treaty Negotiated: +${relGain} Foreign Relations, +${peaceGain} World Peace`, 'text-purple-400');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'CrisisRiskAssessment') {
+    return <CrisisRiskAssessment onComplete={(mult) => {
+      const impact = Math.floor(mult * 5);
+      updatePresidentialStat('approvalRating', impact);
+      addTickerMessage(`Crisis assessed. Impact: ${impact}% Approval`, 'text-orange-400');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'GOTV') {
+    return <GOTV onComplete={(mult) => {
+      const turnGain = Math.floor(mult * 10);
+      const appGain = Math.floor(mult * 3);
+      updatePresidentialStat('voterTurnout', turnGain);
+      updatePresidentialStat('approvalRating', appGain);
+      addTickerMessage(`GOTV Efforts: +${turnGain} Voter Turnout, +${appGain}% Approval`, 'text-emerald-400');
+      setActiveMinigame(null);
+    }} />;
+  }
+
+  if (activeMinigame === 'LegislativeAgenda') {
+    return <LegislativeAgenda onComplete={(mult) => {
+      const conGain = Math.floor(mult * 10);
+      const appGain = Math.floor(mult * 5);
+      updatePresidentialStat('congressSupport', conGain);
+      updatePresidentialStat('approvalRating', appGain);
+      addTickerMessage(`Agenda pushed: +${conGain} Congress Support, +${appGain}% Approval`, 'text-blue-400');
+      setActiveMinigame(null);
+    }} />;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-32">
@@ -167,7 +245,7 @@ export const PresidentDashboard: React.FC = () => {
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 relative z-10">
-        {['MANAGEMENT', 'POLLING', 'SOTU', 'DIARY'].map((tab) => (
+        {['MANAGEMENT', 'ACTIONS', 'POLLING', 'SOTU', 'DIARY'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -342,6 +420,26 @@ export const PresidentDashboard: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6 relative z-10"
           >
+            {/* New Metrics */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+               <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="text-[8px] text-slate-500 font-black uppercase mb-1">Electoral Votes</div>
+                  <div className="text-xl font-serif font-black text-blue-400">{pl.electoralVotes}</div>
+               </div>
+               <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="text-[8px] text-slate-500 font-black uppercase mb-1">Voter Turnout</div>
+                  <div className="text-xl font-serif font-black text-emerald-400">{pl.voterTurnout}%</div>
+               </div>
+               <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="text-[8px] text-slate-500 font-black uppercase mb-1">Foreign Relations</div>
+                  <div className="text-xl font-serif font-black text-purple-400">{pl.foreignRelations}</div>
+               </div>
+               <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                  <div className="text-[8px] text-slate-500 font-black uppercase mb-1">World Peace</div>
+                  <div className="text-xl font-serif font-black text-yellow-400">{pl.worldPeace}</div>
+               </div>
+            </div>
+
             <div className="space-y-4">
               <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">REGIONAL APPROVAL</h2>
               <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 grid grid-cols-2 gap-6 shadow-xl">
@@ -436,6 +534,37 @@ export const PresidentDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'ACTIONS' && (
+          <motion.div
+            key="actions"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4 relative z-10"
+          >
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">PRESIDENTIAL ACTIONS</h2>
+            <div className="grid grid-cols-2 gap-3">
+               {[
+                 { id: 'StateOfTheUnion', label: 'State of the Union', icon: '🏛️' },
+                 { id: 'DebatePrep', label: 'Debate Prep', icon: '🎤' },
+                 { id: 'NegotiateTreaty', label: 'Negotiate Treaty', icon: '🤝' },
+                 { id: 'CrisisRiskAssessment', label: 'Risk Assessment', icon: '🎯' },
+                 { id: 'GOTV', label: 'Get Out The Vote', icon: '🗳️' },
+                 { id: 'LegislativeAgenda', label: 'Push Agenda', icon: '📜' }
+               ].map((action) => (
+                 <button
+                   key={action.id}
+                   onClick={() => setActiveMinigame(action.id)}
+                   className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center hover:border-blue-500 transition-all active:scale-95 shadow-xl"
+                 >
+                    <div className="text-2xl mb-2">{action.icon}</div>
+                    <div className="text-[10px] font-black text-white uppercase tracking-tighter">{action.label}</div>
+                 </button>
+               ))}
             </div>
           </motion.div>
         )}

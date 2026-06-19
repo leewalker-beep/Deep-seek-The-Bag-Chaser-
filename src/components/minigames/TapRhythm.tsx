@@ -3,9 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface TapRhythmProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
+  icon?: string;
 }
 
-export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
+export const TapRhythm: React.FC<TapRhythmProps> = ({
+  onComplete,
+  title = "PODCAST SESSION",
+  instruction = "TAP ON THE BEAT",
+  icon = "🎙️"
+}) => {
   const [hits, setHits] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [beats, setBeats] = useState<{ id: number; offset: number }[]>([]);
@@ -110,7 +118,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
       }`}
     >
       <div className="absolute top-6 w-full text-center">
-        <h2 className="text-xl font-black text-blue-400 italic tracking-tighter">PODCAST SESSION</h2>
+        <h2 className="text-xl font-black text-blue-400 italic tracking-tighter uppercase">{title}</h2>
         <div className="text-[10px] text-slate-500 uppercase font-black mt-1">
           PERFECT BEATS: {hits}/{TOTAL_BEATS}
         </div>
@@ -135,7 +143,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
               className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] z-10 flex items-center justify-center text-xl"
               style={{ left: `${beat.offset}%` }}
             >
-              🎙️
+              {icon}
             </motion.div>
           ))}
         </AnimatePresence>
@@ -147,7 +155,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({ onComplete }) => {
         </div>
         <div className="flex items-center gap-2 text-slate-500">
            <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>👆</motion.span>
-           <span className="text-[10px] font-black uppercase tracking-widest">TAP ON THE BEAT</span>
+           <span className="text-[10px] font-black uppercase tracking-widest">{instruction}</span>
         </div>
       </div>
 

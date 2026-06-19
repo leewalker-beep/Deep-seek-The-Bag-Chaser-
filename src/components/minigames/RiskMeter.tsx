@@ -3,9 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface RiskMeterProps {
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
 }
 
-export const RiskMeter: React.FC<RiskMeterProps> = ({ onComplete }) => {
+export const RiskMeter: React.FC<RiskMeterProps> = ({
+  onComplete,
+  title = "ELITE RISK ASSESSMENT",
+  instruction = "Stop needle in the GOLD ZONE"
+}) => {
   const [position, setPosition] = useState(0);
   const [isStopped, setIsStopped] = useState(false);
   const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
@@ -73,10 +79,10 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({ onComplete }) => {
         'border-yellow-600'
     }`}>
       <div className="text-center w-full">
-        <h2 className="text-2xl font-black text-yellow-500 italic uppercase tracking-tighter">ELITE RISK ASSESSMENT</h2>
+        <h2 className="text-2xl font-black text-yellow-500 italic uppercase tracking-tighter">{title}</h2>
         <div className="flex items-center justify-center gap-2 mt-1">
              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500">🎯</motion.span>
-             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Stop needle in the GOLD ZONE</p>
+             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
         </div>
       </div>
 

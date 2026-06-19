@@ -5,9 +5,18 @@ import { ProgressBar } from '../ui/ProgressBar';
 interface GhostModeProps {
   level?: number;
   onComplete: (multiplier: number) => void;
+  title?: string;
+  instruction?: string;
+  targetEmoji?: string;
 }
 
-export const GhostMode: React.FC<GhostModeProps> = ({ level = 1, onComplete }) => {
+export const GhostMode: React.FC<GhostModeProps> = ({
+  level = 1,
+  onComplete,
+  title = "GHOST MODE",
+  instruction = "TAP THE GHOSTS!",
+  targetEmoji = "👻"
+}) => {
   const [targets, setTargets] = useState<{ id: number; top: number; left: number }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -73,11 +82,11 @@ export const GhostMode: React.FC<GhostModeProps> = ({ level = 1, onComplete }) =
   return (
     <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${feedback ? 'bg-purple-950/20' : 'bg-black'}`}>
       <div className="absolute top-12 text-center z-20">
-        <h2 className="text-3xl font-black text-purple-500 italic tracking-tighter">GHOST MODE</h2>
+        <h2 className="text-3xl font-black text-purple-500 italic tracking-tighter uppercase">{title}</h2>
         <div className="flex items-center justify-center gap-2">
-           <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-purple-700">TAP THE GHOSTS!</motion.span>
+           <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-purple-700 uppercase">{instruction}</motion.span>
         </div>
-        <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">REMOVED: {score}</div>
+        <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">SCORE: {score}</div>
       </div>
 
       <div className="relative w-full h-[400px] bg-slate-950 rounded-3xl border-2 border-purple-900/30 overflow-hidden shadow-[inset_0_0_100px_rgba(88,28,135,0.2)]">
@@ -92,7 +101,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({ level = 1, onComplete }) =
               className="absolute w-16 h-16 flex items-center justify-center text-4xl filter drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] active:scale-125 transition-transform"
               style={{ top: `${t.top}%`, left: `${t.left}%` }}
             >
-              👻
+              {targetEmoji}
             </motion.button>
           ))}
         </AnimatePresence>

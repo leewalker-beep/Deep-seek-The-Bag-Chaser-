@@ -50,6 +50,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     filmBudget: 'medium',
     spaceCompany: 'asteroid',
     philanthropyDonation: 10000000,
+    electoralVotes: 0,
+    foreignRelations: 50,
+    worldPeace: 50,
+    voterTurnout: 50,
     campaignStage: 1,
     campaignPlatform: 'economy',
     campaignVP: '',
@@ -65,7 +69,10 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
       'Healthcare': 50,
       'Foreign Policy': 50,
       'National Security': 50,
-      'Civil Rights': 50
+      'Civil Rights': 50,
+      'Latinos': 50,
+      'Seniors': 50,
+      'Veterans': 50
     },
     regionalApproval: {
       'Northeast': 50,
