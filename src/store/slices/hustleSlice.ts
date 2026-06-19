@@ -188,7 +188,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     // Mastery Check
-    const masteredHustles = [...state.pl.masteredHustles];
+    const masteredHustles = [...(state.pl.masteredHustles || [])];
+    let totalBonusApproval = 0;
+    const finalDemographicApproval = { ...(state.pl.demographicApproval || {}) };
+    const masteryBoostNews: any[] = [];
+
     Object.keys(HUSTLES).forEach(hId => {
       if (masteredHustles.includes(hId)) return;
 
@@ -227,6 +231,26 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           tier: state.pl.currentTier
         });
         get().logEvent('SPECIAL_EVENT', { type: 'HUSTLE_MASTERY', hustleId: hId, hustleName: h.name });
+
+        // Immediate Campaign Impact
+        if (state.pl.currentTier === 'PRESIDENT') {
+          const masteryCount = masteredHustles.length;
+          let bonusApproval = 1.5;
+          let demographicBonus = 0;
+
+          if (masteryCount >= 20) demographicBonus = 10;
+          else if (masteryCount >= 10) demographicBonus = 5;
+
+          if (demographicBonus > 0) {
+            Object.keys(finalDemographicApproval).forEach(key => {
+              finalDemographicApproval[key] = Math.min(100, (finalDemographicApproval[key] || 50) + demographicBonus);
+            });
+            bonusApproval += demographicBonus;
+          }
+          totalBonusApproval += bonusApproval;
+          masteryBoostNews.push({ text: `Your mastery of ${h.name} has boosted your campaign!`, colorClass: 'text-yellow-400 font-bold' });
+        }
+
         showConfetti();
       }
     });
@@ -237,8 +261,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           ...state.pl,
           milestones: [...(state.pl.milestones || []), ...newMilestones],
           masteredHustles,
+          approvalRating: Math.min(100, state.pl.approvalRating + totalBonusApproval),
+          demographicApproval: finalDemographicApproval
         }),
-        news: [`🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`, ...state.news],
+        news: [
+          ...masteryBoostNews,
+          `🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`,
+          ...state.news
+        ],
       });
     }
   },
@@ -503,6 +533,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
+      approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + (result.approvalBonus || 0))),
       bag: newBag,
       clout: state.pl.clout + result.yieldClout,
       aura: state.pl.aura + result.yieldAura,
