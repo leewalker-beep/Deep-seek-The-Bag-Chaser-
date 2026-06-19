@@ -15,6 +15,7 @@ export type GameEventType =
   | 'ELECTION_WON'
   | 'CABINET_APPOINTED'
   | 'LAW_PASSED'
+  | 'CRISIS_RESOLVED'
   | 'SCANDAL_TRIGGERED'
   | 'ECONOMIC_EVENT'
   | 'SPECIAL_EVENT';

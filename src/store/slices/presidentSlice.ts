@@ -158,7 +158,29 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       set({ currentMarket: order.marketEffect.type });
       state.addTickerMessage(`MARKET SHIFT: Administration forces ${order.marketEffect.type} for ${order.marketEffect.duration} months.`, 'text-orange-400 font-bold');
     }
-    state.logEvent('LAW_PASSED', { orderId, name: order.name });
+    state.logEvent('LAW_PASSED', {
+      orderId,
+      name: order.name,
+      cost: order.cost.cash || 0,
+      cloutCost: scaledCloutCost,
+      auraCost: order.cost.aura || 0,
+      approvalImpact
+    });
+    state.logAction({
+      month: state.pl.presidentMonth,
+      tier: 'PRESIDENT',
+      hustleId: order.id,
+      hustleName: order.name,
+      level: 1,
+      branchId: 'EXECUTIVE_ORDER',
+      branchName: 'Executive Order',
+      cost: order.cost.cash || 0,
+      yieldCash: 0,
+      yieldClout: -scaledCloutCost,
+      yieldAura: -(order.cost.aura || 0),
+      netCash: -(order.cost.cash || 0),
+      success: true
+    });
   },
 
   appointCabinetMember: (member) => {
@@ -178,6 +200,21 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     });
     get().addTickerMessage(`Cabinet Appointed: ${member.name} as ${member.role}`, 'text-emerald-400');
     get().logEvent('CABINET_APPOINTED', { memberId: member.id, name: member.name, role: member.role });
+    get().logAction({
+      month: get().pl.presidentMonth,
+      tier: 'PRESIDENT',
+      hustleId: member.id,
+      hustleName: member.name,
+      level: 1,
+      branchId: 'CABINET',
+      branchName: member.role,
+      cost: 0,
+      yieldCash: 0,
+      yieldClout: 0,
+      yieldAura: 0,
+      netCash: 0,
+      success: true
+    });
   },
 
   fireCabinetMember: (roleId) => {
@@ -248,7 +285,28 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`NEWS: ${crisis.name} resolved by Oval Office`, 'text-emerald-400 font-bold');
-    state.logEvent('SPECIAL_EVENT', { type: 'CRISIS_RESOLVED', crisisId, name: crisis.name });
+    state.logEvent('CRISIS_RESOLVED', {
+      crisisId,
+      name: crisis.name,
+      cost: crisis.resolutionCost.cash || 0,
+      cloutCost: crisis.resolutionCost.clout || 0,
+      auraCost: crisis.resolutionCost.aura || 0
+    });
+    state.logAction({
+      month: state.pl.presidentMonth,
+      tier: 'PRESIDENT',
+      hustleId: crisis.id,
+      hustleName: crisis.name,
+      level: 1,
+      branchId: 'CRISIS_RESOLUTION',
+      branchName: 'Crisis Resolution',
+      cost: crisis.resolutionCost.cash || 0,
+      yieldCash: 0,
+      yieldClout: -(crisis.resolutionCost.clout || 0),
+      yieldAura: -(crisis.resolutionCost.aura || 0),
+      netCash: -(crisis.resolutionCost.cash || 0),
+      success: true
+    });
   },
 
   investPersonalFunds: (amount) => {
@@ -527,6 +585,16 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       });
       return;
     }
+
+    // 1.7 Tax Revenue System
+    let taxRevenue = 10000000; // Base $10M
+    if (updatedPl.gdp > 100) taxRevenue += 2000000;
+    else if (updatedPl.gdp < 80) taxRevenue -= 2000000;
+
+    if (updatedPl.inflation > 5) taxRevenue -= 1000000;
+
+    updatedPl.federalBudget += taxRevenue;
+    state.addTickerMessage(`TREASURY: Monthly tax revenue of $${(taxRevenue/1000000).toFixed(1)}M collected.`, 'text-emerald-500/80 text-[10px]');
 
     // 3. Generate new crisis
     const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt);
