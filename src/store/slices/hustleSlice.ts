@@ -5,7 +5,7 @@ import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath } from '../../engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
 import { enforceStatCaps } from '../../engine/statEngine';
-import { advanceMonth } from '../../engine/advancementEngine';
+import { advanceMonth, checkDeathConditions } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
 import { getDominantStat } from '../../utils/endingUtils';
 import { getEnding } from '../../config/endings';
@@ -199,6 +199,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const h = HUSTLES[hId];
       let isMastered = false;
 
+      // Only count as potentially mastered if the player has actually played/unlocked this hustle
+      const hasPlayed = state.pl.hustleLevels[hId] !== undefined || state.pl.hustleBranchIds[hId] !== undefined;
+      if (!hasPlayed) return;
+
       if (h.levels) {
         const currentLvl = state.pl.hustleLevels[hId] || 1;
         if (currentLvl >= h.levels.length) {
@@ -208,7 +212,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         const nodeId = state.pl.hustleBranchIds[hId] || h.startBranchId;
         const node = nodeId ? h.branches[nodeId] : undefined;
 
-        // Repeatables are mastered at a threshold or if they are terminal
+        // Terminal branch check (must have actually selected this branch)
         const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
         const isRepeatableMastery = node?.isRepeatable && (
           (hId === 'r_vending' && state.pl.vendingCount >= 10) ||
@@ -364,8 +368,59 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
+    const { shouldDie, deathCause } = checkDeathConditions(nextPl);
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (shouldDie) {
+      const deathInfo = DEATH_MESSAGES[hustleId] || DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = deathCause;
+
+      nextPl.deathCount = (nextPl.deathCount || 0) + 1;
+      if (finalDeathBadge && !nextPl.collectedDeathBadges.includes(finalDeathBadge)) {
+        nextPl.collectedDeathBadges.push(finalDeathBadge);
+      }
+
+      const finalStat = getDominantStat(nextPl);
+      const ending = getEnding(nextPl.legacyPoints || 0, finalStat);
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
+      if (!savedEndings.includes(ending.title)) {
+        savedEndings.push(ending.title);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
+      }
+
+      get().logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: nextPl.legacyPoints || 0
+      });
+
+      if (nextPl.stats) {
+        if (!nextPl.stats.bestRunBag || nextPl.bag > nextPl.stats.bestRunBag) {
+          nextPl.stats.bestRunBag = nextPl.bag;
+          nextPl.stats.bestRunTier = nextPl.currentTier;
+          nextPl.stats.bestRunEnding = ending.title;
+        }
+      }
+    }
+
     set({
       pl: nextPl,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
       news: [`${branch.name}: +$${result.yieldCash.toLocaleString()}`, ...state.news.slice(0, 49)],
     });
 
@@ -570,6 +625,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().logEvent('SCANDAL_TRIGGERED', { type: 'POLICE_RAID_RISK', heat: hustleResultPl.heat });
     }
 
+    const {
+      newPl,
+      newMarket,
+      news: monthNews,
+      shouldDie,
+      deathCause,
+      totalRent,
+      passiveIncome
+    } = advanceMonth(
+      hustleResultPl,
+      state.currentMarket
+    );
+
     const actionLogData = {
       month: state.pl.month,
       tier: state.pl.currentTier,
@@ -585,15 +653,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       netCash: result.yieldCash - result.cost,
       success: result.success,
       passiveAdded: result.passiveAdded !== undefined ? result.passiveAdded : (levelData.passiveYield || 0),
+      rentDeducted: totalRent,
+      passiveIncomeTotal: passiveIncome,
       marketMult: { yield: 1, expense: 1, heat: 1 },
       marketName: state.currentMarket,
       variation: 0
     };
-
-    const { newPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
-      hustleResultPl,
-      state.currentMarket
-    );
 
     if (newMarket !== state.currentMarket) {
       get().logEvent('ECONOMIC_EVENT', { from: state.currentMarket, to: newMarket });
@@ -687,7 +752,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatHit: result.heatHit,
         level: currentLevel,
         miniGame: hustle.miniGame || levelData.miniGame,
-        multiplier: minigameMultiplier
+        multiplier: minigameMultiplier,
+        rentDeducted: totalRent,
+        passiveIncomeTotal: passiveIncome
       }
     };
 
@@ -862,8 +929,59 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
     }
 
+    const { shouldDie, deathCause } = checkDeathConditions(newPl);
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (shouldDie) {
+      const deathInfo = DEATH_MESSAGES[hustleId] || DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = deathCause;
+
+      newPl.deathCount = (newPl.deathCount || 0) + 1;
+      if (finalDeathBadge && !newPl.collectedDeathBadges.includes(finalDeathBadge)) {
+        newPl.collectedDeathBadges.push(finalDeathBadge);
+      }
+
+      const finalStat = getDominantStat(newPl);
+      const ending = getEnding(newPl.legacyPoints || 0, finalStat);
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
+      if (!savedEndings.includes(ending.title)) {
+        savedEndings.push(ending.title);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
+      }
+
+      get().logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: newPl.legacyPoints || 0
+      });
+
+      if (newPl.stats) {
+        if (!newPl.stats.bestRunBag || newPl.bag > newPl.stats.bestRunBag) {
+          newPl.stats.bestRunBag = newPl.bag;
+          newPl.stats.bestRunTier = newPl.currentTier;
+          newPl.stats.bestRunEnding = ending.title;
+        }
+      }
+    }
+
     set({
       pl: enforceStatCaps(newPl),
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
       news: [`${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name}`, ...state.news.slice(0, 49)]
     });
 
@@ -968,8 +1086,59 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
+    const { shouldDie, deathCause } = checkDeathConditions(plAfterPurchase);
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (shouldDie) {
+      const deathInfo = DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = deathCause;
+
+      plAfterPurchase.deathCount = (plAfterPurchase.deathCount || 0) + 1;
+      if (finalDeathBadge && !plAfterPurchase.collectedDeathBadges.includes(finalDeathBadge)) {
+        plAfterPurchase.collectedDeathBadges.push(finalDeathBadge);
+      }
+
+      const finalStat = getDominantStat(plAfterPurchase);
+      const ending = getEnding(plAfterPurchase.legacyPoints || 0, finalStat);
+      let savedEndings = [];
+      try {
+        savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
+      } catch (e) {
+        savedEndings = [];
+      }
+      if (!savedEndings.includes(ending.title)) {
+        savedEndings.push(ending.title);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('bag-chaser-endings', JSON.stringify(savedEndings));
+          } catch (e) {}
+        }
+      }
+
+      get().logEvent('SPECIAL_EVENT', {
+        type: 'ENDING_UNLOCKED',
+        title: ending.title,
+        legacyPoints: plAfterPurchase.legacyPoints || 0
+      });
+
+      if (plAfterPurchase.stats) {
+        if (!plAfterPurchase.stats.bestRunBag || plAfterPurchase.bag > plAfterPurchase.stats.bestRunBag) {
+          plAfterPurchase.stats.bestRunBag = plAfterPurchase.bag;
+          plAfterPurchase.stats.bestRunTier = plAfterPurchase.currentTier;
+          plAfterPurchase.stats.bestRunEnding = ending.title;
+        }
+      }
+    }
+
     set({
       pl: plAfterPurchase,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
       news: [`💎 Purchased ${asset.name}`, ...state.news.slice(0, 49)]
     });
     get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });

@@ -51,6 +51,8 @@ export interface GameAction {
   netCash: number;
   success: boolean;
   passiveAdded?: number;
+  rentDeducted?: number;
+  passiveIncomeTotal?: number;
   marketMult?: { yield: number; expense: number; heat: number };
   marketName?: string;
   variation?: number;
