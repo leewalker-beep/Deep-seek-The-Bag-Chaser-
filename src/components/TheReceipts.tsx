@@ -127,6 +127,18 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-xs font-bold text-white">→ {metadata.to}</div>
           </div>
         );
+      case 'REFLECTION':
+        return (
+          <div key={event.id} className="bg-emerald-900/10 rounded-lg p-4 border-l-4 border-emerald-500 italic">
+            <div className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-2">PERSONAL REFLECTION</div>
+            <p className="text-white text-sm font-serif leading-relaxed">
+              "{metadata.text}"
+            </p>
+            <div className="text-[8px] text-slate-500 mt-2 font-mono">
+              Month {metadata.month} • {metadata.tier} Tier
+            </div>
+          </div>
+        );
       case 'LAW_PASSED':
         return (
           <div key={event.id} className="bg-blue-900/40 rounded-lg p-3 border border-blue-400/50 shadow-lg shadow-blue-900/20">
@@ -180,6 +192,7 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     { label: 'RANKS', value: 'PROMOTION_EARNED' },
     { label: 'ASSETS', value: 'BUSINESS_PURCHASED' },
     { label: 'MARKET', value: 'ECONOMIC_EVENT' },
+    { label: 'REFLECTIONS', value: 'REFLECTION' },
     { label: 'GOVERNMENT', value: 'GOVERNMENT' },
   ];
 
