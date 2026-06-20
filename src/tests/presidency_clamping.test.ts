@@ -60,6 +60,10 @@ describe('Presidential Clamping', () => {
     store.getState().advancePresidentialMonth();
 
     expect(store.getState().pl.approvalRating).toBeLessThanOrEqual(100);
+    expect(store.getState().pl.isReElectionPhase).toBe(true);
+
+    // Simulate winning re-election
+    store.setState(s => ({ pl: { ...s.pl, isSecondTerm: true, isReElectionPhase: false } }));
     expect(store.getState().pl.isSecondTerm).toBe(true);
 
     // Repeatedly fire orders to try and break clamping

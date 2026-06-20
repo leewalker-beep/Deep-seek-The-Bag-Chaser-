@@ -240,14 +240,14 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     name: 'National Arts Festival',
     description: 'A massive celebration of culture and music.',
     cost: { cash: 5000000, clout: 40 },
-    impact: { approval: 12, gdp: 2, demographics: { economy: 5, foreign: 10 } }
+    impact: { approval: 12, gdp: 2, inflation: 1, debt: 1, demographics: { economy: 5, foreign: 10 } }
   },
   {
     id: 'data_analytics',
     name: 'National Data Initiative',
     description: 'Modernizing government data infrastructure.',
     cost: { cash: 10000000, clout: 60 },
-    impact: { approval: 5, gdp: 8, demographics: { economy: 15 } }
+    impact: { approval: 5, gdp: 8, demographics: { economy: 15 }, heat: 5 }
   },
   {
     id: 'crypto_mining',
@@ -261,35 +261,35 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     name: 'Affordable Housing Act',
     description: 'Subsidies and deregulation to boost housing supply.',
     cost: { cash: 15000000, clout: 80 },
-    impact: { approval: 20, gdp: 5, demographics: { economy: 10, healthcare: 5 } }
+    impact: { approval: 20, gdp: 5, inflation: 1, debt: 3, demographics: { economy: 10, healthcare: 5 } }
   },
   {
     id: 'media_policy',
     name: 'Public Media Grant',
     description: 'Funding for independent and public broadcasting.',
     cost: { cash: 2000000, clout: 30 },
-    impact: { approval: 8, demographics: { economy: 5 } }
+    impact: { approval: 8, debt: 1, demographics: { economy: 5 } }
   },
   {
     id: 'crisis_response',
     name: 'Emergency Relief Fund',
     description: 'Pre-emptive funding for disaster response.',
     cost: { cash: 20000000, clout: 50 },
-    impact: { approval: 10, heat: -10 }
+    impact: { approval: 10, heat: -10, debt: 2 }
   },
   {
     id: 'trade_policy',
     name: 'Open Trade Agreement',
     description: 'Reducing tariffs and boosting global trade.',
     cost: { clout: 60 },
-    impact: { approval: 5, gdp: 12, demographics: { foreign: 20, economy: 10 } }
+    impact: { approval: 5, gdp: 12, demographics: { foreign: 20, economy: 10 }, heat: 5 }
   },
   {
     id: 'working_class_policy',
     name: 'Street Vendor Protection',
     description: 'Legalizing and supporting small scale street commerce.',
     cost: { clout: 20 },
-    impact: { approval: 15, demographics: { economy: 5 } }
+    impact: { approval: 15, debt: 1, demographics: { economy: 5 }, heat: 5 }
   },
   {
     id: 'labor_policy',
@@ -303,14 +303,14 @@ export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
     name: 'National Highway System',
     description: 'Massive upgrade to national logistics networks.',
     cost: { cash: 30000000, clout: 120 },
-    impact: { approval: 10, gdp: 15, demographics: { economy: 15 } }
+    impact: { approval: 10, gdp: 15, inflation: 1, debt: 4, demographics: { economy: 15 } }
   },
   {
     id: 'security_policy',
     name: 'Cybersecurity Act',
     description: 'Protecting national infrastructure from digital threats.',
     cost: { cash: 12000000, clout: 90 },
-    impact: { approval: 5, aura: 20, demographics: { foreign: 5 } }
+    impact: { approval: 5, aura: 20, debt: 2, demographics: { foreign: 5 } }
   }
 ];
 

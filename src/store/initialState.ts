@@ -88,6 +88,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     presidentialDiary: [],
     presidentMonth: 0,
     isSecondTerm: false,
+    isReElectionPhase: false,
     cabinet: {},
     activeCrises: [],
     presidentialMarketControl: null,
