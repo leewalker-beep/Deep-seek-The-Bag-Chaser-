@@ -3,6 +3,7 @@ import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLE_BADGES } from '../config/badges';
+import { HUSTLES } from '../config/hustles/base';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
 import { getMasteryCount } from '../utils/masteryUtils';
 
@@ -528,6 +529,12 @@ export const executeHustleAction = (
     if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
     if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
   });
+
+  // Apply Tier Badge Buffs (+2% permanent yield on that tier's hustles)
+  const hustleTier = HUSTLES[hustleId]?.tier;
+  if (hustleTier && state.tierBadges.includes(hustleTier)) {
+    finalYieldMult *= 1.02;
+  }
 
   // Apply Tier Mechanics
   if (state.currentTier === 'MUD') {

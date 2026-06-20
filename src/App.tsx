@@ -62,6 +62,7 @@ import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
+import { TierBadgeCelebration } from './components/effects/TierBadgeCelebration';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
 import { FestivalPanel } from './components/hustles/panels/FestivalPanel';
@@ -135,6 +136,7 @@ function App() {
     news,
     activeTab,
     activeHustleView,
+    activeTierBadge,
     deathBadge,
     fatalCause,
     executeHustle,
@@ -143,6 +145,7 @@ function App() {
     advanceTier,
     setActiveTab,
     setActiveHustleView,
+    setActiveTierBadge,
     setPlayerName,
     resetGame,
     addTickerMessage,
@@ -814,6 +817,12 @@ function App() {
 
       {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
       {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
+      {activeTierBadge && (
+        <TierBadgeCelebration
+          tier={activeTierBadge}
+          onClose={() => setActiveTierBadge(null)}
+        />
+      )}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
 
       {/* News Ticker */}
