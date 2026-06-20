@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface LaborBuildProps {
+  level?: number;
   onComplete: (multiplier: number) => void;
 }
 
-export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
+export const LaborBuild: React.FC<LaborBuildProps> = ({ level = 1, onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [isActive, setIsActive] = useState(true);
@@ -23,8 +24,10 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
         return prev - 0.1;
       });
 
-      // Slow decay
-      setProgress(prev => Math.max(0, prev - 0.5));
+      // Difficulty scaling: L1: 3 taps/sec (15% decay/s) -> L5: 7 taps/sec (35% decay/s)
+      // Per 100ms: L1: 1.5% -> L5: 3.5%
+      const decay = 1.0 + (level * 0.5);
+      setProgress(prev => Math.max(0, prev - decay));
     }, 100);
 
     return () => clearInterval(timer);
