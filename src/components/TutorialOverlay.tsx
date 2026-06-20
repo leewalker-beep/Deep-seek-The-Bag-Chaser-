@@ -25,7 +25,7 @@ const STEPS: TutorialStep[] = [
   },
   {
     title: 'Bag Explained',
-    content: "You just earned \${REWARD}. This is your BAG. You'll use it to buy upgrades and progress.",
+    content: "You just earned ${REWARD}. This is your BAG. You'll use it to buy upgrades and progress.",
     type: 'explanation',
   },
   {
@@ -95,6 +95,8 @@ const STEPS: TutorialStep[] = [
 interface TutorialOverlayProps {
   tutorialStep: number;
   setTutorialStep: (step: number) => void;
+  setActiveHustleView: (view: string | null) => void;
+  setActiveHustleResult: (result: any | null) => void;
   activeHustleView: string | null;
   activeHustleResult: any | null;
   currentTier: Tier;
@@ -104,6 +106,8 @@ interface TutorialOverlayProps {
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   tutorialStep,
   setTutorialStep,
+  setActiveHustleView,
+  setActiveHustleResult,
   activeHustleView,
   activeHustleResult,
   currentTier,
@@ -135,10 +139,22 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   useEffect(() => {
     // Automatic transitions for action steps
     if (currentStepData.type === 'action') {
-      if (tutorialStep === 0 && activeHustleView === 'r_delivery') setTutorialStep(1);
-      if (tutorialStep === 3 && activeHustleView === 'cc') setTutorialStep(4);
-      if (tutorialStep === 6 && activeHustleView === 'r_ghost_mode') setTutorialStep(7);
-      if (tutorialStep === 9 && activeHustleView === 'r_sleep') setTutorialStep(10);
+      if (tutorialStep === 0 && activeHustleView === 'r_delivery') {
+        setActiveHustleResult(null);
+        setTutorialStep(1);
+      }
+      if (tutorialStep === 3 && activeHustleView === 'cc') {
+        setActiveHustleResult(null);
+        setTutorialStep(4);
+      }
+      if (tutorialStep === 6 && activeHustleView === 'r_ghost_mode') {
+        setActiveHustleResult(null);
+        setTutorialStep(7);
+      }
+      if (tutorialStep === 9 && activeHustleView === 'r_sleep') {
+        setActiveHustleResult(null);
+        setTutorialStep(10);
+      }
 
       if (tutorialStep === 1 && activeHustleResult) {
         // Reset result when moving to explanation
@@ -156,10 +172,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
       if (tutorialStep === 12 && currentTier === 'STREET') setTutorialStep(13);
     }
-  }, [tutorialStep, activeHustleView, activeHustleResult, currentTier, setTutorialStep, currentStepData.type]);
+  }, [tutorialStep, activeHustleView, activeHustleResult, currentTier, setTutorialStep, currentStepData.type, setActiveHustleResult]);
 
   const next = () => {
     if (tutorialStep < STEPS.length - 1) {
+      setActiveHustleView(null);
+      setActiveHustleResult(null);
       setTutorialStep(tutorialStep + 1);
     } else {
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');
@@ -168,8 +186,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   };
 
   const backdropStyle = useMemo(() => {
-    if (!highlightRect) return {};
-    const margin = 4;
+    if (!highlightRect) return { display: 'none' };
+    const margin = 12;
     return {
       clipPath: `polygon(
         0% 0%,
@@ -189,7 +207,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[100] pointer-events-none"
+        className="fixed inset-0 z-[100] pointer-events-none overflow-hidden"
       >
         {/* Backdrop with hole */}
         <motion.div
@@ -201,12 +219,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         />
 
         {/* Content Box */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end p-6 pb-24 pointer-events-none">
+        <div className={`absolute inset-0 flex flex-col items-center p-6 pointer-events-none ${currentStepData.type === 'action' ? 'justify-end pb-24' : 'justify-center'}`}>
           <motion.div
             key={tutorialStep}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="max-w-sm w-full bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl pointer-events-auto"
+            className="max-w-sm w-full bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl pointer-events-auto relative z-10"
           >
             <div className="text-emerald-500 font-black uppercase tracking-widest text-[10px] mb-2">
               {currentStepData.type === 'action' ? 'Next Action' : 'Insight Earned'}
