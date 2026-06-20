@@ -208,8 +208,9 @@ function App() {
   }, [pl, currentTierIndex, showTutorial, tutorialStep]);
 
   useEffect(() => {
-    if (showTutorial && tutorialStep < 13 && activeTab !== 'MUD') {
-      setActiveTab('MUD');
+    if (showTutorial && tutorialStep < 12 && activeTab !== 'MUD') {
+      const timer = setTimeout(() => setActiveTab('MUD'), 10);
+      return () => clearTimeout(timer);
     }
   }, [showTutorial, tutorialStep, activeTab, setActiveTab]);
 
@@ -769,8 +770,22 @@ function App() {
                       if (currentBranch?.miniGame || hustle.miniGame) {
                         setShowMinigame(true);
                       } else {
-                        executeHustle(hustle.id);
-                        setActiveHustleView(null);
+                        const result = executeHustle(hustle.id);
+                        if (showTutorial && result.success) {
+                          setActiveHustleResult({
+                            hustleId: hustle.id,
+                            success: result.success,
+                            netChange: result.netChange,
+                            cost: result.cost,
+                            yieldCash: result.yieldCash,
+                            yieldClout: result.yieldClout,
+                            yieldAura: result.yieldAura,
+                            mentalHit: result.mentalHit,
+                            heatHit: result.heatHit,
+                          });
+                        } else {
+                          setActiveHustleView(null);
+                        }
                       }
                     }}
                   />
@@ -788,8 +803,22 @@ function App() {
                     if (levelData?.miniGame || hustle.miniGame) {
                       setShowMinigame(true);
                     } else {
-                      executeHustle(hustle.id);
-                      setActiveHustleView(null);
+                      const result = executeHustle(hustle.id);
+                      if (showTutorial && result.success) {
+                        setActiveHustleResult({
+                          hustleId: hustle.id,
+                          success: result.success,
+                          netChange: result.netChange,
+                          cost: result.cost,
+                          yieldCash: result.yieldCash,
+                          yieldClout: result.yieldClout,
+                          yieldAura: result.yieldAura,
+                          mentalHit: result.mentalHit,
+                          heatHit: result.heatHit,
+                        });
+                      } else {
+                        setActiveHustleView(null);
+                      }
                     }
                   }}
                   onUpgrade={(branchId) => {
@@ -844,6 +873,8 @@ function App() {
         <TutorialOverlay
           tutorialStep={tutorialStep}
           setTutorialStep={setTutorialStep}
+          setActiveHustleView={setActiveHustleView}
+          setActiveHustleResult={setActiveHustleResult}
           activeHustleView={activeHustleView}
           activeHustleResult={activeHustleResult}
           currentTier={pl.currentTier}
