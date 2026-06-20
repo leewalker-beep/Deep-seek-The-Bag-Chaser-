@@ -10,6 +10,7 @@ export interface UISlice {
   deathBadge: string | null;
   fatalCause: string | null;
   tutorialStep: number;
+  isTutorialSkipped: boolean;
 
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
@@ -17,6 +18,7 @@ export interface UISlice {
   setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
+  setTutorialSkipped: (skipped: boolean) => void;
 }
 
 export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => ({
@@ -28,6 +30,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
   deathBadge: null,
   fatalCause: null,
   tutorialStep: 0,
+  isTutorialSkipped: false,
 
   setPh: (ph) => set({ ph }),
   setActiveTab: (tab) => set({ activeTab: tab, activeHustleView: null }),
@@ -35,4 +38,10 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
   setActiveTierBadge: (badge) => set({ activeTierBadge: badge }),
   dismissNarrative: () => set({ activeNarrative: null }),
   setTutorialStep: (step) => set({ tutorialStep: step }),
+  setTutorialSkipped: (skipped) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bag-chaser-tutorial-complete', 'true');
+    }
+    set({ isTutorialSkipped: skipped });
+  },
 });
