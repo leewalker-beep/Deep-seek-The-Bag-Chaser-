@@ -3,23 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuickReactionProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
+export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete, level = 1 }) => {
   const [gameState, setGameState] = useState<'waiting' | 'ready' | 'clicked' | 'too-soon'>('waiting');
   const [startTime, setStartTime] = useState<number>(0);
   const [reactionTime, setReactionTime] = useState<number | null>(null);
 
+  // Difficulty scaling: elite reaction time threshold gets tighter
+  const eliteThreshold = Math.max(150, 250 - (level - 1) * 20);
+
   useEffect(() => {
     if (gameState === 'waiting') {
+      const waitTime = level >= 3 ? (500 + Math.random() * 2000) : (1000 + Math.random() * 3000);
       const timeout = setTimeout(() => {
         setGameState('ready');
         setStartTime(Date.now());
         if (navigator.vibrate) navigator.vibrate(50);
-      }, 1000 + Math.random() * 3000);
+      }, waitTime);
       return () => clearTimeout(timeout);
     }
-  }, [gameState]);
+  }, [gameState, level]);
 
   const handleClick = () => {
     if (gameState === 'waiting') {
@@ -36,19 +41,19 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
   const handleFinish = () => {
     let multiplier = 0.5;
     if (reactionTime) {
-      if (reactionTime < 250) multiplier = 3.0;
-      else if (reactionTime < 400) multiplier = 2.0;
-      else if (reactionTime < 600) multiplier = 1.0;
-      else multiplier = 0.7;
+      if (reactionTime < eliteThreshold) multiplier = 4.0;
+      else if (reactionTime < eliteThreshold + 150) multiplier = 2.5;
+      else if (reactionTime < eliteThreshold + 350) multiplier = 1.2;
+      else multiplier = 0.8;
     }
-    if (gameState === 'too-soon') multiplier = 0.3;
+    if (gameState === 'too-soon') multiplier = 0.2;
     onComplete(multiplier);
   };
 
   return (
     <div
-      onClick={handleClick}
-      className={`fixed inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 border-8 ${
+      onMouseDown={handleClick}
+      className={`fixed inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 border-[16px] ${
         gameState === 'waiting' ? 'bg-slate-950 border-slate-900' :
         gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' :
         gameState === 'too-soon' ? 'bg-red-600 border-red-400' :
@@ -61,11 +66,12 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
             animate={{ scale: 1 }}
             key={gameState}
         >
-            <h2 className="text-5xl font-black mb-6 uppercase tracking-tighter italic italic drop-shadow-2xl">
+            <h2 className="text-5xl font-black mb-2 uppercase tracking-tighter italic drop-shadow-2xl">
             {gameState === 'waiting' ? 'STAND BY...' :
-            gameState === 'ready' ? 'CLICK NOW!' :
-            gameState === 'too-soon' ? 'FAIL!' : 'LOCKED IN!'}
+            gameState === 'ready' ? 'REFLEX!' :
+            gameState === 'too-soon' ? 'EARLY!' : 'LOCKED!'}
             </h2>
+            <div className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-8">SESSION LEVEL {level}</div>
         </motion.div>
 
         <div className="h-24 flex items-center justify-center">
@@ -77,9 +83,9 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     className="flex flex-col items-center"
                 >
-                    <div className="text-6xl font-black font-mono tracking-tighter">{reactionTime}ms</div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-white/60 mt-2">
-                        {reactionTime < 250 ? 'ELITE REFLEXES' : reactionTime < 400 ? 'GREAT SPEED' : 'AVERAGE'}
+                    <div className="text-7xl font-black font-mono tracking-tighter drop-shadow-xl">{reactionTime}ms</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white mt-4 bg-black/20 px-4 py-1 rounded-full border border-white/10">
+                        {reactionTime < eliteThreshold ? 'ELITE REFLEXES' : reactionTime < eliteThreshold + 150 ? 'GREAT SPEED' : 'AVERAGE'}
                     </div>
                 </motion.div>
             ) : gameState === 'too-soon' ? (
@@ -89,23 +95,23 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
                     animate={{ scale: 1, opacity: 1 }}
                     className="text-xl font-black uppercase"
                 >
-                    ANTICIPATED START
+                    ANTICIPATED SIGNAL
                 </motion.div>
             ) : gameState === 'waiting' ? (
                 <motion.div
                     key="wait"
                     animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="text-4xl"
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="text-6xl"
                 >
                     🛑
                 </motion.div>
             ) : (
                 <motion.div
                     key="go"
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ repeat: Infinity, duration: 0.2 }}
-                    className="text-6xl"
+                    animate={{ scale: [1, 1.5, 1], rotate: [0, 10, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 0.15 }}
+                    className="text-8xl drop-shadow-2xl"
                 >
                     ⚡
                 </motion.div>
@@ -113,7 +119,7 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
             </AnimatePresence>
         </div>
 
-        <p className="mt-12 text-xs font-black uppercase tracking-[0.2em] text-white/50">
+        <p className="mt-16 text-xs font-black uppercase tracking-[0.2em] text-white/50">
           {gameState === 'waiting' ? 'TAP IMMEDIATELY ON COLOR CHANGE' :
            gameState === 'clicked' || gameState === 'too-soon' ? 'PROCEED TO RESULTS' : ''}
         </p>
@@ -123,8 +129,8 @@ export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete }) => {
         <motion.button
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          onClick={(e) => { e.stopPropagation(); handleFinish(); }}
-          className="absolute bottom-12 w-full max-w-xs py-5 bg-white text-black font-black rounded-2xl shadow-2xl active:scale-95 transition-all border-b-4 border-slate-300 uppercase tracking-widest text-xl italic"
+          onMouseDown={(e) => { e.stopPropagation(); handleFinish(); }}
+          className="absolute bottom-12 w-full max-w-xs py-6 bg-white text-black font-black rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.3)] active:scale-95 transition-all border-b-8 border-slate-300 uppercase tracking-widest text-2xl italic"
         >
           CONTINUE
         </motion.button>

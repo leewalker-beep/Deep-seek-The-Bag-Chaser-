@@ -21,10 +21,10 @@ const CRISIS_TYPES = [
 ];
 
 interface PinchToZoomProps {
-  onComplete: (multiplier: number) => void;
+  onComplete: (multiplier: number) => void; level?: number;
 }
 
-export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete }) => {
+export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _level = 1 }) => {
   const [crises, setCrises] = useState<Crisis[]>(() => {
     const newCrises: Crisis[] = [];
     for (let i = 0; i < 12; i++) {

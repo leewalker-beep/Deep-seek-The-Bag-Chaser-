@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface SequenceRecallProps {
-  onComplete: (multiplier: number) => void;
+  onComplete: (multiplier: number) => void; level?: number;
   title?: string;
   instruction?: string;
 }

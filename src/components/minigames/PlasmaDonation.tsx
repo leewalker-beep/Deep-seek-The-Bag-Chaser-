@@ -3,14 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlasmaDonationProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete }) => {
+export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete, level = 1 }) => {
   const [progress, setProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [gameActive, setGameActive] = useState(true);
   const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  // Difficulty scaling: Progress fills faster at higher levels
+  const fillSpeed = 30 - (level - 1) * 4; // Interval in ms, lower is faster
 
   const startHolding = () => {
     if (!gameActive) return;
@@ -23,7 +27,7 @@ export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete }) =>
         }
         return prev + 1;
       });
-    }, 30);
+    }, fillSpeed);
   };
 
   const handleRelease = (finalProgress?: number) => {
@@ -61,7 +65,7 @@ export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete }) =>
       feedback === 'fail' ? 'bg-red-950/40 border-red-900/50' :
       'bg-red-950/20 border-red-900/50'
     }`}>
-      <h2 className="text-2xl font-black text-red-500 mb-2 uppercase tracking-tighter italic">PLASMA DONATION</h2>
+      <h2 className="text-2xl font-black text-red-500 mb-2 uppercase tracking-tighter italic">PLASMA DONATION <span className="text-white text-sm">L{level}</span></h2>
       <p className="text-[10px] text-red-700 mb-8 uppercase tracking-widest font-bold">Hold to fill, release in the ZONE</p>
 
       <div className="relative w-24 h-64 bg-slate-900 rounded-full border-4 border-slate-800 p-1 mb-8 overflow-hidden">

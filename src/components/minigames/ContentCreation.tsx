@@ -18,13 +18,16 @@ const TOPICS: Topic[] = [
   { id: 8, label: 'How to Organize Socks', isViral: false },
   { id: 9, label: 'Dancing Cat in a Hat', isViral: true },
   { id: 10, label: 'Dusting the Shelves', isViral: false },
+  { id: 11, label: 'Clickbait Mystery Box', isViral: true },
+  { id: 12, label: 'Terms & Conditions Reading', isViral: false },
 ];
 
 interface ContentCreationProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) => {
+export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, level = 1 }) => {
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicIndex, setTopicIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -34,22 +37,31 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const touchStart = useRef<number | null>(null);
 
+  // Difficulty scaling
+  const totalTopics = 8 + (level - 1) * 2;
+  const swipeThreshold = 80;
+
   const [shuffledTopics] = useState(() => {
     const shuffled = [...TOPICS];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return shuffled.slice(0, 8);
+    // Repeat topics if needed for higher levels
+    let finalTopics = shuffled;
+    while (finalTopics.length < totalTopics) {
+        finalTopics = [...finalTopics, ...shuffled];
+    }
+    return finalTopics.slice(0, totalTopics);
   });
 
   const endGame = useCallback(() => {
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
     let multiplier = 0.5;
-    if (accuracy >= 0.8) multiplier = 3.0;
-    else if (accuracy >= 0.6) multiplier = 2.0;
-    else if (accuracy >= 0.4) multiplier = 1.2;
+    if (accuracy >= 0.9) multiplier = 4.0;
+    else if (accuracy >= 0.7) multiplier = 2.5;
+    else if (accuracy >= 0.5) multiplier = 1.2;
     else multiplier = 0.8;
 
     setTimeout(() => onComplete(multiplier), 800);
@@ -65,10 +77,12 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
     }
   }, [topicIndex, shuffledTopics, gameActive, endGame]);
 
-  const handleAction = (isSwiped: boolean) => {
+  const handleAction = (isPost: boolean) => {
     if (!gameActive || !currentTopic || result !== null) return;
 
-    const isCorrect = (isSwiped && currentTopic.isViral) || (!isSwiped && !currentTopic.isViral);
+    // Viral items should be posted (swiped up), non-viral declined (swiped down)
+    const isCorrect = (isPost && currentTopic.isViral) || (!isPost && !currentTopic.isViral);
+
     if (isCorrect) {
       setScore(s => s + 1);
       setResult('correct');
@@ -81,7 +95,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
 
     setTimeout(() => {
       setTopicIndex(i => i + 1);
-    }, 400);
+    }, 300);
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -91,15 +105,18 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
   const onTouchMove = (e: React.TouchEvent) => {
     if (touchStart.current !== null) {
       const diff = e.targetTouches[0].clientY - touchStart.current;
-      setOffsetY(Math.max(-150, Math.min(150, diff)));
+      setOffsetY(diff);
     }
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current === null) return;
     const diff = e.changedTouches[0].clientY - touchStart.current;
-    if (Math.abs(diff) > 50) {
-      handleAction(true);
+
+    if (diff < -swipeThreshold) {
+      handleAction(true); // Swipe Up = Post
+    } else if (diff > swipeThreshold) {
+      handleAction(false); // Swipe Down = Decline
     } else {
       setOffsetY(0);
     }
@@ -107,15 +124,15 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
   };
 
   return (
-    <div className={`bg-slate-900 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-80 flex flex-col justify-center items-center relative overflow-hidden ${
+    <div className={`bg-slate-950 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-96 flex flex-col justify-center items-center relative overflow-hidden ${
       result === 'correct' ? 'border-emerald-500 bg-emerald-950/20' :
       result === 'wrong' ? 'border-red-500 bg-red-950/20' :
       'border-purple-500/30'
     }`}>
       <div className="absolute top-6 text-center z-20 w-full">
-        <h2 className="text-xl font-black text-purple-400 italic tracking-tighter">CONTENT CREATION</h2>
+        <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter">CONTENT CREATOR <span className="text-white text-sm">L{level}</span></h2>
         <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-          VIRAL HITS: {score}/{total}
+          VIRAL ACCURACY: {score}/{total}
         </div>
       </div>
 
@@ -125,41 +142,50 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete }) 
             key={topicIndex}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1, y: offsetY }}
-            exit={{ y: offsetY < -50 ? -300 : offsetY > 50 ? 300 : 0, opacity: 0 }}
+            exit={{ y: offsetY < -swipeThreshold ? -500 : offsetY > swipeThreshold ? 500 : 0, opacity: 0 }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            onClick={() => !currentTopic.isViral && handleAction(false)}
-            className={`w-full max-w-[220px] aspect-video bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-6 transition-all shadow-2xl ${
+            className={`w-full max-w-[240px] aspect-[3/4] bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-6 transition-all shadow-2xl relative ${
               result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
               result === 'wrong' ? 'border-red-500 bg-red-500/10' :
-              'border-slate-700 hover:border-purple-500/50'
+              'border-slate-700'
             }`}
           >
-            <div className="text-5xl mb-3">{currentTopic.isViral ? '🔥' : '📄'}</div>
-            <div className="text-sm font-black text-white leading-tight">{currentTopic.label}</div>
+            {/* Feedback Overlays */}
+            {offsetY < -40 && (
+                <div className="absolute top-4 font-black text-emerald-400 text-xl rotate-[-10deg]">POST IT!</div>
+            )}
+            {offsetY > 40 && (
+                <div className="absolute bottom-4 font-black text-red-400 text-xl rotate-[10deg]">DECLINE</div>
+            )}
+
+            <div className="text-6xl mb-4">{currentTopic.isViral ? '🔥' : '📄'}</div>
+            <div className="text-lg font-black text-white leading-tight">{currentTopic.label}</div>
+
+            <div className="absolute bottom-4 text-[8px] text-slate-500 font-bold uppercase tracking-widest">
+                {topicIndex + 1} / {totalTopics}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="absolute bottom-6 w-full flex flex-col items-center gap-2 px-6">
-        <div className="flex justify-between w-full opacity-50">
+      <div className="absolute bottom-6 w-full flex justify-around px-6 opacity-30 pointer-events-none">
            <div className="flex flex-col items-center gap-1">
-              <motion.div animate={{ y: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">↕️</motion.div>
-              <span className="text-[8px] font-black text-purple-400 uppercase">SWIPE FOR VIRAL</span>
+              <span className="text-2xl">⬆️</span>
+              <span className="text-[8px] font-black text-emerald-400 uppercase">POST VIRAL</span>
            </div>
            <div className="flex flex-col items-center gap-1">
-              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-2xl">👆</motion.div>
-              <span className="text-[8px] font-black text-slate-400 uppercase">TAP TO SKIP</span>
+              <span className="text-2xl">⬇️</span>
+              <span className="text-[8px] font-black text-red-400 uppercase">DECLINE TRASH</span>
            </div>
-        </div>
       </div>
 
       {!gameActive && (
         <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 p-6">
           <div className="text-6xl mb-4">📈</div>
-          <div className="text-2xl font-black text-white italic">FEED UPDATED</div>
-          <div className="text-xs text-purple-400 font-bold uppercase tracking-widest mt-2">{score}/{total} VIRAL SUCCESS</div>
+          <div className="text-3xl font-black text-white italic uppercase tracking-tighter">FEED UPDATED</div>
+          <div className="text-emerald-500 font-black font-mono text-xl mt-2">{score}/{total} VIRAL SUCCESS</div>
         </div>
       )}
     </div>

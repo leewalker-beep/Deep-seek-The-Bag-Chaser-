@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 
 interface BeatSequenceProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
+export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 1 }) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [isDisplaying, setIsDisplaying] = useState(true);
@@ -14,7 +15,10 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'hit' | 'fail' | null>(null);
 
-  const totalRounds = 4;
+  // Difficulty scaling
+  const totalRounds = 3 + Math.floor((level - 1) / 2);
+  const baseLength = 2 + (level - 1); // Round 1 length
+  const sequenceGrowth = 1;
 
   useEffect(() => {
     startNewRound(1);
@@ -22,7 +26,8 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
   }, []);
 
   const startNewRound = (currentRound: number) => {
-    const newSequence = Array.from({ length: currentRound + 2 }, () => Math.floor(Math.random() * 4));
+    const length = baseLength + (currentRound - 1) * sequenceGrowth;
+    const newSequence = Array.from({ length }, () => Math.floor(Math.random() * 4));
     setSequence(newSequence);
     setUserSequence([]);
     displaySequence(newSequence);
@@ -30,10 +35,13 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
 
   const displaySequence = async (seq: number[]) => {
     setIsDisplaying(true);
+    // Display speed scales with level? Maybe.
+    const displaySpeed = Math.max(250, 500 - (level - 1) * 50);
+
     for (const num of seq) {
       setActiveButton(num);
       if (navigator.vibrate) navigator.vibrate(20);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, displaySpeed));
       setActiveButton(null);
       await new Promise(resolve => setTimeout(resolve, 150));
     }
@@ -70,15 +78,15 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
 
   if (failed) {
     return (
-      <div className="h-[400px] w-full bg-slate-950 border-4 border-red-600 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-[450px] w-full bg-slate-950 border-4 border-red-600 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
         <div className="text-6xl mb-4">🔇</div>
-        <h2 className="text-3xl font-black text-red-500 mb-2 italic tracking-tighter">OFF BEAT</h2>
-        <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">Rhythm lost at round {round}</p>
+        <h2 className="text-3xl font-black text-red-500 mb-2 italic tracking-tighter uppercase">RHYTHM LOST</h2>
+        <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">FAILED AT ROUND {round} OF {totalRounds}</p>
         <button
           onClick={() => {
             let multiplier = 0.5;
-            if (round === 2) multiplier = 1.2;
-            else if (round === 3) multiplier = 2.0;
+            if (round > 3) multiplier = 2.0;
+            else if (round > 1) multiplier = 1.2;
             onComplete(multiplier);
           }}
           className="px-10 py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-500 transition-all uppercase tracking-tighter border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
@@ -90,12 +98,12 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
   }
 
   return (
-    <div className={`h-[400px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-6 ${
+    <div className={`h-[450px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-6 ${
         feedback === 'hit' ? 'border-emerald-500' :
         isDisplaying ? 'border-purple-500' : 'border-purple-900/50'
     }`}>
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter">BEAT SEQUENCE</h2>
+        <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter uppercase">BEAT SEQUENCE <span className="text-white text-sm">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
             <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Sample {round} / {totalRounds}</p>
         </div>
@@ -135,12 +143,12 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete }) => {
         {isDisplaying ? (
             <>
                 <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 1 }}>🎧</motion.span>
-                <span>MEMORIZING...</span>
+                <span>MEMORIZING SEQUENCE...</span>
             </>
         ) : (
             <>
                 <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>🎹</motion.span>
-                <span>LAY THE BEAT</span>
+                <span>LAY THE BEAT ({sequence.length} NOTES)</span>
             </>
         )}
       </p>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface BlackjackProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
 interface Card {
@@ -36,12 +37,16 @@ const calculateScore = (hand: Card[]): number => {
   return score;
 };
 
-export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
+export const Blackjack: React.FC<BlackjackProps> = ({ onComplete, level = 1 }) => {
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
   const [dealerHand, setDealerHand] = useState<Card[]>([]);
   const [gameState, setGameState] = useState<'DEALING' | 'PLAYER_TURN' | 'DEALER_TURN' | 'ENDED'>('DEALING');
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState<'win' | 'lose' | 'draw' | null>(null);
+
+  // Difficulty scaling: House pays more at higher levels, but plays smarter?
+  const winMultiplier = 3.0 + (level - 1) * 0.5;
+  const blackjackMultiplier = 5.0 + (level - 1) * 1.0;
 
   useEffect(() => {
     // Initial deal
@@ -91,7 +96,9 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
 
       const runDealer = async () => {
         let currentDealerHand = [...dealerHand];
-        while (calculateScore(currentDealerHand) < 17) {
+        const dealerStopAt = level >= 3 ? 18 : 17; // Smarter dealer at L3+
+
+        while (calculateScore(currentDealerHand) < dealerStopAt) {
           await new Promise(r => setTimeout(r, 800));
           currentDealerHand = [...currentDealerHand, getRandomCard()];
           setDealerHand(currentDealerHand);
@@ -120,7 +127,7 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
       };
       runDealer();
     }
-  }, [gameState, playerHand, dealerHand]);
+  }, [gameState, playerHand, dealerHand, level]);
 
   const handleComplete = () => {
     const pScore = calculateScore(playerHand);
@@ -128,9 +135,9 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
     let multiplier = 1.0;
 
     if (pScore > 21) multiplier = 0.5;
-    else if (dScore > 21) multiplier = 4.0;
-    else if (pScore === 21 && playerHand.length === 2) multiplier = 5.0; // Blackjack
-    else if (pScore > dScore) multiplier = 3.0;
+    else if (dScore > 21) multiplier = winMultiplier;
+    else if (pScore === 21 && playerHand.length === 2) multiplier = blackjackMultiplier;
+    else if (pScore > dScore) multiplier = winMultiplier;
     else if (pScore === dScore) multiplier = 1.5;
     else multiplier = 0.8;
 
@@ -159,13 +166,14 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
   );
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-6 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
+    <div className={`transition-colors duration-500 bg-slate-950 p-6 rounded-[2rem] border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
         feedback === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
         feedback === 'lose' ? 'border-red-500 bg-red-950/20' :
         feedback === 'draw' ? 'border-blue-500 bg-blue-950/20' :
         'border-yellow-600'
     }`}>
-      <h2 className="text-2xl font-black text-yellow-500 mb-6 uppercase tracking-tighter italic">BLACKJACK 21</h2>
+      <h2 className="text-2xl font-black text-yellow-500 mb-2 uppercase tracking-tighter italic">VA AGENCY <span className="text-white text-xs">L{level}</span></h2>
+      <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-6">WIN PAYOUT: {winMultiplier.toFixed(1)}x</p>
 
       {/* Dealer Hand */}
       <div className="mb-8">
@@ -233,7 +241,7 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete }) => {
                 onClick={handleComplete}
                 className="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black shadow-[0_6px_0_rgb(161,98,7)] active:translate-y-1 transition-all uppercase italic tracking-tighter text-xl border-t border-white/20"
             >
-                COLLECT WINNINGS
+                COLLECT PAYOUT
             </button>
             </motion.div>
         )}
