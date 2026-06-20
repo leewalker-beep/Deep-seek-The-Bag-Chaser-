@@ -134,7 +134,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     } else {
       setHighlightRect(null);
     }
-  }, [currentStepData.target, activeHustleView]);
+  }, [currentStepData.target, activeHustleView, tutorialStep]);
 
   useEffect(() => {
     // Automatic transitions for action steps

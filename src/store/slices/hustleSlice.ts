@@ -568,9 +568,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
 
-    const isTutorialCC = hustleId === 'cc' && state.tutorialStep >= 3 && state.tutorialStep < 13;
+    // General bypass for any hustle that is part of the tutorial
+    const isTutorialHustle = state.tutorialStep < 13 && (
+      (hustleId === 'r_delivery' && state.tutorialStep <= 2) ||
+      (hustleId === 'cc' && state.tutorialStep >= 3 && state.tutorialStep <= 5) ||
+      (hustleId === 'r_ghost_mode' && state.tutorialStep >= 6 && state.tutorialStep <= 8) ||
+      (hustleId === 'r_sleep' && state.tutorialStep >= 9 && state.tutorialStep <= 11)
+    );
 
-    if (hustleTierIndex > currentTierIndex && !isTutorialCC) {
+    if (hustleTierIndex > currentTierIndex && !isTutorialHustle) {
       return {
         success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.`,
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0

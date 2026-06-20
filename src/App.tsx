@@ -268,17 +268,25 @@ function App() {
 
     // Show hustles whose tier matches the active tab
     // AND whose tier is <= current player tier
-    const filtered = Object.values(HUSTLES).filter(h => {
+    let filtered = Object.values(HUSTLES).filter(h => {
       const hustleTierIndex = PROGRESSION_ORDER.indexOf(h.tier as Tier);
       const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
       return h.tier === activeTab && hustleTierIndex <= currentTierIndex;
     });
 
     if (showTutorial && activeTab === 'MUD') {
-       const ccHustle = HUSTLES['cc'];
-       if (ccHustle && !filtered.find(h => h.id === 'cc')) {
-         filtered.push(ccHustle);
-       }
+      // During tutorial, simplify the grid to ONLY the target hustle
+      if (tutorialStep >= 0 && tutorialStep <= 2) {
+        filtered = [HUSTLES['r_delivery']];
+      } else if (tutorialStep >= 3 && tutorialStep <= 5) {
+        filtered = [HUSTLES['cc']];
+      } else if (tutorialStep >= 6 && tutorialStep <= 8) {
+        filtered = [HUSTLES['r_ghost_mode']];
+      } else if (tutorialStep >= 9 && tutorialStep <= 11) {
+        filtered = [HUSTLES['r_sleep']];
+      } else if (tutorialStep === 12) {
+        filtered = []; // Grid empty to highlight ADVANCE button
+      }
     }
 
     return filtered;
