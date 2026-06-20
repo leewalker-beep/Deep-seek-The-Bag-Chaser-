@@ -4,20 +4,27 @@ import { ProgressBar } from '../ui/ProgressBar';
 
 interface HashtagTapProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
 const HASHTAGS = [
   '#Viral', '#Trending', '#Fyp', '#Growth', '#Hustle', '#BagChaser',
-  '#Startup', '#Tech', '#AI', '#Vibe', '#Aura', '#Clout'
+  '#Startup', '#Tech', '#AI', '#Vibe', '#Aura', '#Clout', '#Scaling',
+  '#Monetize', '#Engagement', '#Retention'
 ];
 
-export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
+export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete, level = 1 }) => {
   const [activeHashtags, setActiveHashtags] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
   const [feedback, setFeedback] = useState<'tap' | null>(null);
   const nextId = useRef(0);
+
+  // Difficulty scaling
+  const spawnRate = Math.max(300, 800 - (level - 1) * 100);
+  const lifespan = Math.max(1000, 3000 - (level - 1) * 300);
+  const targetScore = 15 + (level - 1) * 5;
 
   useEffect(() => {
     if (!gameActive) return;
@@ -42,17 +49,16 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
 
       setActiveHashtags(prev => [...prev, newHashtag]);
 
-      // Remove after 3-5 seconds
       setTimeout(() => {
         setActiveHashtags(prev => prev.filter(h => h.id !== newHashtag.id));
-      }, 2500 + Math.random() * 1500);
-    }, 700);
+      }, lifespan * (0.8 + Math.random() * 0.4));
+    }, spawnRate);
 
     return () => {
       clearInterval(timer);
       clearInterval(spawnInterval);
     };
-  }, [gameActive]);
+  }, [gameActive, spawnRate, lifespan]);
 
   const handleTap = (id: number) => {
     if (!gameActive) return;
@@ -66,25 +72,25 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
   useEffect(() => {
     if (!gameActive) {
       let multiplier = 0.5;
-      if (score >= 15) multiplier = 3.0;
-      else if (score >= 10) multiplier = 2.0;
-      else if (score >= 5) multiplier = 1.0;
+      if (score >= targetScore) multiplier = 4.0;
+      else if (score >= targetScore * 0.6) multiplier = 2.5;
+      else if (score >= targetScore * 0.3) multiplier = 1.2;
 
       setTimeout(() => onComplete(multiplier), 1000);
     }
-  }, [gameActive, score, onComplete]);
+  }, [gameActive, score, targetScore, onComplete]);
 
   return (
     <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
         feedback ? 'bg-blue-950/20' : 'bg-slate-950'
     }`}>
       <div className="absolute top-12 text-center pointer-events-none w-full px-8">
-        <h2 className="text-3xl font-black text-slate-100 italic tracking-tighter uppercase">SMM AGENCY</h2>
+        <h2 className="text-4xl font-black text-slate-100 italic tracking-tighter uppercase drop-shadow-lg">SMM AGENCY <span className="text-blue-500 text-sm">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
-            <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-blue-500">👆</motion.span>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Tap the trending hashtags!</p>
+            <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-blue-400 font-black text-xl">⬆️</motion.span>
+            <p className="text-slate-300 text-xs font-black uppercase tracking-widest">CAPTURE TRENDS!</p>
         </div>
-        <div className="mt-6 text-blue-400 font-mono font-black text-3xl drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+        <div className="mt-6 text-blue-400 font-mono font-black text-4xl drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] tabular-nums">
             HITS: {score}
         </div>
       </div>
@@ -94,12 +100,12 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
           {activeHashtags.map(h => (
             <motion.button
               key={h.id}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 1.5, opacity: 0 }}
-              whileTap={{ scale: 0.9 }}
+              initial={{ scale: 0, opacity: 0, rotate: -10 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 1.8, opacity: 0, rotate: 10 }}
+              whileTap={{ scale: 0.8 }}
               onClick={() => handleTap(h.id)}
-              className="absolute px-6 py-3 bg-blue-600/10 border-2 border-blue-500/30 rounded-2xl text-blue-400 font-black text-sm shadow-[0_0_20px_rgba(59,130,246,0.15)] active:bg-blue-600 active:text-white transition-colors"
+              className="absolute px-5 py-2.5 bg-blue-600/20 border-2 border-blue-500/50 rounded-xl text-blue-300 font-black text-sm shadow-[0_0_20px_rgba(59,130,246,0.2)] active:bg-blue-500 active:text-white transition-colors"
               style={{ left: `${h.x}%`, top: `${h.y}%`, transform: 'translate(-50%, -50%)' }}
             >
               {h.text}
@@ -108,15 +114,19 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
         </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-12 w-full max-w-[300px] px-6">
+      <div className="absolute bottom-12 w-full max-w-[320px] px-6">
+        <div className="flex justify-between items-end mb-1">
+            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">CLIENT ENGAGEMENT</span>
+            <span className="text-blue-400 font-mono text-xl font-black">{timeLeft.toFixed(1)}s</span>
+        </div>
         <ProgressBar
           value={timeLeft}
           max={15}
-          label={`TREND LIFESPAN: ${timeLeft.toFixed(1)}s`}
+          label=""
           colorClass="bg-blue-500"
         />
-        <div className="mt-2 text-center text-[10px] text-slate-500 font-black uppercase tracking-widest">
-            TARGET: 15+ FOR MAX YIELD
+        <div className="mt-2 text-center text-[8px] text-slate-600 font-black uppercase tracking-widest">
+            QUOTA: {targetScore} FOR MAX YIELD
         </div>
       </div>
 
@@ -127,9 +137,10 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-20 p-6"
           >
-            <div className="text-6xl mb-4">📈</div>
-            <div className="text-3xl font-black text-white italic uppercase tracking-tighter">AGENCY SCALE</div>
-            <div className="text-blue-400 font-black font-mono text-xl mt-2">{score} TRENDS CAPTURED</div>
+            <div className="text-8xl mb-4 drop-shadow-2xl">📈</div>
+            <div className="text-4xl font-black text-white italic uppercase tracking-tighter">AGENCY RESULTS</div>
+            <div className="text-blue-400 font-black font-mono text-2xl mt-2 uppercase tracking-widest">{score} TRENDS CAPTURED</div>
+            <div className="text-slate-500 text-[10px] font-black mt-4 uppercase">TARGET WAS {targetScore}</div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -8,10 +8,10 @@ interface Coordinate {
 
 interface RotateToScaleProps {
   onComplete: (multiplier: number) => void;
-  level: number;
+  level?: number;
 }
 
-export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level }) => {
+export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level = 1 }) => {
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentAngle, setCurrentAngle] = useState(0);

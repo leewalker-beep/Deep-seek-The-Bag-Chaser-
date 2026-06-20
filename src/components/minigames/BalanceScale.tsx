@@ -3,15 +3,22 @@ import { motion } from 'framer-motion';
 
 interface BalanceScaleProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
+export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 1 }) => {
   const [balance, setBalance] = useState(50); // 0 to 100, 50 is perfectly balanced
   const [timeLeft, setTimeLeft] = useState(10);
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'left' | 'right' | null>(null);
   const requestRef = useRef<number | null>(null);
-  const driftRef = useRef(Math.random() > 0.5 ? 0.5 : -0.5);
+
+  // Difficulty scaling: base drift and acceleration increase with level
+  const baseDrift = 0.4 + (level - 1) * 0.2;
+  const driftAcceleration = 0.005 + (level - 1) * 0.002;
+  const correctionPower = Math.max(8, 12 - (level - 1));
+
+  const driftRef = useRef(Math.random() > 0.5 ? baseDrift : -baseDrift);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,7 +40,7 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
           return newBalance <= 0 ? 0 : 100;
         }
         // Increase drift over time
-        driftRef.current += (prev - 50) * 0.005;
+        driftRef.current += (prev - 50) * driftAcceleration;
         return newBalance;
       });
       requestRef.current = requestAnimationFrame(animate);
@@ -45,19 +52,20 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
       clearInterval(timer);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [driftAcceleration]);
 
   useEffect(() => {
     if (timeLeft === 0 && !failed) {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
       const score = 1 - Math.abs(50 - balance) / 50;
-      const multiplier = 1.0 + score * 2.0;
+      const multiplier = 1.0 + score * 3.0;
       if (navigator.vibrate) navigator.vibrate(100);
       onComplete(multiplier);
     }
   }, [timeLeft, failed, balance, onComplete]);
 
   const handleCorrect = (amount: number) => {
+    if (failed) return;
     setBalance(prev => Math.max(0, Math.min(100, prev + amount)));
     setFeedback(amount < 0 ? 'left' : 'right');
     setTimeout(() => setFeedback(null), 100);
@@ -84,66 +92,59 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete }) => {
   const statusColor = deviation > 30 ? 'text-red-500' : deviation > 15 ? 'text-yellow-500' : 'text-emerald-500';
 
   return (
-    <div className={`h-[400px] w-full bg-slate-900 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-8 overflow-hidden shadow-2xl ${
-        deviation > 30 ? 'border-red-900/50' : deviation > 15 ? 'border-yellow-900/50' : 'border-emerald-900/50'
+    <div className={`h-[400px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-[2rem] flex flex-col items-center justify-center p-8 overflow-hidden shadow-2xl ${
+        deviation > 30 ? 'border-red-500' : deviation > 15 ? 'border-yellow-500' : 'border-emerald-500'
     }`}>
       <div className="mb-10 text-center w-full">
-        <h2 className="text-xl font-black text-yellow-500 uppercase tracking-widest italic mb-4">ASSET BALANCING</h2>
-        <div className="flex justify-between items-center bg-black/40 p-3 rounded-2xl border border-white/5">
-            <div className="text-left">
-                <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">STABILITY</div>
-                <div className={`text-xl font-black font-mono ${statusColor}`}>
+        <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">ASSET BALANCE <span className="text-yellow-500 text-sm">L{level}</span></h2>
+        <div className="flex justify-between items-center bg-slate-900 p-4 rounded-2xl border border-white/5">
+            <div className="text-left flex flex-col">
+                <span className="text-[8px] text-slate-500 font-black uppercase tracking-widest">STABILITY</span>
+                <span className={`text-2xl font-black font-mono tabular-nums ${statusColor}`}>
                     {Math.max(0, 100 - Math.floor(deviation * 2))}%
-                </div>
+                </span>
             </div>
-            <div className="text-right">
-                <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">TIME REMAINING</div>
-                <div className="text-xl font-black font-mono text-white">{timeLeft}s</div>
+            <div className="text-right flex flex-col">
+                <span className="text-[8px] text-slate-500 font-black uppercase tracking-widest">TIME</span>
+                <span className="text-2xl font-black font-mono text-white tabular-nums">{timeLeft}s</span>
             </div>
         </div>
       </div>
 
-      <div className="w-full h-8 bg-slate-950 rounded-2xl relative mb-12 border-2 border-slate-800 shadow-inner flex items-center">
-        {/* Center line */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white/10 -translate-x-1/2 z-0" />
-
-        {/* Target Zone */}
-        <div className="absolute left-[35%] right-[35%] top-0 bottom-0 bg-emerald-500/5 z-0" />
+      <div className="w-full h-12 bg-black rounded-2xl relative mb-12 border-2 border-slate-800 shadow-inner flex items-center">
+        <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white/20 -translate-x-1/2 z-0" />
+        <div className="absolute left-[35%] right-[35%] top-0 bottom-0 bg-emerald-500/10 z-0" />
 
         <motion.div
           animate={{ x: `${balance}%` }}
-          transition={{ type: 'spring', damping: 20, stiffness: 200, bounce: 0 }}
-          className={`absolute w-10 h-10 rounded-2xl shadow-2xl z-10 flex items-center justify-center border-2 ${
+          transition={{ type: 'spring', damping: 25, stiffness: 300, bounce: 0 }}
+          className={`absolute w-12 h-12 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-10 flex items-center justify-center border-2 ${
               deviation > 30 ? 'bg-red-500 border-red-300' : deviation > 15 ? 'bg-yellow-500 border-yellow-300' : 'bg-emerald-500 border-emerald-300'
           }`}
           style={{ left: 0, transform: 'translate(-50%, 0)' }}
         >
-            <div className="text-xl">💰</div>
+            <div className="text-2xl">💰</div>
         </motion.div>
       </div>
 
       <div className="flex gap-4 w-full">
         <button
-          onPointerDown={() => handleCorrect(-12)}
-          className={`flex-1 py-6 rounded-2xl active:scale-95 transition-all text-3xl border-b-4 ${
-              feedback === 'left' ? 'bg-blue-500 border-blue-700 text-white' : 'bg-slate-800 border-slate-950 text-slate-400'
+          onPointerDown={() => handleCorrect(-correctionPower)}
+          className={`flex-1 py-6 rounded-2xl active:scale-95 transition-all text-4xl border-b-8 ${
+              feedback === 'left' ? 'bg-blue-500 border-blue-700 text-white' : 'bg-slate-800 border-slate-900 text-slate-400'
           }`}
         >
           ⬅️
         </button>
         <button
-          onPointerDown={() => handleCorrect(12)}
-          className={`flex-1 py-6 rounded-2xl active:scale-95 transition-all text-3xl border-b-4 ${
-              feedback === 'right' ? 'bg-blue-500 border-blue-700 text-white' : 'bg-slate-800 border-slate-950 text-slate-400'
+          onPointerDown={() => handleCorrect(correctionPower)}
+          className={`flex-1 py-6 rounded-2xl active:scale-95 transition-all text-4xl border-b-8 ${
+              feedback === 'right' ? 'bg-blue-500 border-blue-700 text-white' : 'bg-slate-800 border-slate-900 text-slate-400'
           }`}
         >
           ➡️
         </button>
       </div>
-
-      <p className="mt-8 text-[10px] text-slate-500 text-center font-black uppercase tracking-[0.2em] opacity-50">
-        KEEP THE ASSET CENTERED TO MAXIMIZE YIELD
-      </p>
     </div>
   );
 };

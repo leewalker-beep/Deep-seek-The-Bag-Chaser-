@@ -3,13 +3,23 @@ import { motion } from 'framer-motion';
 
 interface LaborBuildProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
+export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1 }) => {
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [isActive, setIsActive] = useState(true);
   const [feedback, setFeedback] = useState<'tap' | null>(null);
+
+  // Difficulty scaling: L1: 3 taps/sec -> L5: 7 taps/sec
+  // 10 second game. L1 needs 30 taps. L5 needs 70 taps.
+  // Each tap gives progress. Decay happens over time.
+  // L1: decay 3%/sec. Tap gives 5%. (30 * 5 = 150. - 30 = 120%)
+  // L5: decay 15%/sec. Tap gives 3%. (70 * 3 = 210. - 150 = 60%) - Wait, L5 needs to be harder.
+
+  const decayRate = 0.5 + (level - 1) * 0.8; // Decay per 100ms
+  const tapPower = Math.max(2, 5 - (level - 1) * 0.5);
 
   useEffect(() => {
     if (!isActive) return;
@@ -23,16 +33,16 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
         return prev - 0.1;
       });
 
-      // Slow decay
-      setProgress(prev => Math.max(0, prev - 0.5));
+      // Decay
+      setProgress(prev => Math.max(0, prev - decayRate));
     }, 100);
 
     return () => clearInterval(timer);
-  }, [isActive]);
+  }, [isActive, decayRate]);
 
   const handleTap = () => {
     if (!isActive) return;
-    setProgress(prev => Math.min(100, prev + 5));
+    setProgress(prev => Math.min(100, prev + tapPower));
     setFeedback('tap');
     setTimeout(() => setFeedback(null), 100);
     if (navigator.vibrate) navigator.vibrate(20);
@@ -41,8 +51,8 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
   useEffect(() => {
     if (!isActive) {
       let multiplier = 0.5;
-      if (progress > 90) multiplier = 3.0;
-      else if (progress > 70) multiplier = 2.0;
+      if (progress > 90) multiplier = 4.0;
+      else if (progress > 70) multiplier = 2.5;
       else if (progress > 40) multiplier = 1.0;
       else if (progress > 20) multiplier = 0.7;
 
@@ -53,10 +63,10 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete }) => {
 
   return (
     <div className={`bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto transition-colors duration-100 ${feedback ? 'bg-stone-900' : 'bg-stone-950'}`}>
-      <h2 className="text-2xl font-black text-stone-400 mb-2 uppercase tracking-tighter italic">LABOR & PROPERTY</h2>
+      <h2 className="text-2xl font-black text-stone-400 mb-2 uppercase tracking-tighter italic">MANUAL LABOR <span className="text-orange-600 text-sm">L{level}</span></h2>
       <div className="flex items-center justify-center gap-2 mb-6">
         <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-orange-500">👆</motion.span>
-        <p className="text-[10px] text-stone-600 uppercase tracking-widest font-bold">Tap to build the foundations</p>
+        <p className="text-[10px] text-stone-600 uppercase tracking-widest font-bold">Tap FAST to build the foundations</p>
       </div>
 
       <div className="relative h-48 w-full bg-stone-900 rounded-2xl border-2 border-stone-800 overflow-hidden mb-6 flex flex-col justify-end">

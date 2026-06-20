@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 
-const LOGOS = ['💎', '👜', '👗', '⌚', '👠'];
+const ALL_LOGOS = ['💎', '👜', '👗', '⌚', '👠', '👒', '🕶️', '💄', '💍', '🧣'];
 
 interface DragMergeProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
 interface MergeItem {
@@ -14,25 +15,29 @@ interface MergeItem {
   y: number;
 }
 
-export const DragMerge: React.FC<DragMergeProps> = ({ onComplete }) => {
+export const DragMerge: React.FC<DragMergeProps> = ({ onComplete, level = 1 }) => {
   const [items, setItems] = useState<MergeItem[]>([]);
   const [mergedCount, setMergedCount] = useState(0);
   const [startTime] = useState(Date.now());
   const [lastMergeIcon, setLastMergeIcon] = useState<string | null>(null);
 
+  // Difficulty scaling: more logos and pairs at higher levels
+  const pairsRequired = 4 + (level - 1);
+  const logosToUse = ALL_LOGOS.slice(0, pairsRequired);
+
   useEffect(() => {
     const initialItems: MergeItem[] = [];
-    // Create 5 pairs
-    for (let i = 0; i < 10; i++) {
+    // Create required pairs
+    for (let i = 0; i < pairsRequired * 2; i++) {
       initialItems.push({
         id: i,
-        icon: LOGOS[i % LOGOS.length],
-        x: Math.random() * 260 - 130, // Spread them out a bit more
-        y: Math.random() * 260 - 130,
+        icon: logosToUse[i % pairsRequired],
+        x: Math.random() * 260 - 130,
+        y: Math.random() * 280 - 140,
       });
     }
     setItems(initialItems);
-  }, []);
+  }, [pairsRequired, logosToUse]);
 
   const handleDragEnd = (id: number, info: PanInfo) => {
     const container = document.getElementById('merge-container');
@@ -44,16 +49,14 @@ export const DragMerge: React.FC<DragMergeProps> = ({ onComplete }) => {
 
     const dist = Math.sqrt(Math.pow(info.point.x - centerX, 2) + Math.pow(info.point.y - centerY, 2));
 
-    if (dist < 70) {
+    if (dist < 80) {
       setItems(prevItems => {
         const draggedItem = prevItems.find(it => it.id === id);
         if (!draggedItem) return prevItems;
 
-        // Look for any other item with the same icon currently in the list
         const match = prevItems.find(it => it.icon === draggedItem.icon && it.id !== id);
 
         if (match) {
-          // Success! Remove both items
           const newItems = prevItems.filter(it => it.id !== id && it.id !== match.id);
 
           setMergedCount(c => {
@@ -61,9 +64,10 @@ export const DragMerge: React.FC<DragMergeProps> = ({ onComplete }) => {
             setLastMergeIcon(draggedItem.icon);
             setTimeout(() => setLastMergeIcon(null), 500);
 
-            if (nextCount >= 5) {
+            if (nextCount >= pairsRequired) {
               const timeTaken = (Date.now() - startTime) / 1000;
-              const multiplier = Math.max(1.0, 3.0 - (timeTaken / 12));
+              const targetTime = pairsRequired * 2.5;
+              const multiplier = Math.max(0.5, 4.0 - (timeTaken / targetTime) * 2);
               onComplete(multiplier);
             }
             return nextCount;
@@ -72,32 +76,31 @@ export const DragMerge: React.FC<DragMergeProps> = ({ onComplete }) => {
           if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
           return newItems;
         }
-
-        // No match found yet, item stays where it was dragged or returns?
-        // For simplicity, it stays in the list but we can update its position
         return prevItems;
       });
     }
   };
 
   return (
-    <div id="merge-container" className="relative w-full h-[400px] bg-slate-950 rounded-xl border-2 border-slate-800 flex flex-col items-center justify-center overflow-hidden">
-      <div className="absolute top-4 text-center z-0">
-        <h3 className="text-white font-black text-lg">LUXURY CONGLOMERATE</h3>
-        <p className="text-slate-400 text-xs">Drag matching logos to the center to merge</p>
+    <div id="merge-container" className="relative w-full h-[500px] bg-slate-950 rounded-3xl border-4 border-slate-900 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+      <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]" />
+
+      <div className="absolute top-6 text-center z-10 w-full px-6">
+        <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">LUXURY CONGLOMERATE <span className="text-emerald-500 text-sm">L{level}</span></h2>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">MERGE ALL BRANDS AT CENTER</p>
       </div>
 
       {/* Target Zone */}
-      <div className="w-36 h-32 rounded-full border-4 border-dashed border-emerald-500/30 flex flex-col items-center justify-center relative">
+      <div className="w-40 h-40 rounded-full border-8 border-emerald-500/20 flex flex-col items-center justify-center relative shadow-[0_0_50px_rgba(16,185,129,0.1)]">
         <div className="absolute inset-0 bg-emerald-500/5 animate-pulse rounded-full" />
-        <span className="text-emerald-400 font-black text-3xl z-10">{mergedCount}/5</span>
+        <span className="text-emerald-400 font-black text-4xl z-10 drop-shadow-lg font-mono">{mergedCount}/{pairsRequired}</span>
         <AnimatePresence>
           {lastMergeIcon && (
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1.5, opacity: 1 }}
-              exit={{ scale: 2, opacity: 0 }}
-              className="absolute text-4xl pointer-events-none"
+              initial={{ scale: 0.5, opacity: 0, rotate: -20 }}
+              animate={{ scale: 2.5, opacity: 1, rotate: 0 }}
+              exit={{ scale: 3.5, opacity: 0, rotate: 20 }}
+              className="absolute text-6xl pointer-events-none z-20"
             >
               {lastMergeIcon}
             </motion.div>
@@ -115,19 +118,19 @@ export const DragMerge: React.FC<DragMergeProps> = ({ onComplete }) => {
             onDragEnd={(_, info) => handleDragEnd(item.id, info)}
             initial={{ x: item.x, y: item.y, scale: 0, opacity: 0 }}
             animate={{ x: item.x, y: item.y, scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="absolute w-16 h-16 bg-slate-900 border-2 border-slate-700 rounded-2xl flex items-center justify-center text-4xl cursor-grab active:cursor-grabbing shadow-2xl z-20 hover:border-emerald-500/50 transition-colors"
+            exit={{ scale: 0, opacity: 0, rotate: 45 }}
+            className="absolute w-20 h-20 bg-slate-900 border-4 border-slate-800 rounded-3xl flex items-center justify-center text-5xl cursor-grab active:cursor-grabbing shadow-2xl z-20 hover:border-emerald-500/40 transition-colors"
             whileHover={{ scale: 1.1 }}
-            whileDrag={{ scale: 1.2, zIndex: 100, border: '2px solid #10b981' }}
+            whileDrag={{ scale: 1.2, zIndex: 100, borderColor: '#10b981', boxShadow: '0 0 40px rgba(16,185,129,0.4)' }}
           >
             {item.icon}
           </motion.div>
         ))}
       </AnimatePresence>
 
-      <div className="absolute bottom-4 flex gap-4">
-        {LOGOS.map(l => (
-          <div key={l} className="opacity-10 text-2xl grayscale">{l}</div>
+      <div className="absolute bottom-6 flex flex-wrap justify-center gap-3 px-8 opacity-20">
+        {logosToUse.map(l => (
+          <div key={l} className="text-xl grayscale">{l}</div>
         ))}
       </div>
     </div>

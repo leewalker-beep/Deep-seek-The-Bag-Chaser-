@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 interface SimpleFallbackProps {
   name: string;
-  onComplete: (multiplier: number) => void;
+  onComplete: (multiplier: number) => void; level?: number;
 }
 
 export const SimpleFallback: React.FC<SimpleFallbackProps> = ({ name, onComplete }) => {

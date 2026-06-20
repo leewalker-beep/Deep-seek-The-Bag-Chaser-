@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MagneticSweepResult {
@@ -9,180 +9,162 @@ interface MagneticSweepResult {
   isSuccess: boolean;
 }
 
+interface ScrapItem {
+  id: number;
+  type: string;
+  x: number;
+  y: number;
+  isRare: boolean;
+}
+
 interface MagneticSweepProps {
   onComplete: (result: MagneticSweepResult) => void;
   title?: string;
   instruction?: string;
   icon?: string;
+  level?: number;
 }
 
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   onComplete,
   title = "MAGNETIC SWEEP",
-  instruction = "Drag magnet to collect scrap!",
-  icon = "🧲"
+  instruction = "Tap appearing scrap to collect!",
+  icon: _icon = "🧲",
+  level = 1
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [currentX, setCurrentX] = useState(0);
-  const [velocity, setVelocity] = useState(0);
-  const [rareFound, setRareFound] = useState(false);
-  const [lastTime, setLastTime] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<ScrapItem[]>([]);
+  const [score, setScore] = useState(0);
+  const [rareCount, setRareCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(10);
+  const [gameActive, setGameActive] = useState(true);
+  const nextId = useRef(0);
 
-  // Determine outcome at start to sync visual feedback with final payout
-  const [outcome] = useState(() => {
-    const rand = Math.random();
-    if (rand < 0.10) return 'RARE';
-    if (rand < 0.60) return 'WIN';
-    return 'LOSS';
-  });
+  // Difficulty scaling
+  const spawnRate = Math.max(300, 1000 - (level - 1) * 150);
+  const itemLifespan = Math.max(800, 2000 - (level - 1) * 200);
 
-  const handleStart = (e: React.TouchEvent | React.MouseEvent) => {
-    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    setIsDragging(true);
-    setCurrentX(x);
-    setLastTime(Date.now());
-  };
+  useEffect(() => {
+    if (!gameActive) return;
 
-  const handleMove = (e: React.TouchEvent | React.MouseEvent) => {
-    if (!isDragging) return;
-    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const now = Date.now();
-    const dt = now - lastTime;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 0.1) {
+          setGameActive(false);
+          return 0;
+        }
+        return prev - 0.1;
+      });
+    }, 100);
 
-    if (dt > 0) {
-      const dx = Math.abs(x - currentX);
-      const v = dx / dt;
-      setVelocity(prev => (prev * 0.8) + (v * 0.2));
-    }
+    const spawner = setInterval(() => {
+      const isRare = Math.random() < (0.05 + level * 0.01);
+      const newItem: ScrapItem = {
+        id: nextId.current++,
+        type: isRare ? '💎' : ['🔧', '⚙️', '🔩', '📎', '⛓️'][Math.floor(Math.random() * 5)],
+        x: 10 + Math.random() * 80,
+        y: 20 + Math.random() * 60,
+        isRare
+      };
+      setItems(prev => [...prev, newItem]);
 
-    setCurrentX(x);
-    setLastTime(now);
+      setTimeout(() => {
+        setItems(prev => prev.filter(i => i.id !== newItem.id));
+      }, itemLifespan);
+    }, spawnRate);
 
-    // Rare metal visual trigger (only if outcome is RARE)
-    if (outcome === 'RARE' && !rareFound && Math.random() < 0.05) {
-      setRareFound(true);
+    return () => {
+      clearInterval(timer);
+      clearInterval(spawner);
+    };
+  }, [gameActive, spawnRate, itemLifespan, level]);
+
+  const handleCollect = (item: ScrapItem) => {
+    if (!gameActive) return;
+    setItems(prev => prev.filter(i => i.id !== item.id));
+    if (item.isRare) {
+      setRareCount(prev => prev + 1);
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-    }
-  };
-
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-
-    let speedMult: number;
-    if (velocity < 1) speedMult = 0.5;
-    else if (velocity > 4) speedMult = 2.0;
-    else speedMult = 1.0 + ((velocity - 1) / 3);
-    speedMult = Math.min(2.0, Math.max(0.5, speedMult));
-
-    let outcomeMult: number;
-    let isRare = false;
-    let isSuccess = true;
-
-    if (outcome === 'RARE') {
-      outcomeMult = 5.0;
-      isRare = true;
-    } else if (outcome === 'WIN') {
-      outcomeMult = 1.5;
     } else {
-      outcomeMult = 0.3;
-      isSuccess = false;
+      setScore(prev => prev + 1);
+      if (navigator.vibrate) navigator.vibrate(20);
     }
-
-    const finalMultiplier = outcomeMult * speedMult;
-
-    onComplete({
-      multiplier: finalMultiplier,
-      isRare,
-      speedMult,
-      outcomeMult,
-      isSuccess
-    });
   };
+
+  useEffect(() => {
+    if (!gameActive) {
+      const outcomeMult = score > 15 ? 2.0 : score > 8 ? 1.2 : 0.5;
+      const rareBonus = rareCount * 2.0;
+      const finalMultiplier = outcomeMult + rareBonus;
+
+      onComplete({
+        multiplier: finalMultiplier,
+        isRare: rareCount > 0,
+        speedMult: 1.0,
+        outcomeMult: finalMultiplier,
+        isSuccess: score > 5
+      });
+    }
+  }, [gameActive, score, rareCount, onComplete]);
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center touch-none select-none overflow-hidden"
-      onMouseDown={handleStart}
-      onMouseMove={handleMove}
-      onMouseUp={handleEnd}
-      onTouchStart={handleStart}
-      onTouchMove={handleMove}
-      onTouchEnd={handleEnd}
-    >
-      {/* Gold Flash Effect when rare found */}
-      <AnimatePresence>
-        {rareFound && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.2, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1, repeat: Infinity }}
-            className="absolute inset-0 bg-yellow-500 pointer-events-none z-0"
-          />
-        )}
-      </AnimatePresence>
-
+    <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center touch-none select-none overflow-hidden p-6">
       <div className="absolute top-12 text-center px-6 z-10 w-full">
-        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter uppercase">{title}</h2>
-        <div className="flex items-center justify-center gap-4">
-          <motion.span animate={{ x: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">←</motion.span>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{instruction}</p>
-          <motion.span animate={{ x: [10, -10, 10] }} transition={{ repeat: Infinity, duration: 2 }} className="text-cyan-500">→</motion.span>
+        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter uppercase">{title} <span className="text-cyan-500">L{level}</span></h2>
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
+        <div className="flex justify-center gap-6 mt-4">
+            <div className="text-emerald-400 font-mono font-black">SCRAP: {score}</div>
+            <div className="text-amber-400 font-mono font-black">RARE: {rareCount}</div>
         </div>
       </div>
 
-      {/* Visual Magnet/Scanner */}
-      <motion.div
-        className="w-40 h-40 border-4 rounded-full flex items-center justify-center relative z-10"
-        style={{ x: currentX - (window.innerWidth / 2) }}
-        animate={{
-          scale: isDragging ? 1.2 : 1,
-          borderColor: rareFound ? '#fbbf24' : isDragging ? '#22d3ee' : '#0891b2',
-          boxShadow: rareFound
-            ? '0 0 60px rgba(251,191,36,0.8), inset 0 0 20px rgba(251,191,36,0.4)'
-            : isDragging ? '0 0 40px rgba(34,211,238,0.4)' : '0 0 20px rgba(8,145,178,0.2)'
-        }}
-      >
-        <div className="text-6xl">{icon}</div>
-        <AnimatePresence>
-          {isDragging && (
-            <motion.div
-              initial={{ opacity: 0, rotate: 0 }}
-              animate={{ opacity: 1, rotate: 360 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-[-20px] rounded-full border-2 border-dashed border-cyan-400/30"
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
+      <div className="relative w-full h-[400px] bg-slate-900 rounded-3xl border-4 border-slate-800 overflow-hidden shadow-2xl">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
-      {/* Speed Indicator */}
-      <div className="absolute bottom-24 w-64 h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 z-10">
+        <AnimatePresence>
+          {items.map(item => (
+            <motion.button
+              key={item.id}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              onClick={() => handleCollect(item)}
+              className="absolute text-5xl z-20 transition-transform active:scale-125"
+              style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translate(-50%, -50%)' }}
+            >
+              <div className="relative">
+                {item.type}
+                {item.isRare && (
+                    <motion.div
+                        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        className="absolute inset-0 bg-amber-400 rounded-full blur-xl"
+                    />
+                )}
+              </div>
+            </motion.button>
+          ))}
+        </AnimatePresence>
+
+        {/* Scan line effect */}
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500"
-          animate={{ width: `${Math.min(100, (velocity / 6) * 100)}%` }}
+            animate={{ top: ['0%', '100%', '0%'] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            className="absolute left-0 right-0 h-1 bg-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.5)] z-10 pointer-events-none"
         />
       </div>
-      <p className="absolute bottom-16 text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] z-10">
-        SCAN SPEED: <span className={velocity > 4 ? 'text-amber-400' : velocity > 1 ? 'text-emerald-400' : 'text-blue-400'}>
-          {velocity > 4 ? 'MAXIMUM' : velocity > 1 ? 'OPTIMAL' : 'SLOW'}
-        </span>
-      </p>
 
-      {rareFound && (
-        <motion.div
-          initial={{ scale: 0, y: 20 }}
-          animate={{ scale: [1, 1.1, 1], y: 0 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="absolute top-1/4 text-amber-400 text-4xl font-black italic drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] z-10 text-center px-4"
-        >
-          💎 RARE METAL!
-        </motion.div>
-      )}
+      <div className="mt-8 w-full max-w-[300px]">
+        <div className="flex justify-between items-end mb-1">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">SCANNING...</span>
+            <span className="text-cyan-500 font-mono text-xl font-black">{timeLeft.toFixed(1)}s</span>
+        </div>
+        <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <motion.div
+                className="h-full bg-cyan-500"
+                animate={{ width: `${(timeLeft / 10) * 100}%` }}
+            />
+        </div>
+      </div>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 
 interface RouletteProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
 type BetType = 'RED' | 'BLACK' | 'ODD' | 'EVEN' | 'NUMBER';
@@ -10,13 +11,17 @@ type BetType = 'RED' | 'BLACK' | 'ODD' | 'EVEN' | 'NUMBER';
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 const WHEEL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
 
-export const Roulette: React.FC<RouletteProps> = ({ onComplete }) => {
+export const Roulette: React.FC<RouletteProps> = ({ onComplete, level = 1 }) => {
   const [selectedBet, setSelectedBet] = useState<{ type: BetType; value?: number } | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
   const [outcome, setOutcome] = useState<'win' | 'lose' | null>(null);
   const controls = useAnimation();
   const wheelRef = useRef<HTMLDivElement>(null);
+
+  // Difficulty scaling: House edge increases? No, let's scale multipliers.
+  // Actually, let's add a "Lucky Number" mechanic that scales with level.
+  const bonusMultiplier = 1 + (level - 1) * 0.2;
 
   const handleBet = (type: BetType, value?: number) => {
     if (isSpinning || outcome) return;
@@ -56,7 +61,7 @@ export const Roulette: React.FC<RouletteProps> = ({ onComplete }) => {
     else if (selectedBet.type === 'NUMBER' && selectedBet.value === winningNumber) won = true;
 
     if (won) {
-      multiplier = selectedBet.type === 'NUMBER' ? 36.0 : 2.0;
+      multiplier = selectedBet.type === 'NUMBER' ? (36.0 * bonusMultiplier) : (2.0 * bonusMultiplier);
       setOutcome('win');
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     } else {
@@ -75,12 +80,13 @@ export const Roulette: React.FC<RouletteProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-6 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
+    <div className={`transition-colors duration-500 bg-slate-950 p-6 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono ${
         outcome === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
         outcome === 'lose' ? 'border-red-500 bg-red-950/20' :
         'border-yellow-600'
     }`}>
-      <h2 className="text-2xl font-black text-yellow-500 mb-6 uppercase tracking-tighter italic">ROULEET</h2>
+      <h2 className="text-2xl font-black text-yellow-500 mb-2 uppercase tracking-tighter italic">ROULETTE <span className="text-white text-xs">L{level}</span></h2>
+      <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-6">WIN MULTIPLIER: {bonusMultiplier.toFixed(1)}x</p>
 
       <div className="relative w-64 h-64 mx-auto mb-8 flex items-center justify-center">
         {/* Pointer */}
@@ -131,15 +137,15 @@ export const Roulette: React.FC<RouletteProps> = ({ onComplete }) => {
                     selectedBet?.type === type ?
                     'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]' :
                     'bg-slate-800 border-slate-700 text-slate-400 hover:border-white/20'
-                } uppercase text-xs tracking-tighter`}
+                } uppercase text-[10px] tracking-tighter`}
             >
-                {type} (2X)
+                {type} ({(2 * bonusMultiplier).toFixed(1)}X)
             </button>
         ))}
       </div>
 
       <div className="mb-8">
-         <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-3">SINGLE NUMBER (36X)</div>
+         <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-3">SINGLE NUMBER ({(36 * bonusMultiplier).toFixed(1)}X)</div>
          <div className="flex overflow-x-auto gap-2 pb-4 no-scrollbar">
             {WHEEL_ORDER.map(n => (
               <button

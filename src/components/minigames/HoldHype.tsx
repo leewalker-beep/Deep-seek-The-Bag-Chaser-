@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface HoldHypeProps {
-  onComplete: (multiplier: number) => void;
+  onComplete: (multiplier: number) => void; level?: number;
   title?: string;
   instruction?: string;
 }

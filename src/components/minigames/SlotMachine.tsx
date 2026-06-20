@@ -3,18 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface SlotMachineProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
 }
 
-const SYMBOLS = ['💰', '💎', '🎰', '📈', '🔥', '🃏'];
+const SYMBOLS = ['💰', '💎', '🎰', '📈', '🔥', '🃏', '👑', '💸'];
 
-export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
+export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete, level = 1 }) => {
   const [reels, setReels] = useState([SYMBOLS[0], SYMBOLS[0], SYMBOLS[0]]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [spinsLeft, setSpinsLeft] = useState(3);
+  const [spinsLeft, setSpinsLeft] = useState(3 + (level - 1));
   const [result, setResult] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'jackpot' | 'win' | 'lose' | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [gameActive, setGameActive] = useState(false);
+
+  // Difficulty scaling: more symbols make it harder to match
+  const activeSymbols = SYMBOLS.slice(0, Math.min(SYMBOLS.length, 4 + level));
+  const jackpotMultiplier = 10.0 + (level - 1) * 2;
+  const bigWinMultiplier = 3.0 + (level - 1) * 0.5;
 
   const requestPermission = async () => {
     const startAction = () => {
@@ -52,9 +58,9 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
     let spinCount = 0;
     const interval = setInterval(() => {
       setReels([
-        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+        activeSymbols[Math.floor(Math.random() * activeSymbols.length)],
+        activeSymbols[Math.floor(Math.random() * activeSymbols.length)],
+        activeSymbols[Math.floor(Math.random() * activeSymbols.length)],
       ]);
       spinCount++;
       if (navigator.vibrate && spinCount % 2 === 0) navigator.vibrate(5);
@@ -64,7 +70,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
         setIsSpinning(false);
       }
     }, 60);
-  }, [isSpinning, spinsLeft]);
+  }, [isSpinning, spinsLeft, activeSymbols]);
 
   useEffect(() => {
     if (!gameActive || permissionGranted === false) return;
@@ -86,13 +92,13 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
   }, [isSpinning, spinsLeft, spin, gameActive, permissionGranted]);
 
   useEffect(() => {
-    if (!isSpinning && spinsLeft < 3) {
+    if (!isSpinning && spinsLeft < (3 + (level - 1))) {
       if (reels[0] === reels[1] && reels[1] === reels[2]) {
-        setResult('JACKPOT! 10.0x');
+        setResult(`JACKPOT! ${jackpotMultiplier.toFixed(1)}x`);
         setFeedback('jackpot');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
       } else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) {
-        setResult('BIG WIN! 3.0x');
+        setResult(`BIG WIN! ${bigWinMultiplier.toFixed(1)}x`);
         setFeedback('win');
         if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
       } else {
@@ -101,27 +107,27 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
         if (navigator.vibrate) navigator.vibrate(30);
       }
     }
-  }, [isSpinning, reels, spinsLeft]);
+  }, [isSpinning, reels, spinsLeft, level, jackpotMultiplier, bigWinMultiplier]);
 
   const handleFinish = () => {
     let multiplier = 1.0;
-    if (reels[0] === reels[1] && reels[1] === reels[2]) multiplier = 10.0;
-    else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) multiplier = 3.0;
+    if (reels[0] === reels[1] && reels[1] === reels[2]) multiplier = jackpotMultiplier;
+    else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) multiplier = bigWinMultiplier;
 
     onComplete(multiplier);
   };
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm mx-auto font-mono relative overflow-hidden ${
+    <div className={`transition-colors duration-500 bg-slate-950 p-6 rounded-[2rem] border-4 shadow-2xl text-center max-w-sm mx-auto font-mono relative overflow-hidden ${
         feedback === 'jackpot' ? 'border-yellow-400 bg-yellow-950/20' :
         feedback === 'win' ? 'border-emerald-500 bg-emerald-950/20' :
         'border-yellow-600'
     }`}>
       {!gameActive && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm p-6">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-sm p-6">
           <button
             onClick={requestPermission}
-            className="w-full px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(234,179,8,0.3)] border-b-4 border-yellow-700 mb-4"
+            className="w-full px-8 py-5 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-black text-lg transition-all active:scale-95 shadow-[0_0_40px_rgba(234,179,8,0.4)] border-b-8 border-yellow-700 mb-6"
           >
             ACTIVATE MOTION
           </button>
@@ -136,29 +142,28 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
           </button>
         </div>
       )}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 px-4">
         <motion.div animate={isSpinning ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">🎰</motion.div>
-        <h2 className="text-2xl font-black text-yellow-500 uppercase tracking-tighter italic">SLOT MACHINE</h2>
+        <h2 className="text-2xl font-black text-yellow-500 uppercase tracking-tighter italic">MUSIC FESTIVAL <span className="text-white text-xs">L{level}</span></h2>
         <motion.div animate={isSpinning ? { rotate: -360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">🎰</motion.div>
       </div>
 
-      <div className="bg-black border-4 border-yellow-900/50 rounded-2xl p-6 mb-8 relative shadow-[inset_0_0_30px_rgba(0,0,0,1)]">
-        {/* Decorative lines */}
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-red-500/20 z-0" />
+      <div className="bg-black border-4 border-yellow-900/50 rounded-2xl p-6 mb-8 relative shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
+        <div className="absolute top-1/2 left-0 right-0 h-1 bg-red-500/10 z-0" />
 
         <div className="flex justify-center gap-3 relative z-10">
           {reels.map((symbol, i) => (
             <motion.div
               key={i}
               animate={isSpinning ? {
-                y: [0, -60, 60, 0],
-                filter: ['blur(0px)', 'blur(8px)', 'blur(0px)']
+                y: [0, -80, 80, 0],
+                filter: ['blur(0px)', 'blur(10px)', 'blur(0px)']
               } : {
-                scale: feedback === 'jackpot' ? [1, 1.2, 1] : 1
+                scale: feedback === 'jackpot' ? [1, 1.1, 1] : 1
               }}
-              transition={isSpinning ? { repeat: Infinity, duration: 0.1, delay: i * 0.05 } : { repeat: Infinity, duration: 0.5 }}
-              className={`w-20 h-32 bg-gradient-to-b from-slate-800 to-slate-950 border-2 rounded-2xl flex items-center justify-center text-5xl shadow-2xl transition-colors duration-300 ${
-                  feedback === 'jackpot' ? 'border-yellow-400' : 'border-slate-700'
+              transition={isSpinning ? { repeat: Infinity, duration: 0.08, delay: i * 0.05 } : { repeat: Infinity, duration: 0.5 }}
+              className={`w-20 h-32 bg-gradient-to-b from-slate-900 to-black border-2 rounded-2xl flex items-center justify-center text-5xl shadow-2xl transition-colors duration-300 ${
+                  feedback === 'jackpot' ? 'border-yellow-400' : 'border-slate-800'
               }`}
             >
               {symbol}
@@ -190,7 +195,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
                     animate={{ opacity: 1 }}
                     className="text-yellow-500 font-black animate-pulse uppercase tracking-[0.3em] text-sm"
                 >
-                    Spinning...
+                    RANDOMIZING REELS...
                 </motion.div>
             )}
         </AnimatePresence>
@@ -206,7 +211,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
               : 'bg-yellow-500 text-black border-yellow-700 shadow-[0_0_30px_rgba(234,179,8,0.2)]'
           }`}
         >
-          {isSpinning ? 'LOCKED' : `PULL LEVER (${spinsLeft})`}
+          {isSpinning ? 'SPINNING...' : `PULL LEVER (${spinsLeft} LEFT)`}
         </button>
 
         <AnimatePresence>
@@ -217,29 +222,25 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete }) => {
                 onClick={handleFinish}
                 className="py-5 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 animate-pulse shadow-[0_0_25px_rgba(16,185,129,0.4)] border-b-4 border-emerald-800 uppercase tracking-widest italic"
             >
-                COLLECT PAYOUT
+                FINALIZE RESULTS
             </motion.button>
             )}
         </AnimatePresence>
       </div>
 
       <div className="mt-8 grid grid-cols-3 gap-2">
-        <div className="border-2 border-slate-800 p-2 rounded-xl">
-            <div className="text-[10px] text-yellow-500 font-black mb-1">JACKPOT</div>
-            <div className="text-[12px] text-white font-bold">10x</div>
+        <div className="border-2 border-slate-800 p-2 rounded-xl bg-slate-900/50">
+            <div className="text-[8px] text-yellow-500 font-black mb-1">JACKPOT</div>
+            <div className="text-[12px] text-white font-bold">{jackpotMultiplier.toFixed(1)}x</div>
         </div>
-        <div className="border-2 border-slate-800 p-2 rounded-xl">
-            <div className="text-[10px] text-emerald-500 font-black mb-1">BIG WIN</div>
-            <div className="text-[12px] text-white font-bold">3x</div>
+        <div className="border-2 border-slate-800 p-2 rounded-xl bg-slate-900/50">
+            <div className="text-[8px] text-emerald-500 font-black mb-1">BIG WIN</div>
+            <div className="text-[12px] text-white font-bold">{bigWinMultiplier.toFixed(1)}x</div>
         </div>
-        <div className="border-2 border-slate-800 p-2 rounded-xl">
-            <div className="text-[10px] text-slate-500 font-black mb-1">ENTRY</div>
-            <div className="text-[12px] text-white font-bold">1x</div>
+        <div className="border-2 border-slate-800 p-2 rounded-xl bg-slate-900/50">
+            <div className="text-[8px] text-slate-500 font-black mb-1">ENTRY</div>
+            <div className="text-[12px] text-white font-bold">1.0x</div>
         </div>
-      </div>
-
-      <div className="mt-4 text-[8px] text-slate-600 font-black uppercase tracking-[0.2em]">
-        SHAKE PHONE TO SPIN
       </div>
     </div>
   );

@@ -74,6 +74,7 @@ interface SwipeOrderProps {
   rightLabel?: string;
   icon?: string;
   items?: SwipeItem[];
+  level?: number;
 }
 
 export const SwipeOrder: React.FC<SwipeOrderProps> = ({
@@ -83,7 +84,8 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
   leftLabel = "FAKE",
   rightLabel = "REAL",
   icon = "📦",
-  items = PRODUCTS
+  items = PRODUCTS,
+  level = 1
 }) => {
   const [currentProduct, setCurrentProduct] = useState<SwipeItem | null>(null);
   const [productIndex, setProductIndex] = useState(0);
@@ -97,6 +99,10 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
   const touchStart = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
+  // Difficulty scaling
+  const timeLimit = Math.max(0.6, 1.8 - (level - 1) * 0.2);
+  const productsToInspect = 10 + (level - 1) * 2;
+
   // Shuffle products at start
   const [shuffledProducts] = useState(() => {
     const shuffled = [...items];
@@ -104,7 +110,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return shuffled.slice(0, 10);
+    return shuffled.slice(0, productsToInspect);
   });
 
   const endGame = useCallback(() => {
@@ -148,7 +154,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
     if (productIndex < shuffledProducts.length && gameActive) {
       const product = shuffledProducts[productIndex];
       setCurrentProduct(product);
-      setTimeLeft(product.timeLimit);
+      setTimeLeft(timeLimit);
       setResult(null);
       setOffset(0);
 
@@ -156,7 +162,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
       const startTime = Date.now();
       timerRef.current = window.setInterval(() => {
         const elapsed = (Date.now() - startTime) / 1000;
-        const remaining = Math.max(0, product.timeLimit - elapsed);
+        const remaining = Math.max(0, timeLimit - elapsed);
         setTimeLeft(remaining);
 
         if (remaining <= 0) {
@@ -237,7 +243,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-8 left-0 right-0 text-center">
         <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mb-1">{instruction}</div>
-        <div className="text-2xl font-black text-white italic uppercase">{title}</div>
+        <div className="text-2xl font-black text-white italic uppercase">{title} <span className="text-emerald-500 text-xs">L{level}</span></div>
         <div className="flex justify-center gap-12 mt-4">
           <div className="text-center">
             <div className="text-[8px] text-slate-500 font-bold uppercase">UNITS</div>
@@ -277,7 +283,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
               <motion.div
                 className="h-full bg-emerald-500"
                 initial={{ width: '100%' }}
-                animate={{ width: `${(timeLeft / currentProduct.timeLimit) * 100}%` }}
+                animate={{ width: `${(timeLeft / timeLimit) * 100}%` }}
                 transition={{ ease: "linear", duration: 0.05 }}
               />
             </div>
