@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction } from '../../types/game';
+import type { GameState, GameAction, Tier } from '../../types/game';
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath } from '../../engine/mathEngine';
@@ -84,6 +84,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
       collectedDeathBadges: currentState.pl.collectedDeathBadges || [],
       deathCount: currentState.pl.deathCount || 0,
+      tierBadges: currentState.pl.tierBadges || [],
+      tierStats: currentState.pl.tierStats || {},
+      hustlePlays: currentState.pl.hustlePlays || {},
     };
 
     if (typeof window !== 'undefined') {
@@ -94,6 +97,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;
+    newPl.tierBadges = persistentStats.tierBadges;
+    newPl.tierStats = persistentStats.tierStats;
+    newPl.hustlePlays = persistentStats.hustlePlays;
 
     set({
       pl: newPl,
@@ -259,15 +265,43 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     });
 
+    // Tier Badge Check
+    const newTierBadges = [...(state.pl.tierBadges || [])];
+    let newlyEarnedTierBadge = null;
+
+    const tiersToCheck: Tier[] = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT'];
+    for (const tier of tiersToCheck) {
+      if (newTierBadges.includes(tier)) continue;
+
+      const hustlesInTier = Object.values(HUSTLES).filter(h => h.tier === tier);
+      const allMastered = hustlesInTier.every(h => masteredHustles.includes(h.id));
+
+      if (allMastered && hustlesInTier.length > 0) {
+        newTierBadges.push(tier);
+        newlyEarnedTierBadge = tier;
+        newMilestones.push({
+          id: `TIER_BADGE_${tier}`,
+          name: `${tier} MASTER`,
+          description: `You've mastered every hustle in the ${tier} tier!`,
+          achievedAtMonth: state.pl.month,
+          tier: state.pl.currentTier
+        });
+        get().logEvent('SPECIAL_EVENT', { type: 'TIER_BADGE_EARNED', tier });
+        break; // Only one celebration at a time
+      }
+    }
+
     if (newMilestones.length > 0) {
       set({
         pl: enforceStatCaps({
           ...state.pl,
           milestones: [...(state.pl.milestones || []), ...newMilestones],
           masteredHustles,
+          tierBadges: newTierBadges,
           approvalRating: Math.min(100, state.pl.approvalRating + totalBonusApproval),
           demographicApproval: finalDemographicApproval
         }),
+        activeTierBadge: newlyEarnedTierBadge,
         news: [
           ...masteryBoostNews,
           `🏆 MILESTONE: ${newMilestones.map(m => m.name).join(', ')}`,
@@ -349,6 +383,28 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
 
+    const newHustlePlays = { ...state.pl.hustlePlays };
+    newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
+
+    const newTierStats = { ...state.pl.tierStats };
+    const tier = hustle.tier;
+    if (!newTierStats[tier]) {
+      newTierStats[tier] = { plays: 0, earnings: 0, favoriteHustle: hustle.name };
+    }
+    newTierStats[tier].plays += 1;
+    // Favorite hustle check
+    const tierHustles = Object.values(HUSTLES).filter(h => h.tier === tier);
+    let favorite = newTierStats[tier].favoriteHustle;
+    let maxPlays = newHustlePlays[hustleId];
+    tierHustles.forEach(h => {
+      const plays = newHustlePlays[h.id] || 0;
+      if (plays > maxPlays) {
+        maxPlays = plays;
+        favorite = h.name;
+      }
+    });
+    newTierStats[tier].favoriteHustle = favorite;
+
     const nextPl = enforceStatCaps({
       ...state.pl,
       bag: newBag,
@@ -364,6 +420,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
       hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
       stats: newStats,
+      hustlePlays: newHustlePlays,
+      tierStats: newTierStats,
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
@@ -586,6 +644,29 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (result.success) newStats.successfulHustles += 1;
     newStats.lifetimeEarnings += result.yieldCash;
 
+    const newHustlePlays = { ...state.pl.hustlePlays };
+    newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
+
+    const newTierStats = { ...state.pl.tierStats };
+    const tier = hustle.tier;
+    if (!newTierStats[tier]) {
+      newTierStats[tier] = { plays: 0, earnings: 0, favoriteHustle: hustle.name };
+    }
+    newTierStats[tier].plays += 1;
+    newTierStats[tier].earnings += result.yieldCash;
+    // Favorite hustle check
+    const tierHustles = Object.values(HUSTLES).filter(h => h.tier === tier);
+    let favorite = newTierStats[tier].favoriteHustle;
+    let maxPlays = 0;
+    tierHustles.forEach(h => {
+      const plays = newHustlePlays[h.id] || 0;
+      if (plays > maxPlays) {
+        maxPlays = plays;
+        favorite = h.name;
+      }
+    });
+    newTierStats[tier].favoriteHustle = favorite;
+
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
       approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + (result.approvalBonus || 0))),
@@ -601,6 +682,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       rentPortfolioCount: state.pl.rentPortfolioCount + (hustleId === 'r_labor' && state.pl.hustleBranchIds[hustleId] === 'l2b' ? 1 : 0),
       flipCount: state.pl.flipCount + (hustleId === 'real_estate_empire' && state.pl.realEstateStrategy === 'flip' ? 1 : 0),
       stats: newStats,
+      hustlePlays: newHustlePlays,
+      tierStats: newTierStats,
       lastExecutedHustleId: hustleId,
       streak: result.success ? (state.pl.streak || 0) + 1 : 0,
       hustleLevels: {
@@ -893,6 +976,28 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
 
+    const newHustlePlays = { ...state.pl.hustlePlays };
+    newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
+
+    const newTierStats = { ...state.pl.tierStats };
+    const tier = hustle.tier;
+    if (!newTierStats[tier]) {
+      newTierStats[tier] = { plays: 0, earnings: 0, favoriteHustle: hustle.name };
+    }
+    newTierStats[tier].plays += 1;
+    // Favorite hustle check
+    const tierHustles = Object.values(HUSTLES).filter(h => h.tier === tier);
+    let favorite = newTierStats[tier].favoriteHustle;
+    let maxPlays = 0;
+    tierHustles.forEach(h => {
+      const plays = newHustlePlays[h.id] || 0;
+      if (plays > maxPlays) {
+        maxPlays = plays;
+        favorite = h.name;
+      }
+    });
+    newTierStats[tier].favoriteHustle = favorite;
+
     const newPl = enforceStatCaps({
       ...state.pl,
       bag: state.pl.bag - result.cost,
@@ -902,6 +1007,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       heat: state.pl.heat + result.heatHit,
       mentalShieldTurns: state.pl.mentalShieldTurns + result.shieldTurns,
       stats: newStats,
+      hustlePlays: newHustlePlays,
+      tierStats: newTierStats,
     });
     newPl.legacyScore = calculateLegacyScore(newPl);
 

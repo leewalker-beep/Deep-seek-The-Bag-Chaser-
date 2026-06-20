@@ -100,34 +100,58 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="grid grid-cols-1 gap-3"
+                className="space-y-6"
               >
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mastery Badges</div>
-                {pl.masteredHustles.length === 0 ? (
-                  <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl">
-                    No hustles mastered yet. Max out a hustle to earn a badge.
-                  </div>
-                ) : (
-                  pl.masteredHustles.map(hId => {
-                    const badge = HUSTLE_BADGES[hId];
-                    if (!badge) return null;
-                    return (
-                      <div key={badge.id} className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl flex items-center gap-4 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-1 bg-emerald-500/10 text-[8px] font-bold text-emerald-400 border-l border-b border-emerald-500/20">MASTERED</div>
-                        <div className="text-4xl bg-slate-900 w-16 h-16 flex items-center justify-center rounded-xl shadow-inner border border-slate-800">
-                          {badge.icon}
+                {/* TIER BADGES SECTION */}
+                <div className="space-y-3">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tier Badges</div>
+                  {pl.tierBadges.length === 0 ? (
+                    <div className="text-center py-6 text-slate-600 text-[10px] italic border border-dashed border-slate-800 rounded-2xl uppercase font-black">
+                      No tiers mastered yet. Complete every hustle in a tier to earn its badge.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {pl.tierBadges.map(tier => (
+                        <div key={tier} className="p-3 bg-slate-950 border border-yellow-500/30 rounded-2xl flex flex-col items-center text-center gap-1 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-1 bg-yellow-500/10 text-[6px] font-bold text-yellow-400 border-l border-b border-yellow-500/20 uppercase tracking-tighter">MASTER</div>
+                          <span className="text-2xl mb-1">🏆</span>
+                          <span className="font-black text-white text-[10px] uppercase italic tracking-tighter">{tier} MASTER</span>
+                          <span className="text-[8px] text-emerald-400 font-bold">+2% YIELD</span>
                         </div>
-                        <div className="flex-1">
-                          <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{badge.name}</div>
-                          <div className="text-xs text-slate-400 italic mb-2">{badge.description}</div>
-                          <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
-                            BUFF: {badge.buff.value}x {badge.buff.type}
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* HUSTLE MASTERY SECTION */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mastery Badges</div>
+                  {pl.masteredHustles.length === 0 ? (
+                    <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl">
+                      No hustles mastered yet. Max out a hustle to earn a badge.
+                    </div>
+                  ) : (
+                    pl.masteredHustles.map(hId => {
+                      const badge = HUSTLE_BADGES[hId];
+                      if (!badge) return null;
+                      return (
+                        <div key={badge.id} className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl flex items-center gap-4 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-1 bg-emerald-500/10 text-[8px] font-bold text-emerald-400 border-l border-b border-emerald-500/20">MASTERED</div>
+                          <div className="text-4xl bg-slate-900 w-16 h-16 flex items-center justify-center rounded-xl shadow-inner border border-slate-800">
+                            {badge.icon}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{badge.name}</div>
+                            <div className="text-xs text-slate-400 italic mb-2">{badge.description}</div>
+                            <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
+                              BUFF: {badge.buff.value}x {badge.buff.type}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </motion.div>
             )}
 

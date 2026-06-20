@@ -121,6 +121,9 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     events: [],
     collectedDeathBadges: [],
     deathCount: 0,
+    tierBadges: [],
+    tierStats: {},
+    hustlePlays: {},
     completedDailyChallengesCount: 0,
     totalChallengesCompleted: 0,
     stats: {

@@ -306,6 +306,9 @@ export interface PlayerStats {
   events: GameEvent[];
   collectedDeathBadges: string[];
   deathCount: number;
+  tierBadges: string[];
+  tierStats: Record<string, { plays: number, earnings: number, favoriteHustle: string }>;
+  hustlePlays: Record<string, number>;
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   stats?: {
@@ -338,6 +341,7 @@ export interface GameState {
   unlockedHustles: Record<string, boolean>;
   activeTab: Tier | 'FLEX' | 'PRESIDENCY';
   activeHustleView: string | null;
+  activeTierBadge: string | null;
   activeNarrative?: string | null;
   deathBadge: string | null;
   fatalCause: string | null;
@@ -351,6 +355,7 @@ export interface GameState {
   setPlayerName: (name: string) => void;
   setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
   setActiveHustleView: (hustleId: string | null) => void;
+  setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
