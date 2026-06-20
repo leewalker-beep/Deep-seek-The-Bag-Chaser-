@@ -345,6 +345,7 @@ export interface GameState {
   activeNarrative?: string | null;
   deathBadge: string | null;
   fatalCause: string | null;
+  tutorialStep: number;
   difficulty: 1 | 2 | 3;
   chosenBackground?: string;
   chosenBackgroundCategory?: string;
@@ -357,6 +358,7 @@ export interface GameState {
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;
+  setTutorialStep: (step: number) => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;

@@ -1,73 +1,228 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BaseButton } from './ui/BaseButton';
+import type { Tier } from '../types/game';
 
 interface TutorialStep {
   title: string;
   content: string;
   target?: string; // CSS selector for highlighting
+  type: 'action' | 'explanation';
 }
 
 const STEPS: TutorialStep[] = [
   {
-    title: 'Welcome to Bag Chaser V2',
-    content: "You're starting in the MUD. The goal is simple: chase the bag, build your legacy, and climb the tiers to the Presidency.",
+    title: 'Earn Bag',
+    content: 'Start your journey in the MUD. First, you need some cash. Tap on Delivery Gigs to see more.',
+    target: '#hustle-card-r_delivery',
+    type: 'action',
   },
   {
-    title: 'Step 1: Pick a Hustle',
-    content: "Tap any available hustle card to see its requirements. Each tier has a unique visual identity and set of mechanics. MUD is gritty and monospace; STREET is neon and vibrant.",
+    title: 'Play Minigame',
+    content: 'Hustles require effort. Tap PLAY to start the delivery minigame.',
+    target: '#hustle-execute-button',
+    type: 'action',
   },
   {
-    title: 'Step 2: Play the Minigame',
-    content: "Hustles aren't free money. You'll need to complete a minigame. MUD uses simple swipes and taps. STREET requires holding and dragging for momentum. High performance means high yields.",
+    title: 'Bag Explained',
+    content: "You just earned \${REWARD}. This is your BAG. You'll use it to buy upgrades and progress.",
+    type: 'explanation',
   },
   {
-    title: 'Step 3: Collect Rewards',
-    content: "Success grants Cash, Clout, and Aura. If you max out all levels of a hustle, you'll earn a Mastery Badge—a permanent buff that follows you through the tiers.",
+    title: 'Earn Clout',
+    content: 'Cash is not enough. You need reputation. Tap on Content Creation.',
+    target: '#hustle-card-cc',
+    type: 'action',
   },
   {
-    title: 'Step 4: Advance Tiers',
-    content: "Once you hit the cash and clout requirements, an ADVANCE TIER button will appear. Moving up unlocks better hustles, higher limits, and a completely new look for the game.",
+    title: 'Play Minigame',
+    content: 'Build your audience. Tap PLAY to start creating content.',
+    target: '#hustle-execute-button',
+    type: 'action',
+  },
+  {
+    title: 'Clout Explained',
+    content: 'You just earned Clout. CLOUT unlocks new hustles and tiers.',
+    type: 'explanation',
+  },
+  {
+    title: 'Earn Aura',
+    content: 'Some operations require a certain... vibe. Tap on Ghost Mode.',
+    target: '#hustle-card-r_ghost_mode',
+    type: 'action',
+  },
+  {
+    title: 'Play Minigame',
+    content: 'Stay under the radar. Tap PLAY to enter Ghost Mode.',
+    target: '#hustle-execute-button',
+    type: 'action',
+  },
+  {
+    title: 'Aura Explained',
+    content: 'You just earned Aura. AURA gives you access to special hustles and boosts your reputation.',
+    type: 'explanation',
+  },
+  {
+    title: 'Rest & Recover',
+    content: 'The grind takes a toll. You need to manage your mental health. Tap on Rest & Recover.',
+    target: '#hustle-card-r_sleep',
+    type: 'action',
+  },
+  {
+    title: 'Execute Rest',
+    content: 'Take a break. Tap EXECUTE to recover.',
+    target: '#hustle-execute-button',
+    type: 'action',
+  },
+  {
+    title: 'Health & Heat Explained',
+    content: 'You just recovered Mental Health. MENTAL HEALTH and HEAT are your risk layers. Keep them balanced.',
+    type: 'explanation',
+  },
+  {
+    title: 'Advance Tier',
+    content: 'You have what it takes to move up. Tap the ADVANCE button to leave the MUD behind.',
+    target: '#advance-tier-button',
+    type: 'action',
+  },
+  {
+    title: 'Tiers Explained',
+    content: 'You just advanced to STREET tier. TIERS unlock new hustles and bigger rewards.',
+    type: 'explanation',
   },
 ];
 
-export const TutorialOverlay: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+interface TutorialOverlayProps {
+  tutorialStep: number;
+  setTutorialStep: (step: number) => void;
+  activeHustleView: string | null;
+  activeHustleResult: any | null;
+  currentTier: Tier;
+  onComplete: () => void;
+}
+
+export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
+  tutorialStep,
+  setTutorialStep,
+  activeHustleView,
+  activeHustleResult,
+  currentTier,
+  onComplete,
+}) => {
+  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+
+  const currentStepData = STEPS[tutorialStep];
+
+  useEffect(() => {
+    if (currentStepData.target) {
+      const updateRect = () => {
+        const el = document.querySelector(currentStepData.target!);
+        if (el) {
+          setHighlightRect(el.getBoundingClientRect());
+        } else {
+          setHighlightRect(null);
+        }
+      };
+
+      updateRect();
+      const timer = setInterval(updateRect, 100);
+      return () => clearInterval(timer);
+    } else {
+      setHighlightRect(null);
+    }
+  }, [currentStepData.target, activeHustleView]);
+
+  useEffect(() => {
+    // Automatic transitions for action steps
+    if (currentStepData.type === 'action') {
+      if (tutorialStep === 0 && activeHustleView === 'r_delivery') setTutorialStep(1);
+      if (tutorialStep === 3 && activeHustleView === 'cc') setTutorialStep(4);
+      if (tutorialStep === 6 && activeHustleView === 'r_ghost_mode') setTutorialStep(7);
+      if (tutorialStep === 9 && activeHustleView === 'r_sleep') setTutorialStep(10);
+
+      if (tutorialStep === 1 && activeHustleResult) {
+        // Reset result when moving to explanation
+        setTimeout(() => setTutorialStep(2), 50);
+      }
+      if (tutorialStep === 4 && activeHustleResult) {
+        setTimeout(() => setTutorialStep(5), 50);
+      }
+      if (tutorialStep === 7 && activeHustleResult) {
+        setTimeout(() => setTutorialStep(8), 50);
+      }
+      if (tutorialStep === 10 && activeHustleResult) {
+        setTimeout(() => setTutorialStep(11), 50);
+      }
+
+      if (tutorialStep === 12 && currentTier === 'STREET') setTutorialStep(13);
+    }
+  }, [tutorialStep, activeHustleView, activeHustleResult, currentTier, setTutorialStep, currentStepData.type]);
 
   const next = () => {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (tutorialStep < STEPS.length - 1) {
+      setTutorialStep(tutorialStep + 1);
     } else {
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');
       onComplete();
     }
   };
 
+  const backdropStyle = useMemo(() => {
+    if (!highlightRect) return {};
+    const margin = 4;
+    return {
+      clipPath: `polygon(
+        0% 0%,
+        0% 100%,
+        ${highlightRect.left - margin}px 100%,
+        ${highlightRect.left - margin}px ${highlightRect.top - margin}px,
+        ${highlightRect.right + margin}px ${highlightRect.top - margin}px,
+        ${highlightRect.right + margin}px ${highlightRect.bottom + margin}px,
+        ${highlightRect.left - margin}px ${highlightRect.bottom + margin}px,
+        ${highlightRect.left - margin}px 100%,
+        100% 100%,
+        100% 0%
+      )`,
+    };
+  }, [highlightRect]);
+
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md"
+      <div
+        className="fixed inset-0 z-[100] pointer-events-none"
       >
+        {/* Backdrop with hole */}
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="max-w-sm w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl"
-        >
-          <div className="text-emerald-500 font-black uppercase tracking-widest text-[10px] mb-2">
-            Tutorial Step {currentStep + 1} of {STEPS.length}
-          </div>
-          <h2 className="text-2xl font-black mb-4 tracking-tight">{STEPS[currentStep].title}</h2>
-          <p className="text-slate-400 leading-relaxed mb-8">
-            {STEPS[currentStep].content}
-          </p>
-          <BaseButton onClick={next} className="w-full">
-            {currentStep === STEPS.length - 1 ? "Let's Go" : "Next"}
-          </BaseButton>
-        </motion.div>
-      </motion.div>
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] pointer-events-auto"
+          style={backdropStyle}
+        />
+
+        {/* Content Box */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end p-6 pb-24 pointer-events-none">
+          <motion.div
+            key={tutorialStep}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="max-w-sm w-full bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl pointer-events-auto"
+          >
+            <div className="text-emerald-500 font-black uppercase tracking-widest text-[10px] mb-2">
+              {currentStepData.type === 'action' ? 'Next Action' : 'Insight Earned'}
+            </div>
+            <h2 className="text-xl font-black mb-2 tracking-tight">{currentStepData.title}</h2>
+            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+              {currentStepData.content.replace('${REWARD}', activeHustleResult ? `$${(activeHustleResult.yieldCash - activeHustleResult.cost).toLocaleString()}` : 'money')}
+            </p>
+            {currentStepData.type === 'explanation' && (
+              <BaseButton onClick={next} className="w-full">
+                {tutorialStep === STEPS.length - 1 ? "Let's Go" : "Next"}
+              </BaseButton>
+            )}
+          </motion.div>
+        </div>
+      </div>
     </AnimatePresence>
   );
 };

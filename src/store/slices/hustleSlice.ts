@@ -568,7 +568,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
 
-    if (hustleTierIndex > currentTierIndex) {
+    const isTutorialCC = hustleId === 'cc' && state.tutorialStep >= 3 && state.tutorialStep < 13;
+
+    if (hustleTierIndex > currentTierIndex && !isTutorialCC) {
       return {
         success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.`,
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
@@ -1139,14 +1141,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const req = TIER_REQUIREMENTS[nextTier];
     const totalFee = req.fee;
 
-    if (state.pl.bag >= req.cash &&
+    const isTutorialAdvance = state.tutorialStep === 12;
+
+    if (isTutorialAdvance || (state.pl.bag >= req.cash &&
         state.pl.clout >= req.clout &&
-        state.pl.aura >= req.aura) {
+        state.pl.aura >= req.aura)) {
 
       // Always backup before tier advancement
       backupSave();
 
-      if (state.pl.bag < totalFee) {
+      if (!isTutorialAdvance && state.pl.bag < totalFee) {
         set({
           news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees and institutional buy-in`, ...state.news.slice(0, 49)]
         });

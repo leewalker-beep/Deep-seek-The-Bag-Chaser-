@@ -6,10 +6,16 @@ import { useGameStore } from '../store/gameStore';
 interface NavTabsProps {
   activeTab: Tier | 'FLEX' | 'PRESIDENCY';
   currentTier: Tier;
+  isTutorialActive?: boolean;
   onTabChange: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
 }
 
-export const NavTabs: React.FC<NavTabsProps> = ({ activeTab, currentTier, onTabChange }) => {
+export const NavTabs: React.FC<NavTabsProps> = ({
+  activeTab,
+  currentTier,
+  isTutorialActive,
+  onTabChange,
+}) => {
   const campaignStage = useGameStore(state => state.pl.campaignStage || 0);
   const isPresident = campaignStage >= 8;
 
@@ -26,14 +32,14 @@ export const NavTabs: React.FC<NavTabsProps> = ({ activeTab, currentTier, onTabC
         if (tab === 'FLEX' && !flexUnlocked) return null;
 
         const tabIndex = tab === 'FLEX' || tab === 'PRESIDENCY' ? 999 : PROGRESSION_ORDER.indexOf(tab as Tier);
-        const isLocked = tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1;
+        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1) || isTutorialActive;
         const isActive = activeTab === tab;
 
         return (
           <button
             key={tab}
             onClick={() => !isLocked && onTabChange(tab)}
-            disabled={isLocked}
+            disabled={!!isLocked}
             className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 ${
               isActive
                 ? 'bg-emerald-500 text-black'

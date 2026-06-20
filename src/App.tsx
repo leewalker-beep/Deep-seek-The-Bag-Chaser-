@@ -139,6 +139,7 @@ function App() {
     activeTierBadge,
     deathBadge,
     fatalCause,
+    tutorialStep,
     executeHustle,
     executeBranch,
     upgradeHustle,
@@ -150,6 +151,7 @@ function App() {
     resetGame,
     addTickerMessage,
     processLogin,
+    setTutorialStep,
   } = useGameStore();
 
   useEffect(() => {
@@ -193,6 +195,23 @@ function App() {
       }
     }
   }, [pl?.bag, displayedCash]);
+
+  const currentTierIndex = useMemo(() => pl ? PROGRESSION_ORDER.indexOf(pl.currentTier) : -1, [pl]);
+
+  const canAdvance = useMemo(() => {
+    if (!pl) return false;
+    const nextTier = PROGRESSION_ORDER[currentTierIndex + 1];
+    if (!nextTier) return false;
+    if (showTutorial && tutorialStep === 12) return true;
+    const req = TIER_REQUIREMENTS[nextTier];
+    return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura;
+  }, [pl, currentTierIndex, showTutorial, tutorialStep]);
+
+  useEffect(() => {
+    if (showTutorial && tutorialStep < 13 && activeTab !== 'MUD') {
+      setActiveTab('MUD');
+    }
+  }, [showTutorial, tutorialStep, activeTab, setActiveTab]);
 
   if (!isHydrated) {
     return <LoadingSkeleton />;
@@ -241,14 +260,6 @@ function App() {
     );
   }
 
-  // Main game
-  const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
-  const canAdvance = (() => {
-    const nextTier = PROGRESSION_ORDER[currentTierIndex + 1];
-    if (!nextTier) return false;
-    const req = TIER_REQUIREMENTS[nextTier];
-    return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura;
-  })();
 
   // Get hustles for current tab
   const getHustlesForTab = () => {
@@ -256,11 +267,20 @@ function App() {
 
     // Show hustles whose tier matches the active tab
     // AND whose tier is <= current player tier
-    return Object.values(HUSTLES).filter(h => {
+    const filtered = Object.values(HUSTLES).filter(h => {
       const hustleTierIndex = PROGRESSION_ORDER.indexOf(h.tier as Tier);
       const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
       return h.tier === activeTab && hustleTierIndex <= currentTierIndex;
     });
+
+    if (showTutorial && activeTab === 'MUD') {
+       const ccHustle = HUSTLES['cc'];
+       if (ccHustle && !filtered.find(h => h.id === 'cc')) {
+         filtered.push(ccHustle);
+       }
+    }
+
+    return filtered;
   };
 
   const hustles = getHustlesForTab();
@@ -433,6 +453,7 @@ function App() {
       <NavTabs
         activeTab={activeTab}
         currentTier={pl.currentTier}
+        isTutorialActive={showTutorial && tutorialStep < 13}
         onTabChange={(tab) => {
           setActiveTab(tab as any);
           setShowMinigame(false);
@@ -448,6 +469,7 @@ function App() {
             {/* Advance Tier Button */}
             {canAdvance && activeTab !== 'FLEX' && (
               <button
+                id="advance-tier-button"
                 onClick={() => advanceTier()}
                 className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
               >
@@ -477,6 +499,7 @@ function App() {
                   return (
                     <button
                       key={hustle.id}
+                      id={`hustle-card-${hustle.id}`}
                       onClick={() => {
                         setActiveHustleView(hustle.id);
                         setShowMinigame(false);
@@ -789,7 +812,7 @@ function App() {
 
 
       {/* Generic Hustle Reward Card */}
-      {activeHustleResult && (
+      {activeHustleResult && !showTutorial && (
         <RewardCard
           title={activeHustleResult.success ? "HUSTLE SUCCESS" : "HUSTLE FAILURE"}
           subtitle={HUSTLES[activeHustleResult.hustleId]?.name || "Hustle Results"}
@@ -816,7 +839,16 @@ function App() {
       )}
 
       {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
-      {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
+      {showTutorial && (
+        <TutorialOverlay
+          tutorialStep={tutorialStep}
+          setTutorialStep={setTutorialStep}
+          activeHustleView={activeHustleView}
+          activeHustleResult={activeHustleResult}
+          currentTier={pl.currentTier}
+          onComplete={handleTutorialComplete}
+        />
+      )}
       {activeTierBadge && (
         <TierBadgeCelebration
           tier={activeTierBadge}
