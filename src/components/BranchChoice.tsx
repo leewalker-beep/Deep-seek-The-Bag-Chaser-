@@ -102,6 +102,7 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
 
       <div className="flex flex-col gap-2 mb-4">
         <button
+          id="hustle-execute-button"
           onClick={() => handleAction('EXECUTE', currentBranch.cost)}
           className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
             canAffordExecute
