@@ -142,6 +142,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           </div>
         ) : (
           <button
+            id="hustle-execute-button"
             onClick={() => handleAction('EXECUTE', levelData!.cost)}
             className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
               canAfford
