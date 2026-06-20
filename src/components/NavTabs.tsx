@@ -6,14 +6,12 @@ import { useGameStore } from '../store/gameStore';
 interface NavTabsProps {
   activeTab: Tier | 'FLEX' | 'PRESIDENCY';
   currentTier: Tier;
-  isTutorialActive?: boolean;
   onTabChange: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
 }
 
 export const NavTabs: React.FC<NavTabsProps> = ({
   activeTab,
   currentTier,
-  isTutorialActive,
   onTabChange,
 }) => {
   const campaignStage = useGameStore(state => state.pl.campaignStage || 0);
@@ -32,7 +30,7 @@ export const NavTabs: React.FC<NavTabsProps> = ({
         if (tab === 'FLEX' && !flexUnlocked) return null;
 
         const tabIndex = tab === 'FLEX' || tab === 'PRESIDENCY' ? 999 : PROGRESSION_ORDER.indexOf(tab as Tier);
-        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1) || isTutorialActive;
+        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1);
         const isActive = activeTab === tab;
 
         return (

@@ -568,15 +568,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
 
-    // General bypass for any hustle that is part of the tutorial
-    const isTutorialHustle = state.tutorialStep < 13 && (
-      (hustleId === 'r_delivery' && state.tutorialStep <= 2) ||
-      (hustleId === 'cc' && state.tutorialStep >= 3 && state.tutorialStep <= 5) ||
-      (hustleId === 'r_ghost_mode' && state.tutorialStep >= 6 && state.tutorialStep <= 8) ||
-      (hustleId === 'r_sleep' && state.tutorialStep >= 9 && state.tutorialStep <= 11)
-    );
-
-    if (hustleTierIndex > currentTierIndex && !isTutorialHustle) {
+    if (hustleTierIndex > currentTierIndex) {
       return {
         success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.`,
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
@@ -1147,16 +1139,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const req = TIER_REQUIREMENTS[nextTier];
     const totalFee = req.fee;
 
-    const isTutorialAdvance = state.tutorialStep === 12;
-
-    if (isTutorialAdvance || (state.pl.bag >= req.cash &&
+    if (state.pl.bag >= req.cash &&
         state.pl.clout >= req.clout &&
-        state.pl.aura >= req.aura)) {
+        state.pl.aura >= req.aura) {
 
       // Always backup before tier advancement
       backupSave();
 
-      if (!isTutorialAdvance && state.pl.bag < totalFee) {
+      if (state.pl.bag < totalFee) {
         set({
           news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees and institutional buy-in`, ...state.news.slice(0, 49)]
         });

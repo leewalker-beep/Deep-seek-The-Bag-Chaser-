@@ -346,6 +346,7 @@ export interface GameState {
   deathBadge: string | null;
   fatalCause: string | null;
   tutorialStep: number;
+  isTutorialSkipped: boolean;
   difficulty: 1 | 2 | 3;
   chosenBackground?: string;
   chosenBackgroundCategory?: string;
@@ -406,4 +407,5 @@ export interface GameState {
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
   retaliateRival: (rivalId: string) => void;
+  setTutorialSkipped: (skipped: boolean) => void;
 }

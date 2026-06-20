@@ -56,8 +56,10 @@ import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { EndgameSummary } from './components/EndgameSummary';
-import { TutorialOverlay } from './components/TutorialOverlay';
 import { DailyChallenges } from './components/DailyChallenges';
+import { TutorialGoalHUD } from './components/TutorialGoalHUD';
+import { TutorialExplanationPopup } from './components/TutorialExplanationPopup';
+import { TUTORIAL_GOALS } from './config/tutorialGoals';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
@@ -120,14 +122,7 @@ function App() {
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showEnding, setShowEnding] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(() => {
-    return !localStorage.getItem('bag-chaser-tutorial-complete');
-  });
   const [showChallenges, setShowChallenges] = useState(false);
-
-  const handleTutorialComplete = useCallback(() => {
-    setShowTutorial(false);
-  }, []);
 
   const {
     pl,
@@ -140,6 +135,7 @@ function App() {
     deathBadge,
     fatalCause,
     tutorialStep,
+    isTutorialSkipped,
     executeHustle,
     executeBranch,
     upgradeHustle,
@@ -152,6 +148,7 @@ function App() {
     addTickerMessage,
     processLogin,
     setTutorialStep,
+    setTutorialSkipped,
   } = useGameStore();
 
   useEffect(() => {
@@ -163,6 +160,7 @@ function App() {
   const [showReceipts, setShowReceipts] = useState(false);
   const [bigWin, setBigWin] = useState<{ amount: number } | null>(null);
 
+  const [showExplanation, setShowExplanation] = useState(false);
   const [activeHustleResult, setActiveHustleResult] = useState<{
     hustleId: string;
     success: boolean;
@@ -180,6 +178,50 @@ function App() {
       document.body.className = pl.currentTier.toLowerCase();
     }
   }, [pl?.currentTier]);
+
+  // Tutorial Progress Logic
+  useEffect(() => {
+    if (isTutorialSkipped || tutorialStep >= TUTORIAL_GOALS.length) return;
+
+    const goal = TUTORIAL_GOALS[tutorialStep];
+    let isMet = false;
+
+    switch (goal.statType) {
+      case 'bag':
+        isMet = pl.bag >= goal.targetValue;
+        break;
+      case 'clout':
+        isMet = pl.clout >= goal.targetValue;
+        break;
+      case 'aura':
+        isMet = pl.aura >= goal.targetValue;
+        break;
+      case 'mentalHealth':
+        isMet = pl.mentalHealth >= goal.targetValue;
+        break;
+      case 'currentTier':
+        isMet = PROGRESSION_ORDER.indexOf(pl.currentTier) >= goal.targetValue;
+        break;
+    }
+
+    if (isMet) {
+      setShowExplanation(true);
+    }
+  }, [pl.bag, pl.clout, pl.aura, pl.mentalHealth, pl.currentTier, tutorialStep, isTutorialSkipped]);
+
+  const handleExplanationClose = useCallback(() => {
+    setShowExplanation(false);
+    const nextStep = tutorialStep + 1;
+    setTutorialStep(nextStep);
+    if (nextStep >= TUTORIAL_GOALS.length) {
+      setTutorialSkipped(true);
+    }
+  }, [tutorialStep, setTutorialStep, setTutorialSkipped]);
+
+  const handleSkipTutorial = useCallback(() => {
+    setTutorialSkipped(true);
+    setTutorialStep(TUTORIAL_GOALS.length);
+  }, [setTutorialSkipped, setTutorialStep]);
 
   // Animate cash changes
   useEffect(() => {
@@ -202,17 +244,9 @@ function App() {
     if (!pl) return false;
     const nextTier = PROGRESSION_ORDER[currentTierIndex + 1];
     if (!nextTier) return false;
-    if (showTutorial && tutorialStep === 12) return true;
     const req = TIER_REQUIREMENTS[nextTier];
     return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura;
-  }, [pl, currentTierIndex, showTutorial, tutorialStep]);
-
-  useEffect(() => {
-    if (showTutorial && tutorialStep < 12 && activeTab !== 'MUD') {
-      const timer = setTimeout(() => setActiveTab('MUD'), 10);
-      return () => clearTimeout(timer);
-    }
-  }, [showTutorial, tutorialStep, activeTab, setActiveTab]);
+  }, [pl, currentTierIndex]);
 
   if (!isHydrated) {
     return <LoadingSkeleton />;
@@ -268,28 +302,11 @@ function App() {
 
     // Show hustles whose tier matches the active tab
     // AND whose tier is <= current player tier
-    let filtered = Object.values(HUSTLES).filter(h => {
+    return Object.values(HUSTLES).filter(h => {
       const hustleTierIndex = PROGRESSION_ORDER.indexOf(h.tier as Tier);
       const currentTierIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
       return h.tier === activeTab && hustleTierIndex <= currentTierIndex;
     });
-
-    if (showTutorial && activeTab === 'MUD') {
-      // During tutorial, simplify the grid to ONLY the target hustle
-      if (tutorialStep >= 0 && tutorialStep <= 2) {
-        filtered = [HUSTLES['r_delivery']];
-      } else if (tutorialStep >= 3 && tutorialStep <= 5) {
-        filtered = [HUSTLES['cc']];
-      } else if (tutorialStep >= 6 && tutorialStep <= 8) {
-        filtered = [HUSTLES['r_ghost_mode']];
-      } else if (tutorialStep >= 9 && tutorialStep <= 11) {
-        filtered = [HUSTLES['r_sleep']];
-      } else if (tutorialStep === 12) {
-        filtered = []; // Grid empty to highlight ADVANCE button
-      }
-    }
-
-    return filtered;
   };
 
   const hustles = getHustlesForTab();
@@ -462,7 +479,6 @@ function App() {
       <NavTabs
         activeTab={activeTab}
         currentTier={pl.currentTier}
-        isTutorialActive={showTutorial && tutorialStep < 13}
         onTabChange={(tab) => {
           setActiveTab(tab as any);
           setShowMinigame(false);
@@ -504,6 +520,9 @@ function App() {
                 {hustles.map((hustle) => {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
+                  const isRecommended = !isTutorialSkipped &&
+                                      tutorialStep < TUTORIAL_GOALS.length &&
+                                      TUTORIAL_GOALS[tutorialStep].recommendHustleId === hustle.id;
 
                   return (
                     <button
@@ -513,7 +532,9 @@ function App() {
                         setActiveHustleView(hustle.id);
                         setShowMinigame(false);
                       }}
-                      className={`${tierCardClass} rounded-xl p-4 text-center border transition-all active:scale-95 relative overflow-hidden`}
+                      className={`${tierCardClass} rounded-xl p-4 text-center border transition-all active:scale-95 relative overflow-hidden ${
+                        isRecommended ? 'ring-2 ring-emerald-500 animate-pulse border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''
+                      }`}
                     >
                       {isMastered && (
                         <div className="absolute top-1 right-1 text-xs">👑</div>
@@ -779,7 +800,7 @@ function App() {
                         setShowMinigame(true);
                       } else {
                         const result = executeHustle(hustle.id);
-                        if (showTutorial && result.success) {
+                        if (result.success) {
                           setActiveHustleResult({
                             hustleId: hustle.id,
                             success: result.success,
@@ -812,7 +833,7 @@ function App() {
                       setShowMinigame(true);
                     } else {
                       const result = executeHustle(hustle.id);
-                      if (showTutorial && result.success) {
+                      if (result.success) {
                         setActiveHustleResult({
                           hustleId: hustle.id,
                           success: result.success,
@@ -850,7 +871,7 @@ function App() {
 
 
       {/* Generic Hustle Reward Card */}
-      {activeHustleResult && !showTutorial && (
+      {activeHustleResult && (
         <RewardCard
           title={activeHustleResult.success ? "HUSTLE SUCCESS" : "HUSTLE FAILURE"}
           subtitle={HUSTLES[activeHustleResult.hustleId]?.name || "Hustle Results"}
@@ -877,24 +898,29 @@ function App() {
       )}
 
       {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
-      {showTutorial && (
-        <TutorialOverlay
-          tutorialStep={tutorialStep}
-          setTutorialStep={setTutorialStep}
-          setActiveHustleView={setActiveHustleView}
-          setActiveHustleResult={setActiveHustleResult}
-          activeHustleView={activeHustleView}
-          activeHustleResult={activeHustleResult}
-          currentTier={pl.currentTier}
-          onComplete={handleTutorialComplete}
-        />
-      )}
       {activeTierBadge && (
         <TierBadgeCelebration
           tier={activeTierBadge}
           onClose={() => setActiveTierBadge(null)}
         />
       )}
+
+      {/* Tutorial Goal HUD */}
+      {!isTutorialSkipped && tutorialStep < TUTORIAL_GOALS.length && (
+        <TutorialGoalHUD
+          goalIndex={tutorialStep}
+          player={pl}
+          onSkip={handleSkipTutorial}
+        />
+      )}
+
+      {/* Tutorial Explanation Popup */}
+      <TutorialExplanationPopup
+        isOpen={showExplanation}
+        title={TUTORIAL_GOALS[tutorialStep]?.explanationTitle || ''}
+        content={TUTORIAL_GOALS[tutorialStep]?.explanationContent || ''}
+        onClose={handleExplanationClose}
+      />
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
 
       {/* News Ticker */}
