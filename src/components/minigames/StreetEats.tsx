@@ -39,9 +39,11 @@ interface StreetEatsProps {
 export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 }) => {
   const [currentOrder, setCurrentOrder] = useState<Ingredient[]>([]);
   const [score, setScore] = useState(0);
+  const [wrong, setWrong] = useState(0);
   const [total, setTotal] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
+  const [showResults, setShowResults] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const touchStart = useRef<number | null>(null);
 
@@ -85,6 +87,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
       setFeedback('correct');
       if (navigator.vibrate) navigator.vibrate(20);
     } else {
+      setWrong(w => w + 1);
       setFeedback('wrong');
       if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
@@ -110,16 +113,19 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
 
   useEffect(() => {
     if (!gameActive) {
-      const accuracy = total > 0 ? score / total : 0;
-      let multiplier = 0.5;
-      if (accuracy >= 0.9 && total >= (8 + level * 2)) multiplier = 4.0;
-      else if (accuracy >= 0.7 && total >= (5 + level)) multiplier = 2.5;
-      else if (accuracy >= 0.4) multiplier = 1.2;
-
-      const timeout = setTimeout(() => onComplete(multiplier), 1000);
-      return () => clearTimeout(timeout);
+      setShowResults(true);
     }
-  }, [gameActive, score, total, onComplete, level]);
+  }, [gameActive]);
+
+  const finalMultiplier = React.useMemo(() => {
+    const accuracy = total > 0 ? score / total : 0;
+    if (accuracy >= 0.8) return 1.5;
+    if (accuracy >= 0.5) return 1.0;
+    return 0.5;
+  }, [score, total]);
+
+  const accuracyPercent = total > 0 ? Math.round((score / total) * 100) : 0;
+  const netScore = score - wrong;
 
   const leftIngredients = availableIngredients.filter(i => i.side === 'left');
   const rightIngredients = availableIngredients.filter(i => i.side === 'right');
@@ -135,7 +141,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
           <p className="text-slate-200 text-xs font-black uppercase tracking-widest">SORT INGREDIENTS!</p>
           <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700 font-black">➡️</motion.span>
         </div>
-        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">ORDERS: {score}/{total}</div>
+        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">Score: {score}/{total} sorted correctly</div>
       </div>
 
       <div
@@ -193,6 +199,42 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
            />
         </div>
       </div>
+
+      <AnimatePresence>
+        {showResults && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-xl"
+          >
+            <div className="w-full max-w-sm bg-slate-900 border-2 border-orange-500/50 rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(249,115,22,0.2)]">
+              <h3 className="text-3xl font-black text-orange-500 italic uppercase tracking-tighter mb-6">Service Over!</h3>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                  <span className="text-slate-400 font-bold uppercase text-xs">Final Score</span>
+                  <span className="text-2xl font-black text-white">{netScore}</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                  <span className="text-slate-400 font-bold uppercase text-xs">Accuracy</span>
+                  <span className="text-2xl font-black text-emerald-400">{accuracyPercent}%</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                  <span className="text-slate-400 font-bold uppercase text-xs">Multiplier</span>
+                  <span className="text-2xl font-black text-orange-400">{finalMultiplier.toFixed(1)}x</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onComplete(finalMultiplier)}
+                className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-white font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-orange-500/20 uppercase tracking-widest"
+              >
+                Collect Earnings
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
