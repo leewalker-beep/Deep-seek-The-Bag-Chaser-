@@ -568,7 +568,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
 
-    if (hustleTierIndex > currentTierIndex) {
+    const isTutorialBypass = !state.isTutorialSkipped && state.tutorialStep === 1 && (hustleId === 'cc' || hustleId === 'pod');
+
+    if (hustleTierIndex > currentTierIndex && !isTutorialBypass) {
       return {
         success: false, netChange: 0, message: `${hustle.tier} tier locked. Advance your rank first.`,
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
@@ -1139,9 +1141,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const req = TIER_REQUIREMENTS[nextTier];
     const totalFee = req.fee;
 
-    if (state.pl.bag >= req.cash &&
+    const isTutorialStep5 = !state.isTutorialSkipped && state.tutorialStep === 4;
+
+    if (isTutorialStep5 || (state.pl.bag >= req.cash &&
         state.pl.clout >= req.clout &&
-        state.pl.aura >= req.aura) {
+        state.pl.aura >= req.aura)) {
 
       // Always backup before tier advancement
       backupSave();
@@ -1155,9 +1159,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const nextPl = enforceStatCaps({
         ...state.pl,
-        bag: state.pl.bag - totalFee,
-        clout: Math.floor(state.pl.clout * 0.6),
-        aura: Math.floor(state.pl.aura * 0.6),
+        bag: isTutorialStep5 ? state.pl.bag : state.pl.bag - totalFee,
+        clout: isTutorialStep5 ? state.pl.clout : Math.floor(state.pl.clout * 0.6),
+        aura: isTutorialStep5 ? state.pl.aura : Math.floor(state.pl.aura * 0.6),
         currentTier: nextTier,
         prePresidencyTier: nextTier === 'PRESIDENT' ? state.pl.currentTier : state.pl.prePresidencyTier,
         congressSupport: nextTier === 'PRESIDENT' && state.pl.clout > 500 ? state.pl.congressSupport + 10 : state.pl.congressSupport,
