@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer, useCallback, useMemo } from 'react';
+import { useEffect, useState, useReducer, useMemo } from 'react';
 import { useGameStore } from './store/gameStore';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
@@ -57,9 +57,7 @@ import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { EndgameSummary } from './components/EndgameSummary';
 import { DailyChallenges } from './components/DailyChallenges';
-import { TutorialGoalHUD } from './components/TutorialGoalHUD';
-import { TutorialExplanationPopup } from './components/TutorialExplanationPopup';
-import { TUTORIAL_GOALS } from './config/tutorialGoals';
+import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
@@ -134,7 +132,6 @@ function App() {
     activeTierBadge,
     deathBadge,
     fatalCause,
-    tutorialStep,
     isTutorialSkipped,
     executeHustle,
     executeBranch,
@@ -147,8 +144,6 @@ function App() {
     resetGame,
     addTickerMessage,
     processLogin,
-    setTutorialStep,
-    setTutorialSkipped,
   } = useGameStore();
 
   useEffect(() => {
@@ -160,7 +155,6 @@ function App() {
   const [showReceipts, setShowReceipts] = useState(false);
   const [bigWin, setBigWin] = useState<{ amount: number } | null>(null);
 
-  const [showExplanation, setShowExplanation] = useState(false);
   const [activeHustleResult, setActiveHustleResult] = useState<{
     hustleId: string;
     success: boolean;
@@ -179,49 +173,6 @@ function App() {
     }
   }, [pl?.currentTier]);
 
-  // Tutorial Progress Logic
-  useEffect(() => {
-    if (isTutorialSkipped || tutorialStep >= TUTORIAL_GOALS.length) return;
-
-    const goal = TUTORIAL_GOALS[tutorialStep];
-    let isMet = false;
-
-    switch (goal.statType) {
-      case 'bag':
-        isMet = pl.bag >= goal.targetValue;
-        break;
-      case 'clout':
-        isMet = pl.clout >= goal.targetValue;
-        break;
-      case 'aura':
-        isMet = pl.aura >= goal.targetValue;
-        break;
-      case 'mentalHealth':
-        isMet = pl.mentalHealth >= goal.targetValue;
-        break;
-      case 'currentTier':
-        isMet = PROGRESSION_ORDER.indexOf(pl.currentTier) >= goal.targetValue;
-        break;
-    }
-
-    if (isMet) {
-      setShowExplanation(true);
-    }
-  }, [pl.bag, pl.clout, pl.aura, pl.mentalHealth, pl.currentTier, tutorialStep, isTutorialSkipped]);
-
-  const handleExplanationClose = useCallback(() => {
-    setShowExplanation(false);
-    const nextStep = tutorialStep + 1;
-    setTutorialStep(nextStep);
-    if (nextStep >= TUTORIAL_GOALS.length) {
-      setTutorialSkipped(true);
-    }
-  }, [tutorialStep, setTutorialStep, setTutorialSkipped]);
-
-  const handleSkipTutorial = useCallback(() => {
-    setTutorialSkipped(true);
-    setTutorialStep(TUTORIAL_GOALS.length);
-  }, [setTutorialSkipped, setTutorialStep]);
 
   // Animate cash changes
   useEffect(() => {
@@ -520,9 +471,7 @@ function App() {
                 {hustles.map((hustle) => {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
-                  const isRecommended = !isTutorialSkipped &&
-                                      tutorialStep < TUTORIAL_GOALS.length &&
-                                      TUTORIAL_GOALS[tutorialStep].recommendHustleId === hustle.id;
+                  const isRecommended = false;
 
                   return (
                     <button
@@ -905,22 +854,8 @@ function App() {
         />
       )}
 
-      {/* Tutorial Goal HUD */}
-      {!isTutorialSkipped && tutorialStep < TUTORIAL_GOALS.length && (
-        <TutorialGoalHUD
-          goalIndex={tutorialStep}
-          player={pl}
-          onSkip={handleSkipTutorial}
-        />
-      )}
-
-      {/* Tutorial Explanation Popup */}
-      <TutorialExplanationPopup
-        isOpen={showExplanation}
-        title={TUTORIAL_GOALS[tutorialStep]?.explanationTitle || ''}
-        content={TUTORIAL_GOALS[tutorialStep]?.explanationContent || ''}
-        onClose={handleExplanationClose}
-      />
+      {/* New Tutorial Box */}
+      {!isTutorialSkipped && <TutorialBox />}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
 
       {/* News Ticker */}
