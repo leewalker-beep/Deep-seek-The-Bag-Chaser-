@@ -322,7 +322,7 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative overflow-x-hidden`}>
+    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative`}>
       <TierDecoration />
       {/* Hidden StatsPanel to run its side effects (warning system) */}
       <div className="hidden">
@@ -367,7 +367,7 @@ function App() {
       </div>
 
       {/* Stats Row */}
-      <div className="sticky top-[33px] z-20 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800/50 px-4 py-3">
+      <div className="sticky top-[33px] z-20 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
         <div className="max-w-md mx-auto">
           <div className="flex justify-between items-end mb-1">
             <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
@@ -427,17 +427,19 @@ function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <NavTabs
-        activeTab={activeTab}
+      <div className="-mt-px">
+        <NavTabs
+          activeTab={activeTab}
         currentTier={pl.currentTier}
-        onTabChange={(tab) => {
-          setActiveTab(tab as any);
-          setShowMinigame(false);
-        }}
-      />
+          onTabChange={(tab) => {
+            setActiveTab(tab as any);
+            setShowMinigame(false);
+          }}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-md mx-auto px-4 py-4 pb-24">
+      <div className="max-w-md mx-auto px-4 py-3 pb-24">
         {activeTab === 'PRESIDENCY' ? (
           <PresidentDashboard />
         ) : !activeHustleView ? (

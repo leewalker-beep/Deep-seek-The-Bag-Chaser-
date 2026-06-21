@@ -25,7 +25,7 @@ export const NavTabs: React.FC<NavTabsProps> = ({
     : [...PROGRESSION_ORDER, 'FLEX'];
 
   return (
-    <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 py-3 bg-slate-950 border-b border-slate-800 sticky top-[108px] z-10 no-scrollbar">
+    <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 py-2 bg-slate-950 border-b border-slate-800 sticky top-[93px] z-10 no-scrollbar">
       {allTabs.map(tab => {
         if (tab === 'FLEX' && !flexUnlocked) return null;
 

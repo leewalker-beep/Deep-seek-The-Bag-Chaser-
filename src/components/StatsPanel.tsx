@@ -61,9 +61,9 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
   } : null;
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 mb-4">
+    <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 mb-3">
       {/* Tier Badge */}
-      <div className="flex justify-between items-center mb-3">
+      <div className="flex justify-between items-center mb-2">
         <span className="text-[10px] text-slate-500 uppercase tracking-wider">CURRENT TIER</span>
         <div className="flex items-center gap-2">
           <button
@@ -77,15 +77,15 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
       </div>
 
       {/* Bag Amount */}
-      <div className="mb-4">
-        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">LIQUID CAPITAL</div>
-        <div className="text-3xl font-bold text-emerald-400 font-mono">
+      <div className="mb-3">
+        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">LIQUID CAPITAL</div>
+        <div className="text-2xl font-bold text-emerald-400 font-mono">
           ${stats.bag.toLocaleString()}
         </div>
       </div>
 
       {/* Core Stats Grid */}
-      <div className="grid grid-cols-4 gap-2 mb-4 text-center">
+      <div className="grid grid-cols-4 gap-2 mb-3 text-center">
         <div className="bg-slate-800 rounded-lg p-2">
           <div className="text-[8px] text-slate-500 uppercase">CLOUT</div>
           <div className="text-[10px] font-bold text-blue-400">
@@ -116,7 +116,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
       </div>
 
       {/* Market Status */}
-      <div className="mb-3 pt-2 border-t border-slate-800">
+      <div className="mb-2 pt-2 border-t border-slate-800">
         <div className="flex justify-between items-center text-[10px]">
           <span className="text-slate-500">MARKET</span>
           <span className={`font-bold ${
@@ -138,7 +138,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
       {/* Next Tier Progress */}
       {nextRequirements && nextTier && (
         <div className="pt-2 border-t border-slate-800">
-          <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-2">
+          <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-1.5">
             NEXT: {nextTier} TIER
           </div>
           <div className="space-y-1.5">
@@ -181,7 +181,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
 
       {/* Active Sentiment */}
       {stats.activeSentiment && (
-        <div className="mb-3 pt-2 border-t border-slate-800">
+        <div className="mb-2 pt-2 border-t border-slate-800">
           <div className="flex justify-between items-center text-[10px]">
             <span className="text-slate-500 uppercase tracking-wider">ACTIVE SENTIMENT</span>
             <span className={`font-black animate-pulse ${stats.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
