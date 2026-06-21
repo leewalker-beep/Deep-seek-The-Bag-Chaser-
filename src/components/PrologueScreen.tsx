@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
+import { BACKGROUND_CATEGORIES, type Background, type BackgroundCategory } from '../config/backgrounds';
 
 interface PrologueScreenProps {
   onStart: (name: string, backgroundId: string, categoryId: string, variationId: string) => void;
@@ -14,19 +14,35 @@ const SILHOUETTES = [
   { id: 5, icon: '🚶', speed: 50, delay: 10, direction: 'ltr', bottom: '5%' },
 ];
 
+const THEMES: Record<string, { bg: string, glow: string }> = {
+  industrial: { bg: 'bg-zinc-900', glow: 'shadow-zinc-500/20' },
+  neon: { bg: 'bg-slate-900', glow: 'shadow-cyan-500/30' },
+  gritty: { bg: 'bg-stone-950', glow: 'shadow-orange-900/20' },
+  studio: { bg: 'bg-neutral-900', glow: 'shadow-purple-500/20' },
+  tech: { bg: 'bg-gray-950', glow: 'shadow-emerald-500/20' },
+};
+
 export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const [name, setName] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [revealedVariation, setRevealedVariation] = useState<Background | null>(null);
+  const [revealedCategory, setRevealedCategory] = useState<BackgroundCategory | null>(null);
 
-  const handleStart = () => {
+  const handleReveal = () => {
     if (name.trim() && selectedCatId) {
       const category = BACKGROUND_CATEGORIES.find(c => c.id === selectedCatId);
       if (category) {
         const variations = category.variations;
         const randomVar = variations[Math.floor(Math.random() * variations.length)];
-        // Call onStart with the selected data
-        onStart(name.trim().toUpperCase(), randomVar.id, selectedCatId, randomVar.id);
+        setRevealedVariation(randomVar);
+        setRevealedCategory(category);
       }
+    }
+  };
+
+  const handleFinalStart = () => {
+    if (name.trim() && revealedVariation && revealedCategory) {
+      onStart(name.trim().toUpperCase(), revealedVariation.id, revealedCategory.id, revealedVariation.id);
     }
   };
 
@@ -35,6 +51,108 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     { id: 'dropout', icon: '🎓', name: 'The Dropout', desc: 'You left school early to chase money. You have something to prove.' },
     { id: 'benefactor', icon: '🏛️', name: 'The Benefactor', desc: 'A head start from those who came before. You carry their legacy.' },
   ];
+
+  if (revealedVariation && revealedCategory) {
+    const theme = THEMES[revealedVariation.backgroundStyle] || THEMES.gritty;
+
+    return (
+      <div className={`relative min-h-screen w-full ${theme.bg} overflow-hidden flex flex-col items-center justify-center p-6 md:p-12 font-sans selection:bg-[#4ade80]/30`}>
+        {/* Subtle Grain Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.05] z-[1] mix-blend-overlay"
+          style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')` }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 w-full max-w-lg flex flex-col items-center text-center space-y-8"
+        >
+          {/* Category Label */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="px-4 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400"
+          >
+            {revealedCategory.name}
+          </motion.div>
+
+          {/* Icon */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', damping: 12, stiffness: 100, delay: 0.4 }}
+            className={`text-8xl md:text-9xl mb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] ${theme.glow}`}
+          >
+            {revealedVariation.icon}
+          </motion.div>
+
+          {/* Variation Name */}
+          <div className="space-y-2">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+            >
+              {revealedVariation.name}
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-[#4ade80] italic text-sm md:text-base font-medium tracking-wide"
+            >
+              "{revealedVariation.flavorText}"
+            </motion.p>
+          </div>
+
+          {/* Flavor Description */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0 }}
+            className="text-slate-400 text-xs md:text-sm leading-relaxed max-w-xs"
+          >
+            {revealedVariation.flavor}
+          </motion.p>
+
+          {/* Starting Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="grid grid-cols-3 gap-4 w-full pt-4"
+          >
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
+              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Bag</span>
+              <span className="text-emerald-400 font-black text-lg">${revealedVariation.starterBag.toLocaleString()}</span>
+            </div>
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
+              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Clout</span>
+              <span className="text-blue-400 font-black text-lg">{revealedVariation.starterClout}</span>
+            </div>
+            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4">
+              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Aura</span>
+              <span className="text-purple-400 font-black text-lg">{revealedVariation.starterAura}</span>
+            </div>
+          </motion.div>
+
+          {/* Action Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5 }}
+            onClick={handleFinalStart}
+            className="w-full mt-8 py-6 rounded-2xl bg-[#4ade80] text-[#050505] font-black uppercase tracking-[0.4em] text-xl transition-all duration-700 shadow-2xl shadow-[#4ade80]/20 active:scale-[0.97] hover:brightness-110"
+          >
+            Enter the World
+          </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden flex flex-col items-center justify-center p-6 md:p-12 font-sans selection:bg-[#4ade80]/30">
@@ -92,7 +210,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && name.trim() && selectedCatId) {
-                  handleStart();
+                  handleReveal();
                 }
               }}
             />
@@ -152,7 +270,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           className="w-full pt-4"
         >
           <button
-            onClick={handleStart}
+            onClick={handleReveal}
             disabled={!name.trim() || !selectedCatId}
             className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.4em] text-xl transition-all duration-700 shadow-2xl min-h-[72px] ${
               name.trim() && selectedCatId
