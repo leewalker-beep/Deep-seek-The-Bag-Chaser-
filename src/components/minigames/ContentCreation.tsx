@@ -35,10 +35,13 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
   const [gameActive, setGameActive] = useState(true);
   const [offsetY, setOffsetY] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const touchStart = useRef<number | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   // Difficulty scaling
-  const totalTopics = 8 + (level - 1) * 2;
+  const timePerTopic = Math.max(1.0, 3.0 - (level - 1) * 0.5);
+  const totalTopics = 10 + (level * 2);
   const swipeThreshold = 80;
 
   const [shuffledTopics] = useState(() => {
@@ -67,18 +70,42 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
     setTimeout(() => onComplete(multiplier), 800);
   }, [score, total, onComplete]);
 
+  const handleTimeout = useCallback(() => {
+    if (!gameActive || result !== null) return;
+    setResult('wrong');
+    if (navigator.vibrate) navigator.vibrate([30, 30]);
+    setTotal(t => t + 1);
+    setTimeout(() => setTopicIndex(i => i + 1), 300);
+  }, [gameActive, result]);
+
   useEffect(() => {
     if (topicIndex < shuffledTopics.length && gameActive) {
       setCurrentTopic(shuffledTopics[topicIndex]);
       setResult(null);
       setOffsetY(0);
+      setTimeLeft(timePerTopic);
+
+      if (timerRef.current) clearInterval(timerRef.current);
+      const startTime = Date.now();
+      timerRef.current = window.setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        const remaining = Math.max(0, timePerTopic - elapsed);
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          handleTimeout();
+        }
+      }, 50);
     } else if (topicIndex >= shuffledTopics.length && gameActive) {
+      if (timerRef.current) clearInterval(timerRef.current);
       endGame();
     }
-  }, [topicIndex, shuffledTopics, gameActive, endGame]);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [topicIndex, shuffledTopics, gameActive, endGame, timePerTopic, handleTimeout]);
 
   const handleAction = (isPost: boolean) => {
     if (!gameActive || !currentTopic || result !== null) return;
+    if (timerRef.current) clearInterval(timerRef.current);
 
     // Viral items should be posted (swiped up), non-viral declined (swiped down)
     const isCorrect = (isPost && currentTopic.isViral) || (!isPost && !currentTopic.isViral);
@@ -161,7 +188,16 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
             )}
 
             <div className="text-6xl mb-4">{currentTopic.isViral ? '🔥' : '📄'}</div>
-            <div className="text-lg font-black text-white leading-tight">{currentTopic.label}</div>
+            <div className="text-lg font-black text-white leading-tight mb-4">{currentTopic.label}</div>
+
+            <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-700 mb-2">
+                <motion.div
+                    className="h-full bg-purple-500"
+                    initial={{ width: '100%' }}
+                    animate={{ width: `${(timeLeft / timePerTopic) * 100}%` }}
+                    transition={{ ease: "linear", duration: 0.1 }}
+                />
+            </div>
 
             <div className="absolute bottom-4 text-[8px] text-slate-500 font-bold uppercase tracking-widest">
                 {topicIndex + 1} / {totalTopics}

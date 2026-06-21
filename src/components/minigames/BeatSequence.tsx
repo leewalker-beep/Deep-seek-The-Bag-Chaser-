@@ -16,8 +16,8 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
   const [feedback, setFeedback] = useState<'hit' | 'fail' | null>(null);
 
   // Difficulty scaling
-  const totalRounds = 3 + Math.floor((level - 1) / 2);
-  const baseLength = 2 + (level - 1); // Round 1 length
+  const totalRounds = 3 + level;
+  const baseLength = 2 + level; // Round 1 length
   const sequenceGrowth = 1;
 
   useEffect(() => {
