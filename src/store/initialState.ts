@@ -4,6 +4,7 @@ import { BACKGROUNDS } from '../config/backgrounds';
 
 export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, categoryId?: string, variationId?: string): PlayerStats => {
   const baseStats: PlayerStats = {
+    runId: crypto.randomUUID?.() || Math.random().toString(36).substring(2, 15),
     bag: 0,
     clout: 0,
     aura: 0,

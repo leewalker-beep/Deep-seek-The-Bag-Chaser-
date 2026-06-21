@@ -56,6 +56,7 @@ import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { EndgameSummary } from './components/EndgameSummary';
+import { HallOfFame } from './components/HallOfFame';
 import { DailyChallenges } from './components/DailyChallenges';
 import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
@@ -77,6 +78,9 @@ import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
 import { PresidentDashboard } from './components/PresidentDashboard';
 import { PresidentialCampaign } from './components/minigames/PresidentialCampaign';
+import { saveHallOfFameEntry } from './utils/hallOfFame';
+import { getEnding } from './config/endings';
+import { getDominantStat } from './utils/endingUtils';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -120,6 +124,7 @@ function App() {
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showEnding, setShowEnding] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
+  const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
 
   const {
@@ -199,6 +204,29 @@ function App() {
     return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura;
   }, [pl, currentTierIndex]);
 
+  // Automatically save to Hall of Fame when entering post-mortem
+  useEffect(() => {
+    if (ph === 'POST_MORTEM' && pl?.runId) {
+      const saveKey = `bc_run_saved_${pl.runId}`;
+      if (!sessionStorage.getItem(saveKey)) {
+        const finalStat = getDominantStat(pl);
+        const ending = getEnding(pl.legacyScore || 0, finalStat);
+
+        saveHallOfFameEntry({
+          runId: pl.runId,
+          tier: pl.currentTier,
+          legacyScore: pl.legacyScore || 0,
+          finalBag: pl.bag,
+          ending: ending.title,
+          deathBadge: deathBadge || undefined,
+          date: new Date().toISOString(),
+          month: pl.month,
+        });
+        sessionStorage.setItem(saveKey, 'true');
+      }
+    }
+  }, [ph, pl?.runId, pl?.currentTier, pl?.legacyScore, pl?.bag, pl?.month, deathBadge]);
+
   if (!isHydrated) {
     return <LoadingSkeleton />;
   }
@@ -219,12 +247,16 @@ function App() {
   if (ph === 'POST_MORTEM') {
     return (
       <>
-        {showSummary ? (
-          <EndgameSummary
-            onRestart={() => {
+        {showHallOfFame ? (
+          <HallOfFame
+            onNewRun={() => {
               resetGame();
               window.location.reload();
             }}
+          />
+        ) : showSummary ? (
+          <EndgameSummary
+            onRestart={() => setShowHallOfFame(true)}
           />
         ) : showEnding ? (
           <EndingModal

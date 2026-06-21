@@ -191,7 +191,19 @@ export interface Achievement {
   };
 }
 
+export interface HallOfFameEntry {
+  runId: string;
+  tier: string;
+  legacyScore: number;
+  finalBag: number;
+  ending: string;
+  deathBadge?: string;
+  date: string;
+  month: number;
+}
+
 export interface PlayerStats {
+  runId: string;
   name?: string;
   bag: number;
   clout: number;
