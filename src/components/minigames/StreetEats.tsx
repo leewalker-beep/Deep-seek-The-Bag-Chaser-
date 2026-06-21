@@ -45,15 +45,25 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const touchStart = useRef<number | null>(null);
 
-  const availableIngredients = ALL_INGREDIENTS.filter(i => i.level <= level);
+  const availableIngredients = React.useMemo(() =>
+    ALL_INGREDIENTS.filter(i => i.level <= level),
+    [level]
+  );
 
   const spawnOrder = useCallback(() => {
     const random = availableIngredients[Math.floor(Math.random() * availableIngredients.length)];
     setCurrentOrder([random]);
   }, [availableIngredients]);
 
+  // Initial spawn
   useEffect(() => {
     spawnOrder();
+  }, [spawnOrder]);
+
+  // Timer logic
+  useEffect(() => {
+    if (!gameActive) return;
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0.1) {
@@ -64,7 +74,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [spawnOrder]);
+  }, [gameActive]);
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (!gameActive || currentOrder.length === 0) return;
