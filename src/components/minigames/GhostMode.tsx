@@ -10,6 +10,8 @@ interface GhostModeProps {
   targetEmoji?: string;
 }
 
+const DECOY_EMOJIS = ["🎃", "🦇", "🕷️", "🕸️", "💀"];
+
 export const GhostMode: React.FC<GhostModeProps> = ({
   level = 1,
   onComplete,
@@ -17,7 +19,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({
   instruction = "TAP THE GHOSTS!",
   targetEmoji = "👻"
 }) => {
-  const [targets, setTargets] = useState<{ id: number; top: number; left: number }[]>([]);
+  const [targets, setTargets] = useState<{ id: number; top: number; left: number; isDecoy: boolean; emoji: string }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [gameActive, setGameActive] = useState(true);
@@ -42,11 +44,14 @@ export const GhostMode: React.FC<GhostModeProps> = ({
 
     const spawner = setInterval(() => {
       setTargets(prev => {
-        if (prev.length > 5) return prev;
+        if (prev.length > 5 + level) return prev;
+        const isDecoy = Math.random() < 0.3;
         return [...prev, {
           id: targetId.current++,
           top: Math.random() * 70 + 15,
-          left: Math.random() * 70 + 15
+          left: Math.random() * 70 + 15,
+          isDecoy,
+          emoji: isDecoy ? DECOY_EMOJIS[Math.floor(Math.random() * DECOY_EMOJIS.length)] : targetEmoji
         }];
       });
     }, spawnRate);
@@ -57,8 +62,17 @@ export const GhostMode: React.FC<GhostModeProps> = ({
     };
   }, [gameActive, level]);
 
-  const handleTap = (id: number) => {
+  const handleTap = (id: number, isDecoy: boolean) => {
     if (!gameActive) return;
+
+    if (isDecoy) {
+      setGameActive(false);
+      setFeedback('tap');
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+      onComplete(0.5);
+      return;
+    }
+
     setScore(s => s + 1);
     setTargets(prev => prev.filter(t => t.id !== id));
     setFeedback('tap');
@@ -97,11 +111,13 @@ export const GhostMode: React.FC<GhostModeProps> = ({
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.5, opacity: 0 }}
-              onClick={() => handleTap(t.id)}
-              className="absolute w-16 h-16 flex items-center justify-center text-4xl filter drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] active:scale-125 transition-transform"
+              onClick={() => handleTap(t.id, t.isDecoy)}
+              className={`absolute w-16 h-16 flex items-center justify-center text-4xl filter active:scale-125 transition-transform ${
+                t.isDecoy ? 'drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]'
+              }`}
               style={{ top: `${t.top}%`, left: `${t.left}%` }}
             >
-              {targetEmoji}
+              {t.emoji}
             </motion.button>
           ))}
         </AnimatePresence>

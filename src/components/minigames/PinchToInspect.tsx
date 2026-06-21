@@ -15,8 +15,12 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, leve
   const [timeLeft, setTimeLeft] = useState(10);
 
   // Difficulty scaling
-  const zoomTarget = 3.5 + (level - 1) * 0.2;
-  const maxTime = Math.max(5, 12 - (level - 1) * 1);
+  const zoomTarget = 3.5 + (level * 0.5);
+  const maxTime = Math.max(4, 12 - (level * 2));
+
+  useEffect(() => {
+    setTimeLeft(maxTime);
+  }, [maxTime]);
 
   useEffect(() => {
     if (!gameActive) return;

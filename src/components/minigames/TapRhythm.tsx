@@ -24,8 +24,8 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
   const nextId = useRef(0);
 
   // Difficulty scaling
-  const TOTAL_BEATS = 8 + (level - 1) * 2;
-  const baseSpeed = 1.5 + (level - 1) * 0.3;
+  const TOTAL_BEATS = 10 + (level * 2);
+  const baseSpeed = 1.5 + (level * 0.4);
   const MAX_DURATION = 30000;
 
   useEffect(() => {
@@ -36,15 +36,16 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
 
     for (let i = 0; i < beatsToGenerate; i++) {
         intervals.push(currentMs);
-        // Randomize interval between beats
-        currentMs += 1200 + Math.random() * (1500 / level);
+        // Randomize interval between beats - tighter intervals at higher levels
+        currentMs += Math.max(800, 1500 - (level * 150)) + Math.random() * (1000 / level);
     }
 
     const timers = intervals.map((ms, _index) => {
       return setTimeout(() => {
         if (!isGameOver) {
           // Higher levels have "drops" (sudden speed changes or different visual types)
-          const type = (level >= 3 && Math.random() < 0.2) ? 'fast' : 'normal';
+          const fastProb = 0.1 * level;
+          const type = Math.random() < fastProb ? 'fast' : 'normal';
           setBeats(prev => [...prev, { id: nextId.current++, offset: 100, type }]);
         }
       }, ms);
