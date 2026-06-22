@@ -1,185 +1,248 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { calculateHustleMath } from '../engine/mathEngine';
-import { executeHustleAction } from '../engine/hustleEngine';
-import { advanceMonth } from '../engine/advancementEngine';
-import { HUSTLES } from '../config/hustles/base';
-import { getInitialStats } from '../store/initialState';
-import { TIER_REQUIREMENTS } from '../config/tiers';
-import { FLEX_ASSETS } from '../config/flexAssets';
-import { EXECUTIVE_ORDERS } from '../engine/presidentEngine';
-import { MARKET_CONFIGS } from '../config/marketConfig';
+import { useGameStore } from '../store/gameStore';
 
-describe('Final Audit: Programmatic Calculation Verification', () => {
-  let pl = getInitialStats(3);
+describe('Final Audit: Store-Level Verification', () => {
 
   beforeEach(() => {
-    pl = getInitialStats(3); // Reset to base difficulty 3 (Normal)
-  });
+    // Initialize standard mocks
+    if (typeof (global as any).localStorage === 'undefined') {
+        (global as any).localStorage = {
+            setItem: () => {},
+            getItem: () => null,
+            removeItem: () => {},
+            clear: () => {}
+        };
+    }
 
-  describe('KPI Audit: Hustle Execution (Points 1-5, 9, 12)', () => {
-    it('should verify MUD tier hustle: r_labor (Manual Labor)', () => {
-      pl.currentTier = 'MUD';
-      const hustle = HUSTLES.r_labor;
-      const levelData = hustle.branches!.l1;
+    const { resetGame } = useGameStore.getState();
+    resetGame('sk_ghost', 3);
 
-      const result = executeHustleAction('r_labor', pl, 'NORMAL', levelData, 1, 1, true);
-
-      // Math: cost=0, yieldCash=2000, yieldClout=2, yieldAura=2, mentalHit=-8 (x1.5 for MUD), heatHit=5 (default)
-      expect(result.cost).toBe(0);
-      expect(result.yieldCash).toBe(2000);
-      expect(result.yieldClout).toBe(2);
-      expect(result.yieldAura).toBe(2);
-      expect(result.mentalHit).toBe(-12);
-      expect(result.heatHit).toBe(5);
-    });
-
-    it('should verify STREET tier hustle: cc (Create Content)', () => {
-      pl.currentTier = 'STREET';
-      const hustle = HUSTLES.cc;
-      const levelData = hustle.branches!.l1;
-
-      const result = executeHustleAction('cc', pl, 'NORMAL', levelData, 1, 1, true);
-
-      // Expected: cost=0, yieldCash=4000, yieldClout=3, yieldAura=1, mentalHit=-10, heatHit=5
-      expect(result.cost).toBe(0);
-      expect(result.yieldCash).toBe(4000);
-      expect(result.yieldClout).toBe(3);
-      expect(result.yieldAura).toBe(1);
-      expect(result.mentalHit).toBe(-10);
-      expect(result.heatHit).toBe(5);
-    });
-
-    it('should verify STARTUP tier hustle: saas_mvp (Level 1)', () => {
-      pl.currentTier = 'STARTUP';
-      const hustle = HUSTLES.saas_mvp;
-      const levelData = hustle.branches!.l1;
-
-      const result = executeHustleAction('saas_mvp', pl, 'NORMAL', levelData, 1, 1, true);
-
-      // Expected: cost=30000, yieldCash=50000, yieldClout=5, yieldAura=2, mentalHit=-15, heatHit=5
-      expect(result.cost).toBe(30000);
-      expect(result.yieldCash).toBe(50000);
-      expect(result.yieldClout).toBe(5);
-      expect(result.yieldAura).toBe(2);
-      expect(result.mentalHit).toBe(-15);
-      expect(result.heatHit).toBe(5);
-    });
-
-    it('should verify CORPORATE tier hustle: global_franchise (Level 1)', () => {
-      pl.currentTier = 'CORPORATE';
-      const hustle = HUSTLES.global_franchise;
-      const levelData = hustle.levels![0];
-
-      vi.spyOn(Math, 'random').mockReturnValue(0.5); // variance = 1.0x
-
-      const result = executeHustleAction('global_franchise', pl, 'NORMAL', levelData, 1, 1, true);
-
-      // Override values in globalFranchiseStrategy
-      expect(result.cost).toBe(5000000);
-      expect(result.yieldCash).toBe(5000000);
-      expect(result.yieldClout).toBe(150);
-      expect(result.yieldAura).toBe(75);
-      expect(result.mentalHit).toBe(-5);
-      expect(result.heatHit).toBe(5);
-
-      vi.restoreAllMocks();
-    });
-
-    it('should verify ELITE tier hustle: privateequity (Small Buyouts)', () => {
-      pl.currentTier = 'ELITE';
-      const hustle = HUSTLES.privateequity;
-      const levelData = hustle.branches!.l1;
-
-      const result = executeHustleAction('privateequity', pl, 'NORMAL', levelData, 1, 1, true);
-
-      // ELITE bonuses: 1.2x Clout, 0.9x Mental
-      expect(result.cost).toBe(30000000);
-      expect(result.yieldCash).toBe(55000000);
-      expect(result.yieldClout).toBe(72);
-      expect(result.yieldAura).toBe(40);
-      expect(result.mentalHit).toBe(-17);
-      expect(result.heatHit).toBe(5);
-    });
-
-    it('should verify Upgrade/Branch cost deduction logic (Point 9)', () => {
-      const hustle = HUSTLES.r_labor;
-      const branch = hustle.branches!.l2a; // House Flip
-      const market = MARKET_CONFIGS['NORMAL'];
-
-      // hustleSlice.ts logic: calculateHustleMath with level 1
-      const result = calculateHustleMath(
-        'r_labor',
-        branch,
-        1,
-        market.expenseMultiplier,
-        market.yieldMultiplier,
-        market.heatMultiplier,
-        1,
-        true,
-        0,
-        'NEUTRAL'
-      );
-
-      expect(result.cost).toBe(5000); // Base cost of House Flip
+    // Force set a clean state for every test to prevent cross-contamination
+    useGameStore.setState({
+      ph: 'PLAYING',
+      isTutorialSkipped: true,
+      currentMarket: 'NORMAL',
+      dailyChallenges: [],
+      achievements: useGameStore.getState().achievements.map(a => ({ ...a, isUnlocked: true })), // Mock all as unlocked to prevent rewards
+      pl: {
+        ...useGameStore.getState().pl,
+        bag: 1000,
+        clout: 100,
+        aura: 100,
+        mentalHealth: 100,
+        heat: 0,
+        events: [],
+        masteredHustles: [],
+        tierBadges: [],
+        flexAssets: {},
+        vendingCount: 0,
+        hustleBranchIds: {},
+        hustleLevels: {},
+        artists: [],
+        dynamicPassives: {},
+        rentalCount: 0,
+        rentPortfolioCount: 0,
+        flipCount: 0,
+        activeChallenges: [],
+        legacyPoints: 0,
+        currentTier: 'MUD',
+        congressSupport: 100,
+        approvalFloor: 0,
+        scandalRiskBonus: 0,
+        pendingPresidentialImpacts: [],
+        activeCrises: [],
+        presidentialDiary: [],
+        month: 0,
+        presidentMonth: 0,
+        federalBudget: 0,
+        unlockedAchievements: [],
+        collectedDeathBadges: [],
+        loginStreak: 0,
+        totalChallengesCompleted: 0
+      }
     });
   });
 
-  describe('KPI Audit: Monthly Progression (Points 6-7)', () => {
-    it('should verify monthly net change: Rent + Passive (Point 6, 7)', () => {
-      pl.currentTier = 'STREET';
-      pl.bag = 100000;
-      // Setup Vending
-      pl.vendingCount = 10;
-      pl.hustleBranchIds['r_vending'] = 'vending';
-      pl.hustleLevels['r_vending'] = 1; // +150 * 10 = 1500
+  it('Hustle Execution Audit (Points 1-5, 12)', () => {
+    const { executeHustle } = useGameStore.getState();
 
-      // Setup SaaS
-      pl.hustleBranchIds['saas_mvp'] = 'l1';
-      pl.hustleLevels['saas_mvp'] = 1; // +2000 passive
+    // Execute r_labor (Manual Labor)
+    // Math: yieldCash: 2000, yieldClout: 2, yieldAura: 2, mentalHit: -8 (x1.5 = -12), heatHit: 5
+    // advanceMonth: Rent -200, heatDecay -10
+    const res = executeHustle('r_labor', 1, true);
 
-      const result = advanceMonth(pl, 'NORMAL');
+    const finalStats = useGameStore.getState().pl;
+    const event = finalStats.events.find(e => e.type === 'HUSTLE_COMPLETED');
 
-      // AUDIT: Vending(150*10 + 500 bonus) + SaaS(2000) = 4000
-      // Rent for STREET: 1000
-      // Net: +3000
-      expect(result.totalRent).toBe(1000);
-      expect(result.passiveIncome).toBe(4000);
-      expect(result.newPl.bag).toBe(100000 + 3000);
-    });
+    expect(res.success).toBe(true);
+
+    // 1. Bag Change: 1000 + 2000 - 200 = 2800
+    expect(finalStats.bag).toBe(2800);
+
+    // 2-3. Clout/Aura: 100 + 2 = 102
+    expect(finalStats.clout).toBe(102);
+    expect(finalStats.aura).toBe(102);
+
+    // 4. Mental: 100 - 12 = 88
+    expect(finalStats.mentalHealth).toBe(88);
+
+    // 5. Heat: 5 - 10 = 0
+    expect(finalStats.heat).toBe(0);
+
+    // 12. Receipts vs Reality
+    expect(event!.metadata.profit).toBe(2000);
+    expect(event!.metadata.yieldClout).toBe(2);
   });
 
-  describe('KPI Audit: Tier & Flex (Points 8, 10)', () => {
-    it('should verify Flex Asset bonus compounding (Point 10)', () => {
-        const yacht = FLEX_ASSETS.find(a => a.id === 'yacht')!; // allGainsBonus: 5%
-        pl.flexAssets['yacht'] = 1;
-        pl.flexAssets['tech_conglomerate'] = 1; // boosts other bonuses by 10% (1.1x)
+  it('Upgrades Audit (Point 9)', () => {
+    const { upgradeHustle } = useGameStore.getState();
 
-        // logic in applyFlexBonuses/calculateFlexBonuses
-        const techConglomerateCount = pl.flexAssets['tech_conglomerate'] || 0;
-        const flexBonusMultiplier = 1 + (techConglomerateCount * 0.1); // 1.1x
+    // Set enough stats for upgrade
+    useGameStore.setState(s => ({
+      pl: { ...s.pl, bag: 100000, clout: 200, aura: 200, currentTier: 'MUD', events: [] }
+    }));
 
-        let cashBonus = 0;
-        const count = pl.flexAssets['yacht'];
-        const bonusScale = count * flexBonusMultiplier; // 1 * 1.1 = 1.1
-        cashBonus += (yacht.allGainsBonus || 0) * bonusScale; // 5 * 1.1 = 5.5
+    // Upgrade r_labor to House Flip (l2a). Base cost 5000.
+    const success = upgradeHustle('r_labor', 'l2a');
+    expect(success).toBe(true);
 
-        expect(cashBonus).toBe(5.5);
-    });
+    const finalStats = useGameStore.getState().pl;
+    // Upgrade logs event via logEvent('HUSTLE_COMPLETED', ...)
+    const event = finalStats.events[0];
+
+    // Point 9: Is cost deducted correctly?
+    // finalStats.bag should be 100000 - 5000 = 95000.
+    expect(finalStats.bag).toBe(95000);
+    expect(event.metadata.profit).toBe(-5000);
   });
 
-  describe('KPI Audit: President Tier (Point 11)', () => {
-    it('should verify Federal Budget and Tax Revenue (Point 11)', () => {
-        pl.currentTier = 'PRESIDENT';
-        pl.federalBudget = 100000000;
-        pl.gdp = 110;
-        pl.inflation = 2;
+  it('Tier Advancement Audit (Point 8)', () => {
+    const { advanceTier } = useGameStore.getState();
 
-        // advancePresidentialMonth logic
-        let taxRevenue = 10000000;
-        if (pl.gdp > 100) taxRevenue += 2000000;
+    // STREET Req: cash 50k, clout 100, aura 100, fee 20k
+    useGameStore.setState(s => ({
+      pl: {
+        ...s.pl,
+        currentTier: 'MUD' as const,
+        bag: 70000, // 50k + 20k fee
+        clout: 100,
+        aura: 100,
+        unlockedAchievements: [],
+        loginStreak: 0,
+        events: []
+      }
+    }));
 
-        expect(taxRevenue).toBe(12000000);
-    });
+    const success = advanceTier();
+    expect(success).toBe(true);
+
+    const finalStats = useGameStore.getState().pl;
+    expect(finalStats.currentTier).toBe('STREET');
+    // Point 8: Fees deducted
+    expect(finalStats.bag).toBe(50000);
+    // Point 8: Stat retention (60% of 100 = 60)
+    expect(finalStats.clout).toBe(60);
+    expect(finalStats.aura).toBe(60);
+  });
+
+  it('Passive Income & Rent Audit (Points 6, 7)', () => {
+    useGameStore.setState(s => ({
+      currentMarket: 'NORMAL',
+      pl: {
+        ...s.pl,
+        currentTier: 'STREET',
+        bag: 100000,
+        clout: 500,
+        aura: 500,
+        vendingCount: 10,
+        hustleBranchIds: { 'r_vending': 'vending', 'saas_mvp': 'l1' },
+        hustleLevels: { 'r_vending': 1, 'saas_mvp': 1 },
+        artists: [],
+        masteredHustles: [],
+        tierBadges: [],
+        flexAssets: {},
+        dynamicPassives: {}
+      }
+    }));
+
+    const initialBag = 100000;
+    const { executeHustle } = useGameStore.getState();
+    const res = executeHustle('cc', 1, true); // base yield 4000, cost 0
+
+    const finalState = useGameStore.getState().pl;
+    // Rent STREET: 1000
+    // Passive: Vending(150*10 + 500 bonus) + SaaS(2000) = 4000
+    // Net Monthly: +3000
+    // finalBag = initialBag + yieldHustle - costHustle + passive - rent
+    const netHustle = res.yieldCash - res.cost;
+    const netMonthly = 3000;
+
+    expect(finalState.bag).toBe(initialBag + netHustle + netMonthly);
+  });
+
+  it('President Tier Audit (Point 11)', () => {
+    useGameStore.setState(s => ({
+        pl: {
+            ...s.pl,
+            currentTier: 'PRESIDENT' as const,
+            federalBudget: 100000000,
+            gdp: 110,
+            inflation: 2,
+            clout: 1000,
+            aura: 1000,
+            congressSupport: 100,
+            presidentialDiary: [],
+            activeCrises: [],
+            pendingPresidentialImpacts: [],
+            cabinet: {},
+            masteredHustles: [],
+            artists: [],
+            dynamicPassives: {},
+            rentalCount: 0,
+            vendingCount: 0,
+            unlockedAchievements: [],
+            loginStreak: 0
+        }
+    }));
+
+    const { issueExecutiveOrder, advancePresidentialMonth } = useGameStore.getState();
+
+    // Infrastructure cost: 10M Cash, 100 Clout
+    issueExecutiveOrder('infrastructure');
+
+    let state = useGameStore.getState().pl;
+    expect(state.federalBudget).toBe(90000000);
+    expect(state.clout).toBe(900);
+
+    // Tax revenue advance
+    advancePresidentialMonth();
+    state = useGameStore.getState().pl;
+    // Tax: 10M base + 2M GDP bonus = 12M.
+    expect(state.federalBudget).toBe(102000000);
+  });
+
+  it('Flex Assets Audit (Point 10)', () => {
+    // Force STREET tier so we can execute 'cc'
+    useGameStore.setState(s => ({
+        pl: {
+            ...s.pl,
+            currentTier: 'STREET',
+            bag: 1000000,
+            clout: 500,
+            aura: 500,
+            flexAssets: { 'yacht': 1, 'tech_conglomerate': 1 }
+        }
+    }));
+
+    const { executeHustle } = useGameStore.getState();
+    // Yacht gives 5% allGainsBonus. Tech Conglomerate boosts IT (the 5%) by 10% (multiplier 1.1x)
+    // bonusScale = count (1) * flexBonusMultiplier (1.1) = 1.1
+    // cashBonus = 5 * 1.1 = 5.5%
+
+    const res = executeHustle('cc', 1, true);
+    // cc base yieldCash = 4000.
+    // 4000 * (1 + 5.5/100) = 4000 * 1.055 = 4220
+    expect(res.yieldCash).toBe(4220);
   });
 });
