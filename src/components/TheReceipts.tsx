@@ -55,6 +55,11 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   PASSIVE: +${metadata.passiveIncomeTotal.toLocaleString()}
                 </div>
               )}
+              {metadata.passiveAdded > 0 && (
+                <div className="text-blue-400 font-bold">
+                  ADDED PASSIVE: +${metadata.passiveAdded.toLocaleString()}
+                </div>
+              )}
               {metadata.yieldClout !== 0 && (
                 <div className="text-blue-400">
                   CLOUT: {metadata.yieldClout > 0 ? '+' : ''}{metadata.yieldClout}

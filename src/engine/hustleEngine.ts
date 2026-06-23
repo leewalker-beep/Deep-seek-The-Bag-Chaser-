@@ -1,11 +1,8 @@
 import type { PlayerStats, MarketType } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
-import { calculateHustleMath } from './mathEngine';
+import { calculateHustleMath, getEffectiveHustleStats } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
-import { HUSTLE_BADGES } from '../config/badges';
-import { HUSTLES } from '../config/hustles/base';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
-import { getMasteryCount } from '../utils/masteryUtils';
 
 export interface HustleExecutionResult {
   success: boolean;
@@ -491,11 +488,10 @@ export const executeHustleAction = (
   const strategy = getHustleStrategy(hustleId);
   const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
 
-  // Apply Sentiment Multiplier
+  // Apply Sentiment Multiplier (for ticker messages only now, math is centralized)
   if (state.activeSentiment) {
     const category = SENTIMENT_CATEGORIES.find(c => c.id === state.activeSentiment?.category);
     if (category && category.hustleIds.includes(hustleId)) {
-      result.yieldCash = Math.floor(result.yieldCash * state.activeSentiment.multiplier);
       if (!result.tickerMessages) result.tickerMessages = [];
       result.tickerMessages.push({
         text: `📰 ${state.activeSentiment.label}: ${state.activeSentiment.multiplier}x yield`,
@@ -513,67 +509,38 @@ export const executeHustleAction = (
     }
   }
 
-  // Apply Badge Buffs
-  let finalYieldMult = 1.0;
-  let finalCloutMult = 1.0;
-  let finalAuraMult = 1.0;
-  let finalMentalMult = 1.0;
-  let finalHeatMult = 1.0;
-
-  state.masteredHustles.forEach(mId => {
-    const badge = HUSTLE_BADGES[mId];
-    if (!badge) return;
-    if (badge.buff.type === 'yield') finalYieldMult *= badge.buff.value;
-    if (badge.buff.type === 'clout') finalCloutMult *= badge.buff.value;
-    if (badge.buff.type === 'aura') finalAuraMult *= badge.buff.value;
-    if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
-    if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
+  // Use centralized math for ALL multipliers (Badges, Tier, Legacy, Flex, Sentiment)
+  const effective = getEffectiveHustleStats(hustleId, levelData, state, currentLevel, {
+    cost: result.cost,
+    yieldCash: result.yieldCash,
+    yieldClout: result.yieldClout,
+    yieldAura: result.yieldAura,
+    mentalHit: result.mentalHit,
+    heatHit: result.heatHit,
+    shieldTurns: result.shieldTurns || 0,
+    passiveAdded: result.passiveAdded,
+    isBigWin: result.isRare,
+    bigWinMessage: result.bigWinMessage,
   });
 
-  // Apply Tier Badge Buffs (+2% permanent yield on that tier's hustles)
-  const hustleTier = HUSTLES[hustleId]?.tier;
-  if (hustleTier && state.tierBadges.includes(hustleTier)) {
-    finalYieldMult *= 1.02;
-  }
-
-  // Apply Tier Mechanics
-  if (state.currentTier === 'MUD') {
-    result.mentalHit = Math.floor(result.mentalHit * 1.5); // More exhausting
-  } else if (state.currentTier === 'STREET') {
-    const streakBonus = Math.min(2.0, 1 + (state.streak || 0) * 0.1);
-    result.yieldClout = Math.floor(result.yieldClout * streakBonus);
-  } else if (state.currentTier === 'CORPORATE') {
-    // High variance in corporate
+  // Apply variance for Corporate tier
+  if (state.currentTier === 'CORPORATE') {
     const variance = 0.5 + Math.random(); // 0.5x to 1.5x
-    result.yieldCash = Math.floor(result.yieldCash * variance);
-  } else if (state.currentTier === 'ELITE') {
-    // Boardroom pressure: Higher potential clout
-    result.mentalHit = Math.floor(result.mentalHit * 0.9);
-    result.yieldClout = Math.floor(result.yieldClout * 1.2);
-  } else if (state.currentTier === 'MOGUL') {
-    // Big Swings: Yield rebalanced
-    result.mentalHit = Math.floor(result.mentalHit * 0.7);
-    result.yieldCash = Math.floor(result.yieldCash * 0.9);
-    result.heatHit = Math.floor(result.heatHit * 1.5);
-  } else if (state.currentTier === 'PRESIDENT') {
-    // Campaign intensity: Aura acts as multiplier for Clout
-    result.mentalHit = Math.floor(result.mentalHit * 0.7);
-    const auraBonus = 1 + (state.aura / 5000);
-    result.yieldClout = Math.floor(result.yieldClout * auraBonus);
-
-    // Mastery Bonus for Election
-    const masteryCount = getMasteryCount(state);
-    const masteryApprovalBonus = Math.min(15, masteryCount * 1.5);
-    result.approvalBonus = (result.approvalBonus || 0) + masteryApprovalBonus;
+    effective.yieldCash = Math.floor(effective.yieldCash * variance);
   }
 
-  const legacyMultiplier = 1 + ((state.legacyPoints || 0) * 0.001);
-
-  result.yieldCash = Math.floor(result.yieldCash * legacyMultiplier * finalYieldMult);
-  result.yieldClout = Math.floor(result.yieldClout * legacyMultiplier * finalCloutMult);
-  result.yieldAura = Math.floor(result.yieldAura * legacyMultiplier * finalAuraMult);
-  result.mentalHit = Math.floor(result.mentalHit * finalMentalMult);
-  result.heatHit = Math.floor(result.heatHit * finalHeatMult);
-
-  return result;
+  return {
+    ...result,
+    cost: effective.cost,
+    yieldCash: effective.yieldCash,
+    yieldClout: effective.yieldClout,
+    yieldAura: effective.yieldAura,
+    mentalHit: effective.mentalHit,
+    heatHit: effective.heatHit,
+    passiveAdded: effective.passiveAdded,
+    shieldTurns: effective.shieldTurns,
+    approvalBonus: effective.approvalBonus,
+    isRare: effective.isBigWin,
+    bigWinMessage: effective.bigWinMessage
+  };
 };
