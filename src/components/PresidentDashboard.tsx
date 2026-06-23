@@ -649,7 +649,7 @@ export const PresidentDashboard: React.FC = () => {
                 pl.presidentialDiary.map((entry) => (
                   <div key={entry.id} className="relative pl-6 border-l-2 border-slate-800 py-2">
                     <div className="absolute left-[-5px] top-4 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                    <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-xl p-4 shadow-lg">
+                    <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-xl p-4 shadow-lg group relative">
                       <div className="flex justify-between items-start mb-1">
                         <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Month {entry.month}</span>
                         <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${
@@ -662,6 +662,21 @@ export const PresidentDashboard: React.FC = () => {
                       </div>
                       <h4 className="text-xs font-serif font-black text-white uppercase mb-2">{entry.event}</h4>
                       <p className="text-[10px] text-slate-400 font-serif leading-relaxed italic">"{entry.outcome}"</p>
+
+                      {/* Mastery Tooltip */}
+                      {entry.appliedMasteryBonuses && entry.appliedMasteryBonuses.length > 0 && (
+                        <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                          <div className="bg-slate-900 border border-emerald-500/50 rounded-lg p-2 shadow-2xl min-w-[150px]">
+                            <div className="text-[8px] text-emerald-400 font-black uppercase mb-1">Mastery Bonuses Applied</div>
+                            {entry.appliedMasteryBonuses.map((m, i) => (
+                              <div key={i} className="flex justify-between text-[10px]">
+                                <span className="text-slate-300">{m.name}:</span>
+                                <span className="text-emerald-400 font-bold">+{Math.round(m.bonus * 100)}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))

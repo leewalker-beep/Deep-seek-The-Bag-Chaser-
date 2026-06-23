@@ -1,33 +1,7 @@
 import type { CabinetMember, PresidentCrisis, ExecutiveOrder, PlayerStats } from '../types/game';
-import { MASTERY_ORDER_MAP } from '../config/masteryOrderMap';
+import { MASTERY_TO_HUSTLE_ID, MASTERY_DISPLAY_NAMES, MASTERY_ORDER_BONUSES } from '../config/masteryOrderMapping';
 
 export type { CabinetMember, PresidentCrisis, ExecutiveOrder };
-
-const MASTERY_TO_HUSTLE_ID: Record<string, string> = {
-  'music_production': 'audio',
-  'tech_flipping': 'techFlip',
-  'real_estate': 'real_estate_empire',
-  'media_empire': 'media_empire',
-  'scrap_metal': 'r_scrap',
-  'dropshipping': 'drop',
-  'street_eats': 'street_eats',
-  'labor': 'r_labor',
-  'delivery': 'r_delivery',
-  'ghost_mode': 'r_ghost_mode',
-};
-
-const MASTERY_DISPLAY_NAMES: Record<string, string> = {
-  'music_production': 'Music Production',
-  'tech_flipping': 'Tech Flipping',
-  'real_estate': 'Real Estate',
-  'media_empire': 'Media Empire',
-  'scrap_metal': 'Scrap Metal',
-  'dropshipping': 'Dropshipping',
-  'street_eats': 'Street Eats',
-  'labor': 'Labor',
-  'delivery': 'Delivery',
-  'ghost_mode': 'Ghost Mode',
-};
 
 export const RIVAL_CABINET_MAP: Record<string, string> = {
   'rival_corp': 'treasury',
@@ -37,20 +11,29 @@ export const RIVAL_CABINET_MAP: Record<string, string> = {
 };
 
 export const getMasteryBonusDetails = (player: PlayerStats, orderId: string) => {
-  let bonus = 0;
-  const appliedMasteries: string[] = [];
+  let totalBonus = 0;
+  const details: { name: string; bonus: number }[] = [];
 
-  for (const [masteryKey, orders] of Object.entries(MASTERY_ORDER_MAP)) {
+  for (const [masteryKey, bonuses] of Object.entries(MASTERY_ORDER_BONUSES)) {
     const hustleId = MASTERY_TO_HUSTLE_ID[masteryKey];
-    if (orders.includes(orderId) && player.masteredHustles?.includes(hustleId)) {
-      bonus += 0.05;
-      appliedMasteries.push(MASTERY_DISPLAY_NAMES[masteryKey] || masteryKey);
+    if (!player.masteredHustles?.includes(hustleId)) continue;
+
+    const matchingBonus = bonuses.find(b => b.orderId === orderId);
+    if (matchingBonus) {
+      // Max +10% per badge (though config is currently 5%)
+      const cappedBadgeBonus = Math.min(0.10, matchingBonus.bonus);
+      totalBonus += cappedBadgeBonus;
+      details.push({
+        name: MASTERY_DISPLAY_NAMES[masteryKey] || masteryKey,
+        bonus: cappedBadgeBonus
+      });
     }
   }
 
+  // Cap at 15% total
   return {
-    bonus: Math.min(0.15, bonus),
-    masteries: appliedMasteries
+    bonus: Math.min(0.15, totalBonus),
+    details: details.slice(0, 3) // Implicitly cap at 3 badges if we want to follow "Three badges on the same order cap at +15%"
   };
 };
 

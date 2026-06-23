@@ -273,6 +273,7 @@ export interface PlayerStats {
     event: string;
     outcome: string;
     type: 'ORDER' | 'CRISIS' | 'ELECTION';
+    appliedMasteryBonuses?: { name: string; bonus: number }[];
   }[];
   presidentMonth: number;
   isSecondTerm: boolean;
