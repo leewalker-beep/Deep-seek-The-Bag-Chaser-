@@ -44,6 +44,9 @@ describe('News Sentiment Engine', () => {
   });
 
   it('should apply multiplier to matching hustles', () => {
+    // Mock random to prevent random big wins during test
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
     const pl = getInitialStats(3);
     pl.activeSentiment = {
       category: 'crypto',
@@ -79,6 +82,8 @@ describe('News Sentiment Engine', () => {
 
     expect(result.yieldCash).toBe(Math.floor(resultNoSentiment.yieldCash * 1.5));
     expect(result.tickerMessages?.some(m => m.text.includes('Crypto Hype'))).toBe(true);
+
+    randomSpy.mockRestore();
   });
 
   it('should NOT apply multiplier to non-matching hustles', () => {

@@ -32,8 +32,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
   it('Meme Coin: big win should be 5x', () => {
     // We can't easily test random but we can check mathEngine directly or mock Math.random
     // Actually, let's mock Math.random to trigger big win
-    const originalRandom = Math.random;
-    Math.random = vi.fn().mockReturnValue(0.05); // Triggers Meme Coin big win (threshold 0.10)
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.05); // Triggers Meme Coin big win (threshold 0.10)
 
     const { executeHustle } = useGameStore.getState();
     useGameStore.setState((state) => ({
@@ -52,7 +51,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
     // Base yield is 1500. Big win makes it 7500.
     expect(result.yieldCash).toBe(7500);
 
-    Math.random = originalRandom;
+    randomSpy.mockRestore();
   });
 
   it('Flex Bonuses: should be applied but never exceed 2.0x total multiplier', () => {
