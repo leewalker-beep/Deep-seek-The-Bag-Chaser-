@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PROGRESSION_ORDER } from '../../config/tiers';
+import type { Tier } from '../../types/game';
 
 interface MagneticSweepResult {
   multiplier: number;
@@ -23,25 +25,32 @@ interface MagneticSweepProps {
   instruction?: string;
   icon?: string;
   level?: number;
+  tier?: Tier;
 }
 
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   onComplete,
   title = "MAGNETIC SWEEP",
-  instruction = "Tap appearing scrap to collect!",
+  instruction = "Drag magnet to collect scrap!",
   icon: _icon = "🧲",
-  level = 1
+  level = 1,
+  tier = 'MUD'
 }) => {
   const [items, setItems] = useState<ScrapItem[]>([]);
   const [score, setScore] = useState(0);
   const [rareCount, setRareCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [gameActive, setGameActive] = useState(true);
+  const [magnetPos, setMagnetPos] = useState({ x: 50, y: 80 });
+  const magnetRef = useRef({ x: 50, y: 80 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(0);
 
   // Difficulty scaling
-  const spawnRate = Math.max(300, 1000 - (level - 1) * 150);
-  const itemLifespan = Math.max(800, 2000 - (level - 1) * 200);
+  const tierIndex = PROGRESSION_ORDER.indexOf(tier);
+  const spawnRate = Math.max(250, 1000 - (level - 1) * 150 - (tierIndex * 50));
+  const itemLifespan = Math.max(600, 2000 - (level - 1) * 250 - (tierIndex * 100));
+  const rareChance = 0.05 + tierIndex * 0.02;
 
   useEffect(() => {
     if (!gameActive) return;
@@ -57,7 +66,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     }, 100);
 
     const spawner = setInterval(() => {
-      const isRare = Math.random() < (0.05 + level * 0.01);
+      const isRare = Math.random() < rareChance;
       const newItem: ScrapItem = {
         id: nextId.current++,
         type: isRare ? '💎' : ['🔧', '⚙️', '🔩', '📎', '⛓️'][Math.floor(Math.random() * 5)],
@@ -76,18 +85,50 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
       clearInterval(timer);
       clearInterval(spawner);
     };
-  }, [gameActive, spawnRate, itemLifespan, level]);
+  }, [gameActive, spawnRate, itemLifespan, rareChance]);
 
-  const handleCollect = (item: ScrapItem) => {
+  // Handle magnet movement and collection
+  useEffect(() => {
     if (!gameActive) return;
-    setItems(prev => prev.filter(i => i.id !== item.id));
-    if (item.isRare) {
-      setRareCount(prev => prev + 1);
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-    } else {
-      setScore(prev => prev + 1);
-      if (navigator.vibrate) navigator.vibrate(20);
-    }
+
+    const checkCollision = () => {
+      const currentPos = magnetRef.current;
+      setItems(prev => {
+        const toCollect = prev.filter(item => {
+          const dx = item.x - currentPos.x;
+          const dy = item.y - currentPos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          return distance < 10; // Collection radius
+        });
+
+        if (toCollect.length > 0) {
+          toCollect.forEach(item => {
+            if (item.isRare) {
+              setRareCount(r => r + 1);
+              if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+            } else {
+              setScore(s => s + 1);
+              if (navigator.vibrate) navigator.vibrate(20);
+            }
+          });
+          return prev.filter(item => !toCollect.includes(item));
+        }
+        return prev;
+      });
+    };
+
+    const collisionInterval = setInterval(checkCollision, 50);
+    return () => clearInterval(collisionInterval);
+  }, [gameActive]);
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!gameActive || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const newPos = { x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) };
+    setMagnetPos(newPos);
+    magnetRef.current = newPos;
   };
 
   useEffect(() => {
@@ -117,18 +158,35 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         </div>
       </div>
 
-      <div className="relative w-full h-[400px] bg-slate-900 rounded-3xl border-4 border-slate-800 overflow-hidden shadow-2xl">
+      <div
+        ref={containerRef}
+        onPointerMove={handlePointerMove}
+        className="relative w-full h-[400px] bg-slate-900 rounded-3xl border-4 border-slate-800 overflow-hidden shadow-2xl cursor-none"
+      >
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+
+        {/* Magnet */}
+        <motion.div
+          animate={{ x: `${magnetPos.x}%`, y: `${magnetPos.y}%` }}
+          transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+          className="absolute w-16 h-16 -ml-8 -mt-8 flex items-center justify-center text-5xl z-40 pointer-events-none"
+        >
+          🧲
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="absolute inset-0 bg-cyan-500 rounded-full blur-xl -z-10"
+          />
+        </motion.div>
 
         <AnimatePresence>
           {items.map(item => (
-            <motion.button
+            <motion.div
               key={item.id}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              onClick={() => handleCollect(item)}
-              className="absolute text-5xl z-20 transition-transform active:scale-125"
+              className="absolute text-5xl z-20"
               style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translate(-50%, -50%)' }}
             >
               <div className="relative">
@@ -141,7 +199,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
                     />
                 )}
               </div>
-            </motion.button>
+            </motion.div>
           ))}
         </AnimatePresence>
 

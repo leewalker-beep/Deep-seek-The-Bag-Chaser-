@@ -16,9 +16,9 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
   const [feedback, setFeedback] = useState<'hit' | 'fail' | null>(null);
 
   // Difficulty scaling
-  const totalRounds = 3 + level;
-  const baseLength = 2 + level; // Round 1 length
-  const sequenceGrowth = 1;
+  const totalRounds = 2 + level;
+  const baseLength = 1 + level; // Level 1: 2, Level 2: 3, Level 3: 4
+  const sequenceGrowth = 2; // Level 3 will go 4 -> 6 -> 8 -> 10 -> 12
 
   useEffect(() => {
     startNewRound(1);
@@ -35,15 +35,16 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
 
   const displaySequence = async (seq: number[]) => {
     setIsDisplaying(true);
-    // Display speed scales with level? Maybe.
-    const displaySpeed = Math.max(250, 500 - (level - 1) * 50);
+    // Display speed scales with level
+    const displaySpeed = Math.max(200, 500 - (level - 1) * 100);
+    const pauseSpeed = Math.max(50, 150 - (level - 1) * 30);
 
     for (const num of seq) {
       setActiveButton(num);
       if (navigator.vibrate) navigator.vibrate(20);
       await new Promise(resolve => setTimeout(resolve, displaySpeed));
       setActiveButton(null);
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, pauseSpeed));
     }
     setIsDisplaying(false);
   };

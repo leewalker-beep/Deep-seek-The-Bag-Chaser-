@@ -40,8 +40,8 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
   const timerRef = useRef<number | null>(null);
 
   // Difficulty scaling
-  const timePerTopic = Math.max(1.0, 3.0 - (level - 1) * 0.5);
-  const totalTopics = 10 + (level * 2);
+  const timePerTopic = Math.max(0.8, 2.5 - (level - 1) * 0.7);
+  const totalTopics = 5 + (level * 5);
   const swipeThreshold = 80;
 
   const [shuffledTopics] = useState(() => {

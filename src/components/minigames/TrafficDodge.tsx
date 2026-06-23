@@ -2,12 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
 
+import { PROGRESSION_ORDER } from '../../config/tiers';
+import type { Tier } from '../../types/game';
+
 interface TrafficDodgeProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 1 }) => {
+export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [lane, setLane] = useState(1); // 0: Left, 1: Center, 2: Right
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
@@ -19,8 +23,9 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
   const obstacleId = useRef(0);
 
   // Difficulty scaling
-  const spawnInterval = Math.max(400, 1200 - (level - 1) * 200);
-  const moveSpeed = 3 + (level - 1) * 0.8;
+  const tierIndex = PROGRESSION_ORDER.indexOf(tier);
+  const spawnInterval = Math.max(300, 1200 - (level - 1) * 150 - (tierIndex * 100));
+  const moveSpeed = 3 + (level - 1) * 0.8 + (tierIndex * 0.5);
 
   useEffect(() => {
     if (!gameActive) return;

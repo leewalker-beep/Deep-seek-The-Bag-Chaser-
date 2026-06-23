@@ -30,7 +30,7 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, leve
   const [feedback, setFeedback] = useState<'success' | null>(null);
 
   // Difficulty scaling: more parts required at higher levels
-  const partsToAssemble = ALL_PARTS.slice(0, Math.min(ALL_PARTS.length, 3 + level));
+  const partsToAssemble = ALL_PARTS.slice(0, Math.min(ALL_PARTS.length, 1 + level));
 
   const handleDragEnd = (partId: string, info: any) => {
     const target = document.getElementById('socket-target');
@@ -54,7 +54,8 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, leve
 
           if (newAssembled.length === partsToAssemble.length) {
             const elapsed = (Date.now() - startTime) / 1000;
-            const targetTime = partsToAssemble.length * 1.5;
+            const timePerPart = Math.max(0.6, 1.5 - (level - 1) * 0.3);
+            const targetTime = partsToAssemble.length * timePerPart;
             let multiplier = 0.5;
             if (elapsed < targetTime * 0.8) multiplier = 4.0;
             else if (elapsed < targetTime * 1.5) multiplier = 2.5;
