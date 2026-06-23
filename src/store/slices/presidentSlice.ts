@@ -25,19 +25,11 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const order = EXECUTIVE_ORDERS.find(o => o.id === orderId);
     if (!order) return;
 
+    // Mastery Bonuses
+    const { bonus: masteryBonus, details: masteredHustlesDetails } = getMasteryBonusDetails(state.pl, orderId);
+
     // Policy Alignment Discount
-    let costMultiplier = 1;
-    const techHustles = ['techFlip'];
-    const housingHustles = ['real_estate_empire'];
-    const mediaHustles = ['media_empire'];
-
-    const hasTechMastery = state.pl.masteredHustles.some(h => techHustles.includes(h));
-    const hasHousingMastery = state.pl.masteredHustles.some(h => housingHustles.includes(h));
-    const hasMediaMastery = state.pl.masteredHustles.some(h => mediaHustles.includes(h));
-
-    if ((order.id === 'data_analytics' || order.id === 'crypto_mining') && hasTechMastery) costMultiplier = 0.9;
-    if (order.id === 'housing_policy' && hasHousingMastery) costMultiplier = 0.9;
-    if (order.id === 'media_policy' && hasMediaMastery) costMultiplier = 0.9;
+    const costMultiplier = 1 - masteryBonus;
 
     const finalCashCost = (order.cost.cash || 0) * costMultiplier;
     const finalAuraCost = (order.cost.aura || 0) * costMultiplier;
@@ -69,8 +61,6 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       gdpImpact = Math.floor(gdpImpact * 0.5);
     }
 
-    // Mastery Bonuses
-    const { bonus: masteryBonus, masteries: masteredHustlesNames } = getMasteryBonusDetails(state.pl, orderId);
     if (masteryBonus > 0) {
       approvalImpact = Math.ceil(approvalImpact * (1 + masteryBonus));
       passiveCashImpact = Math.ceil(passiveCashImpact * (1 + masteryBonus));
@@ -105,8 +95,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     });
 
     let masteryOutcomeMsg = "";
-    if (masteredHustlesNames.length > 0) {
-      masteryOutcomeMsg = ` Mastery bonus: +${Math.round(masteryBonus * 100)}% from ${masteredHustlesNames.join(', ')}.`;
+    if (masteredHustlesDetails.length > 0) {
+      masteryOutcomeMsg = ` Mastery bonus: +${Math.round(masteryBonus * 100)}% from ${masteredHustlesDetails.map(d => d.name).join(', ')}.`;
     }
 
     const diaryEntry = {
@@ -114,7 +104,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       month: state.pl.presidentMonth,
       event: order.name,
       outcome: `Successfully issued the ${order.name}. Approval adjusted by ${approvalImpact > 0 ? '+' : ''}${approvalImpact}%.${masteryOutcomeMsg}`,
-      type: 'ORDER' as const
+      type: 'ORDER' as const,
+      appliedMasteryBonuses: masteredHustlesDetails
     };
 
     const newDemographics = { ...state.pl.demographicApproval };
@@ -171,7 +162,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
     if (masteryBonus > 0) {
-      state.addTickerMessage(`Your ${masteredHustlesNames[0]} mastery boosted this order by +${Math.round(masteryBonus * 100)}%.`, 'text-emerald-400 text-xs');
+      state.addTickerMessage(`Your ${masteredHustlesDetails[0].name} mastery boosted this order by +${Math.round(masteryBonus * 100)}%.`, 'text-emerald-400 text-xs');
     }
     if (order.marketEffect) {
       set({ currentMarket: order.marketEffect.type });
