@@ -24,6 +24,7 @@ export interface HustleExecutionResult {
 }
 
 export type HustleStrategy = (
+  hustleId: string,
   state: PlayerStats,
   market: MarketType,
   levelData: HustleLevel,
@@ -33,13 +34,13 @@ export type HustleStrategy = (
   rivalThreat?: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'
 ) => HustleExecutionResult;
 
-const defaultStrategy: HustleStrategy = (state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat = 'NEUTRAL') => {
+const defaultStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat = 'NEUTRAL') => {
   const market = MARKET_CONFIGS[marketType];
   const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
   const isVending = levelData.id?.includes('vending');
 
   const result = calculateHustleMath(
-    'default',
+    hustleId,
     levelData,
     currentLevel,
     isVending ? 1 : market.expenseMultiplier,
@@ -68,7 +69,7 @@ const defaultStrategy: HustleStrategy = (state, marketType, levelData, currentLe
   };
 };
 
-const festivalStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const festivalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const choices = state.festivalChoices || { headliner: 'budget', venue: 'small', marketing: 'basic', insurance: false };
   const headlinerMult = { budget: 1.0, premium: 1.5, luxury: 2.5 }[choices.headliner];
@@ -109,7 +110,7 @@ const festivalStrategy: HustleStrategy = (state, marketType, _levelData, _curren
   };
 };
 
-const philanthropyStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const philanthropyStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const donation = state.philanthropyDonation || 10000000;
   const donationMult = (donation / 50000000) * (minigameMultiplier || 1);
@@ -129,7 +130,7 @@ const philanthropyStrategy: HustleStrategy = (state, marketType, _levelData, _cu
   };
 };
 
-const dataAnalyticsStrategy: HustleStrategy = (state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
+const dataAnalyticsStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const choice = state.dataAnalyticsChoice || 'consumer';
   let yieldCash = 0, yieldClout = 0, yieldAura = 0, heatHit = 5;
@@ -160,7 +161,7 @@ const dataAnalyticsStrategy: HustleStrategy = (state, marketType, _levelData, cu
   };
 };
 
-const cryptoMiningStrategy: HustleStrategy = (state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
+const cryptoMiningStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const strategy = state.cryptoStrategy || 'solo';
   let yieldCash = 0, heatHit = 5, risk = 0;
@@ -193,7 +194,7 @@ const cryptoMiningStrategy: HustleStrategy = (state, marketType, _levelData, cur
   };
 };
 
-const vaAgencyStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
+const vaAgencyStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const staff = state.vaStaff || 5;
   const training = state.vaTraining || 'none';
@@ -238,7 +239,7 @@ const vaAgencyStrategy: HustleStrategy = (state, marketType, _levelData, _curren
   };
 };
 
-const lobbyingStrategy: HustleStrategy = (_state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const intensity = Math.min(4, Math.max(1, Math.floor(minigameMultiplier || 1)));
   const base = 5000000;
   const cost = base;
@@ -260,7 +261,7 @@ const lobbyingStrategy: HustleStrategy = (_state, _marketType, _levelData, _curr
   };
 };
 
-const disasterStrategy: HustleStrategy = (_state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const crisisRatio = Math.min(1, Math.max(0, (minigameMultiplier || 0.5) / 4));
   const base = 10000000;
   const cost = base;
@@ -281,7 +282,7 @@ const disasterStrategy: HustleStrategy = (_state, _marketType, _levelData, _curr
   };
 };
 
-const globalFranchiseStrategy: HustleStrategy = (_state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const globalFranchiseStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const territories = Math.min(6, Math.max(1, Math.floor(minigameMultiplier || 1)));
   const base = 5000000;
   const cost = base;
@@ -304,7 +305,7 @@ const globalFranchiseStrategy: HustleStrategy = (_state, _marketType, _levelData
   };
 };
 
-const realEstateEmpireStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
+const realEstateEmpireStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const type = state.realEstateType;
   const leverage = state.realEstateLeverage;
@@ -341,7 +342,7 @@ const realEstateEmpireStrategy: HustleStrategy = (state, marketType, _levelData,
   };
 };
 
-const ventureCapitalStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
+const ventureCapitalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const stage = state.vcStage;
   const sector = state.vcSector;
@@ -391,7 +392,7 @@ const ventureCapitalStrategy: HustleStrategy = (state, marketType, _levelData, _
   };
 };
 
-const filmStudioStrategy: HustleStrategy = (state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const genre = state.filmGenre || 'action';
   const budget = state.filmBudget || 'medium';
@@ -417,7 +418,7 @@ const filmStudioStrategy: HustleStrategy = (state, marketType, _levelData, _curr
   };
 };
 
-const fightPromoterStrategy: HustleStrategy = (_state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const fightPromoterStrategy: HustleStrategy = (_hustleId, _state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const mult = minigameMultiplier || 1;
   const cost = 15000000 * market.expenseMultiplier;
@@ -436,7 +437,7 @@ const fightPromoterStrategy: HustleStrategy = (_state, marketType, _levelData, _
   };
 };
 
-const spaceInvestmentStrategy: HustleStrategy = (_state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const cost = 100000000 * market.expenseMultiplier;
   const mult = minigameMultiplier || 1.0;
@@ -486,7 +487,7 @@ export const executeHustleAction = (
   rivalThreat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL'
 ): HustleExecutionResult => {
   const strategy = getHustleStrategy(hustleId);
-  const result = strategy(state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  const result = strategy(hustleId, state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
 
   // Apply Sentiment Multiplier (for ticker messages only now, math is centralized)
   if (state.activeSentiment) {
