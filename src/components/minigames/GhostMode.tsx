@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
 
+import { PROGRESSION_ORDER } from '../../config/tiers';
+import type { Tier } from '../../types/game';
+
 interface GhostModeProps {
   level?: number;
+  tier?: Tier;
   onComplete: (multiplier: number) => void;
   title?: string;
   instruction?: string;
@@ -14,6 +18,7 @@ const DECOY_EMOJIS = ["🎃", "🦇", "🕷️", "🕸️", "💀"];
 
 export const GhostMode: React.FC<GhostModeProps> = ({
   level = 1,
+  tier = 'MUD',
   onComplete,
   title = "GHOST MODE",
   instruction = "TAP THE GHOSTS!",
@@ -26,11 +31,14 @@ export const GhostMode: React.FC<GhostModeProps> = ({
   const [feedback, setFeedback] = useState<'tap' | null>(null);
   const targetId = React.useRef(0);
 
+  // Difficulty scaling
+  const tierIndex = PROGRESSION_ORDER.indexOf(tier);
+  const targetScore = 12 + (level - 1) * 2 + (tierIndex * 4);
+  const spawnRate = Math.max(300, 800 - (level - 1) * 150);
+  const itemLifespan = Math.max(800, 2000 - (level - 1) * 300);
+
   useEffect(() => {
     if (!gameActive) return;
-
-    const speedMultiplier = 1 + (level - 1) * 0.3;
-    const spawnRate = 800 / speedMultiplier;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -46,13 +54,19 @@ export const GhostMode: React.FC<GhostModeProps> = ({
       setTargets(prev => {
         if (prev.length > 5 + level) return prev;
         const isDecoy = Math.random() < 0.3;
-        return [...prev, {
+        const newItem = {
           id: targetId.current++,
           top: Math.random() * 70 + 15,
           left: Math.random() * 70 + 15,
           isDecoy,
           emoji: isDecoy ? DECOY_EMOJIS[Math.floor(Math.random() * DECOY_EMOJIS.length)] : targetEmoji
-        }];
+        };
+
+        setTimeout(() => {
+          setTargets(p => p.filter(t => t.id !== newItem.id));
+        }, itemLifespan);
+
+        return [...prev, newItem];
       });
     }, spawnRate);
 
@@ -60,7 +74,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({
       clearInterval(timer);
       clearInterval(spawner);
     };
-  }, [gameActive, level]);
+  }, [gameActive, spawnRate, itemLifespan, level]);
 
   const handleTap = (id: number, isDecoy: boolean) => {
     if (!gameActive) return;
@@ -82,7 +96,6 @@ export const GhostMode: React.FC<GhostModeProps> = ({
 
   useEffect(() => {
     if (!gameActive) {
-      const targetScore = 12 + (level - 1) * 2;
       let multiplier = 0.5;
       if (score >= targetScore) multiplier = 3.0;
       else if (score >= targetScore * 0.6) multiplier = 2.0;
@@ -131,7 +144,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({
           colorClass="bg-purple-500"
         />
         <div className="mt-2 text-center text-[10px] text-slate-600 font-black uppercase">
-          Target: {12 + (level - 1) * 2}+ for 3x Yield
+          Target: {targetScore}+ for 3x Yield
         </div>
       </div>
     </div>

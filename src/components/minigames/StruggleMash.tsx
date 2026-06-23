@@ -9,13 +9,18 @@ interface StruggleMashProps {
 
 export const StruggleMash: React.FC<StruggleMashProps> = ({
   onComplete,
+  level = 1,
   title = "THE STRUGGLE",
   instruction = "Mash to survive the grind"
 }) => {
   const [progress, setProgress] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
   const [isActive, setIsActive] = useState(true);
   const [feedback, setFeedback] = useState<'tap' | null>(null);
+
+  // Difficulty scaling
+  const targetTaps = 10 + (level - 1) * 10;
+  const initialTime = Math.max(4, 10 - (level - 1) * 2);
+  const [timeLeft, setTimeLeft] = useState(initialTime);
 
   useEffect(() => {
     if (!isActive) return;
@@ -38,7 +43,8 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
 
   const handleMash = () => {
     if (!isActive) return;
-    setProgress(prev => Math.min(100, prev + 6));
+    const increment = 100 / targetTaps;
+    setProgress(prev => Math.min(100, prev + increment));
     setFeedback('tap');
     setTimeout(() => setFeedback(null), 50);
     if (navigator.vibrate) navigator.vibrate(20);
@@ -95,7 +101,10 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
             <span className="text-zinc-600">TIME:</span>
             <span className={timeLeft < 3 ? 'text-red-500' : 'text-zinc-400'}>{timeLeft.toFixed(1)}s</span>
           </div>
-          <span className={progress >= 90 ? 'text-emerald-500' : 'text-zinc-600'}>TARGET: 90%</span>
+          <div className="flex flex-col items-end">
+            <span className={progress >= 90 ? 'text-emerald-500' : 'text-zinc-600'}>TARGET: 90%</span>
+            <span className="text-[8px] text-zinc-700">LEVEL {level}</span>
+          </div>
         </div>
       </div>
     </div>

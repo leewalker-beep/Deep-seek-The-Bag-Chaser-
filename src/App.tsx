@@ -608,12 +608,13 @@ function App() {
                 if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} level={hustleLevel} />;
                 if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} level={hustleLevel} />;
                 if (activeMiniGame === 'LaborBuild') return <LaborBuild onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'TrafficDodge') return <TrafficDodge onComplete={onComplete} level={hustleLevel} />;
+                if (activeMiniGame === 'TrafficDodge') return <TrafficDodge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'PlasmaDonation') return <PlasmaDonation onComplete={onComplete} level={hustleLevel} />;
                 if (activeMiniGame === 'GhostTap' || activeMiniGame === 'GhostMode') return (
                   <GhostMode
                     key={hustleLevel}
                     level={hustleLevel}
+                    tier={pl.currentTier}
                     onComplete={onComplete}
                   />
                 );
@@ -679,6 +680,8 @@ function App() {
                 if (activeMiniGame === 'MagneticSweep') {
                   return (
                     <MagneticSweep
+                      level={hustleLevel}
+                      tier={pl.currentTier}
                       onComplete={(sweepRes) => {
                         requestAnimationFrame(() => {
                           const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));

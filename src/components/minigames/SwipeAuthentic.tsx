@@ -40,8 +40,8 @@ export const SwipeAuthentic: React.FC<SwipeAuthenticProps> = ({ onComplete, leve
   const timerRef = useRef<number | null>(null);
 
   // Difficulty scaling
-  const timePerProduct = Math.max(0.5, 1.5 - (level - 1) * 0.3);
-  const productsToInspect = 10 + (level * 5);
+  const timePerProduct = Math.max(0.5, 2.0 - (level - 1) * 0.5);
+  const productsToInspect = 5 + (level * 5);
   const swipeThreshold = 100; // Require >50% of card width for registration
 
   const [shuffledProducts] = useState(() => {
