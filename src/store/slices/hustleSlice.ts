@@ -529,6 +529,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     (get() as any).updateChallengeProgress('hustle_count', 1);
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
+    (get() as any).updateChallengeProgress('aura_gain', result.yieldAura);
 
     get().logAction({
       month: state.pl.month,
@@ -701,6 +702,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     (get() as any).updateChallengeProgress('hustle_count', 1);
     (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
     (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
+    (get() as any).updateChallengeProgress('aura_gain', result.yieldAura);
 
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
@@ -877,6 +879,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     if (result.success) {
+      if (result.isRare) {
+        (get() as any).updateChallengeProgress('big_win', 1);
+      }
       if (hustleId === 'real_estate_empire') {
         get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });
       } else if (hustleId === 'privateequity') {

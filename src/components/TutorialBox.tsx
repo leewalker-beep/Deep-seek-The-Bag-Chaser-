@@ -76,8 +76,8 @@ export const TutorialBox: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-      <div className="w-full max-w-sm bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(16,185,129,0.2)] relative overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm pointer-events-none">
+      <div className="w-full max-w-sm bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(16,185,129,0.2)] relative overflow-hidden pointer-events-auto">
         {/* Decorative background elements */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
@@ -94,6 +94,7 @@ export const TutorialBox: React.FC = () => {
             </div>
             <button
               onClick={() => setTutorialSkipped(true)}
+              onTouchEnd={(e) => { e.preventDefault(); setTutorialSkipped(true); }}
               className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-tighter border border-slate-800 px-2 py-1 rounded"
             >
               Skip
@@ -111,6 +112,7 @@ export const TutorialBox: React.FC = () => {
                 <button
                   key={hId}
                   onClick={() => handleHustle(hId)}
+                  onTouchEnd={(e) => { e.preventDefault(); handleHustle(hId); }}
                   className="w-full py-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-emerald-500/50 rounded-2xl flex items-center px-5 gap-4 transition-all active:scale-95 group"
                 >
                   <span className="text-3xl group-hover:scale-110 transition-transform">{h?.icon}</span>
@@ -128,6 +130,7 @@ export const TutorialBox: React.FC = () => {
             {tutorialStep === 4 && pl.currentTier === 'MUD' && (
               <button
                 onClick={() => advanceTier()}
+                onTouchEnd={(e) => { e.preventDefault(); advanceTier(); }}
                 className="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black rounded-2xl transition-all active:scale-95 uppercase tracking-wider shadow-lg shadow-purple-900/20 border border-purple-400/30"
               >
                 ⚡ ADVANCE TO STREET ⚡
@@ -155,6 +158,7 @@ export const TutorialBox: React.FC = () => {
             {isMet && (
               <button
                 onClick={handleContinue}
+                onTouchEnd={(e) => { e.preventDefault(); handleContinue(); }}
                 className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl transition-all animate-in fade-in slide-in-from-bottom-4 duration-300 uppercase tracking-widest text-sm shadow-[0_10px_20px_rgba(16,185,129,0.3)]"
               >
                 Continue

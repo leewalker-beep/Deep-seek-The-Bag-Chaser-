@@ -3,6 +3,7 @@ import type { GameState } from '../../types/game';
 
 export interface DailyChallenge {
   id: string;
+  type?: string;
   description: string;
   target: number;
   current: number;
@@ -22,13 +23,13 @@ export interface ChallengeSlice {
 }
 
 const CHALLENGE_POOL = [
-  { id: 'hustle_count', description: 'Complete 5 hustles', target: 5, reward: { cash: 2000 } },
-  { id: 'hustle_count_high', id_actual: 'hustle_count', description: 'Complete 15 hustles', target: 15, reward: { cash: 10000 } },
-  { id: 'earn_cash', description: 'Earn $25,000', target: 25000, reward: { cash: 5000 } },
-  { id: 'earn_cash_high', id_actual: 'earn_cash', description: 'Earn $1,000,000', target: 1000000, reward: { cash: 50000 } },
-  { id: 'clout_gain', description: 'Gain 50 Clout', target: 50, reward: { cash: 2000, clout: 20 } },
-  { id: 'aura_gain', description: 'Gain 50 Aura', target: 50, reward: { cash: 2000, aura: 20 } },
-  { id: 'big_win', description: 'Get a Big Win', target: 1, reward: { cash: 20000 } },
+  { id: 'hustle_count', type: 'hustle_count', description: 'Complete 5 hustles', target: 5, reward: { cash: 2000 } },
+  { id: 'complete_15_hustles', type: 'hustle_count', description: 'Complete 15 hustles', target: 15, reward: { cash: 10000 } },
+  { id: 'earn_cash', type: 'earn_cash', description: 'Earn $25,000', target: 25000, reward: { cash: 5000 } },
+  { id: 'earn_1M_dollars', type: 'earn_cash', description: 'Earn $1,000,000', target: 1000000, reward: { cash: 50000 } },
+  { id: 'clout_gain', type: 'clout_gain', description: 'Gain 50 Clout', target: 50, reward: { cash: 2000, clout: 20 } },
+  { id: 'aura_gain', type: 'aura_gain', description: 'Gain 50 Aura', target: 50, reward: { cash: 2000, aura: 20 } },
+  { id: 'big_win', type: 'big_win', description: 'Get a Big Win', target: 1, reward: { cash: 20000 } },
 ];
 
 export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlice> = (set, get) => ({
@@ -72,7 +73,6 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
     const shuffled = [...CHALLENGE_POOL].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 3).map(c => ({
       ...c,
-      id: (c as any).id_actual || c.id,
       current: 0,
       isCompleted: false
     }));
@@ -128,10 +128,10 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
     }
   },
 
-  updateChallengeProgress: (id, amount) => {
+  updateChallengeProgress: (idOrType, amount) => {
     const state = get() as any;
     const updatedChallenges = state.dailyChallenges.map((c: any) =>
-        c.id === id ? { ...c, current: c.current + amount } : c
+        (c.id === idOrType || c.type === idOrType) ? { ...c, current: c.current + amount } : c
     );
 
     set({ dailyChallenges: updatedChallenges } as any);
