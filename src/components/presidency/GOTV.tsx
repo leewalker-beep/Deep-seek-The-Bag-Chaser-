@@ -10,6 +10,8 @@ export const GOTV: React.FC<GOTVProps> = ({ onComplete }) => {
     <StruggleMash
       title="GET OUT THE VOTE"
       instruction="Mash to mobilize volunteers!"
+      mashLabel="MOBILIZE!!!"
+      targetLabel="TARGET: 90% TURNOUT"
       onComplete={onComplete}
     />
   );

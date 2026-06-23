@@ -36,6 +36,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
 
   const [isCasting, setIsCasting] = useState(false);
   const [activeMinigame, setActiveMinigame] = useState<string | null>(null);
+  const [targetDemographic, setTargetDemographic] = useState('Latinos');
 
   const handleStageComplete = (multiplier: number = 1.0) => {
     setIsCasting(true);
@@ -67,10 +68,10 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
   };
 
   if (activeMinigame === 'PersuadeVoters') {
-    return <PersuadeVoters demographic="Latinos" onComplete={(mult) => {
+    return <PersuadeVoters demographic={targetDemographic} onComplete={(mult) => {
       const gain = Math.floor(mult * 5);
-      updateDemographicApproval('Latinos', gain);
-      addTickerMessage(`You won over key voters in the Latino community: +${gain}% Approval`, 'text-emerald-400');
+      updateDemographicApproval(targetDemographic, gain);
+      addTickerMessage(`You won over key voters in the ${targetDemographic} community: +${gain}% Approval`, 'text-emerald-400');
       setActiveMinigame(null);
     }} />;
   }
@@ -213,7 +214,11 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
         return (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-4 flex gap-2">
-                <BaseButton onClick={() => setActiveMinigame('PersuadeVoters')} className="flex-1 text-[10px] py-2">PERSUADE VOTERS</BaseButton>
+                <BaseButton onClick={() => {
+                  const dems = ['Latinos', 'Seniors', 'Veterans', 'Youth', 'Suburban', 'Rural', 'Urban'];
+                  setTargetDemographic(dems[Math.floor(Math.random() * dems.length)]);
+                  setActiveMinigame('PersuadeVoters');
+                }} className="flex-1 text-[10px] py-2">PERSUADE VOTERS</BaseButton>
                 <BaseButton onClick={() => setActiveMinigame('SwingStateSweep')} className="flex-1 text-[10px] py-2">SWING STATE SWEEP</BaseButton>
              </div>
             <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center">

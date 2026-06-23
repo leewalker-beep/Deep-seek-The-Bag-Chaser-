@@ -11,6 +11,10 @@ export const SwingStateSweep: React.FC<SwingStateSweepProps> = ({ onComplete }) 
       title="SWING STATE SWEEP"
       instruction="Drag to collect electoral votes!"
       icon="🗳️"
+      itemEmojis={['🇺🇸', '🟦', '🟥', '🗳️']}
+      rareEmoji="✨"
+      scoreLabel="VOTES"
+      rareLabel="MOMENTUM"
       onComplete={onComplete}
     />
   );

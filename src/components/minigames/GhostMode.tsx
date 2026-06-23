@@ -12,6 +12,7 @@ interface GhostModeProps {
   title?: string;
   instruction?: string;
   targetEmoji?: string;
+  scoreLabel?: string;
 }
 
 const DECOY_EMOJIS = ["🎃", "🦇", "🕷️", "🕸️", "💀"];
@@ -22,7 +23,8 @@ export const GhostMode: React.FC<GhostModeProps> = ({
   onComplete,
   title = "GHOST MODE",
   instruction = "TAP THE GHOSTS!",
-  targetEmoji = "👻"
+  targetEmoji = "👻",
+  scoreLabel = "SCORE"
 }) => {
   const [targets, setTargets] = useState<{ id: number; top: number; left: number; isDecoy: boolean; emoji: string }[]>([]);
   const [score, setScore] = useState(0);
@@ -113,7 +115,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({
         <div className="flex items-center justify-center gap-2">
            <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-purple-700 uppercase">{instruction}</motion.span>
         </div>
-        <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">SCORE: {score}</div>
+        <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">{scoreLabel}: {score}</div>
       </div>
 
       <div className="relative w-full h-[400px] bg-slate-950 rounded-3xl border-2 border-purple-900/30 overflow-hidden shadow-[inset_0_0_100px_rgba(88,28,135,0.2)]">

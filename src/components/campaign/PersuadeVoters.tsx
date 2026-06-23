@@ -12,6 +12,10 @@ export const PersuadeVoters: React.FC<PersuadeVotersProps> = ({ demographic, onC
       case 'latinos': return '🤝';
       case 'seniors': return '👴';
       case 'veterans': return '🎖️';
+      case 'youth': return '🎮';
+      case 'suburban': return '🏡';
+      case 'rural': return '🚜';
+      case 'urban': return '🏙️';
       default: return '👥';
     }
   };
@@ -21,6 +25,7 @@ export const PersuadeVoters: React.FC<PersuadeVotersProps> = ({ demographic, onC
       title="PERSUADE VOTERS"
       instruction={`Win over ${demographic}!`}
       targetEmoji={getDemographicEmoji(demographic)}
+      scoreLabel="APPROVAL"
       onComplete={onComplete}
     />
   );

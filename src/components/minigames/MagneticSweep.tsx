@@ -26,15 +26,23 @@ interface MagneticSweepProps {
   icon?: string;
   level?: number;
   tier?: Tier;
+  itemEmojis?: string[];
+  rareEmoji?: string;
+  scoreLabel?: string;
+  rareLabel?: string;
 }
 
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   onComplete,
   title = "MAGNETIC SWEEP",
   instruction = "Drag magnet to collect scrap!",
-  icon: _icon = "🧲",
+  icon = "🧲",
   level = 1,
-  tier = 'MUD'
+  tier = 'MUD',
+  itemEmojis = ['🔧', '⚙️', '🔩', '📎', '⛓️'],
+  rareEmoji = '💎',
+  scoreLabel = "SCRAP",
+  rareLabel = "RARE"
 }) => {
   const [items, setItems] = useState<ScrapItem[]>([]);
   const [score, setScore] = useState(0);
@@ -69,7 +77,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
       const isRare = Math.random() < rareChance;
       const newItem: ScrapItem = {
         id: nextId.current++,
-        type: isRare ? '💎' : ['🔧', '⚙️', '🔩', '📎', '⛓️'][Math.floor(Math.random() * 5)],
+        type: isRare ? rareEmoji : itemEmojis[Math.floor(Math.random() * itemEmojis.length)],
         x: 10 + Math.random() * 80,
         y: 20 + Math.random() * 60,
         isRare
@@ -153,8 +161,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter uppercase">{title} <span className="text-cyan-500">L{level}</span></h2>
         <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
         <div className="flex justify-center gap-6 mt-4">
-            <div className="text-emerald-400 font-mono font-black">SCRAP: {score}</div>
-            <div className="text-amber-400 font-mono font-black">RARE: {rareCount}</div>
+            <div className="text-emerald-400 font-mono font-black">{scoreLabel}: {score}</div>
+            <div className="text-amber-400 font-mono font-black">{rareLabel}: {rareCount}</div>
         </div>
       </div>
 
@@ -171,7 +179,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
           transition={{ type: 'spring', damping: 20, stiffness: 200 }}
           className="absolute w-16 h-16 -ml-8 -mt-8 flex items-center justify-center text-5xl z-40 pointer-events-none"
         >
-          🧲
+          {icon}
           <motion.div
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
