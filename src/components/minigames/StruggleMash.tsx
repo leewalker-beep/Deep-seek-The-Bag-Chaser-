@@ -5,13 +5,17 @@ interface StruggleMashProps {
   onComplete: (multiplier: number) => void; level?: number;
   title?: string;
   instruction?: string;
+  mashLabel?: string;
+  targetLabel?: string;
 }
 
 export const StruggleMash: React.FC<StruggleMashProps> = ({
   onComplete,
   level = 1,
   title = "THE STRUGGLE",
-  instruction = "Mash to survive the grind"
+  instruction = "Mash to survive the grind",
+  mashLabel = "MASH!!!",
+  targetLabel = "TARGET: 90%"
 }) => {
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(true);
@@ -93,7 +97,7 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
             isActive ? 'bg-zinc-100 text-zinc-950 border-b-8 border-zinc-400 shadow-xl' : 'bg-zinc-900 text-zinc-700'
           }`}
         >
-          {isActive ? 'MASH!!!' : 'TIME UP'}
+          {isActive ? mashLabel : 'TIME UP'}
         </button>
 
         <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
@@ -102,7 +106,7 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
             <span className={timeLeft < 3 ? 'text-red-500' : 'text-zinc-400'}>{timeLeft.toFixed(1)}s</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className={progress >= 90 ? 'text-emerald-500' : 'text-zinc-600'}>TARGET: 90%</span>
+            <span className={progress >= 90 ? 'text-emerald-500' : 'text-zinc-600'}>{targetLabel}</span>
             <span className="text-[8px] text-zinc-700">LEVEL {level}</span>
           </div>
         </div>
