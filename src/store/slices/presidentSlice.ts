@@ -144,6 +144,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     const newPl = {
       ...state.pl,
+      congressSupport: Math.max(0, Math.min(100, state.pl.congressSupport)),
       federalBudget: state.pl.federalBudget - finalCashCost,
       clout: state.pl.clout - scaledCloutCost,
       aura: state.pl.aura - finalAuraCost,
@@ -526,7 +527,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       if (updatedPl.approvalRating > 60) newSupport = 70;
       else if (updatedPl.approvalRating < 40) newSupport = 30;
 
-      updatedPl.congressSupport = newSupport;
+      updatedPl.congressSupport = Math.max(0, Math.min(100, newSupport));
       state.addTickerMessage(`MIDTERMS: Congress support adjusted to ${newSupport}% based on approval.`, 'text-blue-300 font-bold');
       updatedPl.presidentialDiary.unshift({
         id: Math.random().toString(36).substring(7),

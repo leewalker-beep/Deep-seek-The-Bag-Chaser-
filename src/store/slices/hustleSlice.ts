@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import type { GameState, GameAction, Tier } from '../../types/game';
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
-import { calculateHustleMath } from '../../engine/mathEngine';
+import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions } from '../../engine/advancementEngine';
@@ -17,48 +17,7 @@ import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 
-const calculateFlexBonuses = (pl: GameState['pl']) => {
-  const techConglomerateCount = pl.flexAssets['tech_conglomerate'] || 0;
-  const flexBonusMultiplier = 1 + (techConglomerateCount * 0.1);
 
-  let cashBonus = 0;
-  let cloutBonus = 0;
-  let auraBonus = 0;
-  let mentalBonus = 0;
-
-  FLEX_ASSETS.forEach(asset => {
-    const count = pl.flexAssets[asset.id] || 0;
-    if (count > 0) {
-      const bonusScale = count * flexBonusMultiplier;
-      if (asset.allGainsBonus) {
-        cashBonus += asset.allGainsBonus * bonusScale;
-        cloutBonus += asset.allGainsBonus * bonusScale;
-        auraBonus += asset.allGainsBonus * bonusScale;
-      }
-      if (asset.cloutBonus) cloutBonus += asset.cloutBonus * bonusScale;
-      if (asset.auraBonus) auraBonus += asset.auraBonus * bonusScale;
-      if (asset.mentalRecoveryBonus) mentalBonus += asset.mentalRecoveryBonus * bonusScale;
-    }
-  });
-
-  return { cashBonus, cloutBonus, auraBonus, mentalBonus };
-};
-
-const applyFlexBonuses = (result: any, bonuses: ReturnType<typeof calculateFlexBonuses>) => {
-  const { cashBonus, cloutBonus, auraBonus, mentalBonus } = bonuses;
-
-  result.yieldCash = Math.floor(result.yieldCash * (1 + cashBonus / 100));
-  result.yieldClout = Math.floor(result.yieldClout * (1 + cloutBonus / 100));
-  result.yieldAura = Math.floor(result.yieldAura * (1 + auraBonus / 100));
-
-  if (result.mentalHit < 0) {
-    // Reduce mental drain
-    result.mentalHit = Math.ceil(result.mentalHit * (1 - mentalBonus / 100));
-  } else if (result.mentalHit > 0) {
-    // Increase mental recovery
-    result.mentalHit = Math.floor(result.mentalHit * (1 + mentalBonus / 100));
-  }
-};
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
@@ -353,7 +312,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         : (branch.id === 'l2a' ? state.pl.flipCount : state.pl.rentPortfolioCount);
 
       if (branch.maxRepeat !== undefined && currentCount >= branch.maxRepeat) {
-        return { success: false, message: `Maximum ${branch.maxRepeat} reached` };
+        const msg = branch.id === 'l2b' ? `Maximum ${branch.maxRepeat} Rent Portfolios reached.` : `Maximum ${branch.maxRepeat} reached`;
+        return { success: false, message: msg };
       }
     }
 
@@ -613,6 +573,20 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         };
     }
 
+    if (levelData.isRepeatable) {
+      const currentCount = (hustleId === 'r_vending')
+        ? state.pl.vendingCount
+        : (levelData.id === 'l2a' ? state.pl.flipCount : (levelData.id === 'l2b' ? state.pl.rentPortfolioCount : 0));
+
+      if (levelData.maxRepeat !== undefined && currentCount >= levelData.maxRepeat) {
+        const msg = levelData.id === 'l2b' ? `Maximum ${levelData.maxRepeat} Rent Portfolios reached.` : `Maximum ${levelData.maxRepeat} reached`;
+        return {
+          success: false, netChange: 0, message: msg,
+          cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+        };
+      }
+    }
+
     // Backup if spending > 10%
     if (levelData.cost > state.pl.bag * 0.1) {
       backupSave();
@@ -629,9 +603,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       forceSuccess,
       rivalThreat
     );
-
-    // Apply Flex Asset Bonuses
-    applyFlexBonuses(result, calculateFlexBonuses(state.pl));
 
     const newBag = state.pl.bag - result.cost + result.yieldCash;
     const newDynamicPassives = { ...state.pl.dynamicPassives };
@@ -948,6 +919,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           if (!currentNode.maxRepeat || currentCount < currentNode.maxRepeat) {
             targetNodeData = currentNode;
             isRepeat = true;
+          } else {
+            const msg = branchId === 'l2b' ? `Maximum ${currentNode.maxRepeat} Rent Portfolios reached.` : `Maximum ${currentNode.maxRepeat} reached`;
+            get().addTickerMessage(msg, 'text-red-400');
+            return false;
           }
         }
       }

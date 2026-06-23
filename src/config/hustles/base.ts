@@ -49,7 +49,7 @@ HUSTLES.r_labor = {
   branches: {
     l1: { level: 1, id: 'l1', name: 'Manual Labor', cost: 0, yieldCash: 2000, yieldClout: 2, yieldAura: 2, mentalHit: -8, cloutReq: 0, auraReq: 0, nextBranches: ['l2a', 'l2b'], miniGame: 'LaborBuild' },
     l2a: { level: 2, id: 'l2a', name: 'House Flip', cost: 5000, yieldCash: 8000, yieldClout: 8, yieldAura: 8, mentalHit: -15, cloutReq: 30, auraReq: 20, nextBranches: ['l3a'], miniGame: 'LaborBuild' },
-    l2b: { level: 2, id: 'l2b', name: 'Rent Portfolio', cost: 15000, yieldCash: 25000, yieldClout: 4, yieldAura: 4, mentalHit: -5, cloutReq: 40, auraReq: 25, passiveYield: 500, nextBranches: ['l3a'], isRepeatable: true, maxRepeat: 10, miniGame: 'LaborBuild' },
+    l2b: { level: 2, id: 'l2b', name: 'Rent Portfolio', cost: 15000, yieldCash: 25000, yieldClout: 4, yieldAura: 4, mentalHit: -5, cloutReq: 40, auraReq: 25, passiveYield: 500, nextBranches: ['l3a'], isRepeatable: true, maxRepeat: 20, miniGame: 'LaborBuild' },
     l3a: { level: 3, id: 'l3a', name: 'Commercial Real Estate', cost: 100000, yieldCash: 150000, yieldClout: 15, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50, passiveYield: 8000, miniGame: 'LaborBuild' },
   },
 };

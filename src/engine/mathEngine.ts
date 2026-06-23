@@ -71,8 +71,8 @@ export function calculateHustleMath(
       bigWinMessage = 'VIRAL PRODUCT! 5x sales boost!';
     } else if (hustleId === 'meme' && Math.random() < 0.10) {
       isBigWin = true;
-      yieldCash *= 10;
-      bigWinMessage = 'TO THE MOON! Meme coin pumps 10x!';
+      yieldCash *= 5;
+      bigWinMessage = 'TO THE MOON! Meme coin pumps 5x!';
     } else if (hustleId === 'festival' && Math.random() < 0.08) {
       const profit = yieldCash - cost;
       if (profit > 0) {
@@ -152,9 +152,9 @@ export const calculateFlexBonuses = (pl: PlayerStats) => {
 export const applyFlexBonuses = (result: MathResult, bonuses: ReturnType<typeof calculateFlexBonuses>) => {
   const { cashBonus, cloutBonus, auraBonus, mentalBonus } = bonuses;
 
-  result.yieldCash = Math.floor(result.yieldCash * (1 + cashBonus / 100));
-  result.yieldClout = Math.floor(result.yieldClout * (1 + cloutBonus / 100));
-  result.yieldAura = Math.floor(result.yieldAura * (1 + auraBonus / 100));
+  result.yieldCash = Math.floor(result.yieldCash * Math.min(2.0, (1 + cashBonus / 100)));
+  result.yieldClout = Math.floor(result.yieldClout * Math.min(2.0, (1 + cloutBonus / 100)));
+  result.yieldAura = Math.floor(result.yieldAura * Math.min(2.0, (1 + auraBonus / 100)));
 
   if (result.mentalHit < 0) {
     // Reduce mental drain
