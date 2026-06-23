@@ -891,7 +891,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           get().logEvent('MARKET_WIN', { type: 'TRADE_SUCCESS', profit: result.yieldCash - result.cost });
         }
       } else if (hustleId === 'data_monopoly' || hustleId === 'central_bank_play') {
-        get().logEvent('LAW_PASSED', { hustleId, name: hustle.name });
+        get().logEvent('LAW_PASSED', {
+          hustleId,
+          name: hustle.name,
+          cost: result.cost,
+          cloutCost: levelData.cloutReq,
+          approvalImpact: result.approvalBonus || 0
+        });
+      } else if (hustleId === 'media_empire') {
+        get().logEvent('SPECIAL_EVENT', {
+          type: 'MEDIA_EXPANSION',
+          level: currentLevel,
+          passiveAdded: result.passiveAdded
+        });
       }
 
       const activeRival = state.pl.rivals?.find(r => r.currentBid > 0);

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
 import { HUSTLE_BADGES } from '../config/badges';
 import { ConfirmationModal } from './ui/ConfirmationModal';
+import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
+import { MARKET_CONFIGS } from '../config/marketConfig';
+import { useGameStore } from '../store/gameStore';
 
 interface HustleCardProps {
   hustle: Hustle;
@@ -25,6 +28,8 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     cost: number;
   } | null>(null);
 
+  const currentMarket = useGameStore(state => state.currentMarket);
+
   const currentLevel = player.hustleLevels[hustle.id] || 1;
   let levelData: HustleLevel | undefined;
   let nextBranches: HustleLevel[] = [];
@@ -32,15 +37,35 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   if (hustle.branches) {
     const currentNodeId = currentBranchId || player.hustleBranchIds[hustle.id] || hustle.startBranchId;
     levelData = currentNodeId ? hustle.branches[currentNodeId] : undefined;
-
-    // Next branches for branch-based hustles are handled by BranchChoice component in App.tsx
   } else if (hustle.levels) {
     levelData = hustle.levels.find((l) => l.level === currentLevel);
     const nextLevel = hustle.levels.find((l) => l.level === currentLevel + 1);
     if (nextLevel) nextBranches = [nextLevel];
   }
 
-  if (!levelData) {
+  const effectiveStats = useMemo(() => {
+    if (!levelData) return null;
+    const market = MARKET_CONFIGS[currentMarket];
+    const isVending = hustle.id === 'r_vending';
+    const rivalThreat = player.rivalThreats?.[hustle.tier] || 'NEUTRAL';
+
+    const baseMath = calculateHustleMath(
+      hustle.id,
+      levelData,
+      currentLevel,
+      isVending ? 1 : market.expenseMultiplier,
+      market.yieldMultiplier,
+      market.heatMultiplier,
+      1, // minigame multiplier 1.0 for display
+      true, // success true for display
+      player.mentalShieldTurns,
+      rivalThreat
+    );
+
+    return getEffectiveHustleStats(hustle.id, levelData, player, currentLevel, baseMath);
+  }, [hustle.id, levelData, player, currentLevel, currentMarket]);
+
+  if (!levelData || !effectiveStats) {
     return (
       <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
         <div className="text-red-400 text-xs">No data available for this branch</div>
@@ -48,7 +73,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     );
   }
 
-  const canAfford = player.bag >= levelData.cost;
+  const canAfford = player.bag >= effectiveStats.cost;
   const isVending = hustle.id === 'r_vending';
 
   const tierClass = `hustle-card-${hustle.tier.toLowerCase()}`;
@@ -114,14 +139,14 @@ export const HustleCard: React.FC<HustleCardProps> = ({
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-slate-950/50 rounded-lg p-2 border border-slate-800/50">
           <div className="text-[8px] text-slate-500 uppercase mb-0.5">EST. YIELD</div>
-          <div className="text-emerald-400 font-bold font-mono">${levelData.yieldCash.toLocaleString()}</div>
+          <div className="text-emerald-400 font-bold font-mono">${effectiveStats.yieldCash.toLocaleString()}</div>
         </div>
         <div className="bg-slate-950/50 rounded-lg p-2 border border-slate-800/50">
           <div className="text-[8px] text-slate-500 uppercase mb-0.5">CLOUT / AURA</div>
           <div className="text-sm font-medium">
-            <span className="text-blue-400">+{levelData.yieldClout}</span>
+            <span className="text-blue-400">+{effectiveStats.yieldClout}</span>
             <span className="text-slate-600 mx-1">/</span>
-            <span className="text-purple-400">+{levelData.yieldAura}</span>
+            <span className="text-purple-400">+{effectiveStats.yieldAura}</span>
           </div>
         </div>
       </div>
@@ -131,26 +156,26 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           <div className="space-y-2">
             <div className="flex justify-between items-center px-1">
               <span className="text-[10px] font-bold text-slate-500 uppercase">Current owned: {player.vendingCount}</span>
-              <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * (levelData.passiveYield || 250)}/month</span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase">Total passive: ${player.vendingCount * (levelData.passiveYield || 150)}/month</span>
             </div>
             <button
               onClick={() => onExecute()}
               className="w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 bg-emerald-600 text-white hover:bg-emerald-500"
             >
-              BUY MACHINE (${levelData.cost.toLocaleString()})
+              BUY MACHINE (${effectiveStats.cost.toLocaleString()})
             </button>
           </div>
         ) : (
           <button
             id="hustle-execute-button"
-            onClick={() => handleAction('EXECUTE', levelData!.cost)}
+            onClick={() => handleAction('EXECUTE', effectiveStats.cost)}
             className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
               canAfford
                 ? 'bg-emerald-600 text-white hover:bg-emerald-500'
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (levelData.cost > 0 ? `RUN IT (-$${levelData.cost.toLocaleString()})` : 'EXECUTE'))}
+            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (effectiveStats.cost > 0 ? `RUN IT (-$${effectiveStats.cost.toLocaleString()})` : 'EXECUTE'))}
           </button>
         )}
 
@@ -158,17 +183,17 @@ export const HustleCard: React.FC<HustleCardProps> = ({
           {/* Repeatable Logic */}
           {levelData.isRepeatable && !isVending && (
             <button
-              onClick={() => handleAction('REPEAT', levelData!.cost, player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
+              onClick={() => handleAction('REPEAT', effectiveStats.cost, player.hustleBranchIds[hustle.id] || hustle.startBranchId)}
               disabled={
-                player.bag < levelData!.cost ||
-                (levelData!.maxRepeat !== undefined &&
-                  (hustle.id === 'r_vending' ? player.vendingCount : (levelData!.id === 'l2a' ? player.flipCount : player.rentPortfolioCount)) >= levelData!.maxRepeat)
+                player.bag < effectiveStats.cost ||
+                (levelData.maxRepeat !== undefined &&
+                  (hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentPortfolioCount)) >= levelData.maxRepeat)
               }
               className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
             >
               Repeat {levelData.name}
               <br />
-              ${levelData.cost.toLocaleString()} ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentPortfolioCount)}/{levelData.maxRepeat})
+              ${effectiveStats.cost.toLocaleString()} ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentPortfolioCount)}/{levelData.maxRepeat})
             </button>
           )}
 
