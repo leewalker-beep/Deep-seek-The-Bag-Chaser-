@@ -55,6 +55,8 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
   });
 
   it('Flex Bonuses: should be applied but never exceed 2.0x total multiplier', () => {
+    // Mock random to prevent sentiment interference
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const { executeHustle } = useGameStore.getState();
 
     // 1. Check without bonuses
@@ -125,6 +127,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
     const resultCapped = executeHustle('r_labor', 1, true);
     // r_labor l1 yieldCash is 2000. Capped at 2x is 4000.
     expect(resultCapped.yieldCash).toBe(4000);
+    vi.restoreAllMocks();
   });
 
   it('Congress Support: should be clamped between 0 and 100', () => {

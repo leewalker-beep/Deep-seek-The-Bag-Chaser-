@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import type { PlayerStats } from '../types/game';
 import { HUSTLE_BADGES } from '../config/badges';
+import { PROGRESSION_ORDER } from '../config/tiers';
 import { ConfirmationModal } from './ui/ConfirmationModal';
 import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
@@ -114,6 +115,18 @@ export const HustleCard: React.FC<HustleCardProps> = ({
               <div className="font-bold text-emerald-400">{badge.name}</div>
               <div className="text-slate-400 italic mb-1">{badge.description}</div>
               <div className="text-blue-400 font-mono">BUFF: {badge.buff.value}x {badge.buff.type}</div>
+              {badge.futureBenefit && badge.relevantTier && (
+                (() => {
+                  const currentTierIdx = PROGRESSION_ORDER.indexOf(player.currentTier);
+                  const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);
+                  const isActive = currentTierIdx >= relevantTierIdx;
+                  return isActive ? (
+                    <div className="text-yellow-400 font-bold mt-1 border-t border-slate-700 pt-1">
+                      ACTIVE: {badge.futureBenefit}
+                    </div>
+                  ) : null;
+                })()
+              )}
            </div>
         </div>
       )}

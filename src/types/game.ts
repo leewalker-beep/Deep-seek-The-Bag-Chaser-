@@ -106,6 +106,8 @@ export interface Badge {
     type: 'yield' | 'clout' | 'aura' | 'mental' | 'heat';
     value: number; // multiplier, e.g. 1.05 for +5%
   };
+  futureBenefit?: string;
+  relevantTier?: Tier;
 }
 
 export interface CabinetMember {

@@ -4,6 +4,7 @@ import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
+import { HUSTLE_BADGES } from '../../config/badges';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
@@ -221,6 +222,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         }
 
         showConfetti();
+
+        // Reveal benefit if already in relevant tier
+        const badge = HUSTLE_BADGES[hId];
+        if (badge && badge.relevantTier && badge.futureBenefit) {
+          const currentTierIdx = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
+          const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);
+          if (currentTierIdx >= relevantTierIdx) {
+            masteryBoostNews.push({ text: `Your ${badge.name} is now active: ${badge.futureBenefit}`, colorClass: 'text-yellow-400 font-bold' });
+            get().logEvent('SPECIAL_EVENT', { type: 'BADGE_BENEFIT_ACTIVE', message: badge.futureBenefit });
+          }
+        }
       }
     });
 
@@ -1162,10 +1174,28 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       });
       nextPl.legacyScore = calculateLegacyScore(nextPl);
 
+      const revealedBenefits: string[] = [];
+      const masteredHustles = nextPl.masteredHustles || [];
+      masteredHustles.forEach(hId => {
+        const badge = HUSTLE_BADGES[hId];
+        if (badge && badge.relevantTier === nextTier && badge.futureBenefit) {
+          revealedBenefits.push(`Your ${badge.name} is now active: ${badge.futureBenefit}`);
+        }
+      });
+
       set({
         pl: nextPl,
         activeTab: nextTier,
-        news: [`🎉 ADVANCED to ${nextTier} tier! ${req.description}`, ...state.news.slice(0, 49)]
+        news: [
+          ...revealedBenefits.map(text => ({ text, colorClass: 'text-yellow-400 font-bold' })),
+          ...(revealedBenefits.length > 0 ? ['Your past mastery is paying off.'] : []),
+          `🎉 ADVANCED to ${nextTier} tier! ${req.description}`,
+          ...state.news
+        ].slice(0, 50)
+      });
+
+      revealedBenefits.forEach(benefit => {
+        get().logEvent('SPECIAL_EVENT', { type: 'BADGE_BENEFIT_ACTIVE', message: benefit });
       });
 
       get().logEvent('PROMOTION_EARNED', { from: state.pl.currentTier, to: nextTier, fee: totalFee });

@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
 import { StatCard } from './ui/StatCard';
 import { HUSTLE_BADGES } from '../config/badges';
+import { PROGRESSION_ORDER } from '../config/tiers';
 import { ACHIEVEMENTS } from '../config/achievements';
 import { ProgressBar } from './ui/ProgressBar';
 
@@ -143,8 +144,22 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                           <div className="flex-1">
                             <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{badge.name}</div>
                             <div className="text-xs text-slate-400 italic mb-2">{badge.description}</div>
-                            <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
-                              BUFF: {badge.buff.value}x {badge.buff.type}
+                            <div className="flex flex-wrap gap-2">
+                              <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
+                                BUFF: {badge.buff.value}x {badge.buff.type}
+                              </div>
+                              {badge.futureBenefit && badge.relevantTier && (
+                                (() => {
+                                  const currentTierIdx = PROGRESSION_ORDER.indexOf(pl.currentTier);
+                                  const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);
+                                  const isActive = currentTierIdx >= relevantTierIdx;
+                                  return isActive ? (
+                                    <div className="inline-block px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                                      ACTIVE: {badge.futureBenefit}
+                                    </div>
+                                  ) : null;
+                                })()
+                              )}
                             </div>
                           </div>
                         </div>
