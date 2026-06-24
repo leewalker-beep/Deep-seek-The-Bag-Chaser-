@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ProgressBar } from '../ui/ProgressBar';
-
-import { PROGRESSION_ORDER } from '../../config/tiers';
+import { PerfectFlow } from '../effects/PerfectFlow';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
+
+interface Obstacle {
+  id: number;
+  lane: number;
+  y: number;
+  type: string;
+}
 
 interface TrafficDodgeProps {
   onComplete: (multiplier: number) => void;
@@ -11,222 +17,155 @@ interface TrafficDodgeProps {
   tier?: Tier;
 }
 
+const VEHICLES = ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'];
+
 export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
-  const [lane, setLane] = useState(1); // 0: Left, 1: Center, 2: Right
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [lane, setLane] = useState(1); // 0, 1, 2
+  const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [gameActive, setGameActive] = useState(true);
-  const [obstacles, setObstacles] = useState<{ id: number; y: number; lane: number; type: string }[]>([]);
-  const [feedback, setFeedback] = useState<'hit' | 'score' | null>(null);
-  const scoredObstacles = useRef<Set<number>>(new Set());
-  const touchStart = useRef<number | null>(null);
+  const [distance, setDistance] = useState(0);
   const obstacleId = useRef(0);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
+
   // Difficulty scaling
-  const tierIndex = PROGRESSION_ORDER.indexOf(tier);
-  const spawnInterval = Math.max(300, 1200 - (level - 1) * 150 - (tierIndex * 100));
-  const moveSpeed = 3 + (level - 1) * 0.8 + (tierIndex * 0.5);
+  const gameSpeed = (3 + (level - 1) * 0.8) * Math.sqrt(scaling);
+  const spawnRate = Math.max(300, (1200 - (level - 1) * 200) / spawnFactor);
+  const targetDistance = Math.floor((1000 + (level - 1) * 500) * scaling);
+
+  const handleLaneChange = (dir: 'left' | 'right') => {
+    if (!gameActive) return;
+    setLane(prev => {
+      if (dir === 'left') return Math.max(0, prev - 1);
+      return Math.min(2, prev + 1);
+    });
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
 
   useEffect(() => {
     if (!gameActive) return;
 
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 0.1) {
-          setGameActive(false);
-          return 0;
+    const gameLoop = setInterval(() => {
+      setDistance(prev => {
+        const next = prev + Math.floor(gameSpeed);
+        if (next >= targetDistance) {
+            setGameActive(false);
+            const multiplier = 1.0 + (scaling * 2.0);
+            if (navigator.vibrate) navigator.vibrate(100);
+            setTimeout(() => onComplete(multiplier), 1000);
+            return targetDistance;
         }
-        return prev - 0.1;
+        return next;
       });
-    }, 100);
 
-    const obstacleSpawner = setInterval(() => {
-      const types = ['🚗', '🚙', '🚕', '🚌', '🏎️', '🚛'];
-      const randomType = types[Math.floor(Math.random() * types.length)];
-      const randomLane = Math.floor(Math.random() * 3);
-      setObstacles(prev => [...prev, { id: obstacleId.current++, y: -20, lane: randomLane, type: randomType }]);
-    }, spawnInterval);
-
-    return () => {
-      clearInterval(timer);
-      clearInterval(obstacleSpawner);
-    };
-  }, [gameActive, spawnInterval]);
-
-  useEffect(() => {
-    if (!gameActive) return;
-
-    const movement = setInterval(() => {
       setObstacles(prev => {
-        const next = prev.map(o => ({ ...o, y: o.y + moveSpeed }));
+        const updated = prev.map(o => ({ ...o, y: o.y + gameSpeed }));
 
-        // Collision detection: player is at y ~80%
-        // We check if an obstacle is in range [70, 90] and in the same lane
-        const collision = next.find(o => o.y > 70 && o.y < 90 && o.lane === lane);
-        if (collision && !scoredObstacles.current.has(collision.id)) {
-          setScore(s => Math.max(0, s - 5));
-          setFeedback('hit');
-          scoredObstacles.current.add(collision.id);
-          setTimeout(() => setFeedback(null), 300);
-          if (navigator.vibrate) navigator.vibrate(100);
+        // Check collisions
+        const collision = updated.find(o => o.lane === lane && o.y > 75 && o.y < 90);
+        if (collision) {
+          setGameActive(false);
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+          const multiplier = Math.max(0.5, (distance / targetDistance) * 1.5);
+          setTimeout(() => onComplete(multiplier), 1000);
         }
 
-        // Scoring for successful dodge
-        next.forEach(o => {
-          if (o.y > 95 && !scoredObstacles.current.has(o.id)) {
-            scoredObstacles.current.add(o.id);
-            setScore(s => s + 10);
-            setFeedback('score');
-            setTimeout(() => setFeedback(null), 300);
-          }
-        });
-
-        return next.filter(o => o.y < 120);
+        return updated.filter(o => o.y < 120);
       });
     }, 50);
 
-    return () => clearInterval(movement);
-  }, [gameActive, lane, moveSpeed]);
+    const spawner = setInterval(() => {
+      setObstacles(prev => [
+        ...prev,
+        {
+          id: obstacleId.current++,
+          lane: Math.floor(Math.random() * 3),
+          y: -20,
+          type: VEHICLES[Math.floor(Math.random() * VEHICLES.length)]
+        }
+      ]);
+    }, spawnRate);
 
-  const handleMove = (dir: 'left' | 'right') => {
-    if (!gameActive) return;
-    if (dir === 'left') setLane(prev => Math.max(0, prev - 1));
-    if (dir === 'right') setLane(prev => Math.min(2, prev + 1));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart.current === null) return;
-    const endX = e.changedTouches[0].clientX;
-    const diff = touchStart.current - endX;
-    if (Math.abs(diff) > 30) {
-      if (diff > 0) handleMove('left');
-      else handleMove('right');
-    }
-    touchStart.current = null;
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') handleMove('left');
-      if (e.key === 'ArrowRight') handleMove('right');
+    return () => {
+      clearInterval(gameLoop);
+      clearInterval(spawner);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameActive]);
-
-  useEffect(() => {
-    if (!gameActive) {
-      let multiplier = 0.5;
-      if (score >= 100) multiplier = 4.0;
-      else if (score >= 60) multiplier = 2.5;
-      else if (score >= 20) multiplier = 1.0;
-
-      const timeout = setTimeout(() => onComplete(multiplier), 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [gameActive, score, onComplete]);
-
-  const lanePositions = ['20%', '50%', '80%'];
+  }, [gameActive, gameSpeed, lane, distance, targetDistance, spawnRate, scaling, onComplete]);
 
   return (
-    <div
-      className={`fixed inset-0 flex flex-col items-center justify-center touch-none select-none z-[100] transition-colors duration-300 ${
-        feedback === 'hit' ? 'bg-red-900/60' : feedback === 'score' ? 'bg-emerald-900/40' : 'bg-slate-950'
-      }`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="absolute top-12 text-center w-full px-8 z-20">
-        <h2 className="text-4xl font-black text-white italic tracking-tighter drop-shadow-2xl">
-          DELIVERY GIGS <span className="text-emerald-500 text-xl">L{level}</span>
-        </h2>
-        <div className="flex items-center justify-center gap-2 mt-1">
-          <motion.span animate={{ x: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 1 }} className="text-emerald-400">↔</motion.span>
-          <p className="text-slate-300 text-xs font-bold uppercase tracking-widest">SWIPE LEFT/RIGHT TO DODGE!</p>
-        </div>
-        <div className="mt-6 flex justify-center items-baseline gap-2">
-          <span className="text-slate-500 text-xs font-black uppercase">Earnings:</span>
-          <span className="text-emerald-400 font-mono font-black text-4xl tabular-nums">${score * 10}</span>
+    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+      <PerfectFlow isActive={gameActive && distance > targetDistance * 0.5} intensity={Math.min(5, Math.floor(distance / (targetDistance * 0.2)))} />
+      <div className="absolute top-12 text-center w-full z-20">
+        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">TRAFFIC DODGE <span className="text-emerald-500">L{level}</span></h2>
+        <div className="mt-2 flex justify-center gap-10">
+            <div className="text-center">
+                <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">DISTANCE</div>
+                <div className="text-2xl font-black text-emerald-400 font-mono">{distance}m</div>
+            </div>
+            <div className="text-center">
+                <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">GOAL</div>
+                <div className="text-2xl font-black text-white font-mono">{targetDistance}m</div>
+            </div>
         </div>
       </div>
 
-      <div className="relative w-full h-[70vh] max-w-md bg-slate-900 border-x-8 border-slate-800 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-        {/* Road Background Effects */}
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
-
-        {/* Lane Markings */}
-        <div className="absolute inset-0 flex justify-around pointer-events-none">
-          <div className="w-px h-full border-l-2 border-dashed border-slate-700/50" />
-          <div className="w-px h-full border-l-2 border-dashed border-slate-700/50" />
-        </div>
+      <div className="relative w-72 h-[70vh] bg-slate-900 border-x-4 border-slate-800 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]">
+        {/* Road Lines */}
+        <div className="absolute left-1/3 top-0 bottom-0 w-1 bg-slate-800 border-r border-slate-700/50 dashed" style={{ backgroundImage: 'linear-gradient(to bottom, #1e293b 50%, transparent 50%)', backgroundSize: '1px 40px' }} />
+        <div className="absolute left-2/3 top-0 bottom-0 w-1 bg-slate-800 border-r border-slate-700/50 dashed" style={{ backgroundImage: 'linear-gradient(to bottom, #1e293b 50%, transparent 50%)', backgroundSize: '1px 40px' }} />
 
         {/* Player */}
         <motion.div
-          animate={{
-            x: `calc(${lanePositions[lane]} - 50%)`,
-            rotate: (lane - 1) * 10
-          }}
-          transition={{
-            type: "spring",
-            damping: 15,
-            stiffness: 150
-          }}
-          className="absolute bottom-[15%] left-0 text-8xl z-30 drop-shadow-[0_20px_20px_rgba(0,0,0,0.5)] flex justify-center w-full"
+          className="absolute bottom-10 w-24 h-24 flex items-center justify-center text-6xl z-20 drop-shadow-[0_0_15px_rgba(52,211,153,0.4)]"
+          animate={{ left: `${(lane * 33.33) + 16.66}%` }}
+          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           style={{ transform: 'translateX(-50%)' }}
         >
-          <span className="inline-block">🛵</span>
+          🚲
         </motion.div>
 
         {/* Obstacles */}
         <AnimatePresence>
           {obstacles.map(o => (
-            <motion.div
+            <div
               key={o.id}
-              initial={{ y: '-20%', x: `calc(${lanePositions[o.lane]} - 50%)` }}
-              animate={{ y: `${o.y}%`, x: `calc(${lanePositions[o.lane]} - 50%)` }}
-              className="absolute left-0 text-8xl z-20 drop-shadow-xl flex justify-center w-full"
+              className="absolute w-24 h-24 flex items-center justify-center text-6xl z-10"
+              style={{ top: `${o.y}%`, left: `${(o.lane * 33.33) + 16.66}%`, transform: 'translateX(-50%)' }}
             >
-              <span className="inline-block">{o.type}</span>
-            </motion.div>
+              {o.type}
+            </div>
           ))}
         </AnimatePresence>
+
+        {!gameActive && (
+             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+                <div className="text-4xl font-black text-white italic uppercase tracking-tighter">
+                    {distance >= targetDistance ? 'GOAL REACHED!' : 'CRASHED!'}
+                </div>
+             </div>
+        )}
       </div>
 
-      <div className="absolute bottom-12 w-full max-w-[320px] px-4 z-20">
-        <ProgressBar
-          value={timeLeft}
-          max={15}
-          label={`SHIFT ENDS IN: ${timeLeft.toFixed(1)}s`}
-          colorClass={timeLeft < 5 ? 'bg-red-500' : 'bg-emerald-500'}
-        />
-        <div className="flex justify-between mt-2 text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-            <span>Level {level}</span>
-            <span>Speed: {moveSpeed.toFixed(1)}x</span>
-            <span>Density: {(1200/spawnInterval).toFixed(1)}x</span>
-        </div>
+      {/* Controls */}
+      <div className="mt-8 flex gap-4 w-full max-w-xs">
+          <button
+            onPointerDown={() => handleLaneChange('left')}
+            className="flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl"
+          >
+              ⬅️
+          </button>
+          <button
+            onPointerDown={() => handleLaneChange('right')}
+            className="flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl"
+          >
+              ➡️
+          </button>
       </div>
 
-      {/* Speed Lines Effect */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
-        {[...Array(5)].map((_, i) => (
-            <motion.div
-                key={i}
-                initial={{ y: '-20%', x: `${20 * i}%` }}
-                animate={{ y: '120%' }}
-                transition={{ repeat: Infinity, duration: 0.3 + Math.random() * 0.4, ease: "linear" }}
-                className="absolute w-px h-60 bg-white"
-            />
-        ))}
-      </div>
-
-      {/* Simple Control Overlay for desktop */}
-      <div className="absolute bottom-4 flex gap-4 opacity-20 hover:opacity-100 transition-opacity">
-          <button onClick={() => handleMove('left')} className="p-4 bg-slate-800 rounded-full text-2xl">⬅️</button>
-          <button onClick={() => handleMove('right')} className="p-4 bg-slate-800 rounded-full text-2xl">➡️</button>
+      <div className="mt-6 text-[8px] text-slate-600 font-black uppercase tracking-widest text-center opacity-30">
+          SWIPE OR USE BUTTONS TO DODGE TRAFFIC
       </div>
     </div>
   );

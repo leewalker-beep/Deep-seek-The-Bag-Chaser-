@@ -1,26 +1,37 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface SlotMachineProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 const SYMBOLS = ['💰', '💎', '🎰', '📈', '🔥', '🃏', '👑', '💸'];
 
-export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete, level = 1 }) => {
+export const SlotMachine: React.FC<SlotMachineProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
   const [reels, setReels] = useState([SYMBOLS[0], SYMBOLS[0], SYMBOLS[0]]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [spinsLeft, setSpinsLeft] = useState(3 + (level - 1));
   const [result, setResult] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'jackpot' | 'win' | 'lose' | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [gameActive, setGameActive] = useState(false);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  const [spinsLeft, setSpinsLeft] = useState(Math.max(1, 4 - Math.floor(scaling * 0.5)));
+
   // Difficulty scaling: more symbols make it harder to match
-  const activeSymbols = SYMBOLS.slice(0, Math.min(SYMBOLS.length, 4 + level));
-  const jackpotMultiplier = 10.0 + (level - 1) * 2;
-  const bigWinMultiplier = 3.0 + (level - 1) * 0.5;
+  const activeSymbols = useMemo(() => SYMBOLS.slice(0, Math.min(SYMBOLS.length, 4 + Math.floor(scaling))), [scaling]);
+  const jackpotMultiplier = useMemo(() => 8.0 + scaling * 2.5, [scaling]);
+  const bigWinMultiplier = useMemo(() => 2.5 + scaling * 0.8, [scaling]);
 
   const requestPermission = async () => {
     const startAction = () => {
@@ -28,9 +39,13 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete, level = 1 
         setGameActive(true);
     };
 
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    const DeviceOrientation = (window.DeviceOrientationEvent as unknown) as {
+        requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+
+    if (typeof DeviceOrientation.requestPermission === 'function') {
       try {
-        const response = await (DeviceOrientationEvent as any).requestPermission();
+        const response = await DeviceOrientation.requestPermission();
         if (response === 'granted') {
           startAction();
         } else {
@@ -92,22 +107,30 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ onComplete, level = 1 
   }, [isSpinning, spinsLeft, spin, gameActive, permissionGranted]);
 
   useEffect(() => {
-    if (!isSpinning && spinsLeft < (3 + (level - 1))) {
-      if (reels[0] === reels[1] && reels[1] === reels[2]) {
-        setResult(`JACKPOT! ${jackpotMultiplier.toFixed(1)}x`);
-        setFeedback('jackpot');
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-      } else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) {
-        setResult(`BIG WIN! ${bigWinMultiplier.toFixed(1)}x`);
-        setFeedback('win');
-        if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-      } else {
-        setResult('Small Win 1.0x');
-        setFeedback('lose');
-        if (navigator.vibrate) navigator.vibrate(30);
-      }
+    if (!isSpinning && result === null && feedback === null) {
+      // Check if we actually spun (spinsLeft decreased)
+      // This is a bit tricky with the initial state, but we only show result if we've spun.
     }
-  }, [isSpinning, reels, spinsLeft, level, jackpotMultiplier, bigWinMultiplier]);
+  }, [isSpinning, reels, spinsLeft, jackpotMultiplier, bigWinMultiplier]);
+
+  // Handle result logic after a spin completes
+  useEffect(() => {
+      if (!isSpinning && gameActive) {
+          if (reels[0] === reels[1] && reels[1] === reels[2]) {
+            setResult(`JACKPOT! ${jackpotMultiplier.toFixed(1)}x`);
+            setFeedback('jackpot');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+          } else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) {
+            setResult(`BIG WIN! ${bigWinMultiplier.toFixed(1)}x`);
+            setFeedback('win');
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+          } else {
+            setResult('Small Win 1.0x');
+            setFeedback('lose');
+            if (navigator.vibrate) navigator.vibrate(30);
+          }
+      }
+  }, [isSpinning, gameActive]);
 
   const handleFinish = () => {
     let multiplier = 1.0;

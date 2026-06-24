@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface StreetwearMatchProps {
   level?: number;
+  tier?: Tier;
   onComplete: (multiplier: number) => void;
 }
 
@@ -17,8 +20,12 @@ const COLORS = [
 
 const PARTS_LIST = ['Hat', 'Shirt', 'Pants', 'Shoes', 'Hoodie'];
 
-export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onComplete }) => {
-  const partsCount = level === 1 ? 2 : level === 2 ? 3 : level === 3 ? 4 : 5;
+export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, tier = 'MUD', onComplete }) => {
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: more parts and mistakes tracked at higher difficulty
+  const partsCount = Math.min(PARTS_LIST.length, Math.max(2, Math.floor(1 + (level * 0.8) * (1 + (scaling * 0.05)))));
   const parts = PARTS_LIST.slice(0, partsCount);
 
   const [targetColors, setTargetColors] = useState<string[]>([]);
@@ -31,7 +38,7 @@ export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onC
     // Generate random target colors
     const targets = parts.map(() => COLORS[Math.floor(Math.random() * COLORS.length)].hex);
     setTargetColors(targets);
-  }, [level]);
+  }, [level, partsCount]);
 
   const handleSelectColor = (partIndex: number, colorHex: string) => {
     if (!gameActive) return;
@@ -44,7 +51,8 @@ export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onC
         setTimeout(() => setFeedback(null), 200);
         if (navigator.vibrate) navigator.vibrate(20);
     } else {
-        if (level === 5) {
+        // Track mistakes if above a certain difficulty threshold
+        if (scaling > 2.0 || level >= 4) {
             setMistakes(m => m + 1);
         }
     }
@@ -55,7 +63,7 @@ export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onC
     let currentMistakes = mistakes;
     selectedColors.forEach((color, i) => {
       if (color !== targetColors[i]) {
-          if (level < 5) currentMistakes++;
+          if (scaling <= 2.0 && level < 4) currentMistakes++;
       }
     });
 
@@ -129,7 +137,7 @@ export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onC
 
       {gameActive && (
         <div className="w-full max-w-sm px-6">
-          {level === 5 && (
+          {(scaling > 2.0 || level >= 4) && (
             <div className="text-center mb-4">
                 <div className="text-[10px] text-red-500 font-black uppercase tracking-widest">PENALTY MODE: MISTAKES TRACKED</div>
                 <div className="text-2xl font-black text-red-600">{mistakes}</div>
@@ -178,7 +186,7 @@ export const StreetwearMatch: React.FC<StreetwearMatchProps> = ({ level = 1, onC
             <div className="text-3xl font-black text-white uppercase italic tracking-tighter">Collection Finalized</div>
             <div className="text-emerald-500 font-black text-sm uppercase tracking-widest mt-2">
                 {selectedColors.filter((c, i) => c === targetColors[i]).length}/{partsCount} MATCHED
-                {level === 5 && ` • ${mistakes} PENALTIES`}
+                {(scaling > 2.0 || level >= 4) && ` • ${mistakes} PENALTIES`}
             </div>
           </motion.div>
         )}

@@ -1,72 +1,88 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface ReactionGridProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const ReactionGrid: React.FC<ReactionGridProps> = ({ onComplete, level = 1 }) => {
+export const ReactionGrid: React.FC<ReactionGridProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [activeCell, setActiveCell] = useState<number | null>(null);
   const [hits, setHits] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [isStarted, setIsStarted] = useState(false);
   const [feedback, setFeedback] = useState<'hit' | 'miss' | null>(null);
-  const gameActiveRef = useRef(false);
 
-  // Difficulty scaling: faster spawn rates and higher targets at high levels
-  const targetHits = 10 + (level - 1) * 4;
-  const baseInterval = Math.max(250, 800 - (level - 1) * 100);
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  // Difficulty scaling
+  const targetHits = Math.floor((15 + (level - 1) * 3) * Math.sqrt(scaling));
+  const activeDuration = Math.max(400, (1200 - (level - 1) * 100) * timerFactor);
 
   useEffect(() => {
-    if (isStarted && timeLeft > 0) {
-      gameActiveRef.current = true;
-      const timer = setInterval(() => setTimeLeft(prev => {
-        if (prev <= 1) {
-            gameActiveRef.current = false;
-            return 0;
-        }
-        return prev - 1;
-      }), 1000);
-      return () => {
+    if (!isStarted || timeLeft === 0) return;
+
+    const spawn = () => {
+      const randomCell = Math.floor(Math.random() * 9);
+      setActiveCell(randomCell);
+
+      setTimeout(() => {
+        setActiveCell(null);
+      }, activeDuration);
+    };
+
+    const interval = setInterval(() => {
+      if (activeCell === null) spawn();
+    }, 100);
+
+    const timer = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(interval);
           clearInterval(timer);
-          gameActiveRef.current = false;
-      };
-    } else if (timeLeft === 0) {
-      // Scale multiplier based on target hits for that level
-      const multiplier = Math.max(0.5, Math.min(4.0, (hits / targetHits) * 2.5));
-      if (navigator.vibrate) navigator.vibrate(100);
-      setTimeout(() => onComplete(multiplier), 1000);
-    }
-  }, [isStarted, timeLeft, hits, onComplete, targetHits]);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
 
-  useEffect(() => {
-    if (isStarted && timeLeft > 0) {
-      const spawn = () => {
-        if (!gameActiveRef.current) return;
-        setActiveCell(Math.floor(Math.random() * 9));
-      };
-      spawn();
-      const interval = setInterval(spawn, Math.max(200, baseInterval - Math.min(400, hits * 10)));
-      return () => clearInterval(interval);
-    }
-  }, [isStarted, timeLeft, hits, baseInterval]);
+    return () => {
+      clearInterval(interval);
+      clearInterval(timer);
+    };
+  }, [isStarted, activeCell, timeLeft, activeDuration]);
 
   const handleHit = (index: number) => {
-    if (!gameActiveRef.current) return;
-
-    if (index === activeCell) {
-      setHits(prev => prev + 1);
-      setActiveCell(null);
+    if (activeCell === index) {
+      setHits(h => h + 1);
       setFeedback('hit');
-      if (navigator.vibrate) navigator.vibrate(15);
+      setActiveCell(null);
+      if (navigator.vibrate) navigator.vibrate(10);
     } else {
       setFeedback('miss');
-      if (navigator.vibrate) navigator.vibrate([30, 20]);
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
     setTimeout(() => setFeedback(null), 150);
   };
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      const score = hits / targetHits;
+      let multiplier = 0.5;
+      if (score >= 1.0) multiplier = 4.0;
+      else if (score >= 0.7) multiplier = 2.5;
+      else if (score >= 0.4) multiplier = 1.2;
+
+      if (navigator.vibrate) navigator.vibrate(100);
+      setTimeout(() => onComplete(multiplier), 1000);
+    }
+  }, [timeLeft, hits, targetHits, onComplete]);
 
   if (!isStarted) {
     return (

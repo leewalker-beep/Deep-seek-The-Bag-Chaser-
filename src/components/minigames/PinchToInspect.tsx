@@ -1,12 +1,15 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface PinchToInspectProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, level = 1 }) => {
+export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [startTime] = useState(() => Date.now());
   const [zoom, setZoom] = useState(1);
   const [gameActive, setGameActive] = useState(true);
@@ -14,9 +17,13 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, leve
   const [inspected, setInspected] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
   // Difficulty scaling
-  const zoomTarget = 3.5 + (level * 0.5);
-  const maxTime = Math.max(4, 12 - (level * 2));
+  const zoomTarget = 3.5 + (level * 0.5) + (scaling * 0.2);
+  const maxTime = Math.max(3, (12 - (level * 2)) * timerFactor);
 
   useEffect(() => {
     setTimeLeft(maxTime);
@@ -65,7 +72,7 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, leve
 
       if (lastDistanceRef.current !== null) {
         const delta = (distance - lastDistanceRef.current) * 0.01;
-        const newZoom = Math.max(1, Math.min(6, zoom + delta));
+        const newZoom = Math.max(1, Math.min(8, zoom + delta));
         setZoom(newZoom);
 
         if (newZoom >= zoomTarget && !inspected) {
@@ -93,7 +100,7 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, leve
       onWheel={(e) => {
           if (!gameActive) return;
           const delta = e.deltaY * -0.005;
-          const newZoom = Math.max(1, Math.min(6, zoom + delta));
+          const newZoom = Math.max(1, Math.min(8, zoom + delta));
           setZoom(newZoom);
           if (newZoom >= zoomTarget && !inspected) {
             setInspected(true);
@@ -135,7 +142,7 @@ export const PinchToInspect: React.FC<PinchToInspectProps> = ({ onComplete, leve
            <div className="h-2 w-32 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                 <motion.div
                     className="h-full bg-amber-500"
-                    animate={{ width: `${((zoom - 1) / (zoomTarget - 1)) * 100}%` }}
+                    animate={{ width: `${Math.min(100, ((zoom - 1) / (zoomTarget - 1)) * 100)}%` }}
                 />
            </div>
            <motion.span animate={{ scale: [1.2, 1, 1.2] }} transition={{ repeat: Infinity, duration: 1 }}>👐</motion.span>

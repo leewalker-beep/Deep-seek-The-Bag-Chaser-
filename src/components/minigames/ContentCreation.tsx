@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Topic {
   id: number;
@@ -25,9 +27,14 @@ const TOPICS: Topic[] = [
 interface ContentCreationProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, level = 1 }) => {
+export const ContentCreation: React.FC<ContentCreationProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicIndex, setTopicIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -39,10 +46,14 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
   const touchStart = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  // Difficulty scaling
-  const timePerTopic = Math.max(0.8, 2.5 - (level - 1) * 0.7);
-  const totalTopics = 5 + (level * 5);
-  const swipeThreshold = 80;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  // Difficulty scaling: less time per topic, more topics
+  const timePerTopic = useMemo(() => Math.max(0.6, 2.5 * timerFactor), [timerFactor]);
+  const totalTopics = useMemo(() => Math.min(25, 5 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
+  const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
 
   const [shuffledTopics] = useState(() => {
     const shuffled = [...TOPICS];
@@ -61,14 +72,18 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({ onComplete, le
   const endGame = useCallback(() => {
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
-    let multiplier = 0.5;
-    if (accuracy >= 0.9) multiplier = 4.0;
-    else if (accuracy >= 0.7) multiplier = 2.5;
-    else if (accuracy >= 0.5) multiplier = 1.2;
-    else multiplier = 0.8;
+
+    let baseMultiplier = 0.5;
+    if (accuracy >= 0.9) baseMultiplier = 3.0;
+    else if (accuracy >= 0.7) baseMultiplier = 2.0;
+    else if (accuracy >= 0.5) baseMultiplier = 1.2;
+    else baseMultiplier = 0.8;
+
+    // Apply scaling reward
+    const multiplier = baseMultiplier * (0.8 + scaling * 0.2);
 
     setTimeout(() => onComplete(multiplier), 800);
-  }, [score, total, onComplete]);
+  }, [score, total, onComplete, scaling]);
 
   const handleTimeout = useCallback(() => {
     if (!gameActive || result !== null) return;

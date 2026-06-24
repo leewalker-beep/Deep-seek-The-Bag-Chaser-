@@ -1,22 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface BalanceScaleProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 1 }) => {
+export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [balance, setBalance] = useState(50); // 0 to 100, 50 is perfectly balanced
   const [timeLeft, setTimeLeft] = useState(10);
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'left' | 'right' | null>(null);
   const requestRef = useRef<number | null>(null);
 
-  // Difficulty scaling: base drift and acceleration increase with level
-  const baseDrift = 0.4 + (level - 1) * 0.2;
-  const driftAcceleration = 0.005 + (level - 1) * 0.002;
-  const correctionPower = Math.max(8, 12 - (level - 1));
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: base drift and acceleration increase with level and tier
+  const baseDrift = (0.4 + (level - 1) * 0.2) * Math.sqrt(scaling);
+  const driftAcceleration = (0.005 + (level - 1) * 0.002) * Math.sqrt(scaling);
+  const correctionPower = Math.max(5, (12 - (level - 1)) / Math.sqrt(scaling));
 
   const driftRef = useRef(Math.random() > 0.5 ? baseDrift : -baseDrift);
 

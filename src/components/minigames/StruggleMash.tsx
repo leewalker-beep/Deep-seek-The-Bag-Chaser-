@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface StruggleMashProps {
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
   title?: string;
   instruction?: string;
   mashLabel?: string;
@@ -12,6 +16,7 @@ interface StruggleMashProps {
 export const StruggleMash: React.FC<StruggleMashProps> = ({
   onComplete,
   level = 1,
+  tier = 'MUD',
   title = "THE STRUGGLE",
   instruction = "Mash to survive the grind",
   mashLabel = "MASH!!!",
@@ -21,9 +26,12 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
   const [isActive, setIsActive] = useState(true);
   const [feedback, setFeedback] = useState<'tap' | null>(null);
 
-  // Difficulty scaling
-  const targetTaps = 10 + (level - 1) * 10;
-  const initialTime = Math.max(4, 10 - (level - 1) * 2);
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const targetTaps = 10 + Math.floor(scaling * 10);
+  const initialTime = Math.max(4, 10 * timerFactor);
   const [timeLeft, setTimeLeft] = useState(initialTime);
 
   useEffect(() => {
@@ -38,12 +46,12 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
         return prev - 0.1;
       });
 
-      // Decay progress
-      setProgress(prev => Math.max(0, prev - 1.5));
+      // Decay progress: faster decay at higher scaling
+      setProgress(prev => Math.max(0, prev - (1.0 * scaling)));
     }, 100);
 
     return () => clearInterval(timer);
-  }, [isActive]);
+  }, [isActive, scaling]);
 
   const handleMash = () => {
     if (!isActive) return;
@@ -57,19 +65,19 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
   useEffect(() => {
     if (!isActive) {
       let multiplier = 0.5;
-      if (progress > 90) multiplier = 3.0;
-      else if (progress > 70) multiplier = 2.0;
+      if (progress > 90) multiplier = 2.0 + scaling;
+      else if (progress > 70) multiplier = 1.5 + scaling * 0.5;
       else if (progress > 40) multiplier = 1.0;
       else if (progress > 20) multiplier = 0.7;
 
       const timeout = setTimeout(() => onComplete(multiplier), 1000);
       return () => clearTimeout(timeout);
     }
-  }, [isActive, progress, onComplete]);
+  }, [isActive, progress, onComplete, scaling]);
 
   return (
     <div className={`transition-colors duration-100 p-8 rounded-3xl border-4 shadow-2xl text-center ${feedback ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
-      <h2 className="text-2xl font-black text-zinc-400 mb-2 uppercase tracking-tighter italic">{title}</h2>
+      <h2 className="text-2xl font-black text-zinc-400 mb-2 uppercase tracking-tighter italic">{title} <span className="text-white text-xs">L{level}</span></h2>
       <div className="flex items-center justify-center gap-2 mb-6">
         <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} className="text-emerald-500 text-xl">⚡</motion.span>
         <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">{instruction}</p>
@@ -107,7 +115,7 @@ export const StruggleMash: React.FC<StruggleMashProps> = ({
           </div>
           <div className="flex flex-col items-end">
             <span className={progress >= 90 ? 'text-emerald-500' : 'text-zinc-600'}>{targetLabel}</span>
-            <span className="text-[8px] text-zinc-700">LEVEL {level}</span>
+            <span className="text-[8px] text-zinc-700">LVL {level} • {tier}</span>
           </div>
         </div>
       </div>

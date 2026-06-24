@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface DragScaleProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const DragScale: React.FC<DragScaleProps> = ({ onComplete, level = 1 }) => {
+export const DragScale: React.FC<DragScaleProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [capacity, setCapacity] = useState(20);
   const [load, setLoad] = useState(10);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -18,9 +21,12 @@ export const DragScale: React.FC<DragScaleProps> = ({ onComplete, level = 1 }) =
 
   const loadInterval = useRef<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   // Difficulty scaling
-  const loadGrowthSpeed = 0.5 + (level - 1) * 0.3;
-  const maxLoad = 80 + (level - 1) * 5;
+  const loadGrowthSpeed = (0.5 + (level - 1) * 0.3) * Math.sqrt(scaling);
+  const maxLoad = Math.min(100, (80 + (level - 1) * 5) * (1 + (scaling * 0.05)));
 
   useEffect(() => {
     if (!gameActive) return;
@@ -54,30 +60,25 @@ export const DragScale: React.FC<DragScaleProps> = ({ onComplete, level = 1 }) =
     const engine = setInterval(() => {
         // Calculate Uptime: if Capacity < Load, uptime drops
         if (capacity < load) {
-            setUptime(prev => Math.max(0, prev - 1.5));
+            setUptime(prev => Math.max(0, prev - (1.5 * Math.sqrt(scaling))));
         } else {
             setUptime(prev => Math.min(100, prev + 0.5));
         }
 
         // Calculate Burn: if Capacity >> Load, burn increases
         const excess = Math.max(0, capacity - load);
-        setBurn(prev => prev + (excess / 100));
+        setBurn(prev => prev + (excess / 100) * scaling);
     }, 100);
 
     return () => clearInterval(engine);
-  }, [gameActive, capacity, load]);
+  }, [gameActive, capacity, load, scaling]);
 
   const handleFinish = () => {
     if (!gameActive) return;
     setGameActive(false);
     setIsDeployed(true);
 
-    // Multiplier logic:
-    // Base 1.0
-    // + Uptime bonus (up to +2.0)
-    // - Burn penalty (up to -1.0)
-    // * Scale bonus (load / 25)
-
+    // Multiplier logic
     const uptimeMult = (uptime / 100) * 2;
     const burnPenalty = Math.min(1.5, burn / 10);
     const scaleBonus = load / 30;

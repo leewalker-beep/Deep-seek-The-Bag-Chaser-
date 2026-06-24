@@ -1,64 +1,56 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PROGRESSION_ORDER } from '../../config/tiers';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
 
-interface MagneticSweepResult {
-  multiplier: number;
-  isRare: boolean;
-  speedMult: number;
-  outcomeMult: number;
-  isSuccess: boolean;
-}
-
-interface ScrapItem {
+interface SweepItem {
   id: number;
-  type: string;
-  x: number;
-  y: number;
+  top: number;
+  left: number;
   isRare: boolean;
+  emoji: string;
 }
 
 interface MagneticSweepProps {
-  onComplete: (result: MagneticSweepResult) => void;
-  title?: string;
-  instruction?: string;
-  icon?: string;
+  onComplete: (res: { multiplier: number; isRare: boolean }) => void;
   level?: number;
   tier?: Tier;
   itemEmojis?: string[];
   rareEmoji?: string;
+  title?: string;
+  instruction?: string;
   scoreLabel?: string;
   rareLabel?: string;
+  icon?: string;
 }
 
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   onComplete,
-  title = "MAGNETIC SWEEP",
-  instruction = "Drag magnet to collect scrap!",
-  icon = "🧲",
   level = 1,
   tier = 'MUD',
-  itemEmojis = ['🔧', '⚙️', '🔩', '📎', '⛓️'],
-  rareEmoji = '💎',
-  scoreLabel = "SCRAP",
-  rareLabel = "RARE"
+  itemEmojis = ['🔩', '⚙️', '🖇️', '📎', '🔑'],
+  rareEmoji = '🪙',
+  scoreLabel = "SCRAP COLLECTED",
+  rareLabel = "RARE FIND!",
+  icon = "🧲"
 }) => {
-  const [items, setItems] = useState<ScrapItem[]>([]);
-  const [score, setScore] = useState(0);
-  const [rareCount, setRareCount] = useState(0);
+  const [items, setItems] = useState<SweepItem[]>([]);
+  const [collected, setCollected] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [gameActive, setGameActive] = useState(true);
-  const [magnetPos, setMagnetPos] = useState({ x: 50, y: 80 });
-  const magnetRef = useRef({ x: 50, y: 80 });
+  const [magnetPos, setMagnetPos] = useState({ x: 50, y: 50 });
+  const [isRareFound, setIsRareFound] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const nextId = useRef(0);
+  const itemId = useRef(0);
+
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
 
   // Difficulty scaling
-  const tierIndex = PROGRESSION_ORDER.indexOf(tier);
-  const spawnRate = Math.max(250, 1000 - (level - 1) * 150 - (tierIndex * 50));
-  const itemLifespan = Math.max(600, 2000 - (level - 1) * 250 - (tierIndex * 100));
-  const rareChance = 0.05 + tierIndex * 0.02;
+  const targetScore = Math.floor((15 + (level - 1) * 3) * spawnFactor);
+  const spawnRate = Math.max(200, (600 - (level - 1) * 100) / spawnFactor);
+  const itemLifespan = Math.max(1000, (3000 - (level - 1) * 400) / Math.sqrt(scaling));
 
   useEffect(() => {
     if (!gameActive) return;
@@ -74,119 +66,94 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     }, 100);
 
     const spawner = setInterval(() => {
-      const isRare = Math.random() < rareChance;
-      const newItem: ScrapItem = {
-        id: nextId.current++,
-        type: isRare ? rareEmoji : itemEmojis[Math.floor(Math.random() * itemEmojis.length)],
-        x: 10 + Math.random() * 80,
-        y: 20 + Math.random() * 60,
-        isRare
-      };
-      setItems(prev => [...prev, newItem]);
+      setItems(prev => {
+        if (prev.length > 10 + level) return prev;
+        const isRare = Math.random() < (0.05 + level * 0.01);
+        const newItem = {
+          id: itemId.current++,
+          top: Math.random() * 80 + 10,
+          left: Math.random() * 80 + 10,
+          isRare,
+          emoji: isRare ? rareEmoji : itemEmojis[Math.floor(Math.random() * itemEmojis.length)]
+        };
 
-      setTimeout(() => {
-        setItems(prev => prev.filter(i => i.id !== newItem.id));
-      }, itemLifespan);
+        // Auto-remove item after lifespan
+        setTimeout(() => {
+          setItems(p => p.filter(i => i.id !== newItem.id));
+        }, itemLifespan);
+
+        return [...prev, newItem];
+      });
     }, spawnRate);
 
     return () => {
       clearInterval(timer);
       clearInterval(spawner);
     };
-  }, [gameActive, spawnRate, itemLifespan, rareChance]);
-
-  // Handle magnet movement and collection
-  useEffect(() => {
-    if (!gameActive) return;
-
-    const checkCollision = () => {
-      const currentPos = magnetRef.current;
-      setItems(prev => {
-        const toCollect = prev.filter(item => {
-          const dx = item.x - currentPos.x;
-          const dy = item.y - currentPos.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 10; // Collection radius
-        });
-
-        if (toCollect.length > 0) {
-          toCollect.forEach(item => {
-            if (item.isRare) {
-              setRareCount(r => r + 1);
-              if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-            } else {
-              setScore(s => s + 1);
-              if (navigator.vibrate) navigator.vibrate(20);
-            }
-          });
-          return prev.filter(item => !toCollect.includes(item));
-        }
-        return prev;
-      });
-    };
-
-    const collisionInterval = setInterval(checkCollision, 50);
-    return () => clearInterval(collisionInterval);
-  }, [gameActive]);
+  }, [gameActive, spawnRate, itemLifespan, level, itemEmojis, rareEmoji]);
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!gameActive || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    const newPos = { x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) };
-    setMagnetPos(newPos);
-    magnetRef.current = newPos;
+    setMagnetPos({ x, y });
+
+    // Check collision with items
+    setItems(prev => {
+      const remaining = prev.filter(item => {
+        const dist = Math.sqrt(Math.pow(item.left - x, 2) + Math.pow(item.top - y, 2));
+        if (dist < 10) {
+          if (item.isRare) setIsRareFound(true);
+          setCollected(c => c + (item.isRare ? 5 : 1));
+          if (navigator.vibrate) navigator.vibrate(item.isRare ? 50 : 10);
+          return false;
+        }
+        return true;
+      });
+      return remaining;
+    });
   };
 
   useEffect(() => {
     if (!gameActive) {
-      const outcomeMult = score > 15 ? 2.0 : score > 8 ? 1.2 : 0.5;
-      const rareBonus = rareCount * 2.0;
-      const finalMultiplier = outcomeMult + rareBonus;
+      let multiplier = 0.5;
+      if (collected >= targetScore) multiplier = 3.5;
+      else if (collected >= targetScore * 0.6) multiplier = 2.0;
+      else if (collected >= targetScore * 0.3) multiplier = 1.0;
 
-      onComplete({
-        multiplier: finalMultiplier,
-        isRare: rareCount > 0,
-        speedMult: 1.0,
-        outcomeMult: finalMultiplier,
-        isSuccess: score > 5
-      });
+      onComplete({ multiplier, isRare: isRareFound });
     }
-  }, [gameActive, score, rareCount, onComplete]);
+  }, [gameActive, collected, targetScore, onComplete, isRareFound]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center touch-none select-none overflow-hidden p-6">
-      <div className="absolute top-12 text-center px-6 z-10 w-full">
-        <h2 className="text-3xl font-black text-slate-100 mb-2 italic tracking-tighter uppercase">{title} <span className="text-cyan-500">L{level}</span></h2>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
-        <div className="flex justify-center gap-6 mt-4">
-            <div className="text-emerald-400 font-mono font-black">{scoreLabel}: {score}</div>
-            <div className="text-amber-400 font-mono font-black">{rareLabel}: {rareCount}</div>
-        </div>
+    <div
+      ref={containerRef}
+      onPointerMove={handlePointerMove}
+      className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]"
+    >
+      <div className="absolute top-12 text-center w-full z-20">
+        <h2 className="text-3xl font-black text-slate-400 italic tracking-tighter uppercase">MAGNETIC SWEEP <span className="text-white text-xs">L{level}</span></h2>
+        <div className="mt-2 text-emerald-400 font-mono font-black text-2xl">{scoreLabel}: {collected}</div>
       </div>
 
-      <div
-        ref={containerRef}
-        onPointerMove={handlePointerMove}
-        className="relative w-full h-[400px] bg-slate-900 rounded-3xl border-4 border-slate-800 overflow-hidden shadow-2xl cursor-none"
-      >
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-
-        {/* Magnet */}
+      <div className="relative w-full h-full bg-slate-950 overflow-hidden">
+        {/* Magnet Visual */}
         <motion.div
-          animate={{ x: `${magnetPos.x}%`, y: `${magnetPos.y}%` }}
-          transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-          className="absolute w-16 h-16 -ml-8 -mt-8 flex items-center justify-center text-5xl z-40 pointer-events-none"
+          className="absolute w-20 h-20 flex items-center justify-center text-5xl z-30 pointer-events-none drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+          animate={{ left: `${magnetPos.x}%`, top: `${magnetPos.y}%` }}
+          transition={{ type: 'spring', damping: 15, stiffness: 150 }}
+          style={{ transform: 'translate(-50%, -50%)' }}
         >
           {icon}
           <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="absolute inset-0 bg-cyan-500 rounded-full blur-xl -z-10"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.1, 0.3] }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="absolute -inset-4 border-2 border-red-500/50 rounded-full"
           />
         </motion.div>
 
+        {/* Items */}
         <AnimatePresence>
           {items.map(item => (
             <motion.div
@@ -194,43 +161,45 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              className="absolute text-5xl z-20"
-              style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translate(-50%, -50%)' }}
+              className="absolute w-12 h-12 flex items-center justify-center text-3xl z-10"
+              style={{ top: `${item.top}%`, left: `${item.left}%`, transform: 'translate(-50%, -50%)' }}
             >
-              <div className="relative">
-                {item.type}
-                {item.isRare && (
-                    <motion.div
-                        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0] }}
-                        transition={{ repeat: Infinity, duration: 1 }}
-                        className="absolute inset-0 bg-amber-400 rounded-full blur-xl"
-                    />
-                )}
-              </div>
+              {item.emoji}
+              {item.isRare && (
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0, 1] }}
+                    transition={{ repeat: Infinity, duration: 0.5 }}
+                    className="absolute inset-0 bg-yellow-400/20 rounded-full"
+                  />
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
-
-        {/* Scan line effect */}
-        <motion.div
-            animate={{ top: ['0%', '100%', '0%'] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-            className="absolute left-0 right-0 h-1 bg-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.5)] z-10 pointer-events-none"
-        />
       </div>
 
-      <div className="mt-8 w-full max-w-[300px]">
-        <div className="flex justify-between items-end mb-1">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">SCANNING...</span>
-            <span className="text-cyan-500 font-mono text-xl font-black">{timeLeft.toFixed(1)}s</span>
-        </div>
-        <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-            <motion.div
-                className="h-full bg-cyan-500"
+      <div className="absolute bottom-12 w-full max-w-[300px] px-8 z-20">
+          <div className="flex justify-between items-end mb-1">
+              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">BATTERY</span>
+              <span className="text-white font-mono text-xl font-black">{timeLeft.toFixed(1)}s</span>
+          </div>
+          <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+             <motion.div
+                className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                 animate={{ width: `${(timeLeft / 10) * 100}%` }}
-            />
-        </div>
+             />
+          </div>
+          {isRareFound && (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="mt-4 text-center text-yellow-400 font-black text-[10px] uppercase tracking-[0.3em]"
+              >
+                  ✨ {rareLabel} ✨
+              </motion.div>
+          )}
       </div>
+
+      <div className="absolute inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
     </div>
   );
 };

@@ -1,9 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface RouletteProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 type BetType = 'RED' | 'BLACK' | 'ODD' | 'EVEN' | 'NUMBER';
@@ -11,7 +14,7 @@ type BetType = 'RED' | 'BLACK' | 'ODD' | 'EVEN' | 'NUMBER';
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 const WHEEL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
 
-export const Roulette: React.FC<RouletteProps> = ({ onComplete, level = 1 }) => {
+export const Roulette: React.FC<RouletteProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [selectedBet, setSelectedBet] = useState<{ type: BetType; value?: number } | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
@@ -19,9 +22,11 @@ export const Roulette: React.FC<RouletteProps> = ({ onComplete, level = 1 }) => 
   const controls = useAnimation();
   const wheelRef = useRef<HTMLDivElement>(null);
 
-  // Difficulty scaling: House edge increases? No, let's scale multipliers.
-  // Actually, let's add a "Lucky Number" mechanic that scales with level.
-  const bonusMultiplier = 1 + (level - 1) * 0.2;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: Higher tiers pay more but have higher stakes
+  const bonusMultiplier = useMemo(() => 0.8 + scaling * 0.4, [scaling]);
 
   const handleBet = (type: BetType, value?: number) => {
     if (isSpinning || outcome) return;

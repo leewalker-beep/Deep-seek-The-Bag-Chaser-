@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface PatternMemoryProps {
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
   title?: string;
   instruction?: string;
 }
 
 export const PatternMemory: React.FC<PatternMemoryProps> = ({
   onComplete,
+  level = 1,
+  tier = 'MUD',
   title = "ENCRYPTION SEQUENCE",
   instruction = "WATCH CLOSELY..."
 }) => {
@@ -20,14 +26,19 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'hit' | null>(null);
 
-  const totalRounds = 4;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const totalRounds = useMemo(() => Math.min(6, 4 + Math.floor(level / 2)), [level]);
+  const baseSequenceLength = useMemo(() => 2 + Math.floor(scaling * 0.5), [scaling]);
 
   useEffect(() => {
     startNewRound(1);
   }, []);
 
   const startNewRound = (currentRound: number) => {
-    const newSequence = Array.from({ length: currentRound + 2 }, () => Math.floor(Math.random() * 4));
+    const newSequence = Array.from({ length: currentRound + baseSequenceLength }, () => Math.floor(Math.random() * 4));
     setSequence(newSequence);
     setUserSequence([]);
     displaySequence(newSequence);
@@ -35,12 +46,15 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
 
   const displaySequence = async (seq: number[]) => {
     setIsDisplaying(true);
+    const displayTime = Math.max(150, 600 * timerFactor);
+    const pauseTime = Math.max(50, 200 * timerFactor);
+
     for (const num of seq) {
       setActiveButton(num);
       if (navigator.vibrate) navigator.vibrate(20);
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise(resolve => setTimeout(resolve, displayTime));
       setActiveButton(null);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, pauseTime));
     }
     setIsDisplaying(false);
   };
@@ -64,7 +78,8 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
     if (newUserSequence.length === sequence.length) {
       if (round === totalRounds) {
         if (navigator.vibrate) navigator.vibrate(100);
-        setTimeout(() => onComplete(4.0), 500);
+        // Reward scaled by level
+        setTimeout(() => onComplete(3.0 + scaling), 500);
       } else {
         setRound(prev => prev + 1);
         setTimeout(() => startNewRound(round + 1), 500);
@@ -81,8 +96,8 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
         <button
           onClick={() => {
             let multiplier = 0.5;
-            if (round === 2) multiplier = 1.2;
-            else if (round === 3) multiplier = 2.0;
+            if (round >= 3) multiplier = 1.5;
+            else if (round >= 2) multiplier = 1.0;
             onComplete(multiplier);
           }}
           className="px-10 py-4 bg-red-600 text-white font-black rounded-2xl hover:bg-red-500 transition-all border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
@@ -98,7 +113,7 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
         isDisplaying ? 'border-blue-500' : feedback ? 'border-emerald-500' : 'border-slate-800'
     }`}>
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter uppercase">{title}</h2>
+        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter uppercase">{title} <span className="text-xs text-white">L{level}</span></h2>
         <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mt-1">ROUND {round} / {totalRounds}</p>
       </div>
 

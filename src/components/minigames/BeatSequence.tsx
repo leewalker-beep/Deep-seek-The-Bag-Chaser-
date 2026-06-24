@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface BeatSequenceProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 1 }) => {
+export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [isDisplaying, setIsDisplaying] = useState(true);
@@ -15,10 +18,14 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'hit' | 'fail' | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
   // Difficulty scaling
-  const totalRounds = 2 + level;
-  const baseLength = 1 + level; // Level 1: 2, Level 2: 3, Level 3: 4
-  const sequenceGrowth = 2; // Level 3 will go 4 -> 6 -> 8 -> 10 -> 12
+  const totalRounds = Math.floor((2 + level) * (1 + (scaling * 0.1)));
+  const baseLength = Math.max(2, Math.floor((1 + level) * (1 + (scaling * 0.05))));
+  const sequenceGrowth = level >= 3 ? 2 : 1;
 
   useEffect(() => {
     startNewRound(1);
@@ -35,9 +42,9 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
 
   const displaySequence = async (seq: number[]) => {
     setIsDisplaying(true);
-    // Display speed scales with level
-    const displaySpeed = Math.max(200, 500 - (level - 1) * 100);
-    const pauseSpeed = Math.max(50, 150 - (level - 1) * 30);
+    // Display speed scales with difficulty
+    const displaySpeed = Math.max(150, (500 - (level - 1) * 100) * timerFactor);
+    const pauseSpeed = Math.max(40, (150 - (level - 1) * 30) * timerFactor);
 
     for (const num of seq) {
       setActiveButton(num);
@@ -67,7 +74,7 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
     setTimeout(() => setFeedback(null), 150);
 
     if (newUserSequence.length === sequence.length) {
-      if (round === totalRounds) {
+      if (round >= totalRounds) {
         if (navigator.vibrate) navigator.vibrate(100);
         setTimeout(() => onComplete(4.0), 500);
       } else {
@@ -86,8 +93,8 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
         <button
           onClick={() => {
             let multiplier = 0.5;
-            if (round > 3) multiplier = 2.0;
-            else if (round > 1) multiplier = 1.2;
+            if (round > totalRounds * 0.7) multiplier = 2.5;
+            else if (round > totalRounds * 0.4) multiplier = 1.2;
             onComplete(multiplier);
           }}
           className="px-10 py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-500 transition-all uppercase tracking-tighter border-b-4 border-red-800 active:border-b-0 active:translate-y-1"

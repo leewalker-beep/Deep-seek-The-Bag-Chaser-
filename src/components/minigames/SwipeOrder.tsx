@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 export interface SwipeItem {
   id: number;
@@ -75,6 +77,7 @@ interface SwipeOrderProps {
   icon?: string;
   items?: SwipeItem[];
   level?: number;
+  tier?: Tier;
 }
 
 export const SwipeOrder: React.FC<SwipeOrderProps> = ({
@@ -85,13 +88,13 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
   rightLabel = "REAL",
   icon = "📦",
   items = PRODUCTS,
-  level = 1
+  level = 1,
+  tier = 'MUD'
 }) => {
   const [currentProduct, setCurrentProduct] = useState<SwipeItem | null>(null);
   const [productIndex, setProductIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(1.5);
   const [gameActive, setGameActive] = useState(true);
   const [offset, setOffset] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
@@ -99,9 +102,15 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
   const touchStart = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const [timeLeft, setTimeLeft] = useState(1.5 * timerFactor);
+
   // Difficulty scaling
-  const timeLimit = Math.max(0.6, 1.8 - (level - 1) * 0.2);
-  const productsToInspect = 10 + (level - 1) * 2;
+  const timeLimit = useMemo(() => Math.max(0.4, 1.8 * timerFactor), [timerFactor]);
+  const productsToInspect = useMemo(() => Math.min(25, 10 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
 
   // Shuffle products at start
   const [shuffledProducts] = useState(() => {
@@ -117,17 +126,19 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
 
-    let multiplier = 0.7;
-    if (accuracy >= 0.9) multiplier = 5.0;
-    else if (accuracy >= 0.7) multiplier = 2.5;
-    else if (accuracy >= 0.5) multiplier = 1.5;
-    else if (accuracy >= 0.3) multiplier = 1.0;
-    else multiplier = 0.7;
+    let baseMultiplier = 0.7;
+    if (accuracy >= 0.9) baseMultiplier = 3.5;
+    else if (accuracy >= 0.7) baseMultiplier = 2.0;
+    else if (accuracy >= 0.5) baseMultiplier = 1.2;
+    else if (accuracy >= 0.3) baseMultiplier = 0.8;
+    else baseMultiplier = 0.5;
+
+    const multiplier = baseMultiplier * (0.8 + scaling * 0.2);
 
     window.setTimeout(() => {
       onComplete(multiplier);
     }, 1000);
-  }, [score, total, onComplete]);
+  }, [score, total, onComplete, scaling]);
 
   const handleTimeout = useCallback(() => {
     setResult('wrong');
@@ -177,8 +188,7 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productIndex, shuffledProducts]);
+  }, [productIndex, shuffledProducts, gameActive, endGame, handleTimeout, timeLimit]);
 
   const isProductReal = (product: SwipeItem): boolean => {
     if (product.type === 'real') return true;
@@ -297,11 +307,11 @@ export const SwipeOrder: React.FC<SwipeOrderProps> = ({
           <div className="text-6xl mb-4">{accuracy >= 70 ? '💰' : accuracy >= 50 ? '📦' : '❌'}</div>
           <div className="text-3xl font-black text-white mb-2">{accuracy}% ACCURACY</div>
           <div className={`text-xs font-bold uppercase tracking-widest ${accuracy >= 70 ? 'text-emerald-500' : 'text-slate-500'}`}>
-            {accuracy >= 90 ? 'PERFECT SHIPMENT! 5x Yield' :
-             accuracy >= 70 ? 'Excellent Fulfillment! 2.5x Yield' :
-             accuracy >= 50 ? 'Standard Service. 1.5x Yield' :
-             accuracy >= 30 ? 'High Refund Rate. 1x Yield' :
-             'Logistics Failure. 0.7x Yield'}
+            {accuracy >= 90 ? 'PERFECT SHIPMENT!' :
+             accuracy >= 70 ? 'Excellent Fulfillment!' :
+             accuracy >= 50 ? 'Standard Service.' :
+             accuracy >= 30 ? 'High Refund Rate.' :
+             'Logistics Failure.'}
           </div>
         </div>
       )}

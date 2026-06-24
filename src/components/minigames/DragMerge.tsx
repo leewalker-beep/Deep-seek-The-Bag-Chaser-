@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 const ALL_LOGOS = ['💎', '👜', '👗', '⌚', '👠', '👒', '🕶️', '💄', '💍', '🧣'];
 
 interface DragMergeProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 interface MergeItem {
@@ -15,14 +18,17 @@ interface MergeItem {
   y: number;
 }
 
-export const DragMerge: React.FC<DragMergeProps> = ({ onComplete, level = 1 }) => {
+export const DragMerge: React.FC<DragMergeProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [items, setItems] = useState<MergeItem[]>([]);
   const [mergedCount, setMergedCount] = useState(0);
   const [startTime] = useState(Date.now());
   const [lastMergeIcon, setLastMergeIcon] = useState<string | null>(null);
 
-  // Difficulty scaling: more logos and pairs at higher levels
-  const pairsRequired = 4 + (level - 1);
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: more logos and pairs at higher difficulty
+  const pairsRequired = Math.min(ALL_LOGOS.length, Math.floor((4 + (level - 1)) * (1 + (scaling * 0.05))));
   const logosToUse = ALL_LOGOS.slice(0, pairsRequired);
 
   useEffect(() => {

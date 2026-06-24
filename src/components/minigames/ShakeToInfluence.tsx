@@ -1,21 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface ShakeToInfluenceProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, level = 1 }) => {
+export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [hype, setHype] = useState(0);
   const [timeLeft, setTimeLeft] = useState(8);
   const [gameActive, setGameActive] = useState(false);
-  const [_permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
-  const lastShake = useRef(0);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
 
-  // Difficulty scaling
-  const targetHype = 50 + (level - 1) * 20;
-  const decayRate = 0.5 + (level - 1) * 0.3;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: target hype and decay rate increase with difficulty
+  const targetHype = 100 * Math.sqrt(scaling);
+  const decayRate = (2 + (level - 1) * 1.5) * Math.sqrt(scaling);
 
   const requestPermission = async () => {
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
@@ -24,48 +29,45 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, 
         if (response === 'granted') {
           setPermissionGranted(true);
           setGameActive(true);
-          window.addEventListener('devicemotion', handleMotion);
         } else {
           setPermissionGranted(false);
           setGameActive(true);
         }
-      } catch {
+      } catch (e) {
         setPermissionGranted(false);
         setGameActive(true);
       }
     } else {
       setPermissionGranted(true);
       setGameActive(true);
-      window.addEventListener('devicemotion', handleMotion);
-    }
-  };
-
-  const handleMotion = (e: DeviceMotionEvent) => {
-    const acc = e.accelerationIncludingGravity;
-    if (!acc) return;
-    const total = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
-
-    if (total > 20 && Date.now() - lastShake.current > 100) {
-      lastShake.current = Date.now();
-      handleInfluence();
     }
   };
 
   useEffect(() => {
     if (!gameActive) return;
 
-    // Fallback for desktop: Mouse movement or click
-    const handleAction = () => {
-      if (Date.now() - lastShake.current > 100) {
-        lastShake.current = Date.now();
+    const handleMotion = (event: DeviceMotionEvent) => {
+      const acceleration = event.accelerationIncludingGravity;
+      if (!acceleration) return;
+      const total = Math.abs(acceleration.x || 0) + Math.abs(acceleration.y || 0) + Math.abs(acceleration.z || 0);
+      if (total > 15) {
         handleInfluence();
       }
     };
+
+    const handleAction = () => {
+      if (!permissionGranted) {
+          handleInfluence();
+      }
+    };
+
+    window.addEventListener('devicemotion', handleMotion);
     window.addEventListener('mousedown', handleAction);
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0.1) {
+          clearInterval(timer);
           endGame();
           return 0;
         }
@@ -80,7 +82,7 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, 
       window.removeEventListener('mousedown', handleAction);
       clearInterval(timer);
     };
-  }, [gameActive, decayRate]);
+  }, [gameActive, decayRate, permissionGranted]);
 
   const handleInfluence = () => {
     setHype(prev => Math.min(targetHype * 1.5, prev + 5));
@@ -104,7 +106,7 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, 
     <div className={`fixed inset-0 transition-colors duration-300 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
         hype > targetHype ? 'bg-purple-950/40' : 'bg-slate-950'
     }`}>
-      {!gameActive && (
+      {!gameActive && timeLeft > 0 && (
         <div className="flex flex-col gap-6 z-20 items-center text-center">
           <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">SHAKE FOR HYPE</h2>
           <p className="text-slate-400 text-xs font-black uppercase tracking-widest">Influence the masses L{level}</p>

@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Product {
   id: number;
@@ -25,24 +27,34 @@ const PRODUCTS: Product[] = [
 interface SwipeAuthenticProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const SwipeAuthentic: React.FC<SwipeAuthenticProps> = ({ onComplete, level = 1 }) => {
+export const SwipeAuthentic: React.FC<SwipeAuthenticProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [productIndex, setProductIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(1.5);
   const [gameActive, setGameActive] = useState(true);
   const [offset, setOffset] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const touchStart = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  // Difficulty scaling
-  const timePerProduct = Math.max(0.5, 2.0 - (level - 1) * 0.5);
-  const productsToInspect = 5 + (level * 5);
-  const swipeThreshold = 100; // Require >50% of card width for registration
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const [timeLeft, setTimeLeft] = useState(1.5 * timerFactor);
+
+  // Difficulty scaling: less time per product, more products
+  const timePerProduct = useMemo(() => Math.max(0.4, 2.0 * timerFactor), [timerFactor]);
+  const productsToInspect = useMemo(() => Math.min(20, 5 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
+  const swipeThreshold = useMemo(() => Math.max(40, 100 * (1/scaling)), [scaling]);
 
   const [shuffledProducts] = useState(() => {
     let base = [...PRODUCTS].sort(() => Math.random() - 0.5);
@@ -55,13 +67,16 @@ export const SwipeAuthentic: React.FC<SwipeAuthenticProps> = ({ onComplete, leve
   const endGame = useCallback(() => {
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
-    let multiplier = 0.5;
-    if (accuracy >= 0.9) multiplier = 4.0;
-    else if (accuracy >= 0.7) multiplier = 2.5;
-    else if (accuracy >= 0.5) multiplier = 1.2;
+
+    let baseMultiplier = 0.5;
+    if (accuracy >= 0.9) baseMultiplier = 3.0;
+    else if (accuracy >= 0.7) baseMultiplier = 2.0;
+    else if (accuracy >= 0.5) baseMultiplier = 1.2;
+
+    const multiplier = baseMultiplier * (0.8 + scaling * 0.2);
 
     window.setTimeout(() => onComplete(multiplier), 1000);
-  }, [score, total, onComplete]);
+  }, [score, total, onComplete, scaling]);
 
   const handleTimeout = useCallback(() => {
     setResult('wrong');

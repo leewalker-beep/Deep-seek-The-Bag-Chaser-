@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface LaborBuildProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1 }) => {
+export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [isActive, setIsActive] = useState(true);
   const [feedback, setFeedback] = useState<'tap' | null>(null);
 
-  // Difficulty scaling: L1: 3 taps/sec -> L5: 7 taps/sec
-  // 10 second game. L1 needs 30 taps. L5 needs 70 taps.
-  // Each tap gives progress. Decay happens over time.
-  // L1: decay 3%/sec. Tap gives 5%. (30 * 5 = 150. - 30 = 120%)
-  // L5: decay 15%/sec. Tap gives 3%. (70 * 3 = 210. - 150 = 60%) - Wait, L5 needs to be harder.
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
 
-  const decayRate = 0.5 + (level - 1) * 0.8; // Decay per 100ms
-  const tapPower = Math.max(2, 5 - (level - 1) * 0.5);
+  const decayRate = useMemo(() => (0.4 + (level - 1) * 0.5) * scaling, [level, scaling]); // Decay per 100ms
+  const tapPower = useMemo(() => Math.max(1.5, 5 - (level - 1) * 0.3) * (1 / Math.sqrt(scaling)), [level, scaling]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -50,16 +50,18 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1 })
 
   useEffect(() => {
     if (!isActive) {
-      let multiplier = 0.5;
-      if (progress > 90) multiplier = 4.0;
-      else if (progress > 70) multiplier = 2.5;
-      else if (progress > 40) multiplier = 1.0;
-      else if (progress > 20) multiplier = 0.7;
+      let base = 0.5;
+      if (progress > 90) base = 3.0;
+      else if (progress > 70) base = 2.0;
+      else if (progress > 40) base = 1.2;
+      else if (progress > 20) base = 0.8;
+
+      const multiplier = base * (0.8 + scaling * 0.2);
 
       const timeout = setTimeout(() => onComplete(multiplier), 1000);
       return () => clearTimeout(timeout);
     }
-  }, [isActive, progress, onComplete]);
+  }, [isActive, progress, onComplete, scaling]);
 
   return (
     <div className={`bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto transition-colors duration-100 ${feedback ? 'bg-stone-900' : 'bg-stone-950'}`}>

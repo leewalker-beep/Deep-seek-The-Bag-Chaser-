@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface RiskMeterProps {
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
   title?: string;
   instruction?: string;
 }
 
 export const RiskMeter: React.FC<RiskMeterProps> = ({
   onComplete,
+  level = 1,
+  tier = 'MUD',
   title = "ELITE RISK ASSESSMENT",
   instruction = "Stop needle in the GOLD ZONE"
 }) => {
@@ -18,10 +24,14 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
   const direction = useRef(1);
   const requestRef = useRef<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   const animate = (_time: number) => {
     if (!isStopped) {
       setPosition((prev) => {
-        let next = prev + direction.current * 2.5; // Slightly faster for Elite
+        // Base speed 2.5, scales up
+        let next = prev + direction.current * (2.0 + 0.5 * scaling);
         if (next > 100) {
           next = 100;
           direction.current = -1;
@@ -40,7 +50,7 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [isStopped]);
+  }, [isStopped, scaling]);
 
   const handleStop = () => {
     if (isStopped) return;
@@ -59,12 +69,12 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
         if (navigator.vibrate) navigator.vibrate(50);
     }
     else if (position < 90) {
-        multiplier = 1.5 + ((position - 70) / 20) * 1.0;
+        multiplier = 1.5 + ((position - 70) / 20) * (1.0 + scaling * 0.2);
         setFeedback('success');
         if (navigator.vibrate) navigator.vibrate(70);
     }
     else {
-        multiplier = 3.5; // Increased elite jackpot
+        multiplier = 3.5 + scaling * 0.5; // Increased elite jackpot
         setFeedback('success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
     }
@@ -79,7 +89,7 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
         'border-yellow-600'
     }`}>
       <div className="text-center w-full">
-        <h2 className="text-2xl font-black text-yellow-500 italic uppercase tracking-tighter">{title}</h2>
+        <h2 className="text-2xl font-black text-yellow-500 italic uppercase tracking-tighter">{title} <span className="text-white text-xs">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500">🎯</motion.span>
              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
@@ -134,7 +144,7 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
                 className="text-center"
             >
                 <div className={`text-5xl font-black font-mono italic tracking-tighter ${feedback === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {(position < 40 ? 0.5 + (position / 40) * 0.5 : position < 70 ? 1.0 + ((position - 40) / 30) * 0.5 : position < 90 ? 1.5 + ((position - 70) / 20) * 1.0 : 3.5).toFixed(2)}X
+                    {(position < 40 ? 0.5 + (position / 40) * 0.5 : position < 70 ? 1.0 + ((position - 40) / 30) * 0.5 : position < 90 ? 1.5 + ((position - 70) / 20) * (1.0 + scaling * 0.2) : 3.5 + scaling * 0.5).toFixed(2)}X
                 </div>
                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">YIELD MULTIPLIER</div>
             </motion.div>
