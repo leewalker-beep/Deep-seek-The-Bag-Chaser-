@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface HashtagTapProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 const HASHTAGS = [
@@ -13,7 +16,7 @@ const HASHTAGS = [
   '#Monetize', '#Engagement', '#Retention'
 ];
 
-export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete, level = 1 }) => {
+export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [activeHashtags, setActiveHashtags] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
@@ -21,10 +24,14 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete, level = 1 })
   const [feedback, setFeedback] = useState<'tap' | null>(null);
   const nextId = useRef(0);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
+
   // Difficulty scaling
-  const spawnRate = Math.max(300, 800 - (level - 1) * 100);
-  const lifespan = Math.max(1000, 3000 - (level - 1) * 300);
-  const targetScore = 15 + (level - 1) * 5;
+  const spawnRate = Math.max(200, (800 - (level - 1) * 100) / spawnFactor);
+  const lifespan = Math.max(800, (3000 - (level - 1) * 300) / Math.sqrt(scaling));
+  const targetScore = Math.floor((15 + (level - 1) * 5) * spawnFactor);
 
   useEffect(() => {
     if (!gameActive) return;

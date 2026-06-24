@@ -1,120 +1,138 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { getScalingMultiplier, getPrecisionFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface PlasmaDonationProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete, level = 1 }) => {
-  const [progress, setProgress] = useState(0);
-  const [isHolding, setIsHolding] = useState(false);
-  const [gameActive, setGameActive] = useState(true);
-  const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
-  const timerRef = useRef<number | null>(null);
+export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
+  const [needlePos, setNeedlePos] = useState(0);
+  const [isStopped, setIsStopped] = useState(false);
+  const [round, setRound] = useState(1);
+  const [results, setResults] = useState<number[]>([]);
+  const direction = useRef(1);
+  const requestRef = useRef<number | null>(null);
 
-  // Difficulty scaling: Progress fills faster at higher levels
-  const fillSpeed = 30 - (level - 1) * 4; // Interval in ms, lower is faster
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const precisionFactor = getPrecisionFactor(level, tier);
 
-  const startHolding = () => {
-    if (!gameActive) return;
-    setIsHolding(true);
-    timerRef.current = window.setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-            handleRelease(100);
-            return 100;
+  const totalRounds = 3;
+  // Difficulty scaling: needle speed increases, target zone shrinks
+  const needleSpeed = (2.5 + (level - 1) * 0.5) * Math.sqrt(scaling);
+  const targetSize = Math.max(10, 25 * precisionFactor);
+  const targetPos = useRef(20 + Math.random() * 60);
+
+  const animate = (_time: number) => {
+    if (!isStopped) {
+      setNeedlePos(prev => {
+        let next = prev + direction.current * needleSpeed;
+        if (next > 100) {
+          next = 100;
+          direction.current = -1;
+        } else if (next < 0) {
+          next = 0;
+          direction.current = 1;
         }
-        return prev + 1;
+        return next;
       });
-    }, fillSpeed);
-  };
-
-  const handleRelease = (finalProgress?: number) => {
-    if (!isHolding && finalProgress === undefined) return;
-    if (timerRef.current) clearInterval(timerRef.current);
-    setIsHolding(false);
-    setGameActive(false);
-
-    const actualProgress = finalProgress !== undefined ? finalProgress : progress;
-
-    // Sweet spot is 80-90
-    let multiplier = 0.5;
-    if (actualProgress >= 80 && actualProgress <= 90) {
-      multiplier = 3.0;
-      setFeedback('success');
-    } else {
-      setFeedback('fail');
-      if (actualProgress >= 60 && actualProgress <= 95) multiplier = 1.5;
-      else if (actualProgress >= 40 && actualProgress <= 98) multiplier = 1.0;
+      requestRef.current = requestAnimationFrame(animate);
     }
-
-    if (navigator.vibrate) navigator.vibrate(actualProgress >= 80 && actualProgress <= 90 ? 100 : 50);
-    setTimeout(() => onComplete(multiplier), 1000);
   };
 
   useEffect(() => {
+    requestRef.current = requestAnimationFrame(animate);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [isStopped, needleSpeed]);
+
+  const handleStop = () => {
+    if (isStopped) return;
+    setIsStopped(true);
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+    const dist = Math.abs(needlePos - targetPos.current);
+    let accuracy = 0;
+    if (dist < targetSize / 2) accuracy = 1.0;
+    else if (dist < targetSize) accuracy = 0.5;
+    else accuracy = 0.1;
+
+    const newResults = [...results, accuracy];
+    setResults(newResults);
+
+    if (navigator.vibrate) {
+        if (accuracy === 1.0) navigator.vibrate(50);
+        else if (accuracy === 0.5) navigator.vibrate(20);
+        else navigator.vibrate([30, 30]);
+    }
+
+    setTimeout(() => {
+      if (round < totalRounds) {
+        setRound(prev => prev + 1);
+        setIsStopped(false);
+        setNeedlePos(0);
+        direction.current = 1;
+        targetPos.current = 20 + Math.random() * 60;
+      } else {
+        const avgAccuracy = newResults.reduce((a, b) => a + b, 0) / totalRounds;
+        // Scaled multiplier
+        const multiplier = (0.5 + avgAccuracy * 2.5) * (0.9 + scaling * 0.1);
+        onComplete(multiplier);
+      }
+    }, 800);
+  };
 
   return (
-    <div className={`transition-colors duration-300 p-8 rounded-3xl border-4 shadow-2xl text-center max-w-sm w-full mx-auto flex flex-col items-center ${
-      feedback === 'success' ? 'bg-emerald-950/40 border-emerald-500' :
-      feedback === 'fail' ? 'bg-red-950/40 border-red-900/50' :
-      'bg-red-950/20 border-red-900/50'
-    }`}>
-      <h2 className="text-2xl font-black text-red-500 mb-2 uppercase tracking-tighter italic">PLASMA DONATION <span className="text-white text-sm">L{level}</span></h2>
-      <p className="text-[10px] text-red-700 mb-8 uppercase tracking-widest font-bold">Hold to fill, release in the ZONE</p>
+    <div className="flex flex-col items-center justify-center p-8 bg-slate-950 rounded-3xl border-4 border-red-900/30 shadow-2xl space-y-10 max-w-sm mx-auto overflow-hidden relative">
+      <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,red_0%,transparent_70%)]" />
 
-      <div className="relative w-24 h-64 bg-slate-900 rounded-full border-4 border-slate-800 p-1 mb-8 overflow-hidden">
-        {/* Sweet Spot Zone */}
-        <div className="absolute bottom-[80%] top-[10%] left-0 right-0 bg-emerald-500/20 border-y-2 border-emerald-500/50 z-0">
-          <div className="absolute inset-0 flex items-center justify-center opacity-30 text-[10px] font-black text-emerald-500">ZONE</div>
-        </div>
-
-        {/* Progress Fill */}
-        <motion.div
-          initial={{ height: 0 }}
-          animate={{ height: `${progress}%` }}
-          className={`absolute bottom-0 left-0 right-0 rounded-b-full z-10 transition-colors duration-200 ${
-            progress >= 80 && progress <= 90 ? 'bg-emerald-500' : 'bg-gradient-to-t from-red-800 to-red-500'
-          }`}
-        />
-
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <span className="text-2xl font-black text-white/20">{Math.floor(progress)}%</span>
+      <div className="text-center z-10">
+        <h2 className="text-2xl font-black text-red-500 italic uppercase tracking-tighter mb-1">PLASMA DONATION <span className="text-white text-xs">L{level}</span></h2>
+        <div className="flex justify-center gap-2">
+            {[...Array(totalRounds)].map((_, i) => (
+                <div key={i} className={`w-8 h-1 rounded-full ${i + 1 < round ? 'bg-red-500' : i + 1 === round ? 'bg-white animate-pulse' : 'bg-slate-800'}`} />
+            ))}
         </div>
       </div>
 
-      <AnimatePresence>
-        {feedback && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`font-black text-2xl mb-4 ${feedback === 'success' ? 'text-emerald-500' : 'text-red-500'}`}
-          >
-            {feedback === 'success' ? 'PERFECT!' : 'MISSED!'}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="relative w-full h-12 bg-slate-900 rounded-full border-2 border-slate-800 overflow-hidden z-10 shadow-inner">
+        {/* Target Zone */}
+        <div
+          className="absolute top-0 bottom-0 bg-red-600/30 border-x border-red-500/50"
+          style={{ left: `${targetPos.current - targetSize / 2}%`, width: `${targetSize}%` }}
+        >
+            <motion.div
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+                className="w-full h-full bg-red-500/20"
+            />
+        </div>
+
+        {/* Needle */}
+        <motion.div
+          className="absolute top-0 bottom-0 w-1.5 bg-white shadow-[0_0_15px_white] z-20"
+          style={{ left: `${needlePos}%` }}
+        />
+      </div>
 
       <button
-        onPointerDown={startHolding}
-        onPointerUp={() => handleRelease()}
-        disabled={!gameActive}
-        className={`w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all active:scale-90 touch-none border-4 ${
-          !gameActive ? 'bg-slate-900 border-slate-800 text-slate-700' :
-          isHolding ? 'bg-red-600 border-red-400 animate-pulse' : 'bg-red-900 border-red-800 text-red-100'
+        onPointerDown={handleStop}
+        disabled={isStopped}
+        className={`w-full py-6 rounded-2xl font-black text-xl transition-all active:scale-95 border-b-8 z-10 uppercase italic ${
+          isStopped ? 'bg-slate-800 text-slate-500 border-slate-950' : 'bg-red-600 text-white border-red-800 shadow-[0_0_30px_rgba(220,38,38,0.2)]'
         }`}
       >
-        <span className="text-4xl mb-1">🩸</span>
-        <span className="text-[10px] font-black uppercase tracking-tighter">{isHolding ? 'DONATING...' : 'HOLD'}</span>
+        {isStopped ? 'DRAWING...' : 'STRIKE VEIN'}
       </button>
 
-      <div className="mt-8 text-[10px] text-emerald-500 font-bold uppercase tracking-widest animate-bounce">
-        TARGET: 80% - 90%
+      <div className="text-center opacity-40 z-10">
+        <div className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">VEIN STABILITY</div>
+        <div className="text-xs font-mono font-black text-white">ROUND {round} / {totalRounds}</div>
       </div>
     </div>
   );

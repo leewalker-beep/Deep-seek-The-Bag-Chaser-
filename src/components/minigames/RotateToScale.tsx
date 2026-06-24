@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Coordinate {
   target: number;
@@ -9,9 +11,14 @@ interface Coordinate {
 interface RotateToScaleProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level = 1 }) => {
+export const RotateToScale: React.FC<RotateToScaleProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentAngle, setCurrentAngle] = useState(0);
@@ -20,7 +27,12 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
   const [gameActive, setGameActive] = useState(true);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [result, setResult] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(30);
+
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const [timeLeft, setTimeLeft] = useState(Math.ceil(30 * timerFactor));
 
   const holdTimerRef = useRef<number | null>(null);
   const countdownTimerRef = useRef<number | null>(null);
@@ -37,9 +49,11 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
     stateRef.current = { currentIndex, coordinates, isHolding, gameActive };
   }, [currentIndex, coordinates, isHolding, gameActive]);
 
+  const targetHoldTime = useMemo(() => Math.max(1.0, 3.0 * (1 / scaling)), [scaling]);
+
   // Number of coordinates based on level
   const getCoordinateCount = useCallback(() => {
-    return level * 2;
+    return Math.min(10, 2 + level);
   }, [level]);
 
   // Generate random coordinates
@@ -68,7 +82,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
     else if (successRate >= 0.6) performanceBase = 0.6;
     else performanceBase = 0.3;
 
-    const finalMultiplier = performanceBase * level;
+    const finalMultiplier = performanceBase * (1.5 + scaling * 0.5);
     setResult(finalMultiplier);
 
     if (navigator.vibrate) navigator.vibrate(100);
@@ -76,7 +90,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
     setTimeout(() => {
       onComplete(finalMultiplier);
     }, 1500);
-  }, [level, onComplete]);
+  }, [scaling, onComplete]);
 
   // Countdown timer
   useEffect(() => {
@@ -126,7 +140,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
       holdTimerRef.current = setInterval(() => {
         setHoldTime(prev => {
           const next = prev + 0.1;
-          if (next >= 3) {
+          if (next >= targetHoldTime) {
             if (holdTimerRef.current) {
                 clearInterval(holdTimerRef.current);
                 holdTimerRef.current = null;
@@ -147,7 +161,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
     return () => {
       if (holdTimerRef.current) clearInterval(holdTimerRef.current);
     };
-  }, [isHolding, gameActive, completeCoordinate]);
+  }, [isHolding, gameActive, completeCoordinate, targetHoldTime]);
 
   const handleOrientation = useCallback((event: DeviceOrientationEvent) => {
     const { currentIndex: cIdx, coordinates: coords, gameActive: active } = stateRef.current;
@@ -159,7 +173,10 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
     setCurrentAngle(angle);
 
     const currentTarget = coords[cIdx]?.target;
-    if (currentTarget && Math.abs(angle - currentTarget) <= 8) {
+    // Window of precision decreases with scaling
+    const precision = Math.max(2, 8 / scaling);
+
+    if (currentTarget && Math.abs(angle - currentTarget) <= precision) {
       setIsHolding(true);
       if (Math.abs(angle - currentTarget) <= 2 && navigator.vibrate) navigator.vibrate(5);
     } else {
@@ -168,7 +185,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
         return false;
       });
     }
-  }, []);
+  }, [scaling]);
 
   useEffect(() => {
     if (permissionGranted) {
@@ -205,7 +222,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
         isHolding ? 'bg-emerald-950/20' : 'bg-slate-950'
     }`}>
       <div className="absolute top-12 text-center w-full px-8">
-        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">GLOBAL FRANCHISE</h2>
+        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">GLOBAL FRANCHISE <span className="text-xs">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
             <motion.span animate={{ rotate: [0, 45, -45, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="text-emerald-500">🌍</motion.span>
             <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">ROTATE TO EXPAND TERRITORY</p>
@@ -282,7 +299,8 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
                 const val = parseInt(e.target.value);
                 setCurrentAngle(val);
                 const currentTarget = coordinates[currentIndex]?.target;
-                if (currentTarget && Math.abs(val - currentTarget) <= 8) {
+                const precision = Math.max(2, 8 / scaling);
+                if (currentTarget && Math.abs(val - currentTarget) <= precision) {
                   setIsHolding(true);
                 } else {
                   setIsHolding(false);
@@ -295,12 +313,12 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
           <div className="w-full px-6">
               <div className="flex justify-between text-[10px] text-slate-500 font-black uppercase mb-2 tracking-widest">
                 <span>{isHolding ? 'LOCKING IN...' : 'ALIGN THE NEEDLE'}</span>
-                <span className="font-mono">{holdTime.toFixed(1)}s / 3.0s</span>
+                <span className="font-mono">{holdTime.toFixed(1)}s / {targetHoldTime.toFixed(1)}s</span>
               </div>
               <div className="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
                 <motion.div
                   className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                  animate={{ width: `${(holdTime / 3) * 100}%` }}
+                  animate={{ width: `${(holdTime / targetHoldTime) * 100}%` }}
                 />
               </div>
           </div>
@@ -324,12 +342,12 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
                 className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-30 p-8 text-center"
             >
             <div className="text-8xl mb-6">
-                {result / level >= 0.8 ? '🌎' : result / level >= 0.6 ? '🏙️' : '🏚️'}
+                {result / (1.5 + scaling * 0.5) >= 0.8 ? '🌎' : result / (1.5 + scaling * 0.5) >= 0.6 ? '🏙️' : '🏚️'}
             </div>
             <h3 className="text-4xl font-black text-white mb-2 italic tracking-tighter uppercase">EXPANSION COMPLETE</h3>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
-                {result / level >= 0.8 ? 'Global dominance achieved!' :
-                result / level >= 0.6 ? 'Strategic territories secured.' :
+                {result / (1.5 + scaling * 0.5) >= 0.8 ? 'Global dominance achieved!' :
+                result / (1.5 + scaling * 0.5) >= 0.6 ? 'Strategic territories secured.' :
                 'Market entry failed.'}
             </p>
             <div className="text-emerald-500 text-3xl font-black font-mono mt-6 italic">
@@ -342,7 +360,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({ onComplete, level 
       <div className="absolute bottom-8 w-full max-w-xs text-center opacity-30 pointer-events-none">
         <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest leading-relaxed">
           {permissionGranted ? 'Tilt phone to match target angle' : 'Use slider to match target angle'}<br/>
-          Hold position for 3s to capture territory
+          Hold position for {targetHoldTime.toFixed(1)}s to capture territory
         </p>
       </div>
 

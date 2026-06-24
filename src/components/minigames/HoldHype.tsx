@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface HoldHypeProps {
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
   title?: string;
   instruction?: string;
 }
 
 export const HoldHype: React.FC<HoldHypeProps> = ({
   onComplete,
+  level = 1,
+  tier = 'MUD',
   title = "BUILD HYPE",
   instruction = "Hold for exactly 2.0 seconds"
 }) => {
@@ -17,6 +23,13 @@ export const HoldHype: React.FC<HoldHypeProps> = ({
   const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
   const timerRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
+
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: tolerance window shrinks at higher difficulty
+  // Base tolerance is 300ms. L5 Elite could be 100ms.
+  const tolerance = Math.max(80, 300 / Math.sqrt(scaling));
 
   const startHolding = () => {
     if (feedback) return;
@@ -44,15 +57,15 @@ export const HoldHype: React.FC<HoldHypeProps> = ({
     const diff = Math.abs(2000 - elapsed);
     let multiplier = 0.5;
 
-    if (diff <= 50) {
+    if (diff <= tolerance * 0.2) {
       multiplier = 4.0;
       setFeedback('success');
       if (navigator.vibrate) navigator.vibrate(100);
-    } else if (diff <= 100) {
+    } else if (diff <= tolerance * 0.5) {
       multiplier = 2.5;
       setFeedback('success');
       if (navigator.vibrate) navigator.vibrate(50);
-    } else if (diff <= 300) {
+    } else if (diff <= tolerance) {
       multiplier = 1.5;
       setFeedback('success');
       if (navigator.vibrate) navigator.vibrate(20);
@@ -77,7 +90,7 @@ export const HoldHype: React.FC<HoldHypeProps> = ({
       'border-slate-800'
     }`}>
       <div className="text-[10px] text-slate-500 uppercase font-bold mb-4 tracking-widest">
-        {title}
+        {title} L{level}
       </div>
 
       <div className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-tighter">
@@ -124,7 +137,7 @@ export const HoldHype: React.FC<HoldHypeProps> = ({
       </button>
 
       <div className="mt-6 text-[10px] text-orange-400 font-mono font-bold animate-pulse">
-        PERFECT RELEASE = 2X YIELD
+        WIN WINDOW: +/- {tolerance.toFixed(0)}ms
       </div>
     </div>
   );

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface HigherLowerProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 const SUITS = ['♠️', '♥️', '♣️', '♦️'];
@@ -15,7 +18,7 @@ interface Card {
   suit: string;
 }
 
-export const HigherLower: React.FC<HigherLowerProps> = ({ onComplete, level = 1 }) => {
+export const HigherLower: React.FC<HigherLowerProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [currentCard, setCurrentCard] = useState<Card | null>(null);
   const [nextCard, setNextCard] = useState<Card | null>(null);
   const [score, setScore] = useState(0);
@@ -23,9 +26,12 @@ export const HigherLower: React.FC<HigherLowerProps> = ({ onComplete, level = 1 
   const [feedback, setFeedback] = useState<'CORRECT' | 'WRONG' | null>(null);
   const [isGameOver, setIsGameOver] = useState(false);
 
-  // Difficulty scaling: less strikes at higher levels
-  const maxStrikes = Math.max(1, 3 - Math.floor((level - 1) / 2));
-  const payoutPerCorrect = 0.4 + (level - 1) * 0.1;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: less strikes at higher levels/tiers
+  const maxStrikes = useMemo(() => Math.max(1, 4 - Math.floor(scaling)), [scaling]);
+  const payoutPerCorrect = useMemo(() => 0.3 + scaling * 0.15, [scaling]);
 
   const getRandomCard = (): Card => {
     const valueIndex = Math.floor(Math.random() * VALUES.length);

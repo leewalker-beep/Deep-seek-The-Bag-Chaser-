@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface DiceCrapsProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 type Bet = 'PASS' | 'DONT_PASS' | 'SEVEN' | 'SNAKE_EYES' | 'BOXCARS';
 
-export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1 }) => {
+export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [dice, setDice] = useState([1, 1]);
   const [isRolling, setIsRolling] = useState(false);
   const [selectedBet, setSelectedBet] = useState<Bet | null>(null);
@@ -19,8 +22,11 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1 }) =
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [gameActive, setGameActive] = useState(false);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   // Difficulty scaling: Higher levels increase the payouts for harder bets
-  const bonusMultiplier = 1 + (level - 1) * 0.2;
+  const bonusMultiplier = useMemo(() => 0.8 + scaling * 0.4, [scaling]);
 
   const controls1 = useAnimation();
   const controls2 = useAnimation();

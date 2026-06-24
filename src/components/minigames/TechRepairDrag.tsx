@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface TechRepairDragProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 interface Part {
@@ -23,14 +26,18 @@ const ALL_PARTS: Part[] = [
   { id: 'bat', name: 'BATTERY', icon: '🔋', color: 'bg-red-500', glow: 'shadow-red-500/50' },
 ];
 
-export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, level = 1 }) => {
+export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [startTime] = useState(() => Date.now());
   const [assembled, setAssembled] = useState<string[]>([]);
   const [activePart, setActivePart] = useState<Part | null>(null);
   const [feedback, setFeedback] = useState<'success' | null>(null);
 
-  // Difficulty scaling: more parts required at higher levels
-  const partsToAssemble = ALL_PARTS.slice(0, Math.min(ALL_PARTS.length, 1 + level));
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  // Difficulty scaling: more parts required at higher difficulty
+  const partsToAssemble = ALL_PARTS.slice(0, Math.min(ALL_PARTS.length, Math.floor((1 + level) * (1 + (scaling * 0.1)))));
 
   const handleDragEnd = (partId: string, info: any) => {
     const target = document.getElementById('socket-target');
@@ -54,7 +61,7 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, leve
 
           if (newAssembled.length === partsToAssemble.length) {
             const elapsed = (Date.now() - startTime) / 1000;
-            const timePerPart = Math.max(0.6, 1.5 - (level - 1) * 0.3);
+            const timePerPart = Math.max(0.4, (1.5 - (level - 1) * 0.3) * timerFactor);
             const targetTime = partsToAssemble.length * timePerPart;
             let multiplier = 0.5;
             if (elapsed < targetTime * 0.8) multiplier = 4.0;

@@ -1,14 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface PresidentialCampaignProps {
   onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
 }
 
-export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onComplete }) => {
+export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
   const [hype, setHype] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(10 * timerFactor);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [gameActive, setGameActive] = useState(false);
   const intensityRef = useRef(0);
@@ -71,21 +83,27 @@ export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onCo
     if (!accel) return;
 
     const total = Math.sqrt((accel.x || 0) ** 2 + (accel.y || 0) ** 2 + (accel.z || 0) ** 2);
-    if (total > 15) {
-        intensityRef.current = Math.min(4, total / 5);
-        setHype(prev => Math.min(100, prev + intensityRef.current));
+    // Threshold increases with scaling
+    const threshold = 12 + scaling * 2;
+    if (total > threshold) {
+        intensityRef.current = Math.min(4, total / threshold);
+        // Hype building scales inversely with scaling difficulty
+        setHype(prev => Math.min(100, prev + (intensityRef.current * (1.5 / scaling))));
         setFeedback('shake');
         setTimeout(() => setFeedback(null), 100);
         if (navigator.vibrate) navigator.vibrate(5);
     }
   };
 
+  const finalMultiplier = useMemo(() => {
+      return 1.0 + (hype / 100) * (3.0 + scaling);
+  }, [hype, scaling]);
+
   const endGame = () => {
     setGameActive(false);
     window.removeEventListener('devicemotion', handleMotion);
-    const multiplier = 0.5 + (hype / 100) * 3.5; // Slightly buffed yield
     if (navigator.vibrate) navigator.vibrate(100);
-    setTimeout(() => onComplete(multiplier), 1500);
+    setTimeout(() => onComplete(finalMultiplier), 1500);
   };
 
   const getHypeColor = () => {
@@ -100,14 +118,14 @@ export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onCo
         feedback ? 'bg-purple-950/20' : 'bg-slate-950'
     }`}>
       <div className="absolute top-12 text-center w-full px-8">
-        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">PRESIDENTIAL CAMPAIGN</h2>
+        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">PRESIDENTIAL CAMPAIGN <span className="text-xs">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
              <motion.span animate={{ rotate: [0, 45, -45, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="text-purple-500">📱</motion.span>
              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">SHAKE TO BUILD MASSIVE HYPE</p>
         </div>
       </div>
 
-      {!gameActive && timeLeft === 10 && (
+      {!gameActive && timeLeft > (10 * timerFactor - 0.5) && (
         <div className="flex flex-col gap-4 z-20">
           <button
             onClick={requestPermission}
@@ -183,7 +201,7 @@ export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onCo
       )}
 
       <AnimatePresence>
-        {!gameActive && timeLeft < 10 && (
+        {!gameActive && timeLeft < (10 * timerFactor - 0.5) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -197,7 +215,7 @@ export const PresidentialCampaign: React.FC<PresidentialCampaignProps> = ({ onCo
                  'A forgettable election cycle.'}
             </p>
             <div className="text-purple-400 text-4xl font-black font-mono mt-8 italic">
-                {(0.5 + (hype / 100) * 3.5).toFixed(2)}X MULTIPLIER
+                {finalMultiplier.toFixed(2)}X MULTIPLIER
             </div>
           </motion.div>
         )}

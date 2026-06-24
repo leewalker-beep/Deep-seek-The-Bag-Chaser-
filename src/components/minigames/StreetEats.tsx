@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PerfectFlow } from '../effects/PerfectFlow';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Ingredient {
   id: number;
@@ -34,20 +37,26 @@ const ALL_INGREDIENTS: Ingredient[] = [
 interface StreetEatsProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 }) => {
+export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [currentOrder, setCurrentOrder] = useState<Ingredient[]>([]);
   const [score, setScore] = useState(0);
   const [wrong, setWrong] = useState(0);
   const [total, setTotal] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
   const [showResults, setShowResults] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [streak, setStreak] = useState(0);
   const touchStart = useRef<number | null>(null);
 
-  const availableIngredients = React.useMemo(() =>
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  const [timeLeft, setTimeLeft] = useState(15);
+
+  const availableIngredients = useMemo(() =>
     ALL_INGREDIENTS.filter(i => i.level <= level),
     [level]
   );
@@ -62,7 +71,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
     spawnOrder();
   }, [spawnOrder]);
 
-  // Timer logic
+  // Timer logic - speed increases with scaling
   useEffect(() => {
     if (!gameActive) return;
 
@@ -72,11 +81,12 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
           setGameActive(false);
           return 0;
         }
-        return prev - 0.1;
+        // Shave time slightly faster at higher scaling
+        return prev - (0.1 * Math.sqrt(scaling));
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [gameActive]);
+  }, [gameActive, scaling]);
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (!gameActive || currentOrder.length === 0) return;
@@ -84,10 +94,12 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
     const correctSide = currentOrder[0].side;
     if (direction === correctSide) {
       setScore(s => s + 1);
+      setStreak(prev => prev + 1);
       setFeedback('correct');
       if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setWrong(w => w + 1);
+      setStreak(0);
       setFeedback('wrong');
       if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
@@ -117,12 +129,12 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
     }
   }, [gameActive]);
 
-  const finalMultiplier = React.useMemo(() => {
+  const finalMultiplier = useMemo(() => {
     const accuracy = total > 0 ? score / total : 0;
-    if (accuracy >= 0.8) return 1.5;
-    if (accuracy >= 0.5) return 1.0;
-    return 0.5;
-  }, [score, total]);
+    // Multiplier scales with difficulty (scaling factor)
+    const base = accuracy >= 0.8 ? 2.0 : accuracy >= 0.5 ? 1.2 : 0.6;
+    return base * (0.8 + scaling * 0.2);
+  }, [score, total, scaling]);
 
   const accuracyPercent = total > 0 ? Math.round((score / total) * 100) : 0;
   const netScore = score - wrong;
@@ -130,18 +142,21 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
   const leftIngredients = availableIngredients.filter(i => i.side === 'left');
   const rightIngredients = availableIngredients.filter(i => i.side === 'right');
 
+  const menuTitle = level >= 5 ? "GOURMET FUSION" : level >= 3 ? "STREET DELUXE" : "STREET EATS";
+
   return (
     <div className={`fixed inset-0 transition-colors duration-200 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
       feedback === 'correct' ? 'bg-emerald-950/40' : feedback === 'wrong' ? 'bg-red-950/40' : 'bg-orange-950/20'
     } backdrop-blur-md`}>
+      <PerfectFlow isActive={streak >= 5} intensity={Math.min(5, Math.floor(streak / 5))} />
       <div className="absolute top-12 text-center w-full px-6">
-        <h2 className="text-4xl font-black text-orange-500 italic tracking-tighter uppercase drop-shadow-lg">STREET EATS <span className="text-white text-sm">L{level}</span></h2>
+        <h2 className="text-4xl font-black text-orange-500 italic tracking-tighter uppercase drop-shadow-lg">{menuTitle} <span className="text-white text-sm">L{level}</span></h2>
         <div className="flex items-center justify-center gap-4 mt-1">
           <motion.span animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700 font-black">⬅️</motion.span>
           <p className="text-slate-200 text-xs font-black uppercase tracking-widest">SORT INGREDIENTS!</p>
           <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700 font-black">➡️</motion.span>
         </div>
-        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">Score: {score}/{total} sorted correctly</div>
+        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">Score: {score}/{total}</div>
       </div>
 
       <div
@@ -221,7 +236,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1 })
                 </div>
                 <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
                   <span className="text-slate-400 font-bold uppercase text-xs">Multiplier</span>
-                  <span className="text-2xl font-black text-orange-400">{finalMultiplier.toFixed(1)}x</span>
+                  <span className="text-2xl font-black text-orange-400">{finalMultiplier.toFixed(2)}x</span>
                 </div>
               </div>
 

@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface MarketPredictorProps {
   onComplete: (multiplier: number) => void;
   playerBid: number;
   rivalBid: number;
   onOutbid: (amount: number) => void;
+  level?: number;
+  tier?: Tier;
 }
 
 export const MarketPredictor: React.FC<MarketPredictorProps> = ({
   onComplete,
   playerBid: initialPlayerBid,
   rivalBid: initialRivalBid,
-  onOutbid
+  onOutbid,
+  level = 1,
+  tier = 'MUD'
 }) => {
   const [timeLeft, setTimeLeft] = useState(10);
   const [marketValue, setMarketValue] = useState(initialPlayerBid * 1.5);
@@ -25,13 +31,18 @@ export const MarketPredictor: React.FC<MarketPredictorProps> = ({
   const marketRef = useRef<number | null>(null);
   const rivalRef = useRef<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   // Fluctuating market value
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
 
     marketRef.current = window.setInterval(() => {
+      // More volatility at higher scaling
       setMarketValue(prev => {
-        const change = (Math.random() - 0.45) * (initialPlayerBid * 0.15);
+        const volatility = 0.15 * scaling;
+        const change = (Math.random() - 0.45) * (initialPlayerBid * volatility);
         return Math.max(initialPlayerBid * 0.5, prev + change);
       });
     }, 400);
@@ -55,9 +66,11 @@ export const MarketPredictor: React.FC<MarketPredictorProps> = ({
     if (gameState !== 'PLAYING') return;
 
     rivalRef.current = window.setInterval(() => {
-      if (playerBidRef.current >= rivalBidRef.current && Math.random() < 0.4) {
-        const outbidAmount = playerBidRef.current + (initialPlayerBid * 0.08);
-        if (outbidAmount < marketValueRef.current * 1.25) {
+      // Rival aggressive at high scaling
+      const outbidChance = 0.3 + (scaling * 0.1);
+      if (playerBidRef.current >= rivalBidRef.current && Math.random() < outbidChance) {
+        const outbidAmount = playerBidRef.current + (initialPlayerBid * (0.05 + scaling * 0.03));
+        if (outbidAmount < marketValueRef.current * (1.1 + scaling * 0.1)) {
           setCurrentRivalBid(outbidAmount);
           onOutbid(outbidAmount);
           setFeedback('rival');
@@ -92,27 +105,29 @@ export const MarketPredictor: React.FC<MarketPredictorProps> = ({
   }, [gameState]);
 
   // Handle game end
-  useEffect(() => {
-    if (gameState === 'ENDED') {
-      let multiplier = 1.0;
+  const finalMultiplier = useMemo(() => {
       const won = currentPlayerBid > currentRivalBid;
       const overpaid = currentPlayerBid > marketValue;
 
-      if (won) {
-        if (overpaid) multiplier = 1.5;
-        else multiplier = 4.0;
-        if (navigator.vibrate) navigator.vibrate(100);
-      } else {
-        multiplier = 0.5;
-        if (navigator.vibrate) navigator.vibrate(50);
+      if (!won) return 0.5;
+
+      let base = overpaid ? 1.2 : 2.5;
+      return (base + scaling * 0.5);
+  }, [currentPlayerBid, currentRivalBid, marketValue, scaling]);
+
+  useEffect(() => {
+    if (gameState === 'ENDED') {
+      if (navigator.vibrate) {
+          const won = currentPlayerBid > currentRivalBid;
+          navigator.vibrate(won ? 100 : 50);
       }
 
       const timer = window.setTimeout(() => {
-        onComplete(multiplier);
+        onComplete(finalMultiplier);
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [gameState, currentPlayerBid, currentRivalBid, marketValue, onComplete]);
+  }, [gameState, onComplete, finalMultiplier, currentPlayerBid, currentRivalBid]);
 
   const handleBid = (amount: number) => {
     if (gameState !== 'PLAYING') return;

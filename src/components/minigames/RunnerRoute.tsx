@@ -1,27 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface RunnerRouteProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1 }) => {
-  const [lane, setLane] = useState(1); // 0, 1, 2
-  const [obstacles, setObstacles] = useState<{ id: number; lane: number; y: number; type: string }[]>([]);
+export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
+  const [lane, setLane] = useState(1);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
-  const [feedback, setFeedback] = useState<'hit' | 'score' | null>(null);
-  const touchStart = useRef<number | null>(null);
+  const [obstacles, setObstacles] = useState<{ id: number; y: number; lane: number }[]>([]);
   const nextId = useRef(0);
-  const hitObstacles = useRef<Set<number>>(new Set());
+
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
 
   // Difficulty scaling
-  const spawnRate = Math.max(400, 1200 - (level - 1) * 200);
-  const moveSpeed = 3 + (level - 1) * 0.8;
-  const targetScore = 80 + (level - 1) * 40;
+  const moveSpeed = (3 + (level - 1) * 0.5) * Math.sqrt(scaling);
+  const spawnRate = Math.max(300, (1000 - (level - 1) * 100) / spawnFactor);
 
   useEffect(() => {
     if (!gameActive) return;
@@ -37,12 +40,10 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1 
     }, 100);
 
     const spawner = setInterval(() => {
-      const types = ['🚧', '🚗', '📦', '🛢️'];
       setObstacles(prev => [...prev, {
         id: nextId.current++,
-        lane: Math.floor(Math.random() * 3),
         y: -20,
-        type: types[Math.floor(Math.random() * types.length)]
+        lane: Math.floor(Math.random() * 3)
       }]);
     }, spawnRate);
 
@@ -55,143 +56,106 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1 
   useEffect(() => {
     if (!gameActive) return;
 
-    const movement = setInterval(() => {
+    const gravity = setInterval(() => {
       setObstacles(prev => {
         const next = prev.map(o => ({ ...o, y: o.y + moveSpeed }));
 
         // Collision detection
-        const collision = next.find(o => o.lane === lane && o.y > 70 && o.y < 85 && !hitObstacles.current.has(o.id));
+        const collision = next.find(o => o.y > 75 && o.y < 90 && o.lane === lane);
         if (collision) {
-          hitObstacles.current.add(collision.id);
           setScore(s => Math.max(0, s - 5));
-          setFeedback('hit');
-          setTimeout(() => setFeedback(null), 300);
           if (navigator.vibrate) navigator.vibrate(100);
+          return next.filter(o => o.id !== collision.id);
         }
 
         // Scoring
-        next.forEach(o => {
-          if (o.y > 90 && !prev.find(po => po.id === o.id && po.y > 90)) {
-            setScore(s => s + 10);
-            setFeedback('score');
-            setTimeout(() => setFeedback(null), 300);
-          }
-        });
+        const passed = next.filter(o => o.y > 95);
+        if (passed.length > 0) {
+            setScore(s => s + 1);
+        }
 
-        return next.filter(o => o.y < 110);
+        return next.filter(o => o.y <= 100);
       });
-    }, 50);
+    }, 30);
 
-    return () => clearInterval(movement);
+    return () => clearInterval(gravity);
   }, [gameActive, lane, moveSpeed]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart.current === null) return;
-    const endX = e.changedTouches[0].clientX;
-    const diff = endX - touchStart.current;
-    if (diff > 30) setLane(prev => Math.min(2, prev + 1));
-    else if (diff < -30) setLane(prev => Math.max(0, prev - 1));
-    touchStart.current = null;
-  };
-
-  // Keyboard fallbacks for testing
-  useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-          if (e.key === 'ArrowLeft') setLane(prev => Math.max(0, prev - 1));
-          if (e.key === 'ArrowRight') setLane(prev => Math.min(2, prev + 1));
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     if (!gameActive) {
       let multiplier = 0.5;
-      if (score >= targetScore) multiplier = 4.0;
-      else if (score >= targetScore * 0.6) multiplier = 2.5;
-      else if (score >= targetScore * 0.2) multiplier = 1.2;
+      if (score >= 20) multiplier = 4.0;
+      else if (score >= 12) multiplier = 2.5;
+      else if (score >= 5) multiplier = 1.2;
+
       setTimeout(() => onComplete(multiplier), 1000);
     }
-  }, [gameActive, score, targetScore, onComplete]);
+  }, [gameActive, score, onComplete]);
+
+  const handleLane = (newLane: number) => {
+    if (!gameActive) return;
+    setLane(newLane);
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
 
   return (
-    <div
-      className={`fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] transition-colors duration-300 ${
-        feedback === 'hit' ? 'bg-red-900/40' : feedback === 'score' ? 'bg-emerald-900/40' : 'bg-slate-950'
-      }`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="absolute top-12 text-center pointer-events-none w-full px-8 z-20">
-        <h2 className="text-4xl font-black text-white italic tracking-tighter drop-shadow-2xl">RUNNER FLEET <span className="text-emerald-500 text-sm">L{level}</span></h2>
-        <div className="flex items-center justify-center gap-4 mt-1">
-          <motion.span animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-400 font-black">⬅️</motion.span>
-          <p className="text-slate-300 text-[10px] font-black uppercase tracking-widest">SWIPE TO NAVIGATE!</p>
-          <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-400 font-black">➡️</motion.span>
-        </div>
-        <div className="mt-6 text-emerald-400 font-mono font-black text-4xl tabular-nums drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
-            ${score * 100}
+    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+      <div className="absolute top-12 text-center w-full px-8 z-20">
+        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">RUNNER ROUTE <span className="text-orange-500 text-sm">L{level}</span></h2>
+        <div className="mt-6 text-orange-500 font-mono font-black text-4xl drop-shadow-xl tabular-nums">
+            DELIVERIES: {score}
         </div>
       </div>
 
-      <div className="relative w-full max-w-[320px] h-[450px] bg-slate-900 rounded-[2rem] border-8 border-slate-800 overflow-hidden shadow-2xl">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
+      <div className="relative w-full max-w-xs h-[400px] bg-slate-900 border-x-4 border-slate-800 flex justify-around items-end overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
 
-        {/* Lanes */}
-        <div className="absolute inset-0 flex">
-          <div className="flex-1 border-r-2 border-slate-800/50" />
-          <div className="flex-1 border-r-2 border-slate-800/50" />
-          <div className="flex-1" />
-        </div>
+        {/* Lane markers */}
+        <div className="absolute inset-y-0 left-1/3 w-px bg-slate-800" />
+        <div className="absolute inset-y-0 right-1/3 w-px bg-slate-800" />
 
-        {/* Player Van */}
+        {/* Player */}
         <motion.div
           animate={{ x: (lane - 1) * 100 }}
-          transition={{ type: 'spring', damping: 15, stiffness: 120 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-6xl z-20 drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)]"
+          className="w-16 h-16 bg-orange-500 rounded-xl mb-4 z-10 flex items-center justify-center text-3xl shadow-lg border-t-2 border-white/20"
         >
           🚚
-          <motion.div
-            animate={{ opacity: [0.2, 0.4, 0.2] }}
-            transition={{ repeat: Infinity, duration: 0.5 }}
-            className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-3 bg-black/40 blur-md rounded-full"
-          />
         </motion.div>
 
         {/* Obstacles */}
-        <AnimatePresence>
-          {obstacles.map(o => (
-            <motion.div
-              key={o.id}
-              initial={{ y: '-20%' }}
-              animate={{ y: `${o.y}%`, x: (o.lane - 1) * 100 }}
-              className="absolute left-1/2 -translate-x-1/2 text-5xl z-10 drop-shadow-lg"
-            >
-              {o.type}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {obstacles.map(o => (
+          <motion.div
+            key={o.id}
+            initial={{ y: '-20%' }}
+            animate={{ y: `${o.y}%`, x: (o.lane - 1) * 100 }}
+            className="absolute top-0 w-16 h-16 bg-slate-700 rounded-xl flex items-center justify-center text-3xl"
+          >
+            🚧
+          </motion.div>
+        ))}
       </div>
 
-      <div className="absolute bottom-12 w-full max-w-[320px] px-6 z-20">
-        <div className="flex justify-between items-end mb-1">
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">DELIVERY WINDOW</span>
-            <span className="text-emerald-400 font-mono text-xl font-black">{timeLeft.toFixed(1)}s</span>
-        </div>
+      <div className="mt-8 grid grid-cols-3 gap-4 w-full max-w-xs z-20">
+        {[0, 1, 2].map(l => (
+          <button
+            key={l}
+            onPointerDown={() => handleLane(l)}
+            className={`py-6 rounded-2xl font-black text-xl transition-all ${
+              lane === l ? 'bg-orange-500 text-white scale-95' : 'bg-slate-800 text-slate-500'
+            }`}
+          >
+            {l === 0 ? 'L' : l === 1 ? 'C' : 'R'}
+          </button>
+        ))}
+      </div>
+
+      <div className="absolute bottom-12 w-full max-w-[320px] px-6">
         <ProgressBar
           value={timeLeft}
           max={15}
-          label=""
-          colorClass={timeLeft < 5 ? 'bg-red-500' : 'bg-emerald-500'}
+          label={`ROUTE CLEARANCE: ${timeLeft.toFixed(1)}s`}
+          colorClass="bg-orange-500"
         />
-        <div className="mt-2 flex justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest">
-            <span>Quota: {targetScore}</span>
-            <span>Speed: {moveSpeed.toFixed(1)}x</span>
-        </div>
       </div>
     </div>
   );

@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface QuickReactionProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete, level = 1 }) => {
+export const QuickReaction: React.FC<QuickReactionProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [gameState, setGameState] = useState<'waiting' | 'ready' | 'clicked' | 'too-soon'>('waiting');
   const [startTime, setStartTime] = useState<number>(0);
   const [reactionTime, setReactionTime] = useState<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   // Difficulty scaling: elite reaction time threshold gets tighter
-  const eliteThreshold = Math.max(150, 250 - (level - 1) * 20);
+  const eliteThreshold = Math.max(120, (250 - (level - 1) * 20) / Math.sqrt(scaling));
 
   useEffect(() => {
     if (gameState === 'waiting') {

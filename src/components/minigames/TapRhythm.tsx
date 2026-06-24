@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface TapRhythmProps {
   onComplete: (multiplier: number) => void;
@@ -7,6 +9,7 @@ interface TapRhythmProps {
   instruction?: string;
   icon?: string;
   level?: number;
+  tier?: Tier;
 }
 
 export const TapRhythm: React.FC<TapRhythmProps> = ({
@@ -14,7 +17,8 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
   title = "PODCAST SESSION",
   instruction = "TAP ON THE BEAT",
   icon = "🎙️",
-  level = 1
+  level = 1,
+  tier = 'MUD'
 }) => {
   const [hits, setHits] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
@@ -23,28 +27,32 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
   const [feedback, setFeedback] = useState<'hit' | 'miss' | null>(null);
   const nextId = useRef(0);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
+
   // Difficulty scaling
-  const TOTAL_BEATS = 10 + (level * 2);
-  const baseSpeed = 1.5 + (level * 0.4);
+  const TOTAL_BEATS = Math.floor((10 + (level * 2)) * spawnFactor);
+  const baseSpeed = (1.5 + (level * 0.4)) * Math.sqrt(scaling);
   const MAX_DURATION = 30000;
 
   useEffect(() => {
-    // Generate beats based on level
+    // Generate beats based on level and tier
     const beatsToGenerate = TOTAL_BEATS;
     const intervals: number[] = [];
     let currentMs = 1500;
 
     for (let i = 0; i < beatsToGenerate; i++) {
         intervals.push(currentMs);
-        // Randomize interval between beats - tighter intervals at higher levels
-        currentMs += Math.max(800, 1500 - (level * 150)) + Math.random() * (1000 / level);
+        // Randomize interval between beats - tighter intervals at higher difficulty
+        currentMs += Math.max(400, (1500 - (level * 150)) / spawnFactor) + Math.random() * (1000 / (level * spawnFactor));
     }
 
     const timers = intervals.map((ms, _index) => {
       return setTimeout(() => {
         if (!isGameOver) {
           // Higher levels have "drops" (sudden speed changes or different visual types)
-          const fastProb = 0.1 * level;
+          const fastProb = Math.min(0.8, 0.1 * level * spawnFactor);
           const type = Math.random() < fastProb ? 'fast' : 'normal';
           setBeats(prev => [...prev, { id: nextId.current++, offset: 100, type }]);
         }
@@ -61,7 +69,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
       timers.forEach(clearTimeout);
       clearTimeout(timeoutTimer);
     };
-  }, [isGameOver, hits, totalAttempts, level, TOTAL_BEATS]);
+  }, [isGameOver, hits, totalAttempts, level, TOTAL_BEATS, spawnFactor]);
 
   useEffect(() => {
     const moveInterval = setInterval(() => {

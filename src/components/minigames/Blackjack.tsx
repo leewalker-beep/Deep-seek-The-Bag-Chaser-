@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface BlackjackProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
 interface Card {
@@ -37,16 +40,19 @@ const calculateScore = (hand: Card[]): number => {
   return score;
 };
 
-export const Blackjack: React.FC<BlackjackProps> = ({ onComplete, level = 1 }) => {
+export const Blackjack: React.FC<BlackjackProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [playerHand, setPlayerHand] = useState<Card[]>([]);
   const [dealerHand, setDealerHand] = useState<Card[]>([]);
   const [gameState, setGameState] = useState<'DEALING' | 'PLAYER_TURN' | 'DEALER_TURN' | 'ENDED'>('DEALING');
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState<'win' | 'lose' | 'draw' | null>(null);
 
-  // Difficulty scaling: House pays more at higher levels, but plays smarter?
-  const winMultiplier = 3.0 + (level - 1) * 0.5;
-  const blackjackMultiplier = 5.0 + (level - 1) * 1.0;
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
+  // Difficulty scaling: House pays more at higher levels/tiers, but dealer stops later
+  const winMultiplier = useMemo(() => 2.5 + scaling * 0.8, [scaling]);
+  const blackjackMultiplier = useMemo(() => 4.0 + scaling * 1.5, [scaling]);
 
   useEffect(() => {
     // Initial deal
@@ -96,7 +102,8 @@ export const Blackjack: React.FC<BlackjackProps> = ({ onComplete, level = 1 }) =
 
       const runDealer = async () => {
         let currentDealerHand = [...dealerHand];
-        const dealerStopAt = level >= 3 ? 18 : 17; // Smarter dealer at L3+
+        // Smarter dealer at high scaling
+        const dealerStopAt = scaling > 2.0 ? 18 : 17;
 
         while (calculateScore(currentDealerHand) < dealerStopAt) {
           await new Promise(r => setTimeout(r, 800));

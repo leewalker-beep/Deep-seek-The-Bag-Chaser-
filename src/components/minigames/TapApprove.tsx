@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 const POSITIVE_HEADLINES = [
   "ECONOMY BOOMING: STOCKS HIT ALL TIME HIGH",
@@ -31,19 +33,24 @@ const NEGATIVE_HEADLINES = [
 interface TapApproveProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1 }) => {
+export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [headlines, setHeadlines] = useState<{ id: number, text: string, isPositive: boolean }[]>([]);
   const [score, setScore] = useState(0);
   const [_missed, setMissed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [nextId, setNextId] = useState(0);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
   // Difficulty scaling
-  const spawnRate = Math.max(300, 1000 - (level - 1) * 150);
-  const scrollSpeed = Math.max(1.5, 4.5 - (level - 1) * 0.5); // duration in seconds, lower is faster
-  const targetScore = 10 + (level - 1) * 5;
+  const spawnRate = Math.max(200, (1000 - (level - 1) * 150) / Math.sqrt(scaling));
+  const scrollSpeed = Math.max(1.0, (4.5 - (level - 1) * 0.5) * timerFactor); // duration in seconds, lower is faster
+  const targetScore = Math.floor((10 + (level - 1) * 5) * Math.sqrt(scaling));
 
   useEffect(() => {
     const spawnInterval = setInterval(() => {

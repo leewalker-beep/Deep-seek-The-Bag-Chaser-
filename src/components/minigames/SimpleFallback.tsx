@@ -1,17 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface SimpleFallbackProps {
   name: string;
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
 }
 
-export const SimpleFallback: React.FC<SimpleFallbackProps> = ({ name, onComplete }) => {
-  const [timeLeft, setTimeLeft] = useState(3);
+export const SimpleFallback: React.FC<SimpleFallbackProps> = ({
+    name,
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  // Even the fallback timer scales down (faster auto-initiate at higher difficulty)
+  const initialTime = Math.max(1, Math.ceil(3 * timerFactor));
+  const [timeLeft, setTimeLeft] = useState(initialTime);
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      onComplete(1.0);
+      // Small bonus for higher difficulty even in fallback
+      onComplete(1.0 + (scaling * 0.1));
       return;
     }
 
@@ -20,7 +36,7 @@ export const SimpleFallback: React.FC<SimpleFallbackProps> = ({ name, onComplete
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, onComplete]);
+  }, [timeLeft, onComplete, scaling]);
 
   return (
     <div className="flex flex-col items-center justify-center p-10 bg-slate-900 rounded-3xl border-4 border-slate-800 shadow-2xl max-w-sm mx-auto">
@@ -51,11 +67,11 @@ export const SimpleFallback: React.FC<SimpleFallbackProps> = ({ name, onComplete
       <button
         onClick={() => {
             if (navigator.vibrate) navigator.vibrate(20);
-            onComplete(1.0);
+            onComplete(1.0 + (scaling * 0.1));
         }}
         className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl transition-all active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.2)] border-b-4 border-emerald-800 uppercase tracking-tighter"
       >
-        SKIP TO RESULTS (1.0x)
+        SKIP TO RESULTS ({(1.0 + scaling * 0.1).toFixed(1)}x)
       </button>
 
       <p className="mt-6 text-[8px] text-slate-600 uppercase font-black tracking-widest text-center">

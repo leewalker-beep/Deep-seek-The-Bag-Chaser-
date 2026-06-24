@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface EcomCatchProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1 }) => {
+export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [items, setItems] = useState<{ id: number; icon: string; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [missed, setMissed] = useState(0);
@@ -16,11 +19,15 @@ export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1 }) =
   const nextId = useRef(0);
   const ICONS = ['👟', '👕', '📱', '👜', '🎧', '⌚', '💎', '💻'];
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
+
   // Difficulty scaling
-  const spawnRate = Math.max(250, 700 - (level - 1) * 80);
-  const fallSpeed = 2 + (level - 1) * 0.5;
-  const targetScore = 50 + (level - 1) * 10;
-  const maxMissed = Math.max(5, 12 - (level - 1));
+  const spawnRate = Math.max(150, (700 - (level - 1) * 80) / spawnFactor);
+  const fallSpeed = (2 + (level - 1) * 0.5) * Math.sqrt(scaling);
+  const targetScore = Math.floor((50 + (level - 1) * 10) * spawnFactor);
+  const maxMissed = Math.max(3, (12 - (level - 1)) / Math.sqrt(scaling));
 
   useEffect(() => {
     if (!gameActive) return;
@@ -99,7 +106,7 @@ export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1 }) =
           </div>
           <div className="text-red-500 flex flex-col items-center">
               <span className="text-[10px] text-slate-500">MISSED</span>
-              {missed}/{maxMissed}
+              {missed}/{Math.floor(maxMissed)}
           </div>
         </div>
       </div>

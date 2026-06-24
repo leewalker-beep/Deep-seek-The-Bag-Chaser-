@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Word {
   id: number;
@@ -16,9 +18,10 @@ const BAD_WORDS = ['BORING', 'LAME', 'OLD', 'REPOST', 'AD', 'SPAM', 'FAKE', 'TRA
 interface WordTapProps {
   onComplete: (multiplier: number) => void;
   level?: number;
+  tier?: Tier;
 }
 
-export const WordTap: React.FC<WordTapProps> = ({ onComplete, level = 1 }) => {
+export const WordTap: React.FC<WordTapProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [words, setWords] = useState<Word[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -27,11 +30,15 @@ export const WordTap: React.FC<WordTapProps> = ({ onComplete, level = 1 }) => {
   const nextId = useRef(0);
   const gameRef = useRef<HTMLDivElement>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const spawnFactor = getSpawnFactor(level, tier);
+
   // Difficulty scaling
-  const spawnRate = Math.max(300, 800 - (level - 1) * 100);
-  const minSpeed = 0.5 + (level - 1) * 0.2;
-  const maxSpeed = 2.0 + (level - 1) * 0.5;
-  const targetScore = 10 + (level - 1) * 5;
+  const spawnRate = Math.max(200, (800 - (level - 1) * 100) / spawnFactor);
+  const minSpeed = (0.5 + (level - 1) * 0.2) * Math.sqrt(scaling);
+  const maxSpeed = (2.0 + (level - 1) * 0.5) * Math.sqrt(scaling);
+  const targetScore = Math.floor((10 + (level - 1) * 5) * spawnFactor);
 
   const endGame = useCallback(() => {
     setGameActive(false);

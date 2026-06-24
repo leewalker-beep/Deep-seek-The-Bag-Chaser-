@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface Crisis {
   id: number;
@@ -21,13 +23,25 @@ const CRISIS_TYPES = [
 ];
 
 interface PinchToZoomProps {
-  onComplete: (multiplier: number) => void; level?: number;
+  onComplete: (multiplier: number) => void;
+  level?: number;
+  tier?: Tier;
 }
 
-export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _level = 1 }) => {
+export const PinchToZoom: React.FC<PinchToZoomProps> = ({
+    onComplete,
+    level = 1,
+    tier = 'MUD'
+}) => {
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+  const timerFactor = getTimerFactor(level, tier);
+
+  const totalCrises = useMemo(() => 10 + Math.floor(scaling * 3), [scaling]);
+
   const [crises, setCrises] = useState<Crisis[]>(() => {
     const newCrises: Crisis[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < totalCrises; i++) {
       newCrises.push({
         id: i,
         x: 15 + Math.random() * 70,
@@ -39,7 +53,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _le
     return newCrises;
   });
   const [resolvedCount, setResolvedCount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(10 * timerFactor);
   const [gameActive, setGameActive] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -59,19 +73,20 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _le
     if (timerRef.current) clearInterval(timerRef.current);
 
     const count = resolvedCountRef.current;
+    const successRate = count / totalCrises;
+
     let multiplier = 0.5;
-    if (count >= 12) multiplier = 4.0;
-    else if (count >= 10) multiplier = 3.0;
-    else if (count >= 8) multiplier = 2.0;
-    else if (count >= 6) multiplier = 1.5;
-    else if (count >= 4) multiplier = 1.0;
+    if (successRate >= 1.0) multiplier = 3.0 + scaling;
+    else if (successRate >= 0.8) multiplier = 2.0 + scaling * 0.5;
+    else if (successRate >= 0.6) multiplier = 1.5;
+    else if (successRate >= 0.4) multiplier = 1.0;
     else multiplier = 0.5;
 
     if (navigator.vibrate) navigator.vibrate(100);
     setTimeout(() => {
       onComplete(multiplier);
     }, 1500);
-  }, [onComplete]);
+  }, [onComplete, scaling, totalCrises]);
 
   // Timer
   useEffect(() => {
@@ -146,7 +161,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _le
     }`}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 text-center z-20 bg-slate-900/60 backdrop-blur-md py-6 border-b border-white/5">
-        <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">DISASTER RESPONSE</h2>
+        <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">DISASTER RESPONSE <span className="text-xs">L{level}</span></h2>
         <div className="flex justify-center gap-10 mt-2">
           <div className="text-center">
             <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">LIMIT</div>
@@ -157,7 +172,7 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _le
           <div className="text-center">
             <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">RESOLVED</div>
             <div className="text-2xl font-mono font-black text-emerald-400">
-              {resolvedCount}/12
+              {resolvedCount}/{totalCrises}
             </div>
           </div>
         </div>
@@ -243,22 +258,21 @@ export const PinchToZoom: React.FC<PinchToZoomProps> = ({ onComplete, level: _le
                 className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-30 p-8 text-center"
             >
                 <div className="text-8xl mb-6">
-                    {resolvedCount >= 10 ? '🎖️' : resolvedCount >= 6 ? '✅' : '🚨'}
+                    {resolvedCount / totalCrises >= 0.8 ? '🎖️' : resolvedCount / totalCrises >= 0.5 ? '✅' : '🚨'}
                 </div>
                 <h3 className="text-4xl font-black text-white mb-2 italic tracking-tighter uppercase">RESPONSE CONCLUDED</h3>
                 <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-8">
-                    {resolvedCount >= 10 ? 'Catastrophe averted with precision.' :
-                     resolvedCount >= 6 ? 'Managed the situation effectively.' :
+                    {resolvedCount / totalCrises >= 0.8 ? 'Catastrophe averted with precision.' :
+                     resolvedCount / totalCrises >= 0.5 ? 'Managed the situation effectively.' :
                      'Minimal intervention achieved.'}
                 </p>
                 <div className="bg-black/50 p-6 rounded-2xl border-2 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
                     <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">FINAL PERFORMANCE</div>
                     <div className="text-emerald-500 text-5xl font-black font-mono italic">
-                        {resolvedCount >= 12 ? '4.00' :
-                        resolvedCount >= 10 ? '3.00' :
-                        resolvedCount >= 8 ? '2.00' :
-                        resolvedCount >= 6 ? '1.50' :
-                        resolvedCount >= 4 ? '1.00' : '0.50'}X
+                        {((resolvedCount / totalCrises) >= 1.0 ? 3.0 + scaling :
+                          (resolvedCount / totalCrises) >= 0.8 ? 2.0 + scaling * 0.5 :
+                          (resolvedCount / totalCrises) >= 0.6 ? 1.5 :
+                          (resolvedCount / totalCrises) >= 0.4 ? 1.0 : 0.5).toFixed(2)}X
                     </div>
                 </div>
             </motion.div>

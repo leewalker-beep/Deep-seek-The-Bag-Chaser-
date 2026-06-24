@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
+import type { Tier } from '../../types/game';
 
 interface BoardroomBattleProps {
   onComplete: (multiplier: number) => void;
   playerBid: number;
   rivalBid: number;
   onOutbid: (amount: number) => void;
+  level?: number;
+  tier?: Tier;
 }
 
 export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   onComplete,
   playerBid: initialPlayerBid,
   rivalBid: initialRivalBid,
-  onOutbid
+  onOutbid,
+  level = 1,
+  tier = 'MUD'
 }) => {
   const [timeLeft, setTimeLeft] = useState(12);
   const [currentPlayerBid, setCurrentPlayerBid] = useState(initialPlayerBid);
@@ -25,6 +31,9 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   const rivalRef = useRef<number | null>(null);
   const decayRef = useRef<number | null>(null);
 
+  // Centralized Scaling
+  const scaling = getScalingMultiplier(level, tier);
+
   // AI Rival Logic
   const playerBidRef = useRef(currentPlayerBid);
   useEffect(() => { playerBidRef.current = currentPlayerBid; }, [currentPlayerBid]);
@@ -36,8 +45,10 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     if (gameState !== 'PLAYING') return;
 
     rivalRef.current = window.setInterval(() => {
-      if (playerBidRef.current >= rivalBidRef.current && Math.random() < 0.4) {
-        const outbidAmount = playerBidRef.current + (initialPlayerBid * 0.1);
+      // Rival outbids more frequently at higher scaling
+      const outbidChance = 0.3 + (scaling * 0.1);
+      if (playerBidRef.current >= rivalBidRef.current && Math.random() < outbidChance) {
+        const outbidAmount = playerBidRef.current + (initialPlayerBid * (0.05 + scaling * 0.05));
         setCurrentRivalBid(outbidAmount);
         onOutbid(outbidAmount);
         setFeedback('rival');
@@ -56,7 +67,8 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     if (gameState !== 'PLAYING') return;
 
     decayRef.current = window.setInterval(() => {
-      setPlayerPower(prev => Math.max(0, prev - 2.5));
+      // Faster decay at higher scaling
+      setPlayerPower(prev => Math.max(0, prev - (2.0 * scaling)));
     }, 100);
 
     return () => {
@@ -84,23 +96,26 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   }, [gameState]);
 
   // Handle game end
+  const finalMultiplier = useMemo(() => {
+      const won = currentPlayerBid > currentRivalBid;
+      if (!won) return 0.5;
+      // Multiplier increases with scaling and time left
+      return (1.5 + scaling * 0.5) * (1 + (timeLeft / 20));
+  }, [currentPlayerBid, currentRivalBid, scaling, timeLeft]);
+
   useEffect(() => {
     if (gameState === 'ENDED') {
-      const won = currentPlayerBid > currentRivalBid;
-      let multiplier = 0.5;
-
-      if (won) {
-        multiplier = Math.min(4.0, 2.0 + (timeLeft / 2));
+      if (navigator.vibrate) {
+          const won = currentPlayerBid > currentRivalBid;
+          navigator.vibrate(won ? 100 : 50);
       }
 
-      if (navigator.vibrate) navigator.vibrate(won ? 100 : 50);
-
       const timer = window.setTimeout(() => {
-        onComplete(multiplier);
+        onComplete(finalMultiplier);
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [gameState, currentPlayerBid, currentRivalBid, onComplete, timeLeft]);
+  }, [gameState, onComplete, finalMultiplier, currentPlayerBid, currentRivalBid]);
 
   const handleTap = () => {
     if (gameState !== 'PLAYING') return;

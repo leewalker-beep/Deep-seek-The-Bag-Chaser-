@@ -587,29 +587,29 @@ function App() {
                 };
 
                 const hustleLevel = pl.hustleLevels[hustle.id] || 1;
-                if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'BeatSequence') return <BeatSequence onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'TechRepairDrag') return <TechRepairDrag onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'WordTap') return <WordTap onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'PinchToInspect') return <PinchToInspect onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'DragScale') return <DragScale onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'TapAssign') return <TapAssign onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'HoldHype') return <HoldHype onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'SlotMachine') return <SlotMachine onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'HigherLower') return <HigherLower onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'Blackjack') return <Blackjack onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'Roulette') return <Roulette onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'DiceCraps') return <DiceCraps onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'LaborBuild') return <LaborBuild onComplete={onComplete} level={hustleLevel} />;
+                if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'BeatSequence') return <BeatSequence onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'TechRepairDrag') return <TechRepairDrag onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'WordTap') return <WordTap onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'PinchToInspect') return <PinchToInspect onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'TapRhythm') return <TapRhythm onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'DragScale') return <DragScale onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'TapAssign') return <TapAssign onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'HoldHype') return <HoldHype onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'SlotMachine') return <SlotMachine onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'HigherLower') return <HigherLower onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'Blackjack') return <Blackjack onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'Roulette') return <Roulette onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'DiceCraps') return <DiceCraps onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'QuickReaction') return <QuickReaction onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'StruggleMash') return <StruggleMash onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'LaborBuild') return <LaborBuild onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'TrafficDodge') return <TrafficDodge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
-                if (activeMiniGame === 'PlasmaDonation') return <PlasmaDonation onComplete={onComplete} level={hustleLevel} />;
+                if (activeMiniGame === 'PlasmaDonation') return <PlasmaDonation onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'GhostTap' || activeMiniGame === 'GhostMode') return (
                   <GhostMode
                     key={hustleLevel}
@@ -618,28 +618,30 @@ function App() {
                     onComplete={onComplete}
                   />
                 );
-                if (activeMiniGame === 'StreetEats') return <StreetEats onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'SequenceRecall') return <SequenceRecall onComplete={onComplete} level={hustleLevel} />;
+                if (activeMiniGame === 'StreetEats') return <StreetEats onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'SequenceRecall') return <SequenceRecall onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'StreetwearDesign' || activeMiniGame === 'StreetwearMatch') return (
                   <StreetwearMatch
                     key={hustleLevel}
                     level={hustleLevel}
+                    tier={pl.currentTier}
                     onComplete={onComplete}
                   />
                 );
-                if (activeMiniGame === 'HashtagTap') return <HashtagTap onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'RunnerRoute') return <RunnerRoute onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'MemeCoinPump') return <MemeCoinPump onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'EcomCatch') return <EcomCatch onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'TapApprove') return <TapApprove onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'DragMerge') return <DragMerge onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} level={hustleLevel} />;
-                if (activeMiniGame === 'RiskMeter') return <RiskMeter onComplete={onComplete} level={hustleLevel} />;
+                if (activeMiniGame === 'HashtagTap') return <HashtagTap onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'RunnerRoute') return <RunnerRoute onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'MemeCoinPump') return <MemeCoinPump onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'EcomCatch') return <EcomCatch onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'TapApprove') return <TapApprove onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'DragMerge') return <DragMerge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'RiskMeter') return <RiskMeter onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={hustleLevel}
+                    tier={pl.currentTier}
                     onComplete={onComplete}
                   />
                 );
@@ -650,6 +652,8 @@ function App() {
                   return (
                     <MarketPredictor
                       onComplete={onComplete}
+                      level={hustleLevel}
+                      tier={pl.currentTier}
                       playerBid={levelData?.cost || 10000000}
                       rivalBid={rival?.currentBid || 0}
                       onOutbid={(amount) => {
@@ -660,7 +664,7 @@ function App() {
                 }
 
                 if (activeMiniGame === 'ShakeForHype' || activeMiniGame === 'PresidentialCampaign') {
-                  return <PresidentialCampaign onComplete={onComplete} />;
+                  return <PresidentialCampaign onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 }
 
                 if (activeMiniGame === 'BoardroomBattle') {
@@ -669,6 +673,8 @@ function App() {
                   return (
                     <BoardroomBattle
                       onComplete={onComplete}
+                      level={hustleLevel}
+                      tier={pl.currentTier}
                       playerBid={levelData?.cost || 20000000}
                       rivalBid={rival?.currentBid || 0}
                       onOutbid={(amount) => {
@@ -719,7 +725,7 @@ function App() {
                 }
 
                 // Fallback for unknown minigames
-                return <SimpleFallback name={activeMiniGame} onComplete={onComplete} />;
+                return <SimpleFallback name={activeMiniGame} onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
               }
 
               if (hustle.hasPanel) {
