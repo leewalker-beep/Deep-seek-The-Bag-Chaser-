@@ -312,6 +312,8 @@ export interface PlayerStats {
   };
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
+  activeSpecializationId: string | null;
+  specializationHistory: string[];
   rivals: Rival[];
   rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
   activeChallenges: Challenge[];
@@ -360,6 +362,7 @@ export interface GameState {
   activeNarrative?: string | null;
   deathBadge: string | null;
   fatalCause: string | null;
+  pendingSpecialization: boolean;
   tutorialStep: number;
   isTutorialSkipped: boolean;
   difficulty: 1 | 2 | 3;
@@ -375,6 +378,7 @@ export interface GameState {
   setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
+  selectSpecialization: (specializationId: string) => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;

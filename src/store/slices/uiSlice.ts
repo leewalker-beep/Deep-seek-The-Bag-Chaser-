@@ -9,6 +9,7 @@ export interface UISlice {
   activeNarrative: string | null | undefined;
   deathBadge: string | null;
   fatalCause: string | null;
+  pendingSpecialization: boolean;
   tutorialStep: number;
   isTutorialSkipped: boolean;
 
@@ -19,6 +20,7 @@ export interface UISlice {
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
   setTutorialSkipped: (skipped: boolean) => void;
+  setPendingSpecialization: (pending: boolean) => void;
 }
 
 export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => ({
@@ -29,6 +31,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
   activeNarrative: null,
   deathBadge: null,
   fatalCause: null,
+  pendingSpecialization: false,
   tutorialStep: 0,
   isTutorialSkipped: false,
 
@@ -38,6 +41,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
   setActiveTierBadge: (badge) => set({ activeTierBadge: badge }),
   dismissNarrative: () => set({ activeNarrative: null }),
   setTutorialStep: (step) => set({ tutorialStep: step }),
+  setPendingSpecialization: (pending) => set({ pendingSpecialization: pending }),
   setTutorialSkipped: (skipped) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');

@@ -5,6 +5,7 @@ import { HUSTLES } from '../config/hustles/base';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
 import { getMasteryCount } from '../utils/masteryUtils';
 import { FLEX_ASSETS } from '../config/flexAssets';
+import { SPECIALIZATIONS } from '../config/specializations';
 
 export interface MathResult {
   cost: number;
@@ -240,7 +241,26 @@ export function getEffectiveHustleStats(
   effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * finalMentalMult);
   effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * finalHeatMult);
 
-  // 6. Apply Flex Bonuses
+  // 6. Apply Specialization Bonuses
+  if (player.activeSpecializationId) {
+    const spec = SPECIALIZATIONS.find(s => s.id === player.activeSpecializationId);
+    if (spec) {
+        if (spec.yieldCashMult) effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * spec.yieldCashMult);
+        if (spec.yieldCloutMult) effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * spec.yieldCloutMult);
+        if (spec.yieldAuraMult) effectiveResult.yieldAura = Math.floor(effectiveResult.yieldAura * spec.yieldAuraMult);
+        if (spec.heatMult) effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * spec.heatMult);
+        if (spec.mentalHitMult) {
+            if (effectiveResult.mentalHit < 0) {
+                effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * spec.mentalHitMult);
+            } else {
+                // For mental recovery, we might want a different logic or just skip it
+                effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (2 - spec.mentalHitMult));
+            }
+        }
+    }
+  }
+
+  // 7. Apply Flex Bonuses
   applyFlexBonuses(effectiveResult, calculateFlexBonuses(player));
 
   return effectiveResult;

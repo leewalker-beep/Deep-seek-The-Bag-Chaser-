@@ -104,6 +104,8 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     },
     monthsSinceCycleChange: 0,
     dynamicPassives: {},
+    activeSpecializationId: null,
+    specializationHistory: [],
     rivals: [
       { id: 'rival_mud', name: 'Salty Dog', netWorth: 5000, currentBid: 0, isNpc: true, tier: 'MUD' },
       { id: 'rival_street', name: 'Flex Hamilton', netWorth: 50000, currentBid: 0, isNpc: true, tier: 'STREET' },

@@ -21,14 +21,16 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
   const rivalThreats = pl.rivalThreats || {};
   const activeChallenges = pl.activeChallenges || [];
 
+  const finalClout = Math.floor(Math.max(0, Math.min(pl.clout, maxClout)));
+  const finalAura = Math.floor(Math.max(0, Math.min(currentAura, maxAura)));
   return {
     ...pl,
     rivals,
     rivalThreats,
     activeChallenges,
     bag: pl.bag + overflowBagBonus,
-    clout: Math.floor(Math.max(0, Math.min(pl.clout, maxClout))),
-    aura: Math.floor(Math.max(0, Math.min(currentAura, maxAura))),
+    clout: finalClout,
+    aura: finalAura,
     congressSupport: Math.max(0, Math.min(100, pl.congressSupport || 0)),
     approvalRating: Math.max(pl.approvalFloor || 0, Math.min(100, pl.approvalRating)),
     mentalHealth: Math.floor(Math.max(0, Math.min(pl.mentalHealth, maxMental))),

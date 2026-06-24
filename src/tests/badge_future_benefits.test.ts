@@ -29,8 +29,12 @@ describe('Badge Future Benefits', () => {
     expect(useGameStore.getState().pl.masteredHustles).toContain('audio');
 
     // 2. Reach PRESIDENT tier
-    const result = advanceTier();
-    expect(result).toBe(true);
+    const res = advanceTier();
+    expect(res).toBe(true);
+
+    // With specialization system, we must select one to complete the transition
+    useGameStore.getState().selectSpecialization('influencer');
+
     expect(useGameStore.getState().pl.currentTier).toBe('PRESIDENT');
 
     // 3. Verify notification in news
