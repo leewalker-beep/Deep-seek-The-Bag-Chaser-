@@ -17,6 +17,7 @@ import { executeHustleAction } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
+import { SPECIALIZATIONS } from '../../config/specializations';
 
 
 
@@ -27,6 +28,7 @@ export interface HustleSlice {
   executeBranch: (hustleId: string, branchId: string) => any;
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
+  selectSpecialization: (specializationId: string) => void;
   purchaseFlexAsset: (assetId: string) => boolean;
   retaliateRival: (rivalId: string) => boolean;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
@@ -1143,7 +1145,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!nextTier) return false;
 
     const req = TIER_REQUIREMENTS[nextTier];
-    const totalFee = req.fee;
 
     const isTutorialStep5 = !state.isTutorialSkipped && state.tutorialStep === 4;
 
@@ -1151,57 +1152,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         state.pl.clout >= req.clout &&
         state.pl.aura >= req.aura)) {
 
-      // Always backup before tier advancement
-      backupSave();
-
-      if (state.pl.bag < totalFee) {
-        set({
-          news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees and institutional buy-in`, ...state.news.slice(0, 49)]
-        });
-        return false;
+      if (isTutorialStep5) {
+         // Tutorial auto-advance logic
+         const nextPl = enforceStatCaps({
+            ...state.pl,
+            currentTier: nextTier,
+         });
+         set({ pl: nextPl, activeTab: nextTier });
+         get().setActiveTab(nextTier);
+         return true;
       }
 
-      const nextPl = enforceStatCaps({
-        ...state.pl,
-        bag: isTutorialStep5 ? state.pl.bag : state.pl.bag - totalFee,
-        clout: isTutorialStep5 ? state.pl.clout : Math.floor(state.pl.clout * 0.6),
-        aura: isTutorialStep5 ? state.pl.aura : Math.floor(state.pl.aura * 0.6),
-        currentTier: nextTier,
-        prePresidencyTier: nextTier === 'PRESIDENT' ? state.pl.currentTier : state.pl.prePresidencyTier,
-        congressSupport: nextTier === 'PRESIDENT' && state.pl.clout > 500 ? state.pl.congressSupport + 10 : state.pl.congressSupport,
-        approvalFloor: nextTier === 'PRESIDENT' && state.pl.aura > 500 ? 5 : state.pl.approvalFloor,
-        scandalRiskBonus: nextTier === 'PRESIDENT' && state.pl.heat > 70 ? 0.1 : state.pl.scandalRiskBonus,
-      });
-      nextPl.legacyScore = calculateLegacyScore(nextPl);
-
-      const revealedBenefits: string[] = [];
-      const masteredHustles = nextPl.masteredHustles || [];
-      masteredHustles.forEach(hId => {
-        const badge = HUSTLE_BADGES[hId];
-        if (badge && badge.relevantTier === nextTier && badge.futureBenefit) {
-          revealedBenefits.push(`Your ${badge.name} is now active: ${badge.futureBenefit}`);
-        }
-      });
-
-      set({
-        pl: nextPl,
-        activeTab: nextTier,
-        news: [
-          ...revealedBenefits.map(text => ({ text, colorClass: 'text-yellow-400 font-bold' })),
-          ...(revealedBenefits.length > 0 ? ['Your past mastery is paying off.'] : []),
-          `🎉 ADVANCED to ${nextTier} tier! ${req.description}`,
-          ...state.news
-        ].slice(0, 50)
-      });
-
-      revealedBenefits.forEach(benefit => {
-        get().logEvent('SPECIAL_EVENT', { type: 'BADGE_BENEFIT_ACTIVE', message: benefit });
-      });
-
-      get().logEvent('PROMOTION_EARNED', { from: state.pl.currentTier, to: nextTier, fee: totalFee });
-      showConfetti();
-      get().setActiveTab(nextTier);
-
+      // Instead of immediate advancement, we trigger the specialization selection
+      set({ pendingSpecialization: true });
       return true;
     }
 
@@ -1294,6 +1257,73 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
 
     return true;
+  },
+
+  selectSpecialization: (specializationId) => {
+    const state = get();
+    const spec = SPECIALIZATIONS.find(s => s.id === specializationId);
+    if (!spec) return;
+
+    const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
+    const nextTier = PROGRESSION_ORDER[currentIndex + 1];
+    if (!nextTier) return;
+
+    const req = TIER_REQUIREMENTS[nextTier];
+    const totalFee = req.fee * (1 - (spec.feeReduction || 0));
+
+    if (state.pl.bag < totalFee) {
+        set({
+          pendingSpecialization: false,
+          news: [`❌ Cannot advance to ${nextTier}: Need $${Math.floor(totalFee).toLocaleString()} for filing fees`, ...state.news.slice(0, 49)]
+        });
+        return;
+    }
+
+    backupSave();
+
+    const nextPl = enforceStatCaps({
+      ...state.pl,
+      bag: state.pl.bag - totalFee,
+      clout: Math.floor(state.pl.clout * spec.cloutTaxMultiplier),
+      aura: Math.floor(state.pl.aura * spec.auraTaxMultiplier),
+      currentTier: nextTier,
+      activeSpecializationId: specializationId,
+      specializationHistory: [...state.pl.specializationHistory, specializationId],
+      prePresidencyTier: nextTier === 'PRESIDENT' ? state.pl.currentTier : state.pl.prePresidencyTier,
+      congressSupport: nextTier === 'PRESIDENT' && state.pl.clout > 500 ? state.pl.congressSupport + 10 : state.pl.congressSupport,
+      approvalFloor: nextTier === 'PRESIDENT' && state.pl.aura > 500 ? 5 : state.pl.approvalFloor,
+      scandalRiskBonus: nextTier === 'PRESIDENT' && state.pl.heat > 70 ? 0.1 : state.pl.scandalRiskBonus,
+    });
+    nextPl.legacyScore = calculateLegacyScore(nextPl);
+
+    const revealedBenefits: string[] = [];
+    const masteredHustles = nextPl.masteredHustles || [];
+    masteredHustles.forEach(hId => {
+      const badge = HUSTLE_BADGES[hId];
+      if (badge && badge.relevantTier === nextTier && badge.futureBenefit) {
+        revealedBenefits.push(`Your ${badge.name} is now active: ${badge.futureBenefit}`);
+      }
+    });
+
+    set({
+      pl: nextPl,
+      pendingSpecialization: false,
+      activeTab: nextTier,
+      news: [
+        ...revealedBenefits.map(text => ({ text, colorClass: 'text-yellow-400 font-bold' })),
+        ...(revealedBenefits.length > 0 ? ['Your past mastery is paying off.'] : []),
+        `🎉 ADVANCED to ${nextTier} as ${spec.name}!`,
+        ...state.news
+      ].slice(0, 50)
+    });
+
+    revealedBenefits.forEach(benefit => {
+      get().logEvent('SPECIAL_EVENT', { type: 'BADGE_BENEFIT_ACTIVE', message: benefit });
+    });
+
+    get().logEvent('PROMOTION_EARNED', { from: state.pl.currentTier, to: nextTier, fee: totalFee, specialization: spec.name });
+    showConfetti();
+    get().setActiveTab(nextTier);
   },
 
   retaliateRival: (rivalId) => {

@@ -55,6 +55,7 @@ import { RiskMeter } from './components/minigames/RiskMeter';
 import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
+import { SpecializationModal } from './components/SpecializationModal';
 import { EndgameSummary } from './components/EndgameSummary';
 import { HallOfFame } from './components/HallOfFame';
 import { DailyChallenges } from './components/DailyChallenges';
@@ -900,6 +901,7 @@ function App() {
       {/* New Tutorial Box */}
       {!isTutorialSkipped && <TutorialBox />}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
+      <SpecializationModal />
 
       {/* News Ticker */}
       <NewsTicker news={news} />
