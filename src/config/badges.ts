@@ -7,7 +7,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Land King',
     description: 'Flip 50 properties. Or just one really big one.',
     icon: '🏢',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+5% Labor Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_delivery: {
     id: 'badge_delivery',
@@ -15,7 +17,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Speed Demon',
     description: 'Every red light is just a suggestion.',
     icon: '🛵',
-    buff: { type: 'yield', value: 1.05 }
+    buff: { type: 'yield', value: 1.05 },
+    futureBenefit: '+5% Infrastructure Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_plasma: {
     id: 'badge_plasma',
@@ -23,7 +27,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Essence Merchant',
     description: 'You are literally made of money. Sort of.',
     icon: '🩸',
-    buff: { type: 'mental', value: 0.90 } // 10% less mental hit
+    buff: { type: 'mental', value: 0.90 }, // 10% less mental hit
+    futureBenefit: '+5% Healthcare Reform effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_vending: {
     id: 'badge_vending',
@@ -31,7 +37,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Snack Sovereign',
     description: 'Owned every machine in the tri-state area.',
     icon: '🥤',
-    buff: { type: 'yield', value: 1.05 }
+    buff: { type: 'yield', value: 1.05 },
+    futureBenefit: '+5% Small Business Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_ghost_mode: {
     id: 'badge_ghost',
@@ -39,7 +47,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Untouchable',
     description: 'If they can\'t see you, they can\'t tax you.',
     icon: '👻',
-    buff: { type: 'heat', value: 0.80 } // 20% less heat
+    buff: { type: 'heat', value: 0.80 }, // 20% less heat
+    futureBenefit: '+5% Security Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_scrap: {
     id: 'badge_scrap',
@@ -47,7 +57,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Magnet Master',
     description: 'Found 10 rare metals and 10,000 rusty nails.',
     icon: '🔧',
-    buff: { type: 'yield', value: 1.15 }
+    buff: { type: 'yield', value: 1.15 },
+    futureBenefit: '+5% Crisis Response effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   r_flyers: {
     id: 'badge_flyers',
@@ -55,7 +67,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Paper Storm',
     description: 'Littering? No, I call it aggressive marketing.',
     icon: '📄',
-    buff: { type: 'clout', value: 1.10 }
+    buff: { type: 'clout', value: 1.10 },
+    futureBenefit: '+5% Voter Outreach effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   street_eats: {
     id: 'badge_eats',
@@ -63,7 +77,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Taco Titan',
     description: 'Served 10,000 customers. Only 2 cases of food poisoning!',
     icon: '🌮',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+5% Working Class Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   cc: {
     id: 'badge_cc',
@@ -71,7 +87,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Viral Lord',
     description: 'The algorithm is your puppet.',
     icon: '📱',
-    buff: { type: 'clout', value: 1.15 }
+    buff: { type: 'clout', value: 1.15 },
+    futureBenefit: '+10% Digital Infrastructure effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   pod: {
     id: 'badge_pod',
@@ -79,7 +97,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Voice of Reason',
     description: 'Talking for 4 hours straight actually pays off.',
     icon: '🎙️',
-    buff: { type: 'clout', value: 1.10 }
+    buff: { type: 'clout', value: 1.10 },
+    futureBenefit: '+10% Propaganda Push effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   drop: {
     id: 'badge_drop',
@@ -87,7 +107,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Supply Chain God',
     description: 'Shipping air from China at a 400% markup.',
     icon: '📦',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+5% Trade Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   vintage: {
     id: 'badge_vintage',
@@ -95,7 +117,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Archival Ace',
     description: 'That\'s not a stain, it\'s "character".',
     icon: '🧥',
-    buff: { type: 'aura', value: 1.10 }
+    buff: { type: 'aura', value: 1.10 },
+    futureBenefit: '+5% Cultural Heritage Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   techFlip: {
     id: 'badge_tech',
@@ -103,7 +127,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Silicon Surfer',
     description: 'Reach $1M revenue from tech flipping.',
     icon: '💻',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+5% Data & Crypto Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   audio: {
     id: 'badge_audio',
@@ -111,7 +137,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Platinum Producer',
     description: 'Win 5 Grammys. Or just buy them.',
     icon: '🎹',
-    buff: { type: 'clout', value: 1.15 }
+    buff: { type: 'clout', value: 1.15 },
+    futureBenefit: '+5% Festival effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   sw: {
     id: 'badge_sw',
@@ -119,7 +147,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Hype Beast',
     description: 'You sold a plain white tee for $500. Legend.',
     icon: '👕',
-    buff: { type: 'aura', value: 1.15 }
+    buff: { type: 'aura', value: 1.15 },
+    futureBenefit: '+10% Grassroots Campaign effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   saas_mvp: {
     id: 'badge_saas',
@@ -127,7 +157,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Code Crusader',
     description: 'Fixed one bug, created ten more. Scaled anyway.',
     icon: '💻',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+10% Digital Infrastructure effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   global_franchise: {
     id: 'badge_franchise',
@@ -135,7 +167,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Golden Arches',
     description: 'The sun never sets on your burger empire.',
     icon: '🍔',
-    buff: { type: 'yield', value: 1.10 }
+    buff: { type: 'yield', value: 1.10 },
+    futureBenefit: '+5% Economic Stability Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   smm: {
     id: 'badge_smm',
@@ -143,7 +177,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Agency Architect',
     description: 'Managed 100 accounts without a single password leak.',
     icon: '📈',
-    buff: { type: 'clout', value: 1.10 }
+    buff: { type: 'clout', value: 1.10 },
+    futureBenefit: '+10% Propaganda Push effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   gig: {
     id: 'badge_gig',
@@ -151,7 +187,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Logistics Legend',
     description: 'Your fleet delivers faster than the speed of light.',
     icon: '🚚',
-    buff: { type: 'yield', value: 1.05 }
+    buff: { type: 'yield', value: 1.05 },
+    futureBenefit: '+5% Infrastructure Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   meme: {
     id: 'badge_meme',
@@ -159,7 +197,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Diamond Hands',
     description: 'Held through a 99% crash and came out on top.',
     icon: '🪙',
-    buff: { type: 'aura', value: 1.15 }
+    buff: { type: 'aura', value: 1.15 },
+    futureBenefit: '+5% Data & Crypto Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   festival: {
     id: 'badge_festival',
@@ -167,7 +207,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Woodstock Wizard',
     description: 'Organized the greatest show on Earth.',
     icon: '🎸',
-    buff: { type: 'aura', value: 1.10 }
+    buff: { type: 'aura', value: 1.10 },
+    futureBenefit: '+10% Cultural Heritage Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   lobbying: {
     id: 'badge_lobbying',
@@ -175,7 +217,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Kingmaker',
     description: 'Laws are just suggestions for you.',
     icon: '🏛️',
-    buff: { type: 'heat', value: 0.85 }
+    buff: { type: 'heat', value: 0.85 },
+    futureBenefit: '+10% Congress Support from Executive Orders',
+    relevantTier: 'PRESIDENT',
   },
   hedgefund: {
     id: 'badge_hedge',
@@ -183,7 +227,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Market Manipulator',
     description: 'You don\'t predict the market, you ARE the market.',
     icon: '📊',
-    buff: { type: 'yield', value: 1.15 }
+    buff: { type: 'yield', value: 1.15 },
+    futureBenefit: '+5% Economic Stability Policy effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   film_studio: {
     id: 'badge_film',
@@ -191,7 +237,9 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Oscar Owner',
     description: 'Every movie you touch turns to gold.',
     icon: '🎬',
-    buff: { type: 'clout', value: 1.20 }
+    buff: { type: 'clout', value: 1.20 },
+    futureBenefit: '+10% Propaganda Push effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
   },
   president_campaign: {
     id: 'badge_president',
@@ -199,6 +247,8 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     name: 'Commander in Chief',
     description: 'The ultimate hustle. You won the country.',
     icon: '🇺🇸',
-    buff: { type: 'aura', value: 1.25 }
+    buff: { type: 'aura', value: 1.25 },
+    futureBenefit: '+10% Legacy Point gain during second term',
+    relevantTier: 'PRESIDENT',
   }
 };
