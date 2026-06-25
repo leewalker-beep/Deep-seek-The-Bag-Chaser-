@@ -35,7 +35,7 @@ export const NavTabs: React.FC<NavTabsProps> = ({
 
         return (
           <button
-            key={tab}
+            key={tab} data-testid={`nav-tab-${tab.toLowerCase()}`}
             onClick={() => !isLocked && onTabChange(tab)}
             disabled={!!isLocked}
             className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 ${

@@ -98,7 +98,10 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   };
 
   return (
-    <div className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}>
+    <div
+      className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}
+      data-testid={`hustle-card-${hustle.id}`}
+    >
       <ConfirmationModal
         isOpen={!!pendingAction}
         title="Confirm Large Spend"
