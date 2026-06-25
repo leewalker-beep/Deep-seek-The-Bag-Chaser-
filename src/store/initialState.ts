@@ -122,6 +122,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     activeChallenges: [],
     activeSentiment: null,
     completedNarrativeEvents: [],
+    activeNarrative: null,
     actionLog: [],
     milestones: [],
     events: [],

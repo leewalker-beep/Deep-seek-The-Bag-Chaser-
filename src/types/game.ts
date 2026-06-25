@@ -386,6 +386,7 @@ export interface PlayerStats {
   rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
   activeChallenges: Challenge[];
   activeSentiment: Sentiment | null;
+  activeNarrative: string | null;
   completedNarrativeEvents: string[];
   actionLog: GameAction[];
   milestones: Milestone[];

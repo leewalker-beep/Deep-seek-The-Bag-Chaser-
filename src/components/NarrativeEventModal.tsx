@@ -55,7 +55,7 @@ export const NarrativeEventModal: React.FC = () => {
 
                     if (req?.stat) {
                         const current = (pl as any)[req.stat.type === 'mentalHealth' ? 'mentalHealth' : req.stat.type];
-                        if (current < req.stat.value) {
+                        if (+current < req.stat.value) {
                             disabled = true;
                             reason = `Requires ${req.stat.value} ${req.stat.type}`;
                         }
@@ -88,8 +88,8 @@ export const NarrativeEventModal: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     {Object.entries(choice.consequences).map(([key, val]) => {
-                                        if (!val) return null;
-                                        const isPos = val > 0;
+                                        if (!val || key === 'specializationLock') return null;
+                                        const isPos = +val > 0;
                                         const color = isPos ? 'text-emerald-400' : 'text-red-400';
                                         let label = key.toUpperCase();
                                         if (key === 'bag') label = 'CASH';
