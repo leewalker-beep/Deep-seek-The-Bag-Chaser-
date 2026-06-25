@@ -207,6 +207,20 @@ export function getEffectiveHustleStats(
   }
 
   // 4. Apply Tier Mechanics
+  const activeRivalBid = player.rivals?.find(r => r.tier === player.currentTier && r.currentBid > 0);
+  if (activeRivalBid) {
+    effectiveResult.cost = Math.floor(effectiveResult.cost * 1.5);
+  }
+
+  const hasCounterBidBonus = player.dynamicPassives[`counter_bid_bonus_${player.currentTier}`];
+  if (hasCounterBidBonus) {
+    effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 1.2);
+  }
+
+  if (player.marketLeaderTiers?.includes(player.currentTier)) {
+    effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 1.05);
+  }
+
   if (player.currentTier === 'MUD') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.5);
   } else if (player.currentTier === 'STREET') {

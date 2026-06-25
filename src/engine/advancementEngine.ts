@@ -267,8 +267,20 @@ export function advanceMonth(
   if (newPl.rivals) {
     newPl.rivalThreats = {};
     newPl.rivals = newPl.rivals.map(rival => {
-      // Net worth fluctuations (-2% to +5%)
-      const fluctuation = 1 + (Math.random() * 0.07 - 0.02);
+      // Tiered growth rates
+      const growthMult = {
+        MUD: 0.04,
+        STREET: 0.05,
+        STARTUP: 0.06,
+        CORPORATE: 0.07,
+        ELITE: 0.08,
+        MOGUL: 0.10,
+        PRESIDENT: 0.12,
+        OPEN: 0.15
+      }[rival.tier] || 0.05;
+
+      // Net worth fluctuations (-2% to growthMult)
+      const fluctuation = 1 + (Math.random() * (growthMult + 0.02) - 0.02);
       const newNetWorth = Math.floor(rival.netWorth * fluctuation);
 
       // Update threat level
@@ -284,6 +296,12 @@ export function advanceMonth(
         threat = 'PLAYER_DOMINANT';
         if (rival.tier === newPl.currentTier) {
           news.push({ text: `🚀 You are crushing ${rival.name}. Your reputation is soaring. Yields up 15%.`, colorClass: 'text-emerald-400 font-bold' });
+
+          // Market Leader Check (Permanent bonus)
+          if (!newPl.marketLeaderTiers.includes(rival.tier)) {
+            newPl.marketLeaderTiers.push(rival.tier);
+            news.push({ text: `🏆 MARKET LEADER: You've permanently established dominance in the ${rival.tier} tier! +5% Yield.`, colorClass: 'text-yellow-400 font-black animate-bounce' });
+          }
 
           // Trigger Challenge (20% chance if not already challenged by this rival)
           const isChallenged = newPl.activeChallenges.some(c => c.rivalId === rival.id);
@@ -303,18 +321,29 @@ export function advanceMonth(
 
       newPl.rivalThreats[rival.tier] = threat;
 
-      // Random bidding challenge (5% chance per rival per month if player is ELITE+)
+      // Random bidding challenge (Increased by vengeance)
       let currentBid = 0;
-      const isElitePlus = ['ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'].includes(newPl.currentTier);
-      if (isElitePlus && Math.random() < 0.05) {
+      const baseBidChance = 0.05;
+      const bidChance = baseBidChance * (rival.vengeance || 1);
+
+      const isCorrectTier = rival.tier === newPl.currentTier;
+
+      if (isCorrectTier && Math.random() < bidChance) {
         // Rivals bid based on their scale
         currentBid = Math.floor(newNetWorth * (0.05 + Math.random() * 0.1));
-        news.push(`⚠️ RIVAL ALERT: ${rival.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`);
+        news.push({ text: `⚠️ RIVAL ALERT: ${rival.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`, colorClass: 'text-red-400 font-bold' });
       }
 
       return { ...rival, netWorth: newNetWorth, currentBid };
     });
   }
+
+  // Clear temporary counter-bid bonuses
+  Object.keys(newPl.dynamicPassives).forEach(key => {
+    if (key.startsWith('counter_bid_bonus_')) {
+      delete newPl.dynamicPassives[key];
+    }
+  });
 
   // Update Challenges
   if (newPl.activeChallenges.length > 0) {

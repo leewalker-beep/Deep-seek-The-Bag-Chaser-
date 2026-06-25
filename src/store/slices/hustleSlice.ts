@@ -18,6 +18,7 @@ import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
+import { GAME_CONSTANTS } from '../../config/gameConstants';
 
 
 
@@ -31,6 +32,8 @@ export interface HustleSlice {
   selectSpecialization: (specializationId: string) => void;
   purchaseFlexAsset: (assetId: string) => boolean;
   retaliateRival: (rivalId: string) => boolean;
+  sabotageRival: (rivalId: string) => void;
+  counterBid: (rivalId: string) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: any, metadata?: any) => void;
   checkMilestones: () => void;
@@ -1357,5 +1360,76 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_RETALIATION', rivalId, rivalName: rival.name, cost });
     return true;
+  },
+
+  sabotageRival: (rivalId) => {
+    const state = get();
+    const rival = state.pl.rivals.find(r => r.id === rivalId);
+    if (!rival) return;
+
+    const cost = GAME_CONSTANTS.SABOTAGE_COST;
+    if (state.pl.bag < cost) {
+      get().addTickerMessage("Not enough cash to sabotage rival!", "text-red-400");
+      return;
+    }
+
+    if (rival.lastSabotagedMonth === state.pl.month) {
+      get().addTickerMessage("Already sabotaged this rival this month!", "text-yellow-400");
+      return;
+    }
+
+    const success = Math.random() < 0.75;
+    let nextPl = { ...state.pl, bag: state.pl.bag - cost };
+
+    if (success) {
+      nextPl.rivals = nextPl.rivals.map(r =>
+        r.id === rivalId ? {
+          ...r,
+          netWorth: Math.floor(r.netWorth * 0.8),
+          lastSabotagedMonth: state.pl.month,
+          vengeance: (r.vengeance || 1) + 1
+        } : r
+      );
+      nextPl.aura += 50;
+      get().addTickerMessage(`🎯 SABOTAGE SUCCESS: ${rival.name}'s operations disrupted! Net worth -20%.`, "text-emerald-400 font-bold");
+    } else {
+      nextPl.rivals = nextPl.rivals.map(r =>
+        r.id === rivalId ? { ...r, lastSabotagedMonth: state.pl.month, vengeance: (r.vengeance || 1) + 0.5 } : r
+      );
+      nextPl.heat += 25;
+      nextPl.aura -= 100;
+      get().addTickerMessage(`🚫 SABOTAGE FAILED: You were nearly caught! Heat +25%, Aura -100.`, "text-red-500 font-bold");
+    }
+
+    set({ pl: enforceStatCaps(nextPl) });
+    get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_SABOTAGE', rivalId, success, cost });
+  },
+
+  counterBid: (rivalId) => {
+    const state = get();
+    const rival = state.pl.rivals.find(r => r.id === rivalId);
+    if (!rival || rival.currentBid <= 0) return;
+
+    const cost = Math.floor(rival.currentBid * 1.5);
+    if (state.pl.bag < cost) {
+      get().addTickerMessage(`Need $${cost.toLocaleString()} to counter-bid!`, "text-red-400");
+      return;
+    }
+
+    const nextPl = {
+      ...state.pl,
+      bag: state.pl.bag - cost,
+      clout: state.pl.clout + 300,
+      rivals: state.pl.rivals.map(r => r.id === rivalId ? { ...r, currentBid: 0 } : r),
+      // Use a special flag in dynamicPassives to track the yield bonus for the current month
+      dynamicPassives: { ...state.pl.dynamicPassives, [`counter_bid_bonus_${rival.tier}`]: 1 }
+    };
+
+    set({
+      pl: enforceStatCaps(nextPl),
+      news: [{ text: `🤝 COUNTER-BID: You bought out ${rival.name}'s position! Clout +300. 1.2x Yield bonus for ${rival.tier} active.`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_COUNTER_BID', rivalId, cost });
   },
 });
