@@ -135,7 +135,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
     }
 
     // Generate 3 random challenges from tier-appropriate pool
-    const tier = state.pl?.currentTier || 'MUD';
+    const tier = (state.pl?.currentTier as Tier) || 'MUD';
     const pool = CHALLENGE_POOL[tier] || CHALLENGE_POOL.MUD;
 
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
