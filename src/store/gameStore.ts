@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState } from '../types/game';
+import { GAME_CONSTANTS } from '../config/gameConstants';
 import { createUISlice } from './slices/uiSlice';
 import { createMarketSlice } from './slices/marketSlice';
 import { createPlayerStatsSlice } from './slices/playerStatsSlice';
@@ -23,7 +24,11 @@ export const useGameStore = create<GameState>()(
     {
       name: 'bag-chaser-save',
       partialize: (state) => ({
-        pl: state.pl,
+        pl: {
+          ...state.pl,
+          actionLog: state.pl.actionLog?.slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE),
+        },
+        rivals: state.pl.rivals,
         ph: state.ph,
         currentMarket: state.currentMarket,
         unlockedHustles: state.unlockedHustles,
