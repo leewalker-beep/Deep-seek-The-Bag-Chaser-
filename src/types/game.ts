@@ -259,6 +259,16 @@ export interface Achievement {
   };
 }
 
+export interface DailyChallenge {
+  id: string;
+  type?: string;
+  description: string;
+  target: number;
+  current: number;
+  isCompleted: boolean;
+  reward: { cash: number; aura?: number; clout?: number };
+}
+
 export interface HallOfFameEntry {
   runId: string;
   tier: string;
@@ -494,6 +504,12 @@ export interface GameState {
   logEvent: (type: GameEventType, metadata?: any) => void;
   checkMilestones: () => void;
   processLogin: () => void;
+  dailyChallenges: DailyChallenge[];
+  loginStreak: number;
+  lastLoginDate: string | null;
+  checkChallenges: () => void;
+  updateChallengeProgress: (idOrType: string, amount: number) => void;
+  getStreakReward: (streak: number) => { cash: number; aura?: number; clout?: number };
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
   retaliateRival: (rivalId: string) => void;
