@@ -15,20 +15,14 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerName,
   rivals = []
 }) => {
-  const { addTickerMessage, pl, retaliateRival } = useGameStore();
+  const { pl, retaliateRival, sabotageRival, counterBid } = useGameStore();
   const allParticipants = [
     ...(rivals || []),
     { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false, tier: pl.currentTier }
   ].sort((a, b) => b.netWorth - a.netWorth);
 
-  const handleSabotage = (rivalName: string) => {
-    const cost = GAME_CONSTANTS.SABOTAGE_COST;
-    if (pl.bag < cost) {
-      addTickerMessage("Not enough cash to sabotage rival!", "text-red-400");
-      return;
-    }
-
-    addTickerMessage(`Sabotage attempt on ${rivalName} initiated... (-$${cost.toLocaleString()})`, "text-yellow-400");
+  const handleSabotage = (rivalId: string) => {
+    sabotageRival(rivalId);
   };
 
   return (
@@ -71,6 +65,9 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     {pl.rivalThreats?.[pAsRival.tier] === 'PLAYER_DOMINANT' && !isPlayer && pAsRival.tier === pl.currentTier && (
                       <div className="text-[8px] text-emerald-500 font-black uppercase">BEING CRUSHED</div>
                     )}
+                    {pl.marketLeaderTiers?.includes(pAsRival.tier) && !isPlayer && (
+                      <div className="text-[8px] text-yellow-500 font-black uppercase">🏆 MARKET DOMINATED</div>
+                    )}
                   </div>
                 </div>
                 <div className={`text-xs font-mono font-bold ${isPlayer ? 'text-emerald-400' : 'text-slate-400'}`}>
@@ -98,15 +95,27 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {p.netWorth > playerBag && (
                       <BaseButton
                         variant="ghost"
                         size="sm"
-                        className="text-[8px] py-1 h-auto bg-red-500/10 border border-red-500/20 hover:bg-red-500/20"
-                        onClick={() => handleSabotage(p.name)}
+                        disabled={pAsRival.lastSabotagedMonth === pl.month}
+                        className="text-[8px] py-1 h-auto bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 disabled:opacity-50"
+                        onClick={() => handleSabotage(p.id)}
                       >
-                        Spy/Sabotage (${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}k)
+                        {pAsRival.lastSabotagedMonth === pl.month ? 'Sabotaged' : `Spy/Sabotage ($${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}k)`}
+                      </BaseButton>
+                    )}
+
+                    {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
+                       <BaseButton
+                        variant="ghost"
+                        size="sm"
+                        className="text-[8px] py-1 h-auto bg-blue-500/20 border border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
+                        onClick={() => counterBid(p.id)}
+                      >
+                        ⚡ Counter-Bid (${(Math.floor(p.currentBid * 1.5) / 1000).toLocaleString()}k)
                       </BaseButton>
                     )}
 

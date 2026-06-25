@@ -99,6 +99,8 @@ export interface Rival {
   currentBid: number;
   isNpc: boolean;
   tier: Tier;
+  lastSabotagedMonth?: number;
+  vengeance?: number; // Multiplier for aggressive bidding chance
 }
 
 export interface Challenge {
@@ -319,6 +321,7 @@ export interface PlayerStats {
   regionalApproval: Record<string, number>;
   prePresidencyTier: Tier | null;
   crushedRivals: string[];
+  marketLeaderTiers: Tier[];
   approvalFloor: number;
   scandalRiskBonus: number;
   sotuHistory: {
@@ -449,5 +452,7 @@ export interface GameState {
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
   retaliateRival: (rivalId: string) => void;
+  sabotageRival: (rivalId: string) => void;
+  counterBid: (rivalId: string) => void;
   setTutorialSkipped: (skipped: boolean) => void;
 }

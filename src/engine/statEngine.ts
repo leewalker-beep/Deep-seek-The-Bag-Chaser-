@@ -20,6 +20,7 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
   const rivals = pl.rivals || [];
   const rivalThreats = pl.rivalThreats || {};
   const activeChallenges = pl.activeChallenges || [];
+  const marketLeaderTiers = pl.marketLeaderTiers || [];
 
   const finalClout = Math.floor(Math.max(0, Math.min(pl.clout, maxClout)));
   const finalAura = Math.floor(Math.max(0, Math.min(currentAura, maxAura)));
@@ -28,6 +29,7 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
     rivals,
     rivalThreats,
     activeChallenges,
+    marketLeaderTiers,
     bag: pl.bag + overflowBagBonus,
     clout: finalClout,
     aura: finalAura,
