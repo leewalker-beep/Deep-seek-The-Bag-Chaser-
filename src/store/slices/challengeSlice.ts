@@ -1,15 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, Tier } from '../../types/game';
-
-export interface DailyChallenge {
-  id: string;
-  type?: string;
-  description: string;
-  target: number;
-  current: number;
-  isCompleted: boolean;
-  reward: { cash: number; aura?: number; clout?: number };
-}
+import type { GameState, Tier, DailyChallenge } from '../../types/game';
 
 export interface ChallengeSlice {
   dailyChallenges: DailyChallenge[];
@@ -116,7 +106,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
 
   processLogin: () => {
     const today = new Date().toISOString().split('T')[0];
-    const state = get() as any;
+    const state = get();
 
     if (state.lastLoginDate === today) return;
 
@@ -135,7 +125,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
     }
 
     // Generate 3 random challenges from tier-appropriate pool
-    const tier = (state.pl?.currentTier as Tier) || 'MUD';
+    const tier = state.pl?.currentTier || 'MUD';
     const pool = CHALLENGE_POOL[tier] || CHALLENGE_POOL.MUD;
 
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
@@ -145,7 +135,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
       isCompleted: false
     })) as DailyChallenge[];
 
-    const reward = (get() as any).getStreakReward(newStreak);
+    const reward = get().getStreakReward(newStreak);
 
     set({
       loginStreak: newStreak,
@@ -164,16 +154,16 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
         ...(resetStreak ? ['⚠️ Streak reset! You missed a day.'] : []),
         ...state.news
       ]
-    } as any);
+    });
   },
 
   checkChallenges: () => {
-    const state = get() as any;
-    const completedChallenges = state.dailyChallenges.filter((c: any) => !c.isCompleted && c.current >= c.target);
+    const state = get();
+    const completedChallenges = state.dailyChallenges.filter((c) => !c.isCompleted && c.current >= c.target);
 
     if (completedChallenges.length > 0) {
       let bonusCash = 0;
-      const updatedChallenges = state.dailyChallenges.map((c: any) => {
+      const updatedChallenges = state.dailyChallenges.map((c) => {
         if (!c.isCompleted && c.current >= c.target) {
           bonusCash += c.reward.cash;
           return { ...c, isCompleted: true };
@@ -190,19 +180,19 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
           totalChallengesCompleted: (state.pl.totalChallengesCompleted || 0) + completedChallenges.length
         },
         news: [`🎁 CHALLENGE COMPLETE: +$${bonusCash.toLocaleString()}`, ...state.news.slice(0, 49)]
-      } as any);
+      });
 
       get().logEvent('SPECIAL_EVENT', { type: 'DAILY_CHALLENGE_COMPLETED', count: completedChallenges.length });
     }
   },
 
   updateChallengeProgress: (idOrType, amount) => {
-    const state = get() as any;
-    const updatedChallenges = state.dailyChallenges.map((c: any) =>
+    const state = get();
+    const updatedChallenges = state.dailyChallenges.map((c) =>
         (c.id === idOrType || c.type === idOrType) ? { ...c, current: c.current + amount } : c
     );
 
-    set({ dailyChallenges: updatedChallenges } as any);
-    (get() as any).checkChallenges();
+    set({ dailyChallenges: updatedChallenges });
+    get().checkChallenges();
   }
 });

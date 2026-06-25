@@ -1,5 +1,11 @@
 import type { HallOfFameEntry } from '../types/game';
 
+/**
+ * NOTE: Hall of Fame uses direct localStorage instead of the Zustand persist layer
+ * because Hall of Fame data must persist across multiple game runs and resets.
+ * The main game store (zustand) is cleared when a new run begins, but the
+ * Hall of Fame serves as a permanent record of all completed runs.
+ */
 const STORAGE_KEY = 'bagchaser_hall_of_fame';
 
 export const saveHallOfFameEntry = (entry: HallOfFameEntry) => {

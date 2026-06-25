@@ -37,10 +37,10 @@ export const useGameStore = create<GameState>()(
         chosenBackground: state.chosenBackground,
         tutorialStep: state.tutorialStep,
         isTutorialSkipped: state.isTutorialSkipped,
-        achievements: (state as any).achievements,
-        loginStreak: (state as any).loginStreak,
-        lastLoginDate: (state as any).lastLoginDate,
-        dailyChallenges: (state as any).dailyChallenges,
+        achievements: state.achievements,
+        loginStreak: state.loginStreak,
+        lastLoginDate: state.lastLoginDate,
+        dailyChallenges: state.dailyChallenges,
       }),
     }
   )
