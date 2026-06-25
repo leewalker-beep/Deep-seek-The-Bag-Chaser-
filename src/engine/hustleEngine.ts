@@ -261,17 +261,31 @@ const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, _level
   };
 };
 
-const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
-  const crisisRatio = Math.min(1, Math.max(0, (minigameMultiplier || 0.5) / 4));
-  const base = 10000000;
-  const cost = base;
-  const yieldCash = base * crisisRatio * 2;
-  const yieldClout = 100 * crisisRatio;
-  const yieldAura = 50 * crisisRatio;
+const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
+  const isSuccess = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.5;
+  const cost = levelData.cost;
+
+  let yieldCash = 0;
+  let yieldClout = 0;
+  let yieldAura = 0;
+  let message = "";
+
+  if (isSuccess) {
+    yieldCash = Math.floor(cost * 1.3);
+    yieldClout = levelData.yieldClout;
+    yieldAura = levelData.yieldAura;
+    message = "Crisis averted! Profitable recovery.";
+  } else {
+    yieldCash = Math.floor(cost * 0.7);
+    yieldClout = Math.floor(levelData.yieldClout * 0.3);
+    yieldAura = Math.floor(levelData.yieldAura * 0.3);
+    message = "Crisis mismanaged. Loss incurred but survived.";
+  }
+
   return {
-    success: true,
+    success: isSuccess,
     netChange: yieldCash - cost,
-    message: '',
+    message,
     cost,
     yieldCash,
     yieldClout,
@@ -282,14 +296,13 @@ const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, _level
   };
 };
 
-const globalFranchiseStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const globalFranchiseStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const territories = Math.min(6, Math.max(1, Math.floor(minigameMultiplier || 1)));
-  const base = 5000000;
-  const cost = base;
-  const yieldCash = base * territories;
-  const yieldClout = 150 * territories;
-  const yieldAura = 75 * territories;
-  const passiveAdded = 50000 * territories;
+  const cost = levelData.cost;
+  const yieldCash = Math.floor(levelData.yieldCash * territories);
+  const yieldClout = Math.floor(levelData.yieldClout * territories);
+  const yieldAura = Math.floor(levelData.yieldAura * territories);
+  const passiveAdded = Math.floor((levelData.passiveYield || 0) * territories);
   return {
     success: true,
     netChange: yieldCash - cost,
