@@ -36,6 +36,27 @@ export interface GameEvent {
   metadata: any;
 }
 
+export type PassiveCategory = 'BUSINESS' | 'REAL_ESTATE' | 'FLEX' | 'ROYALTY' | 'BONUS';
+
+export interface PassiveSource {
+  id: string;
+  name: string;
+  category: PassiveCategory;
+  amount: number;
+  count?: number;
+}
+
+export interface PassiveBreakdown {
+  sources: PassiveSource[];
+  baseTotal: number;
+  multipliers: {
+    legacy: number;
+    market: number;
+    specialization: number;
+  };
+  finalTotal: number;
+}
+
 export interface GameAction {
   id: string;
   timestamp: number;
@@ -55,6 +76,7 @@ export interface GameAction {
   passiveAdded?: number;
   rentDeducted?: number;
   passiveIncomeTotal?: number;
+  passiveBreakdown?: PassiveBreakdown;
   marketMult?: { yield: number; expense: number; heat: number };
   marketName?: string;
   variation?: number;
@@ -312,6 +334,7 @@ export interface PlayerStats {
   };
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
+  lastPassiveBreakdown?: PassiveBreakdown;
   activeSpecializationId: string | null;
   specializationHistory: string[];
   rivals: Rival[];
