@@ -5,6 +5,8 @@ import { HUSTLES } from '../config/hustles/base';
 import { enforceStatCaps } from './statEngine';
 import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
 import { BACKGROUNDS } from '../config/backgrounds';
+import { SPECIALIZATIONS } from '../config/specializations';
+import type { PassiveSource, PassiveBreakdown } from '../types/game';
 
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -27,6 +29,7 @@ export interface AdvancementResult {
   deathCause: string | null;
   totalRent: number;
   passiveIncome: number;
+  passiveBreakdown: PassiveBreakdown;
 }
 
 export function checkDeathConditions(pl: PlayerStats): { shouldDie: boolean; deathCause: string | null } {
@@ -68,10 +71,11 @@ export function advanceMonth(
   const marketMult = MARKET_CONFIGS[currentMarket].expenseMultiplier;
   const totalRent = rent * marketMult;
 
-  // Calculate passive income dynamically from all sources
-  let passiveIncome = 0;
+  // --- PASSIVE INCOME BREAKDOWN START ---
+  const sources: PassiveSource[] = [];
+  let baseTotal = 0;
 
-  // 1. Dynamic Hustle Passives (SaaS, Podcast, Franchise, etc.)
+  // 1. Dynamic Hustle Passives (BUSINESS)
   const activeHustleIds = new Set([
     ...Object.keys(newPl.hustleLevels),
     ...Object.keys(newPl.hustleBranchIds)
@@ -92,7 +96,6 @@ export function advanceMonth(
 
     if (levelData?.passiveYield) {
       let multiplier = 1;
-      // Handle repeatable hustle multipliers
       if (hustleId === 'r_labor' && newPl.hustleBranchIds[hustleId] === 'l2b') {
         multiplier = Math.min(20, newPl.rentPortfolioCount || 1);
       }
@@ -100,22 +103,44 @@ export function advanceMonth(
         multiplier = newPl.vendingCount || 0;
       }
 
-      passiveIncome += levelData.passiveYield * multiplier;
+      const yieldAmount = levelData.passiveYield * multiplier;
+      baseTotal += yieldAmount;
+      sources.push({
+        id: hustleId,
+        name: levelData.name || hustle.name,
+        category: 'BUSINESS',
+        amount: yieldAmount,
+        count: multiplier
+      });
     }
   });
 
-  // Real Estate Empire Passive Income
+  // 2. Real Estate Empire (REAL_ESTATE)
   if (newPl.rentalCount > 0) {
     const typeMult = { residential: 1.0, commercial: 1.5, industrial: 2.0 }[newPl.realEstateType];
     const leverageMult = newPl.realEstateLeverage === 0 ? 1.0 : (newPl.realEstateLeverage === 50 ? 1.5 : 2.5);
     const cycle = newPl.marketCycle.realEstate;
     const cycleMult = cycle === 'boom' ? 1.5 : (cycle === 'bust' ? 0.6 : 1.0);
     const baseProfit = 1000000;
-    const monthlyPassive = (baseProfit * typeMult * leverageMult * cycleMult * MARKET_CONFIGS[currentMarket].yieldMultiplier * 0.5);
-    passiveIncome += Math.floor(monthlyPassive * newPl.rentalCount);
+
+    // We calculate monthly passive for REAL ESTATE using base values,
+    // multipliers are applied to the total empire yield later.
+    // Note: The previous logic multiplied by yieldMultiplier here.
+    // We will keep it consistent with the "breakdown" by showing base yield and then multipliers.
+    const monthlyBasePerProperty = (baseProfit * typeMult * leverageMult * cycleMult * 0.5);
+    const yieldAmount = Math.floor(monthlyBasePerProperty * newPl.rentalCount);
+
+    baseTotal += yieldAmount;
+    sources.push({
+        id: 'real_estate_rentals',
+        name: `Real Estate Empire (${newPl.realEstateType})`,
+        category: 'REAL_ESTATE',
+        amount: yieldAmount,
+        count: newPl.rentalCount
+    });
   }
 
-  // 2. Flex Assets
+  // 3. Flex Assets (FLEX)
   const techConglomerateCount = newPl.flexAssets['tech_conglomerate'] || 0;
   const flexBonusMultiplier = 1 + (techConglomerateCount * 0.1);
 
@@ -126,17 +151,30 @@ export function advanceMonth(
       if (asset.id !== 'tech_conglomerate') {
         assetPassive *= flexBonusMultiplier;
       }
-      passiveIncome += assetPassive;
+      baseTotal += assetPassive;
+      sources.push({
+        id: asset.id,
+        name: asset.name,
+        category: 'FLEX',
+        amount: assetPassive,
+        count
+      });
     }
   });
 
-  // 3. Vending Machine Bonus
+  // 4. Vending Machine Bonus (BONUS)
   const vendingCount = newPl.vendingCount || 0;
   if (vendingCount >= 10) {
-    passiveIncome += 500;
+    baseTotal += 500;
+    sources.push({
+        id: 'vending_bonus',
+        name: 'Vending King Bonus',
+        category: 'BONUS',
+        amount: 500
+    });
   }
 
-  // Music roster passive income (Royalties)
+  // 5. Music Royalties (ROYALTY)
   let totalRoyalties = 0;
   newPl.artists.forEach(artist => {
     totalRoyalties += artist.royaltyRate;
@@ -145,17 +183,57 @@ export function advanceMonth(
       artist.hasReleased = true;
     }
   });
-  passiveIncome += totalRoyalties;
+  if (totalRoyalties > 0) {
+    baseTotal += totalRoyalties;
+    sources.push({
+        id: 'music_royalties',
+        name: 'Music Royalties',
+        category: 'ROYALTY',
+        amount: totalRoyalties,
+        count: newPl.artists.length
+    });
+  }
 
-  // Add dynamic passives
-  Object.values(newPl.dynamicPassives || {}).forEach(val => {
-    passiveIncome += val;
+  // 6. Dynamic Passives (BUSINESS/BONUS)
+  Object.entries(newPl.dynamicPassives || {}).forEach(([id, val]) => {
+    if (val !== 0) {
+        baseTotal += val;
+        sources.push({
+            id: `dynamic_${id}`,
+            name: HUSTLES[id]?.name || id,
+            category: 'BUSINESS',
+            amount: val
+        });
+    }
   });
 
-  // Apply Market and Legacy Multipliers (0.1% per legacy point)
+  // --- MULTIPLIERS ---
   const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
-  const yieldMult = MARKET_CONFIGS[currentMarket].yieldMultiplier;
-  passiveIncome = Math.floor(passiveIncome * legacyMultiplier * yieldMult);
+  const marketYieldMult = MARKET_CONFIGS[currentMarket].yieldMultiplier;
+
+  // FIX: Apply Specialization Bonuses to Passive Income
+  let specMultiplier = 1.0;
+  if (newPl.activeSpecializationId) {
+    const spec = SPECIALIZATIONS.find(s => s.id === newPl.activeSpecializationId);
+    if (spec?.yieldCashMult) {
+        specMultiplier = spec.yieldCashMult;
+    }
+  }
+
+  const finalTotal = Math.floor(baseTotal * legacyMultiplier * marketYieldMult * specMultiplier);
+
+  const passiveBreakdown: PassiveBreakdown = {
+      sources,
+      baseTotal,
+      multipliers: {
+          legacy: legacyMultiplier,
+          market: marketYieldMult,
+          specialization: specMultiplier
+      },
+      finalTotal
+  };
+
+  const passiveIncome = finalTotal;
 
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly
@@ -355,6 +433,7 @@ export function advanceMonth(
     shouldDie,
     deathCause,
     totalRent,
-    passiveIncome
+    passiveIncome,
+    passiveBreakdown
   };
 }

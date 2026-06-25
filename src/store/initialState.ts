@@ -104,6 +104,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     },
     monthsSinceCycleChange: 0,
     dynamicPassives: {},
+    lastPassiveBreakdown: undefined,
     activeSpecializationId: null,
     specializationHistory: [],
     rivals: [

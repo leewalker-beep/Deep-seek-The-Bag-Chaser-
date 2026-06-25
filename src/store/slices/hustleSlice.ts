@@ -704,13 +704,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       shouldDie,
       deathCause,
       totalRent,
-      passiveIncome
+      passiveIncome,
+      passiveBreakdown
     } = advanceMonth(
       hustleResultPl,
       state.currentMarket
     );
 
-    const actionLogData = {
+    newPl.lastPassiveBreakdown = passiveBreakdown;
+
+    const actionLogData: any = {
       month: state.pl.month,
       tier: state.pl.currentTier,
       hustleId,
@@ -727,6 +730,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       passiveAdded: result.passiveAdded !== undefined ? result.passiveAdded : (levelData.passiveYield || 0),
       rentDeducted: totalRent,
       passiveIncomeTotal: passiveIncome,
+      passiveBreakdown,
       marketMult: { yield: 1, expense: 1, heat: 1 },
       marketName: state.currentMarket,
       variation: 0
@@ -826,7 +830,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         miniGame: hustle.miniGame || levelData.miniGame,
         multiplier: minigameMultiplier,
         rentDeducted: totalRent,
-        passiveIncomeTotal: passiveIncome
+        passiveIncomeTotal: passiveIncome,
+        passiveBreakdown
       }
     };
 

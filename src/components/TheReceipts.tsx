@@ -5,6 +5,7 @@ import type { GameEvent } from '../types/game';
 export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const pl = useGameStore(state => state.pl);
   const [filterType, setFilterType] = useState<string>('ALL');
+  const [expandedLedger, setExpandedLedger] = useState<string | null>(null);
 
   const events = pl.events || [];
 
@@ -51,8 +52,16 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               )}
               {metadata.passiveIncomeTotal > 0 && (
-                <div className="text-emerald-500">
+                <div className="text-emerald-500 flex items-center gap-1">
                   PASSIVE: +${metadata.passiveIncomeTotal.toLocaleString()}
+                  {metadata.passiveBreakdown && (
+                    <button
+                      onClick={() => setExpandedLedger(expandedLedger === event.id ? null : event.id)}
+                      className="ml-1 px-1.5 py-0.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-[8px] font-black rounded border border-emerald-500/30 transition-colors uppercase"
+                    >
+                      {expandedLedger === event.id ? 'Hide Ledger' : 'View Ledger'}
+                    </button>
+                  )}
                 </div>
               )}
               {metadata.passiveAdded > 0 && (
@@ -81,6 +90,58 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               )}
             </div>
+
+            {expandedLedger === event.id && metadata.passiveBreakdown && (
+              <div className="mt-3 p-3 bg-slate-950 rounded-lg border border-emerald-500/20 animate-in slide-in-from-top-2 duration-200">
+                <div className="text-[8px] font-black text-emerald-500/50 uppercase tracking-widest mb-2 flex justify-between">
+                    <span>Imperial Ledger</span>
+                    <span>ROI Breakdown</span>
+                </div>
+                <div className="space-y-1">
+                    {metadata.passiveBreakdown.sources.map((src: any) => (
+                        <div key={src.id} className="flex justify-between items-center text-[10px]">
+                            <div className="flex items-center gap-1.5">
+                                <span className={`w-1 h-1 rounded-full ${
+                                    src.category === 'BUSINESS' ? 'bg-blue-400' :
+                                    src.category === 'REAL_ESTATE' ? 'bg-emerald-400' :
+                                    src.category === 'FLEX' ? 'bg-purple-400' : 'bg-yellow-400'
+                                }`} />
+                                <span className="text-slate-300 uppercase font-bold tracking-tighter">
+                                    {src.name}
+                                    {src.count > 1 && <span className="text-slate-600 ml-1">x{src.count}</span>}
+                                </span>
+                            </div>
+                            <span className="font-mono text-emerald-400">+${src.amount.toLocaleString()}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-800 space-y-1">
+                    <div className="flex justify-between text-[9px] text-slate-500 font-bold italic">
+                        <span>Base Yield:</span>
+                        <span>${metadata.passiveBreakdown.baseTotal.toLocaleString()}</span>
+                    </div>
+                    {metadata.passiveBreakdown.multipliers.legacy > 1 && (
+                        <div className="flex justify-between text-[9px] text-amber-500 font-bold">
+                            <span>Legacy Bonus:</span>
+                            <span>x{metadata.passiveBreakdown.multipliers.legacy.toFixed(3)}</span>
+                        </div>
+                    )}
+                    {metadata.passiveBreakdown.multipliers.market !== 1 && (
+                        <div className="flex justify-between text-[9px] text-blue-400 font-bold">
+                            <span>Market Impact:</span>
+                            <span>x{metadata.passiveBreakdown.multipliers.market.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {metadata.passiveBreakdown.multipliers.specialization > 1 && (
+                        <div className="flex justify-between text-[9px] text-emerald-400 font-bold">
+                            <span>Spec. Synergy:</span>
+                            <span>x{metadata.passiveBreakdown.multipliers.specialization.toFixed(2)}</span>
+                        </div>
+                    )}
+                </div>
+              </div>
+            )}
           </div>
         );
       case 'PROMOTION_EARNED':
