@@ -56,6 +56,7 @@ import { SequenceRecall } from './components/minigames/SequenceRecall';
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
+import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { EndgameSummary } from './components/EndgameSummary';
 import { HallOfFame } from './components/HallOfFame';
 import { DailyChallenges } from './components/DailyChallenges';
@@ -900,6 +901,7 @@ function App() {
       {!isTutorialSkipped && <TutorialBox />}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
+      <NarrativeEventModal />
 
       {/* News Ticker */}
       <NewsTicker news={news} />

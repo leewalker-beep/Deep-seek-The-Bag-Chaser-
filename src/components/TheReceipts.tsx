@@ -205,10 +205,10 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div key={event.id} className="bg-emerald-900/10 rounded-lg p-4 border-l-4 border-emerald-500 italic">
             <div className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-2">PERSONAL REFLECTION</div>
             <p className="text-white text-sm font-serif leading-relaxed">
-              "{metadata.text}"
+              "{metadata.text || metadata.choiceLabel}"
             </p>
-            <div className="text-[8px] text-slate-500 mt-2 font-mono">
-              Month {metadata.month} • {metadata.tier} Tier
+            <div className="text-[8px] text-slate-500 mt-2 font-mono uppercase">
+              {metadata.eventId ? `Event: ${metadata.eventId.replace(/_/g, ' ')}` : `Month ${metadata.month} • ${metadata.tier} Tier`}
             </div>
           </div>
         );

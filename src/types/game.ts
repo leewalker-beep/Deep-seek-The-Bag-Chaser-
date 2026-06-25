@@ -112,6 +112,48 @@ export interface Challenge {
   monthsRemaining: number;
 }
 
+export interface NarrativeChoice {
+  id: string;
+  label: string;
+  description: string;
+  consequences: {
+    bag?: number;
+    clout?: number;
+    aura?: number;
+    mentalHealth?: number;
+    heat?: number;
+    passiveCash?: number;
+    specializationLock?: string;
+  };
+  requirement?: {
+    stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
+    background?: string[];
+    specialization?: string[];
+  };
+}
+
+export interface NarrativeEvent {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  trigger: {
+    tier?: Tier[];
+    background?: string[];
+    category?: string[];
+    specialization?: string[];
+    minMonth?: number;
+    probability: number;
+    once?: boolean;
+  };
+  requirement?: {
+    stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
+    background?: string[];
+    specialization?: string[];
+  };
+  choices: NarrativeChoice[];
+}
+
 export interface Milestone {
   id: string;
   name: string;
@@ -344,6 +386,7 @@ export interface PlayerStats {
   rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
   activeChallenges: Challenge[];
   activeSentiment: Sentiment | null;
+  completedNarrativeEvents: string[];
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -405,6 +448,7 @@ export interface GameState {
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
   selectSpecialization: (specializationId: string) => void;
+  resolveNarrativeEvent: (choiceId: string) => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;

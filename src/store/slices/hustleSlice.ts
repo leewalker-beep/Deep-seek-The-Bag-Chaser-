@@ -19,6 +19,7 @@ import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
 import { GAME_CONSTANTS } from '../../config/gameConstants';
+import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 
 
 
@@ -34,6 +35,7 @@ export interface HustleSlice {
   retaliateRival: (rivalId: string) => boolean;
   sabotageRival: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
+  resolveNarrativeEvent: (choiceId: string) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: any, metadata?: any) => void;
   checkMilestones: () => void;
@@ -1431,5 +1433,50 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_COUNTER_BID', rivalId, cost });
+  },
+
+  resolveNarrativeEvent: (choiceId) => {
+    const state = get();
+    const eventId = state.pl.activeNarrative;
+    if (!eventId) return;
+
+    const event = NARRATIVE_EVENTS.find(e => e.id === eventId);
+    const choice = event?.choices.find(c => c.id === choiceId);
+    if (!choice) return;
+
+    const cons = choice.consequences;
+    const nextPl = { ...state.pl };
+
+    // Apply immediate consequences
+    if (cons.bag) nextPl.bag += cons.bag;
+    if (cons.clout) nextPl.clout += cons.clout;
+    if (cons.aura) nextPl.aura += cons.aura;
+    if (cons.heat) nextPl.heat += cons.heat;
+    if (cons.mentalHealth) nextPl.mentalHealth += cons.mentalHealth;
+
+    // Apply permanent passive
+    if (cons.passiveCash) {
+      nextPl.dynamicPassives = {
+        ...nextPl.dynamicPassives,
+        [`narrative_${event!.id}`]: cons.passiveCash
+      };
+    }
+
+    // Specialization Lock/Override
+    if (cons.specializationLock) {
+        nextPl.activeSpecializationId = cons.specializationLock;
+    }
+
+    // Clean up
+    nextPl.activeNarrative = null;
+    if (!nextPl.completedNarrativeEvents) nextPl.completedNarrativeEvents = [];
+    nextPl.completedNarrativeEvents = [...nextPl.completedNarrativeEvents, eventId];
+
+    set({
+      pl: enforceStatCaps(nextPl),
+      news: [{ text: `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
   },
 });

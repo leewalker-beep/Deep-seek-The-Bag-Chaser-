@@ -6,6 +6,7 @@ import { enforceStatCaps } from './statEngine';
 import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
 import { BACKGROUNDS } from '../config/backgrounds';
 import { SPECIALIZATIONS } from '../config/specializations';
+import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 
 const rentByTier: Record<Tier, number> = {
@@ -443,6 +444,37 @@ export function advanceMonth(
     });
 
     newPl.monthsSinceCycleChange = 0;
+  }
+
+  // Narrative Event Triggering Logic
+  if (!newPl.activeNarrative) {
+    const validEvents = NARRATIVE_EVENTS.filter(event => {
+      // 1. Basic Filters
+      if (event.trigger.once && newPl.completedNarrativeEvents?.includes(event.id)) return false;
+      if (event.trigger.minMonth && newPl.month < event.trigger.minMonth) return false;
+      if (event.trigger.tier && !event.trigger.tier.includes(newPl.currentTier)) return false;
+      if (event.trigger.background && !event.trigger.background.includes(newPl.chosenBackground!)) return false;
+      if (event.trigger.category && !event.trigger.category.includes(newPl.chosenBackgroundCategory!)) return false;
+      if (event.trigger.specialization && !event.trigger.specialization.includes(newPl.activeSpecializationId!)) return false;
+
+      // 2. Stat Requirements
+      if (event.requirement?.stat) {
+        const req = event.requirement.stat;
+        const currentVal = (newPl as any)[req.type === 'mentalHealth' ? 'mentalHealth' : req.type];
+        if (currentVal < req.value) return false;
+      }
+
+      return true;
+    });
+
+    // Pick one event based on probability
+    for (const event of validEvents) {
+      if (Math.random() < event.trigger.probability) {
+        newPl.activeNarrative = event.id;
+        news.push({ text: `⚡ NEW EVENT: ${event.title}`, colorClass: 'text-yellow-400 font-black animate-pulse' });
+        break; // Only one event at a time
+      }
+    }
   }
 
   // Occasional Background News Reference (~5% chance per month)
