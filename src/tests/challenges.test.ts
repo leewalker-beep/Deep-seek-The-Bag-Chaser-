@@ -48,4 +48,51 @@ describe('Daily Challenges', () => {
     expect(highTier?.current).toBe(1000000);
     expect(highTier?.isCompleted).toBe(true);
   });
+
+  it('selects tier-appropriate challenges for ELITE tier', () => {
+    const { processLogin, resetGame } = useGameStore.getState();
+
+    // Set to ELITE tier
+    resetGame('dropout', 3, 'DROPOUT', 'variation1');
+    useGameStore.setState((state) => ({
+      pl: { ...state.pl, currentTier: 'ELITE' },
+      lastLoginDate: null // Ensure login process runs
+    }));
+
+    processLogin();
+
+    const challenges = useGameStore.getState().dailyChallenges;
+    expect(challenges.length).toBe(3);
+
+    // Check if challenges are from ELITE pool (they should have 'elite_' prefix in ID based on my changes)
+    challenges.forEach(c => {
+      expect(c.id).toMatch(/^elite_/);
+      // ELITE rewards should be in the $500K–$2M range as per requirements
+      expect(c.reward.cash).toBeGreaterThanOrEqual(500000);
+      expect(c.reward.cash).toBeLessThanOrEqual(2000000);
+    });
+  });
+
+  it('selects tier-appropriate challenges for MOGUL tier', () => {
+    const { processLogin, resetGame } = useGameStore.getState();
+
+    // Set to MOGUL tier
+    resetGame('dropout', 3, 'DROPOUT', 'variation1');
+    useGameStore.setState((state) => ({
+      pl: { ...state.pl, currentTier: 'MOGUL' },
+      lastLoginDate: null
+    }));
+
+    processLogin();
+
+    const challenges = useGameStore.getState().dailyChallenges;
+    expect(challenges.length).toBe(3);
+
+    challenges.forEach(c => {
+      expect(c.id).toMatch(/^mogul_/);
+      // MOGUL rewards should be in the $10M–$50M range
+      expect(c.reward.cash).toBeGreaterThanOrEqual(10000000);
+      expect(c.reward.cash).toBeLessThanOrEqual(50000000);
+    });
+  });
 });
