@@ -338,12 +338,18 @@ export function advanceMonth(
     });
   }
 
-  // Clear temporary counter-bid bonuses
-  Object.keys(newPl.dynamicPassives).forEach(key => {
+  // Clear temporary counter-bid bonuses (Immutable update)
+  const nextDynamicPassives = { ...newPl.dynamicPassives };
+  let hasChanges = false;
+  Object.keys(nextDynamicPassives).forEach(key => {
     if (key.startsWith('counter_bid_bonus_')) {
-      delete newPl.dynamicPassives[key];
+      delete nextDynamicPassives[key];
+      hasChanges = true;
     }
   });
+  if (hasChanges) {
+    newPl.dynamicPassives = nextDynamicPassives;
+  }
 
   // Update Challenges
   if (newPl.activeChallenges.length > 0) {

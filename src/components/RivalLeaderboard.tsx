@@ -15,7 +15,7 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerName,
   rivals = []
 }) => {
-  const { addTickerMessage, pl, retaliateRival, sabotageRival, counterBid } = useGameStore();
+  const { pl, retaliateRival, sabotageRival, counterBid } = useGameStore();
   const allParticipants = [
     ...(rivals || []),
     { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false, tier: pl.currentTier }
