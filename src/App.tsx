@@ -512,6 +512,7 @@ function App() {
                     <button
                       key={hustle.id}
                       id={`hustle-card-${hustle.id}`}
+                      data-testid={`hustle-card-${hustle.id}`}
                       onClick={() => {
                         setActiveHustleView(hustle.id);
                         setShowMinigame(false);
@@ -563,11 +564,8 @@ function App() {
 
               if (showMinigame && activeMiniGame) {
                 const onComplete = (multiplier: number) => {
-                  console.log('🔧 Minigame completed, multiplier:', multiplier);
-
                   requestAnimationFrame(() => {
                     const result = executeHustle(hustle.id, multiplier);
-                    console.log('🔧 executeHustle result:', result);
 
                     if (result.success) {
                       setActiveHustleResult({
