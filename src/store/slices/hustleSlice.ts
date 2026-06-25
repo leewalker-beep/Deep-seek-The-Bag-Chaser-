@@ -96,7 +96,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     set({
       pl: enforceStatCaps({
         ...state.pl,
-        actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, 500),
+        actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE),
       }),
     });
   },
