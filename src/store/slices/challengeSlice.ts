@@ -9,7 +9,7 @@ export interface ChallengeSlice {
   checkChallenges: () => void;
   updateChallengeProgress: (type: string, amount: number) => void;
   processLogin: () => void;
-  getStreakReward: (streak: number) => { cash: number; aura?: number; clout?: number };
+  getStreakReward: (streak: number, tier?: Tier) => { cash: number; aura?: number; clout?: number };
 }
 
 const CHALLENGE_POOL: Record<Tier, Partial<DailyChallenge>[]> = {
@@ -92,16 +92,34 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
   loginStreak: 0,
   lastLoginDate: null,
 
-  getStreakReward: (streak) => {
-    if (streak >= 30) return { cash: 1000000, aura: 500, clout: 500 };
-    if (streak >= 21) return { cash: 500000, aura: 200 };
-    if (streak >= 14) return { cash: 250000, clout: 200 };
-    if (streak >= 10) return { cash: 100000 };
-    if (streak >= 7) return { cash: 50000, aura: 50 };
-    if (streak >= 5) return { cash: 25000 };
-    if (streak >= 3) return { cash: 10000 };
-    if (streak >= 2) return { cash: 5000 };
-    return { cash: 1000 };
+  getStreakReward: (streak, tier) => {
+    const tierMultiplier = {
+      MUD: 1,
+      STREET: 5,
+      STARTUP: 20,
+      CORPORATE: 100,
+      ELITE: 500,
+      MOGUL: 5000,
+      PRESIDENT: 50000,
+      OPEN: 10000,
+    }[tier || 'MUD'] || 1;
+
+    let baseReward: { cash: number; aura?: number; clout?: number };
+    if (streak >= 30) baseReward = { cash: 1000000, aura: 500, clout: 500 };
+    else if (streak >= 21) baseReward = { cash: 500000, aura: 200 };
+    else if (streak >= 14) baseReward = { cash: 250000, clout: 200 };
+    else if (streak >= 10) baseReward = { cash: 100000 };
+    else if (streak >= 7) baseReward = { cash: 50000, aura: 50 };
+    else if (streak >= 5) baseReward = { cash: 25000 };
+    else if (streak >= 3) baseReward = { cash: 10000 };
+    else if (streak >= 2) baseReward = { cash: 5000 };
+    else baseReward = { cash: 1000 };
+
+    return {
+      cash: baseReward.cash * tierMultiplier,
+      aura: baseReward.aura ? baseReward.aura * tierMultiplier : undefined,
+      clout: baseReward.clout ? baseReward.clout * tierMultiplier : undefined,
+    };
   },
 
   processLogin: () => {
@@ -135,7 +153,7 @@ export const createChallengeSlice: StateCreator<GameState, [], [], ChallengeSlic
       isCompleted: false
     })) as DailyChallenge[];
 
-    const reward = get().getStreakReward(newStreak);
+    const reward = get().getStreakReward(newStreak, state.pl.currentTier);
 
     set({
       loginStreak: newStreak,

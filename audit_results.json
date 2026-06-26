@@ -1,0 +1,3746 @@
+[
+  {
+    "hustleId": "r_labor",
+    "hustleName": "Labor & Property",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 2000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -8,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 2000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "netChange": 2000
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 2000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "profit": 2000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2a",
+        "card": {
+          "cost": 5000,
+          "yieldCash": 8000,
+          "yieldClout": 8,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000,
+          "yieldCash": 8000,
+          "yieldClout": 8,
+          "yieldAura": 8,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "netChange": 3000
+        },
+        "receipt": {
+          "cost": 5000,
+          "yieldCash": 8000,
+          "yieldClout": 8,
+          "yieldAura": 8,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "profit": 3000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l2b",
+        "card": {
+          "cost": 15000,
+          "yieldCash": 25000,
+          "yieldClout": 4,
+          "yieldAura": 4,
+          "mentalHit": -5,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000,
+          "yieldCash": 25000,
+          "yieldClout": 4,
+          "yieldAura": 4,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "netChange": 10000
+        },
+        "receipt": {
+          "cost": 15000,
+          "yieldCash": 25000,
+          "yieldClout": 4,
+          "yieldAura": 4,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "profit": 10000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_delivery",
+    "hustleName": "Delivery Gigs",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 1800,
+          "yieldClout": 2,
+          "yieldAura": 0,
+          "mentalHit": -5,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 1800,
+          "yieldClout": 2,
+          "yieldAura": 0,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "netChange": 1800
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 1800,
+          "yieldClout": 2,
+          "yieldAura": 0,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "profit": 1800
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 2000,
+          "yieldCash": 4500,
+          "yieldClout": 4,
+          "yieldAura": 0,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2000,
+          "yieldCash": 4500,
+          "yieldClout": 4,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 2500
+        },
+        "receipt": {
+          "cost": 2000,
+          "yieldCash": 4500,
+          "yieldClout": 4,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 2500
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 10000,
+          "yieldCash": 18000,
+          "yieldClout": 12,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000,
+          "yieldCash": 18000,
+          "yieldClout": 12,
+          "yieldAura": 0,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "netChange": 8000
+        },
+        "receipt": {
+          "cost": 10000,
+          "yieldCash": 18000,
+          "yieldClout": 12,
+          "yieldAura": 0,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "profit": 8000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_plasma",
+    "hustleName": "Plasma Donation",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 300,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 300,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 300
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 300,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 300
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_vending",
+    "hustleName": "Vending Machine",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "vending",
+        "card": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 0,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 0,
+          "heatHit": 5,
+          "netChange": -2000
+        },
+        "receipt": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 0,
+          "heatHit": 5,
+          "profit": -2000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_ghost_mode",
+    "hustleName": "Ghost Mode",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1000,
+          "yieldCash": 1400,
+          "yieldClout": 0,
+          "yieldAura": 5,
+          "mentalHit": -2,
+          "heatHit": -5
+        },
+        "reward": {
+          "cost": 1000,
+          "yieldCash": 1400,
+          "yieldClout": 0,
+          "yieldAura": 5,
+          "mentalHit": -3,
+          "heatHit": -5,
+          "netChange": 400
+        },
+        "receipt": {
+          "cost": 1000,
+          "yieldCash": 1400,
+          "yieldClout": 0,
+          "yieldAura": 5,
+          "mentalHit": -3,
+          "heatHit": -5,
+          "profit": 400
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 0,
+          "yieldAura": 10,
+          "mentalHit": -5,
+          "heatHit": -8
+        },
+        "reward": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 0,
+          "yieldAura": 10,
+          "mentalHit": -8,
+          "heatHit": -8,
+          "netChange": 1500
+        },
+        "receipt": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 0,
+          "yieldAura": 10,
+          "mentalHit": -8,
+          "heatHit": -8,
+          "profit": 1500
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 0,
+          "yieldAura": 25,
+          "mentalHit": -8,
+          "heatHit": -12
+        },
+        "reward": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 0,
+          "yieldAura": 25,
+          "mentalHit": -12,
+          "heatHit": -12,
+          "netChange": 6000
+        },
+        "receipt": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 0,
+          "yieldAura": 25,
+          "mentalHit": -12,
+          "heatHit": -12,
+          "profit": 6000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_scrap",
+    "hustleName": "Scrap Metal",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 400,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -6,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 400,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -9,
+          "heatHit": 5,
+          "netChange": 400
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 400,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": -9,
+          "heatHit": 5,
+          "profit": 400
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 5,
+          "yieldAura": 0,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 5,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 1500
+        },
+        "receipt": {
+          "cost": 3000,
+          "yieldCash": 4500,
+          "yieldClout": 5,
+          "yieldAura": 0,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 1500
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 15,
+          "yieldAura": 5,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 15,
+          "yieldAura": 5,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "netChange": 7000
+        },
+        "receipt": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 15,
+          "yieldAura": 5,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "profit": 7000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_sleep",
+    "hustleName": "Rest & Recover",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 22,
+          "heatHit": 5,
+          "netChange": 0
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 22,
+          "heatHit": 5,
+          "profit": 0
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 200,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 200,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 37,
+          "heatHit": 5,
+          "netChange": -200
+        },
+        "receipt": {
+          "cost": 200,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 37,
+          "heatHit": 5,
+          "profit": -200
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 10,
+          "yieldAura": 10,
+          "mentalHit": 50,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 10,
+          "yieldAura": 10,
+          "mentalHit": 75,
+          "heatHit": 5,
+          "netChange": -2000
+        },
+        "receipt": {
+          "cost": 2000,
+          "yieldCash": 0,
+          "yieldClout": 10,
+          "yieldAura": 10,
+          "mentalHit": 75,
+          "heatHit": 5,
+          "profit": -2000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "street_eats",
+    "hustleName": "Street Eats",
+    "tier": "MUD",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 500,
+          "yieldCash": 1000,
+          "yieldClout": 5,
+          "yieldAura": 3,
+          "mentalHit": -5,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500,
+          "yieldCash": 1000,
+          "yieldClout": 5,
+          "yieldAura": 3,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "netChange": 500
+        },
+        "receipt": {
+          "cost": 500,
+          "yieldCash": 1000,
+          "yieldClout": 5,
+          "yieldAura": 3,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "profit": 500
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 8000,
+          "yieldCash": 12000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -8,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 8000,
+          "yieldCash": 12000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "netChange": 4000
+        },
+        "receipt": {
+          "cost": 8000,
+          "yieldCash": 12000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "profit": 4000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 25000,
+          "yieldCash": 35000,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -12,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 25000,
+          "yieldCash": 35000,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 10000
+        },
+        "receipt": {
+          "cost": 25000,
+          "yieldCash": 35000,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 10000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "cc",
+    "hustleName": "Content Creation",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 4000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 4000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 4000
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 4000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 4000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 15000,
+          "yieldCash": 35000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000,
+          "yieldCash": 35000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 20000
+        },
+        "receipt": {
+          "cost": 15000,
+          "yieldCash": 35000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 20000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 220000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 220000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 120000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 220000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 120000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "pod",
+    "hustleName": "Podcast",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 3000,
+          "yieldCash": 12000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -5,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 3000,
+          "yieldCash": 12000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "netChange": 9000
+        },
+        "receipt": {
+          "cost": 3000,
+          "yieldCash": 12000,
+          "yieldClout": 3,
+          "yieldAura": 1,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "profit": 9000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 25000,
+          "yieldCash": 60000,
+          "yieldClout": 10,
+          "yieldAura": 5,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 25000,
+          "yieldCash": 60000,
+          "yieldClout": 10,
+          "yieldAura": 5,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 35000
+        },
+        "receipt": {
+          "cost": 25000,
+          "yieldCash": 60000,
+          "yieldClout": 10,
+          "yieldAura": 5,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 35000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 120000,
+          "yieldCash": 280000,
+          "yieldClout": 28,
+          "yieldAura": 15,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 120000,
+          "yieldCash": 280000,
+          "yieldClout": 28,
+          "yieldAura": 15,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "netChange": 160000
+        },
+        "receipt": {
+          "cost": 120000,
+          "yieldCash": 280000,
+          "yieldClout": 28,
+          "yieldAura": 15,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "profit": 160000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "drop",
+    "hustleName": "Dropshipping",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 4000,
+          "yieldCash": 15000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 4000,
+          "yieldCash": 15000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 11000
+        },
+        "receipt": {
+          "cost": 4000,
+          "yieldCash": 15000,
+          "yieldClout": 2,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 11000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 30000,
+          "yieldCash": 85000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 30000,
+          "yieldCash": 85000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 55000
+        },
+        "receipt": {
+          "cost": 30000,
+          "yieldCash": 85000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 55000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 200000,
+          "yieldCash": 500000,
+          "yieldClout": 18,
+          "yieldAura": 10,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 200000,
+          "yieldCash": 500000,
+          "yieldClout": 18,
+          "yieldAura": 10,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 300000
+        },
+        "receipt": {
+          "cost": 200000,
+          "yieldCash": 500000,
+          "yieldClout": 18,
+          "yieldAura": 10,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 300000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "vintage",
+    "hustleName": "Vintage Reselling",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 5,
+          "yieldAura": 5,
+          "mentalHit": -8,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 5,
+          "yieldAura": 5,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "netChange": 500
+        },
+        "receipt": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 5,
+          "yieldAura": 5,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "profit": 500
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 15,
+          "yieldAura": 15,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 15,
+          "yieldAura": 15,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 6000
+        },
+        "receipt": {
+          "cost": 12000,
+          "yieldCash": 18000,
+          "yieldClout": 15,
+          "yieldAura": 15,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 6000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 45000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 45000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "netChange": 20000
+        },
+        "receipt": {
+          "cost": 45000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "profit": 20000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "techFlip",
+    "hustleName": "Tech Flipping",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1500,
+          "yieldCash": 2200,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -9,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1500,
+          "yieldCash": 2200,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -9,
+          "heatHit": 5,
+          "netChange": 700
+        },
+        "receipt": {
+          "cost": 1500,
+          "yieldCash": 2200,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -9,
+          "heatHit": 5,
+          "profit": 700
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 18000,
+          "yieldCash": 26000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 18000,
+          "yieldCash": 26000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 8000
+        },
+        "receipt": {
+          "cost": 18000,
+          "yieldCash": 26000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 8000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 55000,
+          "yieldCash": 80000,
+          "yieldClout": 35,
+          "yieldAura": 15,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 55000,
+          "yieldCash": 80000,
+          "yieldClout": 35,
+          "yieldAura": 15,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 25000
+        },
+        "receipt": {
+          "cost": 55000,
+          "yieldCash": 80000,
+          "yieldClout": 35,
+          "yieldAura": 15,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 25000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "audio",
+    "hustleName": "Music Production",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 2500,
+          "yieldCash": 3500,
+          "yieldClout": 20,
+          "yieldAura": 15,
+          "mentalHit": -12,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2500,
+          "yieldCash": 5000,
+          "yieldClout": 20,
+          "yieldAura": 15,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "netChange": 2500
+        },
+        "receipt": {
+          "cost": 2500,
+          "yieldCash": 5000,
+          "yieldClout": 20,
+          "yieldAura": 15,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "profit": 2500
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 10000,
+          "yieldCash": 15000,
+          "yieldClout": 40,
+          "yieldAura": 30,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000,
+          "yieldCash": 15000,
+          "yieldClout": 40,
+          "yieldAura": 30,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 5000
+        },
+        "receipt": {
+          "cost": 10000,
+          "yieldCash": 15000,
+          "yieldClout": 40,
+          "yieldAura": 30,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 5000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 75000,
+          "yieldCash": 110000,
+          "yieldClout": 120,
+          "yieldAura": 80,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 75000,
+          "yieldCash": 110000,
+          "yieldClout": 120,
+          "yieldAura": 80,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 35000
+        },
+        "receipt": {
+          "cost": 75000,
+          "yieldCash": 110000,
+          "yieldClout": 120,
+          "yieldAura": 80,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 35000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "r_pr_campaign",
+    "hustleName": "PR Campaign",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1000,
+          "yieldCash": 0,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -5,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1000,
+          "yieldCash": 0,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "netChange": -1000
+        },
+        "receipt": {
+          "cost": 1000,
+          "yieldCash": 0,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "profit": -1000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 5000,
+          "yieldCash": 0,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -8,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000,
+          "yieldCash": 0,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "netChange": -5000
+        },
+        "receipt": {
+          "cost": 5000,
+          "yieldCash": 0,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -8,
+          "heatHit": 5,
+          "profit": -5000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 20000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -12,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 20000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "netChange": -20000
+        },
+        "receipt": {
+          "cost": 20000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -12,
+          "heatHit": 5,
+          "profit": -20000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "power_nap",
+    "hustleName": "Power Nap",
+    "tier": "STREET",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 15,
+          "heatHit": 5,
+          "netChange": 0
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 15,
+          "heatHit": 5,
+          "profit": 0
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "sw",
+    "hustleName": "Streetwear",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 0,
+          "yieldCash": 12000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 12000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 12000
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 12000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 12000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 350000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 350000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 250000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 350000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 250000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 500000,
+          "yieldCash": 1800000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500000,
+          "yieldCash": 1800000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "netChange": 1300000
+        },
+        "receipt": {
+          "cost": 500000,
+          "yieldCash": 1800000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "profit": 1300000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "smm",
+    "hustleName": "SMM Agency",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 15000,
+          "yieldCash": 40000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000,
+          "yieldCash": 40000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 25000
+        },
+        "receipt": {
+          "cost": 15000,
+          "yieldCash": 40000,
+          "yieldClout": 6,
+          "yieldAura": 4,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 25000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 120000,
+          "yieldCash": 350000,
+          "yieldClout": 18,
+          "yieldAura": 12,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 120000,
+          "yieldCash": 350000,
+          "yieldClout": 18,
+          "yieldAura": 12,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 230000
+        },
+        "receipt": {
+          "cost": 120000,
+          "yieldCash": 350000,
+          "yieldClout": 18,
+          "yieldAura": 12,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 230000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 500000,
+          "yieldCash": 1200000,
+          "yieldClout": 45,
+          "yieldAura": 30,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500000,
+          "yieldCash": 1200000,
+          "yieldClout": 45,
+          "yieldAura": 30,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "netChange": 700000
+        },
+        "receipt": {
+          "cost": 500000,
+          "yieldCash": 1200000,
+          "yieldClout": 45,
+          "yieldAura": 30,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "profit": 700000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "gig",
+    "hustleName": "Runner Fleet",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 20000,
+          "yieldCash": 50000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 20000,
+          "yieldCash": 50000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 30000
+        },
+        "receipt": {
+          "cost": 20000,
+          "yieldCash": 50000,
+          "yieldClout": 4,
+          "yieldAura": 2,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 30000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 150000,
+          "yieldCash": 400000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 150000,
+          "yieldCash": 400000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 250000
+        },
+        "receipt": {
+          "cost": 150000,
+          "yieldCash": 400000,
+          "yieldClout": 12,
+          "yieldAura": 8,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 250000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 700000,
+          "yieldCash": 1600000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 700000,
+          "yieldCash": 1600000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "netChange": 900000
+        },
+        "receipt": {
+          "cost": 700000,
+          "yieldCash": 1600000,
+          "yieldClout": 35,
+          "yieldAura": 20,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "profit": 900000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "meme",
+    "hustleName": "Meme Coins",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 1,
+          "yieldAura": 4,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 1,
+          "yieldAura": 4,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 500
+        },
+        "receipt": {
+          "cost": 1000,
+          "yieldCash": 1500,
+          "yieldClout": 1,
+          "yieldAura": 4,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 500
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 3,
+          "yieldAura": 10,
+          "mentalHit": -40,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 3,
+          "yieldAura": 10,
+          "mentalHit": -40,
+          "heatHit": 5,
+          "netChange": 7000
+        },
+        "receipt": {
+          "cost": 15000,
+          "yieldCash": 22000,
+          "yieldClout": 3,
+          "yieldAura": 10,
+          "mentalHit": -40,
+          "heatHit": 5,
+          "profit": 7000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 150000,
+          "yieldClout": 10,
+          "yieldAura": 25,
+          "mentalHit": -60,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 150000,
+          "yieldClout": 10,
+          "yieldAura": 25,
+          "mentalHit": -60,
+          "heatHit": 5,
+          "netChange": 50000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 150000,
+          "yieldClout": 10,
+          "yieldAura": 25,
+          "mentalHit": -60,
+          "heatHit": 5,
+          "profit": 50000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "saas_mvp",
+    "hustleName": "SaaS MVP",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 30000,
+          "yieldCash": 50000,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 30000,
+          "yieldCash": 50000,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": 20000
+        },
+        "receipt": {
+          "cost": 30000,
+          "yieldCash": 50000,
+          "yieldClout": 5,
+          "yieldAura": 2,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": 20000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "netChange": 60000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "profit": 60000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 400000,
+          "yieldCash": 650000,
+          "yieldClout": 40,
+          "yieldAura": 20,
+          "mentalHit": -30,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 400000,
+          "yieldCash": 650000,
+          "yieldClout": 40,
+          "yieldAura": 20,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "netChange": 250000
+        },
+        "receipt": {
+          "cost": 400000,
+          "yieldCash": 650000,
+          "yieldClout": 40,
+          "yieldAura": 20,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "profit": 250000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "agency_scale",
+    "hustleName": "Agency Scale",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 50000,
+          "yieldCash": 85000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 50000,
+          "yieldCash": 85000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "netChange": 35000
+        },
+        "receipt": {
+          "cost": 50000,
+          "yieldCash": 85000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "profit": 35000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 200000,
+          "yieldCash": 350000,
+          "yieldClout": 30,
+          "yieldAura": 20,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 200000,
+          "yieldCash": 350000,
+          "yieldClout": 30,
+          "yieldAura": 20,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 150000
+        },
+        "receipt": {
+          "cost": 200000,
+          "yieldCash": 350000,
+          "yieldClout": 30,
+          "yieldAura": 20,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 150000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 800000,
+          "yieldCash": 1400000,
+          "yieldClout": 60,
+          "yieldAura": 40,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 800000,
+          "yieldCash": 1400000,
+          "yieldClout": 60,
+          "yieldAura": 40,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 600000
+        },
+        "receipt": {
+          "cost": 800000,
+          "yieldCash": 1400000,
+          "yieldClout": 60,
+          "yieldAura": 40,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 600000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "ecom_brand",
+    "hustleName": "E-com Brand",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 40000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 40000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "netChange": 25000
+        },
+        "receipt": {
+          "cost": 40000,
+          "yieldCash": 65000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "profit": 25000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 80,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 80,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "netChange": 60000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 160000,
+          "yieldClout": 80,
+          "yieldAura": 40,
+          "mentalHit": -22,
+          "heatHit": 5,
+          "profit": 60000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 300000,
+          "yieldCash": 500000,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -30,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 300000,
+          "yieldCash": 500000,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "netChange": 200000
+        },
+        "receipt": {
+          "cost": 300000,
+          "yieldCash": 500000,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "profit": 200000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "therapy_session",
+    "hustleName": "Therapy Session",
+    "tier": "STARTUP",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 10000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 40,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 40,
+          "heatHit": 5,
+          "netChange": -10000
+        },
+        "receipt": {
+          "cost": 10000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 40,
+          "heatHit": 5,
+          "profit": -10000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "festival",
+    "hustleName": "Music Festival",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 200000,
+          "yieldCash": 350000,
+          "yieldClout": 20,
+          "yieldAura": 20,
+          "mentalHit": -40,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 60000,
+          "yieldCash": 308473,
+          "yieldClout": 500,
+          "yieldAura": 250,
+          "mentalHit": -20,
+          "heatHit": 15,
+          "netChange": 248473
+        },
+        "receipt": {
+          "cost": 60000,
+          "yieldCash": 308473,
+          "yieldClout": 500,
+          "yieldAura": 250,
+          "mentalHit": -20,
+          "heatHit": 15,
+          "profit": 248473
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "global_franchise",
+    "hustleName": "Global Franchise",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 500000,
+          "yieldCash": 1000000,
+          "yieldClout": 12,
+          "yieldAura": 6,
+          "mentalHit": -30,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500000,
+          "yieldCash": 1346689,
+          "yieldClout": 12,
+          "yieldAura": 6,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "netChange": 846689
+        },
+        "receipt": {
+          "cost": 500000,
+          "yieldCash": 1346689,
+          "yieldClout": 12,
+          "yieldAura": 6,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "profit": 846689
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 2,
+        "card": {
+          "cost": 3000000,
+          "yieldCash": 6500000,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -40,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 3000000,
+          "yieldCash": 9014356,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "netChange": 6014356
+        },
+        "receipt": {
+          "cost": 3000000,
+          "yieldCash": 9014356,
+          "yieldClout": 30,
+          "yieldAura": 15,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "profit": 6014356
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 3,
+        "card": {
+          "cost": 12000000,
+          "yieldCash": 28000000,
+          "yieldClout": 70,
+          "yieldAura": 40,
+          "mentalHit": -50,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 12000000,
+          "yieldCash": 26320487,
+          "yieldClout": 70,
+          "yieldAura": 40,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "netChange": 14320487
+        },
+        "receipt": {
+          "cost": 12000000,
+          "yieldCash": 26320487,
+          "yieldClout": 70,
+          "yieldAura": 40,
+          "mentalHit": -5,
+          "heatHit": 5,
+          "profit": 14320487
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "data_analytics",
+    "hustleName": "Data Analytics",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 1000000,
+          "yieldCash": 2500000,
+          "yieldClout": 15,
+          "yieldAura": 8,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 136225,
+          "yieldClout": 7,
+          "yieldAura": 4,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 136225
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 136225,
+          "yieldClout": 7,
+          "yieldAura": 4,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 136225
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 2,
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 12000000,
+          "yieldClout": 40,
+          "yieldAura": 20,
+          "mentalHit": -35,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 113066,
+          "yieldClout": 20,
+          "yieldAura": 10,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 113066
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 113066,
+          "yieldClout": 20,
+          "yieldAura": 10,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 113066
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 3,
+        "card": {
+          "cost": 20000000,
+          "yieldCash": 50000000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -50,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 112610,
+          "yieldClout": 50,
+          "yieldAura": 30,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "netChange": 112610
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 112610,
+          "yieldClout": 50,
+          "yieldAura": 30,
+          "mentalHit": -25,
+          "heatHit": 5,
+          "profit": 112610
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "crypto_mining",
+    "hustleName": "Crypto Mining",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 100000,
+          "yieldCash": 0,
+          "yieldClout": 20,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 53937,
+          "yieldClout": 20,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 53937
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 53937,
+          "yieldClout": 20,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 53937
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 2,
+        "card": {
+          "cost": 500000,
+          "yieldCash": 0,
+          "yieldClout": 40,
+          "yieldAura": 100,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 45154,
+          "yieldClout": 40,
+          "yieldAura": 100,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 45154
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 45154,
+          "yieldClout": 40,
+          "yieldAura": 100,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 45154
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 3,
+        "card": {
+          "cost": 2000000,
+          "yieldCash": 0,
+          "yieldClout": 120,
+          "yieldAura": 250,
+          "mentalHit": -40,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 0,
+          "yieldCash": 55211,
+          "yieldClout": 120,
+          "yieldAura": 250,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": 55211
+        },
+        "receipt": {
+          "cost": 0,
+          "yieldCash": 55211,
+          "yieldClout": 120,
+          "yieldAura": 250,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": 55211
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "virtual_assistant_agency",
+    "hustleName": "VA Agency",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 50000,
+          "yieldCash": 80000,
+          "yieldClout": 15,
+          "yieldAura": 10,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000,
+          "yieldCash": 50805,
+          "yieldClout": 20,
+          "yieldAura": 10,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 40805
+        },
+        "receipt": {
+          "cost": 10000,
+          "yieldCash": 50805,
+          "yieldClout": 20,
+          "yieldAura": 10,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 40805
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "lobbying",
+    "hustleName": "Lobbying Firm",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 4715322,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "netChange": -284678
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 4715322,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "profit": -284678
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 10000000,
+          "yieldCash": 0,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 5149858,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "netChange": 149858
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 5149858,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "profit": 149858
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 20000000,
+          "yieldCash": 0,
+          "yieldClout": 400,
+          "yieldAura": 200,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 5281029,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "netChange": 281029
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 5281029,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -5,
+          "heatHit": 10,
+          "profit": 281029
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "disaster",
+    "hustleName": "Disaster Recovery",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 50,
+          "yieldAura": 25,
+          "mentalHit": -8,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 8660011,
+          "yieldClout": 50,
+          "yieldAura": 25,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "netChange": 3660011
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 8660011,
+          "yieldClout": 50,
+          "yieldAura": 25,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "profit": 3660011
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 10000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -12,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000000,
+          "yieldCash": 9470602,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "netChange": -529398
+        },
+        "receipt": {
+          "cost": 10000000,
+          "yieldCash": 9470602,
+          "yieldClout": 100,
+          "yieldAura": 50,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "profit": -529398
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 20000000,
+          "yieldCash": 0,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 20000000,
+          "yieldCash": 14527432,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "netChange": -5472568
+        },
+        "receipt": {
+          "cost": 20000000,
+          "yieldCash": 14527432,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -10,
+          "heatHit": 15,
+          "profit": -5472568
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "wellness_retreat",
+    "hustleName": "Wellness Retreat",
+    "tier": "CORPORATE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 100000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 60,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 60,
+          "heatHit": 5,
+          "netChange": -100000
+        },
+        "receipt": {
+          "cost": 100000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 60,
+          "heatHit": 5,
+          "profit": -100000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "psychiatrist",
+    "hustleName": "Psychiatrist",
+    "tier": "ELITE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 80,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 72,
+          "heatHit": 5,
+          "netChange": -5000000
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 0,
+          "mentalHit": 72,
+          "heatHit": 5,
+          "profit": -5000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "real_estate_empire",
+    "hustleName": "Real Estate Empire",
+    "tier": "ELITE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 80,
+          "mentalHit": -30,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 600,
+          "yieldAura": 300,
+          "mentalHit": -27,
+          "heatHit": 10,
+          "netChange": -5000000
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 600,
+          "yieldAura": 300,
+          "mentalHit": -27,
+          "heatHit": 10,
+          "profit": -5000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "venture_capital",
+    "hustleName": "Venture Capital",
+    "tier": "ELITE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 1000000,
+          "yieldCash": 0,
+          "yieldClout": 120,
+          "yieldAura": 100,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1000000,
+          "yieldCash": 0,
+          "yieldClout": 960,
+          "yieldAura": 400,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "netChange": -1000000
+        },
+        "receipt": {
+          "cost": 1000000,
+          "yieldCash": 0,
+          "yieldClout": 960,
+          "yieldAura": 400,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "profit": -1000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "hedgefund",
+    "hustleName": "Hedge Fund",
+    "tier": "ELITE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 20000000,
+          "yieldCash": 35000000,
+          "yieldClout": 40,
+          "yieldAura": 25,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 20000000,
+          "yieldCash": 35000000,
+          "yieldClout": 48,
+          "yieldAura": 25,
+          "mentalHit": -14,
+          "heatHit": 5,
+          "netChange": 15000000
+        },
+        "receipt": {
+          "cost": 20000000,
+          "yieldCash": 35000000,
+          "yieldClout": 48,
+          "yieldAura": 25,
+          "mentalHit": -14,
+          "heatHit": 5,
+          "profit": 15000000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 80000000,
+          "yieldCash": 150000000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 80000000,
+          "yieldCash": 150000000,
+          "yieldClout": 120,
+          "yieldAura": 60,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "netChange": 70000000
+        },
+        "receipt": {
+          "cost": 80000000,
+          "yieldCash": 150000000,
+          "yieldClout": 120,
+          "yieldAura": 60,
+          "mentalHit": -18,
+          "heatHit": 5,
+          "profit": 70000000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 300000000,
+          "yieldCash": 650000000,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 300000000,
+          "yieldCash": 650000000,
+          "yieldClout": 360,
+          "yieldAura": 150,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "netChange": 350000000
+        },
+        "receipt": {
+          "cost": 300000000,
+          "yieldCash": 650000000,
+          "yieldClout": 360,
+          "yieldAura": 150,
+          "mentalHit": -23,
+          "heatHit": 5,
+          "profit": 350000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "privateequity",
+    "hustleName": "Private Equity",
+    "tier": "ELITE",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "branchId": "l1",
+        "card": {
+          "cost": 30000000,
+          "yieldCash": 55000000,
+          "yieldClout": 60,
+          "yieldAura": 40,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 30000000,
+          "yieldCash": 55000000,
+          "yieldClout": 72,
+          "yieldAura": 40,
+          "mentalHit": -17,
+          "heatHit": 5,
+          "netChange": 25000000
+        },
+        "receipt": {
+          "cost": 30000000,
+          "yieldCash": 55000000,
+          "yieldClout": 72,
+          "yieldAura": 40,
+          "mentalHit": -17,
+          "heatHit": 5,
+          "profit": 25000000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 1,
+        "branchId": "l2",
+        "card": {
+          "cost": 120000000,
+          "yieldCash": 250000000,
+          "yieldClout": 150,
+          "yieldAura": 100,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 120000000,
+          "yieldCash": 250000000,
+          "yieldClout": 180,
+          "yieldAura": 100,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "netChange": 130000000
+        },
+        "receipt": {
+          "cost": 120000000,
+          "yieldCash": 250000000,
+          "yieldClout": 180,
+          "yieldAura": 100,
+          "mentalHit": -20,
+          "heatHit": 5,
+          "profit": 130000000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 1,
+        "branchId": "l3",
+        "card": {
+          "cost": 500000000,
+          "yieldCash": 1200000000,
+          "yieldClout": 500,
+          "yieldAura": 350,
+          "mentalHit": -28,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500000000,
+          "yieldCash": 1200000000,
+          "yieldClout": 600,
+          "yieldAura": 350,
+          "mentalHit": -26,
+          "heatHit": 5,
+          "netChange": 700000000
+        },
+        "receipt": {
+          "cost": 500000000,
+          "yieldCash": 1200000000,
+          "yieldClout": 600,
+          "yieldAura": 350,
+          "mentalHit": -26,
+          "heatHit": 5,
+          "profit": 700000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "film_studio",
+    "hustleName": "Film Studio",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 500000000,
+          "yieldCash": 1250000000,
+          "yieldClout": 500,
+          "yieldAura": 500,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 25000000,
+          "yieldCash": 27000000,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -11,
+          "heatHit": 15,
+          "netChange": 2000000
+        },
+        "receipt": {
+          "cost": 25000000,
+          "yieldCash": 27000000,
+          "yieldClout": 200,
+          "yieldAura": 100,
+          "mentalHit": -11,
+          "heatHit": 15,
+          "profit": 2000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "fight_promoter",
+    "hustleName": "Fight Promoter",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 800000000,
+          "yieldCash": 2200000000,
+          "yieldClout": 800,
+          "yieldAura": 400,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 15000000,
+          "yieldCash": 13500000,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -7,
+          "heatHit": 22,
+          "netChange": -1500000
+        },
+        "receipt": {
+          "cost": 15000000,
+          "yieldCash": 13500000,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -7,
+          "heatHit": 22,
+          "profit": -1500000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "space_investment",
+    "hustleName": "Space Investment",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 500000000,
+          "yieldCash": 1250000000,
+          "yieldClout": 250,
+          "yieldAura": 200,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000000,
+          "yieldCash": 100800000,
+          "yieldClout": 400,
+          "yieldAura": 300,
+          "mentalHit": -14,
+          "heatHit": 30,
+          "netChange": 800000
+        },
+        "receipt": {
+          "cost": 100000000,
+          "yieldCash": 100800000,
+          "yieldClout": 400,
+          "yieldAura": 300,
+          "mentalHit": -14,
+          "heatHit": 30,
+          "profit": 800000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "philanthropy_empire",
+    "hustleName": "Philanthropy Empire",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 50000000,
+          "yieldCash": 0,
+          "yieldClout": 200,
+          "yieldAura": 500,
+          "mentalHit": 20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 200,
+          "mentalHit": 14,
+          "heatHit": 0,
+          "netChange": -10000000
+        },
+        "receipt": {
+          "cost": 10000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 200,
+          "mentalHit": 14,
+          "heatHit": 0,
+          "profit": -10000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "media_empire",
+    "hustleName": "Media Empire",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 200000000,
+          "yieldCash": 450000000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 200000000,
+          "yieldCash": 405000000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -11,
+          "heatHit": 7,
+          "netChange": 205000000
+        },
+        "receipt": {
+          "cost": 200000000,
+          "yieldCash": 405000000,
+          "yieldClout": 100,
+          "yieldAura": 60,
+          "mentalHit": -11,
+          "heatHit": 7,
+          "profit": 205000000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 2,
+        "card": {
+          "cost": 800000000,
+          "yieldCash": 1800000000,
+          "yieldClout": 250,
+          "yieldAura": 150,
+          "mentalHit": -20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1600000000,
+          "yieldCash": 3240000000,
+          "yieldClout": 500,
+          "yieldAura": 300,
+          "mentalHit": -28,
+          "heatHit": 7,
+          "netChange": 1640000000
+        },
+        "receipt": {
+          "cost": 1600000000,
+          "yieldCash": 3240000000,
+          "yieldClout": 500,
+          "yieldAura": 300,
+          "mentalHit": -28,
+          "heatHit": 7,
+          "profit": 1640000000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 3,
+        "card": {
+          "cost": 2500000000,
+          "yieldCash": 6000000000,
+          "yieldClout": 600,
+          "yieldAura": 400,
+          "mentalHit": -25,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 8750000000,
+          "yieldCash": 18900000000,
+          "yieldClout": 1000,
+          "yieldAura": 1000,
+          "mentalHit": -62,
+          "heatHit": 7,
+          "netChange": 10150000000
+        },
+        "receipt": {
+          "cost": 8750000000,
+          "yieldCash": 18900000000,
+          "yieldClout": 1000,
+          "yieldAura": 1000,
+          "mentalHit": -62,
+          "heatHit": 7,
+          "profit": 10150000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "luxury_conglomerate",
+    "hustleName": "Luxury Conglomerate",
+    "tier": "MOGUL",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 150000000,
+          "yieldCash": 350000000,
+          "yieldClout": 60,
+          "yieldAura": 100,
+          "mentalHit": -12,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 150000000,
+          "yieldCash": 315000000,
+          "yieldClout": 60,
+          "yieldAura": 100,
+          "mentalHit": -9,
+          "heatHit": 7,
+          "netChange": 165000000
+        },
+        "receipt": {
+          "cost": 150000000,
+          "yieldCash": 315000000,
+          "yieldClout": 60,
+          "yieldAura": 100,
+          "mentalHit": -9,
+          "heatHit": 7,
+          "profit": 165000000
+        }
+      },
+      {
+        "iteration": 2,
+        "level": 2,
+        "card": {
+          "cost": 600000000,
+          "yieldCash": 1400000000,
+          "yieldClout": 180,
+          "yieldAura": 250,
+          "mentalHit": -18,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 1200000000,
+          "yieldCash": 2520000000,
+          "yieldClout": 360,
+          "yieldAura": 500,
+          "mentalHit": -26,
+          "heatHit": 7,
+          "netChange": 1320000000
+        },
+        "receipt": {
+          "cost": 1200000000,
+          "yieldCash": 2520000000,
+          "yieldClout": 360,
+          "yieldAura": 500,
+          "mentalHit": -26,
+          "heatHit": 7,
+          "profit": 1320000000
+        }
+      },
+      {
+        "iteration": 3,
+        "level": 3,
+        "card": {
+          "cost": 2000000000,
+          "yieldCash": 5000000000,
+          "yieldClout": 500,
+          "yieldAura": 800,
+          "mentalHit": -22,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 7000000000,
+          "yieldCash": 15750000000,
+          "yieldClout": 1000,
+          "yieldAura": 1000,
+          "mentalHit": -54,
+          "heatHit": 7,
+          "netChange": 8750000000
+        },
+        "receipt": {
+          "cost": 7000000000,
+          "yieldCash": 15750000000,
+          "yieldClout": 1000,
+          "yieldAura": 1000,
+          "mentalHit": -54,
+          "heatHit": 7,
+          "profit": 8750000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "data_monopoly",
+    "hustleName": "Data Monopoly",
+    "tier": "PRESIDENT",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 10000000000,
+          "yieldCash": 18000000000,
+          "yieldClout": 1500,
+          "yieldAura": 800,
+          "mentalHit": -60,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 10000000000,
+          "yieldCash": 18000000000,
+          "yieldClout": 201000,
+          "yieldAura": 800,
+          "mentalHit": -42,
+          "heatHit": 5,
+          "netChange": 8000000000
+        },
+        "receipt": {
+          "cost": 10000000000,
+          "yieldCash": 18000000000,
+          "yieldClout": 201000,
+          "yieldAura": 800,
+          "mentalHit": -42,
+          "heatHit": 5,
+          "profit": 8000000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "central_bank_play",
+    "hustleName": "Central Bank Play",
+    "tier": "PRESIDENT",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 5000000000,
+          "yieldCash": 9000000000,
+          "yieldClout": 1500,
+          "yieldAura": 600,
+          "mentalHit": -70,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000000,
+          "yieldCash": 9000000000,
+          "yieldClout": 201000,
+          "yieldAura": 600,
+          "mentalHit": -49,
+          "heatHit": 5,
+          "netChange": 4000000000
+        },
+        "receipt": {
+          "cost": 5000000000,
+          "yieldCash": 9000000000,
+          "yieldClout": 201000,
+          "yieldAura": 600,
+          "mentalHit": -49,
+          "heatHit": 5,
+          "profit": 4000000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "legacy_fund",
+    "hustleName": "Legacy Fund",
+    "tier": "PRESIDENT",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 2000,
+          "yieldAura": 5000,
+          "mentalHit": 100,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 201000,
+          "yieldAura": 1000,
+          "mentalHit": 70,
+          "heatHit": 5,
+          "netChange": -2000000000
+        },
+        "receipt": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 201000,
+          "yieldAura": 1000,
+          "mentalHit": 70,
+          "heatHit": 5,
+          "profit": -2000000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "president_campaign",
+    "hustleName": "Campaign Trail",
+    "tier": "PRESIDENT",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 500,
+          "yieldAura": 500,
+          "mentalHit": -50,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 100500,
+          "yieldAura": 500,
+          "mentalHit": -35,
+          "heatHit": 5,
+          "netChange": -100000000
+        },
+        "receipt": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 100500,
+          "yieldAura": 500,
+          "mentalHit": -35,
+          "heatHit": 5,
+          "profit": -100000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "open_island",
+    "hustleName": "Buy an Island",
+    "tier": "OPEN",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 500000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 500,
+          "mentalHit": 20,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 500000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 500,
+          "mentalHit": 20,
+          "heatHit": 5,
+          "netChange": -500000000
+        },
+        "receipt": {
+          "cost": 500000000,
+          "yieldCash": 0,
+          "yieldClout": 0,
+          "yieldAura": 500,
+          "mentalHit": 20,
+          "heatHit": 5,
+          "profit": -500000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "open_sports_league",
+    "hustleName": "Buy a Sports League",
+    "tier": "OPEN",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 2000,
+          "yieldAura": 500,
+          "mentalHit": -10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 1000,
+          "yieldAura": 500,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "netChange": -2000000000
+        },
+        "receipt": {
+          "cost": 2000000000,
+          "yieldCash": 0,
+          "yieldClout": 1000,
+          "yieldAura": 500,
+          "mentalHit": -10,
+          "heatHit": 5,
+          "profit": -2000000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "open_crypto",
+    "hustleName": "Create a Cryptocurrency",
+    "tier": "OPEN",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 500,
+          "yieldAura": 200,
+          "mentalHit": -30,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 500,
+          "yieldAura": 200,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "netChange": -100000000
+        },
+        "receipt": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 500,
+          "yieldAura": 200,
+          "mentalHit": -30,
+          "heatHit": 5,
+          "profit": -100000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "open_celebrity",
+    "hustleName": "Marry a Celebrity",
+    "tier": "OPEN",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 200,
+          "mentalHit": 10,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 200,
+          "mentalHit": 10,
+          "heatHit": 5,
+          "netChange": -5000000
+        },
+        "receipt": {
+          "cost": 5000000,
+          "yieldCash": 0,
+          "yieldClout": 100,
+          "yieldAura": 200,
+          "mentalHit": 10,
+          "heatHit": 5,
+          "profit": -5000000
+        }
+      }
+    ]
+  },
+  {
+    "hustleId": "open_movie",
+    "hustleName": "Fund a Movie",
+    "tier": "OPEN",
+    "plays": [
+      {
+        "iteration": 1,
+        "level": 1,
+        "card": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -15,
+          "heatHit": 5
+        },
+        "reward": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "netChange": -100000000
+        },
+        "receipt": {
+          "cost": 100000000,
+          "yieldCash": 0,
+          "yieldClout": 300,
+          "yieldAura": 150,
+          "mentalHit": -15,
+          "heatHit": 5,
+          "profit": -100000000
+        }
+      }
+    ]
+  }
+]
