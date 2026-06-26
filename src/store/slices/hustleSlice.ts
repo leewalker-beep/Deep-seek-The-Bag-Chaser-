@@ -361,6 +361,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
+    const totalHustlesCompleted = state.pl.totalHustlesCompleted + 1;
 
     const newHustlePlays = { ...state.pl.hustlePlays };
     newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
@@ -401,6 +402,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       stats: newStats,
       hustlePlays: newHustlePlays,
       tierStats: newTierStats,
+      totalHustlesCompleted,
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
@@ -636,6 +638,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     newStats.totalHustles += 1;
     if (result.success) newStats.successfulHustles += 1;
     newStats.lifetimeEarnings += result.yieldCash;
+    const totalHustlesCompleted = state.pl.totalHustlesCompleted + (result.success ? 1 : 0);
 
     const newHustlePlays = { ...state.pl.hustlePlays };
     newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
@@ -677,6 +680,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       stats: newStats,
       hustlePlays: newHustlePlays,
       tierStats: newTierStats,
+      totalHustlesCompleted,
       lastExecutedHustleId: hustleId,
       streak: result.success ? (state.pl.streak || 0) + 1 : 0,
       hustleLevels: {
@@ -993,6 +997,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     newStats.totalHustles += 1;
     newStats.successfulHustles += 1;
+    const totalHustlesCompleted = state.pl.totalHustlesCompleted + 1;
 
     const newHustlePlays = { ...state.pl.hustlePlays };
     newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
@@ -1027,6 +1032,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       stats: newStats,
       hustlePlays: newHustlePlays,
       tierStats: newTierStats,
+      totalHustlesCompleted,
     });
     newPl.legacyScore = calculateLegacyScore(newPl);
 

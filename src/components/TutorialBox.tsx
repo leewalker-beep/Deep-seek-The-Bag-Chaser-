@@ -26,11 +26,11 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 2: Minigames",
-      text: "Minigames boost your payout — the better you play, the bigger the multiplier. Tap the hustle card to see its minigame.",
-      hustles: ['r_delivery', 'r_scrap'],
-      goalText: "Goal: Try a hustle",
-      check: () => pl.hustlePlays && Object.values(pl.hustlePlays).reduce((a, b) => a + b, 0) > 0,
-      progress: () => (pl.hustlePlays && Object.values(pl.hustlePlays).reduce((a, b) => a + b, 0) > 0) ? 100 : 0,
+      text: "After each hustle a minigame launches. Play well to earn a bigger payout multiplier — up to 4x your base reward. Tap the button below to try one now.",
+      hustles: ['r_delivery'],
+      goalText: "Goal: Complete a minigame",
+      check: () => pl.totalHustlesCompleted >= 1 || pl.bag >= 50,
+      progress: () => (pl.totalHustlesCompleted >= 1 || pl.bag >= 50) ? 100 : 0,
     },
     {
       title: "Step 3: Earn Clout",
