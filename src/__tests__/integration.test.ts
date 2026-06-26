@@ -16,8 +16,9 @@ describe('Integration Tests', () => {
     // Rent Portfolio (l2b) has passiveYield: 500
     // Expected: 500 * 5 = 2500
     const res1 = advanceMonth(pl, 'NORMAL');
-    const news1 = res1.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(news1).toContain('Passive +$2,500');
+    const news1Item = res1.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const news1Text = typeof news1Item === 'object' ? news1Item.text : (news1Item as string);
+    expect(news1Text).toContain('Passive +$2,500');
 
     // ELITE Tier with Real Estate Empire
     const pl2 = getInitialStats(3);
@@ -31,8 +32,9 @@ describe('Integration Tests', () => {
     // baseProfit (1M) * typeMult(1) * levMult(1) * cycleMult(1) * yieldMult(1) * 0.5 = 500,000 per rental
     // Expected: 1,000,000
     const res2 = advanceMonth(pl2, 'NORMAL');
-    const news2 = res2.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(news2).toContain('Passive +$1,000,000');
+    const news2Item = res2.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const news2Text = typeof news2Item === 'object' ? news2Item.text : (news2Item as string);
+    expect(news2Text).toContain('Passive +$1,000,000');
 
     // Mixed - should not interfere
     const pl3 = getInitialStats(3);
@@ -45,8 +47,9 @@ describe('Integration Tests', () => {
     pl3.marketCycle.realEstate = 'normal';
 
     const res3 = advanceMonth(pl3, 'NORMAL');
-    const news3 = res3.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(news3).toContain('Passive +$1,002,500');
+    const news3Item = res3.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const news3Text = typeof news3Item === 'object' ? news3Item.text : (news3Item as string);
+    expect(news3Text).toContain('Passive +$1,002,500');
   });
 
   it('verifies tier advancement requirements and transitions', () => {

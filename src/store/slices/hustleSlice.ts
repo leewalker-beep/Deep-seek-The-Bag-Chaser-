@@ -548,7 +548,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
 
-    const isTutorialBypass = !state.isTutorialSkipped && state.tutorialStep === 1 && (hustleId === 'cc' || hustleId === 'pod');
+    const isTutorialBypass = !state.isTutorialSkipped && state.tutorialStep === 2 && (hustleId === 'cc' || hustleId === 'pod');
 
     if (hustleTierIndex > currentTierIndex && !isTutorialBypass) {
       return {
@@ -757,10 +757,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
     }
 
-    const executionNews = ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`;
+    const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, tier: cappedPl.currentTier };
     const finalNews = [
       ...monthNews,
-      ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce' }] : []),
+      ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce', tier: cappedPl.currentTier }] : []),
       executionNews,
       ...(result.tickerMessages || []),
       ...get().news
@@ -1156,13 +1156,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const req = TIER_REQUIREMENTS[nextTier];
 
-    const isTutorialStep5 = !state.isTutorialSkipped && state.tutorialStep === 4;
+    const isTutorialStep6 = !state.isTutorialSkipped && state.tutorialStep === 5;
 
-    if (isTutorialStep5 || (state.pl.bag >= req.cash &&
+    if (isTutorialStep6 || (state.pl.bag >= req.cash &&
         state.pl.clout >= req.clout &&
         state.pl.aura >= req.aura)) {
 
-      if (isTutorialStep5) {
+      if (isTutorialStep6) {
          // Tutorial auto-advance logic
          const nextPl = enforceStatCaps({
             ...state.pl,

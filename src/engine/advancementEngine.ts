@@ -493,10 +493,18 @@ export function advanceMonth(
   // Check for death conditions
   const { shouldDie, deathCause } = checkDeathConditions(newPl);
 
+  // Convert all news to TickerMessage objects and stamp current tier
+  const stampedNews = news.map(m => {
+    if (typeof m === 'string') {
+      return { text: m, tier: newPl.currentTier };
+    }
+    return { ...m, tier: m.tier || newPl.currentTier };
+  });
+
   return {
     newPl: enforceStatCaps(newPl),
     newMarket,
-    news,
+    news: stampedNews,
     shouldDie,
     deathCause,
     totalRent,
