@@ -1,4 +1,4 @@
-import type { PlayerStats, MarketType, TickerMessage, Tier } from '../types/game';
+import type { PlayerStats, MarketType, TickerMessage } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath, getEffectiveHustleStats } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
