@@ -488,6 +488,22 @@ const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, 
   };
 };
 
+const openIslandStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
+  const result = defaultStrategy(hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  if (result.success) {
+    result.passiveAdded = 10000000;
+  }
+  return result;
+};
+
+const openSportsLeagueStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
+  const result = defaultStrategy(hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  if (result.success) {
+    result.passiveAdded = 50000000;
+  }
+  return result;
+};
+
 export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   festival: festivalStrategy,
   philanthropy_empire: philanthropyStrategy,
@@ -502,6 +518,8 @@ export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   film_studio: filmStudioStrategy,
   fight_promoter: fightPromoterStrategy,
   space_investment: spaceInvestmentStrategy,
+  open_island: openIslandStrategy,
+  open_sports_league: openSportsLeagueStrategy,
 };
 
 export const getHustleStrategy = (hustleId: string): HustleStrategy => {
@@ -560,6 +578,11 @@ export const executeHustleAction = (
   if (state.currentTier === 'CORPORATE') {
     const variance = 0.5 + Math.random(); // 0.5x to 1.5x
     effective.yieldCash = Math.floor(effective.yieldCash * variance);
+  }
+
+  // Add passive heat decay on success
+  if (result.success) {
+    effective.heatHit -= 1;
   }
 
   return {
