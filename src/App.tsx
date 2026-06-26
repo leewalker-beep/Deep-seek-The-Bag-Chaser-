@@ -904,7 +904,7 @@ function App() {
       <NarrativeEventModal />
 
       {/* News Ticker */}
-      <NewsTicker news={news} />
+      <NewsTicker news={news} currentTier={pl.currentTier} />
     </div>
   );
 }

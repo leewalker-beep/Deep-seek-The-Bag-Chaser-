@@ -25,7 +25,15 @@ export const TutorialBox: React.FC = () => {
       progress: () => Math.min(100, (pl.bag / 500) * 100),
     },
     {
-      title: "Step 2: Earn Clout",
+      title: "Step 2: Minigames",
+      text: "Minigames boost your payout — the better you play, the bigger the multiplier. Tap the hustle card to see its minigame.",
+      hustles: ['r_delivery', 'r_scrap'],
+      goalText: "Goal: Try a hustle",
+      check: () => pl.hustlePlays && Object.values(pl.hustlePlays).reduce((a, b) => a + b, 0) > 0,
+      progress: () => (pl.hustlePlays && Object.values(pl.hustlePlays).reduce((a, b) => a + b, 0) > 0) ? 100 : 0,
+    },
+    {
+      title: "Step 3: Earn Clout",
       text: "Reputation unlocks new hustles and tiers.",
       hustles: ['cc', 'pod'],
       goalText: "Goal: Earn 10 Clout",
@@ -33,7 +41,7 @@ export const TutorialBox: React.FC = () => {
       progress: () => Math.min(100, (pl.clout / 10) * 100),
     },
     {
-      title: "Step 3: Earn Aura",
+      title: "Step 4: Earn Aura",
       text: "Influence gives you access to special opportunities.",
       hustles: ['r_ghost_mode', 'street_eats'],
       goalText: "Goal: Earn 10 Aura",
@@ -41,7 +49,7 @@ export const TutorialBox: React.FC = () => {
       progress: () => Math.min(100, (pl.aura / 10) * 100),
     },
     {
-      title: "Step 4: Rest & Recover",
+      title: "Step 5: Rest & Recover",
       text: "Mental health and heat affect your performance. Keep them balanced.",
       hustles: ['r_sleep'],
       goalText: "Goal: Restore mental health",
@@ -49,7 +57,7 @@ export const TutorialBox: React.FC = () => {
       progress: () => pl.mentalHealth,
     },
     {
-      title: "Step 5: Advance Tier",
+      title: "Step 6: Advance Tier",
       text: "Meet the requirements and move up to unlock new content.",
       hustles: [],
       goalText: "Goal: Tap to advance",
@@ -68,7 +76,7 @@ export const TutorialBox: React.FC = () => {
   };
 
   const handleContinue = () => {
-    if (tutorialStep >= 4) {
+    if (tutorialStep >= 5) {
       setTutorialSkipped(true);
     } else {
       setTutorialStep(tutorialStep + 1);
@@ -127,7 +135,7 @@ export const TutorialBox: React.FC = () => {
               );
             })}
 
-            {tutorialStep === 4 && pl.currentTier === 'MUD' && (
+            {tutorialStep === 5 && pl.currentTier === 'MUD' && (
               <button
                 onClick={() => advanceTier()}
                 onTouchEnd={(e) => { e.preventDefault(); advanceTier(); }}

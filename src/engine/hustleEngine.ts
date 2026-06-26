@@ -1,4 +1,4 @@
-import type { PlayerStats, MarketType } from '../types/game';
+import type { PlayerStats, MarketType, TickerMessage, Tier } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath, getEffectiveHustleStats } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
@@ -19,7 +19,7 @@ export interface HustleExecutionResult {
   shieldTurns?: number;
   isRare?: boolean;
   bigWinMessage?: string;
-  tickerMessages?: { text: string; colorClass?: string }[];
+  tickerMessages?: TickerMessage[];
   approvalBonus?: number;
 }
 
@@ -538,6 +538,11 @@ export const executeHustleAction = (
 ): HustleExecutionResult => {
   const strategy = getHustleStrategy(hustleId);
   const result = strategy(hustleId, state, market, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+
+  // Stamp tier on existing ticker messages
+  if (result.tickerMessages) {
+    result.tickerMessages = result.tickerMessages.map(m => ({ ...m, tier: state.currentTier }));
+  }
 
   // Apply Sentiment Multiplier (for ticker messages only now, math is centralized)
   if (state.activeSentiment) {

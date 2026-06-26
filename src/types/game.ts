@@ -421,6 +421,7 @@ export interface PlayerStats {
 export interface TickerMessage {
   text: string;
   colorClass?: string;
+  tier?: Tier;
 }
 
 export interface Sentiment {

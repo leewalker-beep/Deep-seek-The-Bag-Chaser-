@@ -17,8 +17,9 @@ describe('Rental Split Bugfix', () => {
     // Net change: 2500 - 200 = 2300
 
     const result = advanceMonth(pl, 'NORMAL');
-    const passiveIncome = result.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(passiveIncome).toContain('Passive +$2,500');
+    const newsItem = result.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const newsText = typeof newsItem === 'object' ? newsItem.text : (newsItem as string);
+    expect(newsText).toContain('Passive +$2,500');
   });
 
   it('correctly calculates passive income for Real Estate Empire using rentalCount', () => {
@@ -39,8 +40,9 @@ describe('Rental Split Bugfix', () => {
     // Total passive for 2 rentals: 500,000 * 2 = 1,000,000
 
     const result = advanceMonth(pl, 'NORMAL');
-    const passiveIncome = result.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(passiveIncome).toContain('Passive +$1,000,000');
+    const newsItem = result.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const newsText = typeof newsItem === 'object' ? newsItem.text : (newsItem as string);
+    expect(newsText).toContain('Passive +$1,000,000');
   });
 
   it('ensures Rent Portfolio does not use rentalCount for its multiplier', () => {
@@ -57,7 +59,8 @@ describe('Rental Split Bugfix', () => {
     pl.rentalCount = 0;
     pl.rentPortfolioCount = 1;
     const result = advanceMonth(pl, 'NORMAL');
-    const passiveIncome = result.news.find(n => typeof n === 'string' && n.includes('Passive')) as string;
-    expect(passiveIncome).toContain('Passive +$500');
+    const newsItem = result.news.find(n => (typeof n === 'object' ? n.text : n).includes('Passive'));
+    const newsText = typeof newsItem === 'object' ? newsItem.text : (newsItem as string);
+    expect(newsText).toContain('Passive +$500');
   });
 });
