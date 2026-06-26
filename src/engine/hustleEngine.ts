@@ -130,17 +130,33 @@ const philanthropyStrategy: HustleStrategy = (_hustleId, state, marketType, _lev
   };
 };
 
-const dataAnalyticsStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
+const dataAnalyticsStrategy: HustleStrategy = (_hustleId, state, marketType, levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const choice = state.dataAnalyticsChoice || 'consumer';
   let yieldCash = 0, yieldClout = 0, yieldAura = 0, heatHit = 5;
   const tickerMessages = [];
 
-  if (choice === 'consumer') { yieldCash = 100000; yieldClout = 50; }
-  else if (choice === 'financial') { yieldCash = 500000; heatHit = 10; }
-  else if (choice === 'social') { yieldCash = 50000; yieldAura = 100; }
+  if (choice === 'consumer') {
+    yieldCash = 100000;
+    yieldClout = Math.floor(levelData.yieldClout * 0.5);
+    yieldAura = Math.floor(levelData.yieldAura * 0.5);
+  }
+  else if (choice === 'financial') {
+    yieldCash = 500000;
+    yieldClout = 0;
+    yieldAura = 0;
+    heatHit = 10;
+  }
+  else if (choice === 'social') {
+    yieldCash = 50000;
+    yieldClout = 0;
+    yieldAura = 0;
+  }
   else if (choice === 'all' && currentLevel >= 3) {
-    yieldCash = 1000000; yieldClout = 150; yieldAura = 150; heatHit = 30;
+    yieldCash = 1000000;
+    yieldClout = Math.floor(levelData.yieldClout * 1.0);
+    yieldAura = Math.floor(levelData.yieldAura * 1.0);
+    heatHit = 30;
     if (Math.random() < 0.10) {
       heatHit += 50; yieldClout -= 100;
       tickerMessages.push({ text: '🚨 DATA BREACH! Massive heat spike and clout loss!', colorClass: 'text-red-500 font-bold' });
@@ -161,7 +177,7 @@ const dataAnalyticsStrategy: HustleStrategy = (_hustleId, state, marketType, _le
   };
 };
 
-const cryptoMiningStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
+const cryptoMiningStrategy: HustleStrategy = (_hustleId, state, marketType, levelData, currentLevel, _minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const strategy = state.cryptoStrategy || 'solo';
   let yieldCash = 0, heatHit = 5, risk = 0;
@@ -186,8 +202,8 @@ const cryptoMiningStrategy: HustleStrategy = (_hustleId, state, marketType, _lev
     message: success ? '' : 'Mining failed',
     cost: 0,
     yieldCash: yieldCash * market.yieldMultiplier,
-    yieldClout: 50,
-    yieldAura: 50,
+    yieldClout: Math.floor(levelData.yieldClout * (yieldCash > 0 ? 1 : 0.3)),
+    yieldAura: Math.floor(levelData.yieldAura * (yieldCash > 0 ? 1 : 0.3)),
     mentalHit: -10,
     heatHit: heatHit * market.heatMultiplier,
     tickerMessages

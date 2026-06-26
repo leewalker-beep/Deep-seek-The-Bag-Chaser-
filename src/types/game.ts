@@ -509,7 +509,7 @@ export interface GameState {
   lastLoginDate: string | null;
   checkChallenges: () => void;
   updateChallengeProgress: (idOrType: string, amount: number) => void;
-  getStreakReward: (streak: number) => { cash: number; aura?: number; clout?: number };
+  getStreakReward: (streak: number, tier?: Tier) => { cash: number; aura?: number; clout?: number };
   achievements: Achievement[];
   unlockAchievement: (id: string) => void;
   retaliateRival: (rivalId: string) => void;
