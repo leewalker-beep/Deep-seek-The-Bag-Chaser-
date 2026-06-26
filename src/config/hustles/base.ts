@@ -734,9 +734,10 @@ HUSTLES.open_island = {
   tier: 'OPEN',
   icon: '🏝️',
   description: 'Own a private paradise',
+  isRepeatable: true,
   miniGame: 'PinchToZoom',
   levels: [
-    { level: 1, cost: 500000000, yieldCash: 0, yieldClout: 0, yieldAura: 500, mentalHit: 20, cloutReq: 0, auraReq: 500, passiveYield: 50000000 }
+    { level: 1, cost: 500000000, yieldCash: 0, yieldClout: 0, yieldAura: 500, mentalHit: 20, cloutReq: 0, auraReq: 500, passiveYield: 0, isRepeatable: true }
   ]
 };
 
@@ -746,9 +747,10 @@ HUSTLES.open_sports_league = {
   tier: 'OPEN',
   icon: '🏆',
   description: 'Own the game',
+  isRepeatable: true,
   miniGame: 'PinchToZoom',
   levels: [
-    { level: 1, cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 500, mentalHit: -10, cloutReq: 2000, auraReq: 500, passiveYield: 200000000 }
+    { level: 1, cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 500, mentalHit: -10, cloutReq: 2000, auraReq: 500, passiveYield: 0, isRepeatable: true }
   ]
 };
 
