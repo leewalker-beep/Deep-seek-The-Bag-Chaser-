@@ -454,7 +454,8 @@ const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, 
   const market = MARKET_CONFIGS[marketType];
   const cost = 100000000 * market.expenseMultiplier;
   const mult = minigameMultiplier || 1.0;
-  const yieldCash = Math.floor(cost * mult * market.yieldMultiplier);
+  // Apply 1.12x buffer to offset MOGUL yield tax (0.9x), ensuring break-even at 1.0 performance
+  const yieldCash = Math.floor(cost * mult * market.yieldMultiplier * 1.12);
 
   return {
     success: mult >= 0.5,

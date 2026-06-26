@@ -613,7 +613,7 @@ HUSTLES.fight_promoter = {
   name: 'Fight Promoter',
   tier: 'MOGUL',
   icon: '🥊',
-  description: 'The biggest cards in history. Shake for hype!',
+  description: 'The biggest cards in history. High-overhead events that require auction dominance to profit.',
   miniGame: 'MarketPredictor',
   levels: [
     { level: 1, cost: 800000000, yieldCash: 2200000000, yieldClout: 800, yieldAura: 400, mentalHit: -10, cloutReq: 3000, auraReq: 3000, passiveYield: 0 }
@@ -625,7 +625,7 @@ HUSTLES.space_investment = {
   name: 'Space Investment',
   tier: 'MOGUL',
   icon: '🚀',
-  description: 'Mining asteroids and orbital tourism. High risk, infinite reward.',
+  description: 'Mining asteroids and orbital tourism. Long-term play with high initial risk.',
   miniGame: 'ShakeToInfluence',
   hasPanel: true,
   panelType: 'SPACE_INVESTMENT',

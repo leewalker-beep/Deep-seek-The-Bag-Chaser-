@@ -8,7 +8,7 @@ export const enforceStatCaps = (pl: PlayerStats): PlayerStats => {
 
   // Emergency recovery for corrupted aura
   let currentAura = pl.aura;
-  if (currentAura > 10000) {
+  if (currentAura > 1000000) {
     currentAura = maxAura;
   }
 

@@ -30,17 +30,31 @@ describe('Narrative Events Logic', () => {
   it('triggers an event based on background and tier', () => {
     const { executeHustle } = useGameStore.getState();
 
+    // Reset state to ensure clean start for this test
+    useGameStore.setState(s => ({
+        pl: {
+            ...s.pl,
+            chosenBackground: 'sk_scrap',
+            currentTier: 'MUD',
+            month: 1,
+            completedNarrativeEvents: [],
+            activeNarrative: null,
+            artists: [] // Ensure no artists to keep random calls predictable
+        }
+    }));
+
     // Mock Math.random to ensure the event triggers
-    // NARRATIVE_EVENTS[0] is 'scavenger_prototype' with 0.15 prob.
     // We need to trigger advanceMonth which happens inside executeHustle
     const spy = vi.spyOn(Math, 'random');
-    // First call in executeHustle for success: < 0.8
-    // Second call in advanceMonth for grammy: > 0.02/12
-    // Third call in advanceMonth for sentiment: > 0.25
-    // Fourth call in advanceMonth for market shift: > 0.15
-    // Fifth call in advanceMonth for narrative trigger: < 0.15
-    spy.mockReturnValueOnce(0.1) // success
-       .mockReturnValueOnce(0.5) // grammy
+
+    // Calls in advanceMonth (in order):
+    // 1. Grammys (0 calls if artists is empty)
+    // 2. Sentiment trigger (chance 0.25) -> return 0.5 (no)
+    // 3. Market shift (chance 0.15) -> return 0.5 (no)
+    // 4. Narrative trigger (chance 0.15 for 'scavenger_prototype') -> return 0.01 (yes!)
+
+    spy.mockReturnValue(0.5); // Default to safe values
+    spy.mockReturnValueOnce(0.1) // executeHustle success check
        .mockReturnValueOnce(0.5) // sentiment
        .mockReturnValueOnce(0.5) // market shift
        .mockReturnValueOnce(0.01); // narrative trigger
