@@ -130,6 +130,29 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     <div
       ref={containerRef}
       onPointerMove={handlePointerMove}
+      onTouchMove={(e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        if (!gameActive || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ((touch.clientX - rect.left) / rect.width) * 100;
+        const y = ((touch.clientY - rect.top) / rect.height) * 100;
+        setMagnetPos({ x, y });
+        // collision check — copy the exact same logic from handlePointerMove
+        setItems(prev => {
+          const remaining = prev.filter(item => {
+            const dist = Math.sqrt(Math.pow(item.left - x, 2) + Math.pow(item.top - y, 2));
+            if (dist < 10) {
+              if (item.isRare) setIsRareFound(true);
+              setCollected(c => c + (item.isRare ? 5 : 1));
+              if (navigator.vibrate) navigator.vibrate(item.isRare ? 50 : 10);
+              return false;
+            }
+            return true;
+          });
+          return remaining;
+        });
+      }}
       className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]"
     >
       <div className="absolute top-12 text-center w-full z-20">
