@@ -408,6 +408,7 @@ export interface PlayerStats {
   hustlePlays: Record<string, number>;
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
+  totalHustlesCompleted: number;
   stats?: {
     totalHustles: number;
     successfulHustles: number;
