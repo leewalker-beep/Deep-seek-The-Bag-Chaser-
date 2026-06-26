@@ -10,6 +10,8 @@ interface RunnerRouteProps {
   tier?: Tier;
 }
 
+const LANE_POSITIONS = ['16%', '50%', '84%'];
+
 export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [lane, setLane] = useState(1);
   const [score, setScore] = useState(0);
@@ -107,7 +109,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
         </div>
       </div>
 
-      <div className="relative w-full max-w-xs h-[400px] bg-slate-900 border-x-4 border-slate-800 flex justify-around items-end overflow-hidden">
+      <div className="relative w-full max-w-xs h-[400px] bg-slate-900 border-x-4 border-slate-800 items-end overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
 
         {/* Lane markers */}
@@ -115,19 +117,20 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
         <div className="absolute inset-y-0 right-1/3 w-px bg-slate-800" />
 
         {/* Player */}
-        <motion.div
-          animate={{ x: (lane - 1) * 100 }}
-          className="w-16 h-16 bg-orange-500 rounded-xl mb-4 z-10 flex items-center justify-center text-3xl shadow-lg border-t-2 border-white/20"
+        <div
+          style={{ position: 'absolute', left: LANE_POSITIONS[lane], transform: 'translateX(-50%)' }}
+          className="w-16 h-16 bg-orange-500 rounded-xl mb-4 z-10 flex items-center justify-center text-3xl shadow-lg border-t-2 border-white/20 bottom-0 transition-all duration-150"
         >
           🚚
-        </motion.div>
+        </div>
 
         {/* Obstacles */}
         {obstacles.map(o => (
           <motion.div
             key={o.id}
             initial={{ y: '-20%' }}
-            animate={{ y: `${o.y}%`, x: (o.lane - 1) * 100 }}
+            animate={{ y: `${o.y}%` }}
+            style={{ position: 'absolute', left: LANE_POSITIONS[o.lane], transform: 'translateX(-50%)' }}
             className="absolute top-0 w-16 h-16 bg-slate-700 rounded-xl flex items-center justify-center text-3xl"
           >
             🚧
