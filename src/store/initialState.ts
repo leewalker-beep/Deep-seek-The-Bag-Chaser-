@@ -123,6 +123,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     activeSentiment: null,
     completedNarrativeEvents: [],
     activeNarrative: null,
+    originBonus: null,
     actionLog: [],
     milestones: [],
     events: [],
@@ -176,6 +177,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
       stats.clout += bg.starterClout;
       stats.aura += bg.starterAura;
       stats.chosenBackground = bg.id;
+      stats.originBonus = bg.originBonus;
     }
   }
 
