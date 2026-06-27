@@ -280,6 +280,13 @@ export interface HallOfFameEntry {
   month: number;
 }
 
+export interface OriginBonus {
+  type: 'cash' | 'clout' | 'aura';
+  multiplier: number;
+  tiers: string[];
+  description: string;
+}
+
 export interface PlayerStats {
   runId: string;
   name?: string;
@@ -397,6 +404,7 @@ export interface PlayerStats {
   activeChallenges: Challenge[];
   activeSentiment: Sentiment | null;
   activeNarrative: string | null;
+  originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
   actionLog: GameAction[];
   milestones: Milestone[];

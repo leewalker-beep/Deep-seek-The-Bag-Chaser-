@@ -1,3 +1,5 @@
+import { type OriginBonus } from '../types/game';
+
 export interface Background {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Background {
   starterClout: number;
   starterAura: number;
   newsReferences: string[];
+  originBonus: OriginBonus;
 }
 
 export interface BackgroundCategory {
@@ -17,6 +20,27 @@ export interface BackgroundCategory {
   description: string;
   variations: Background[];
 }
+
+const STREET_KID_BONUS: OriginBonus = {
+  type: 'cash',
+  multiplier: 1.15,
+  tiers: ['MUD', 'STREET'],
+  description: '+15% cash from street hustles'
+};
+
+const DROPOUT_BONUS: OriginBonus = {
+  type: 'clout',
+  multiplier: 1.20,
+  tiers: ['MUD', 'STREET', 'STARTUP', 'CORPORATE'],
+  description: '+20% clout across early tiers'
+};
+
+const BENEFACTOR_BONUS: OriginBonus = {
+  type: 'aura',
+  multiplier: 1.15,
+  tiers: ['CORPORATE', 'ELITE', 'MOGUL'],
+  description: '+15% aura at corporate tiers'
+};
 
 export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
@@ -35,6 +59,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 0,
         starterAura: 15,
         newsReferences: ['The scavenger who built a kingdom.', 'From the scrap yard to the penthouse.'],
+        originBonus: STREET_KID_BONUS,
       },
       {
         id: 'sk_ghost',
@@ -47,6 +72,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 5,
         starterAura: 10,
         newsReferences: ['The ghost emerges into the light.', 'A phantom in the boardroom.'],
+        originBonus: STREET_KID_BONUS,
       },
       {
         id: 'sk_delivery',
@@ -59,6 +85,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 2,
         starterAura: 8,
         newsReferences: ['The delivery driver who finally arrived.', 'Bypass the middleman, become the man.'],
+        originBonus: STREET_KID_BONUS,
       },
       {
         id: 'sk_plasma',
@@ -71,6 +98,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 0,
         starterAura: 20,
         newsReferences: ['Built on blood, sweat, and plasma.', 'The donor who took it all back.'],
+        originBonus: STREET_KID_BONUS,
       },
       {
         id: 'sk_artist',
@@ -83,6 +111,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 12,
         starterAura: 5,
         newsReferences: ['From graffiti tags to stock tickers.', 'The artist who redefined success.'],
+        originBonus: STREET_KID_BONUS,
       },
     ],
   },
@@ -102,6 +131,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 5,
         starterAura: 5,
         newsReferences: ['The vending king expands the empire.', 'Quarters turned into millions.'],
+        originBonus: DROPOUT_BONUS,
       },
       {
         id: 'dr_tech',
@@ -114,6 +144,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 15,
         starterAura: 0,
         newsReferences: ['The dropout who outcoded the experts.', 'Silicon Valley\'s newest nightmare.'],
+        originBonus: DROPOUT_BONUS,
       },
       {
         id: 'dr_dropship',
@@ -126,6 +157,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 10,
         starterAura: 2,
         newsReferences: ['The dropshipper who became a titan.', 'From viral ads to global conglomerates.'],
+        originBonus: DROPOUT_BONUS,
       },
       {
         id: 'dr_music',
@@ -138,6 +170,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 20,
         starterAura: 5,
         newsReferences: ['The producer who owns the label now.', 'From soundcloud to the stratosphere.'],
+        originBonus: DROPOUT_BONUS,
       },
       {
         id: 'dr_pr',
@@ -150,6 +183,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 25,
         starterAura: 0,
         newsReferences: ['The spin doctor who became the story.', 'Marketing genius or dropout? Both.'],
+        originBonus: DROPOUT_BONUS,
       },
     ],
   },
@@ -169,6 +203,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 5,
         starterAura: 5,
         newsReferences: ['Old money meets new hustle.', 'The mining fortune reborn.'],
+        originBonus: BENEFACTOR_BONUS,
       },
       {
         id: 'bn_realestate',
@@ -181,6 +216,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 10,
         starterAura: 0,
         newsReferences: ['The scion who surpassed the father.', 'Building an empire on solid ground.'],
+        originBonus: BENEFACTOR_BONUS,
       },
       {
         id: 'bn_logistics',
@@ -193,6 +229,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 5,
         starterAura: 10,
         newsReferences: ['Efficiency is in the blood.', 'The logistics titan takes control.'],
+        originBonus: BENEFACTOR_BONUS,
       },
       {
         id: 'bn_factory',
@@ -205,6 +242,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 5,
         starterAura: 0,
         newsReferences: ['The factory line leads to the top.', 'Industrial power in a digital age.'],
+        originBonus: BENEFACTOR_BONUS,
       },
       {
         id: 'bn_investor',
@@ -217,6 +255,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterClout: 15,
         starterAura: 5,
         newsReferences: ['The protégé becomes the master.', 'Early investment, eternal reward.'],
+        originBonus: BENEFACTOR_BONUS,
       },
     ],
   },

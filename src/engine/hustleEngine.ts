@@ -585,6 +585,17 @@ export const executeHustleAction = (
     effective.yieldCash = Math.floor(effective.yieldCash * variance);
   }
 
+  // Apply Origin Bonus if active for current tier
+  if (state.originBonus && state.originBonus.tiers.includes(state.currentTier)) {
+    if (state.originBonus.type === 'cash') {
+      effective.yieldCash = Math.floor(effective.yieldCash * state.originBonus.multiplier);
+    } else if (state.originBonus.type === 'clout') {
+      effective.yieldClout = Math.floor(effective.yieldClout * state.originBonus.multiplier);
+    } else if (state.originBonus.type === 'aura') {
+      effective.yieldAura = Math.floor(effective.yieldAura * state.originBonus.multiplier);
+    }
+  }
+
   // Add passive heat decay on success
   if (result.success) {
     effective.heatHit -= 1;

@@ -69,6 +69,7 @@ describe('Final Audit: Store-Level Verification', () => {
 
     // Execute r_labor (Manual Labor)
     // Math: yieldCash: 2000, yieldClout: 2, yieldAura: 2, mentalHit: -8 (x1.5 = -12), heatHit: 5
+    // Street Kid Origin Bonus: +15% Cash (multiplier 1.15)
     // advanceMonth: Rent -200, heatDecay -10
     const res = executeHustle('r_labor', 1, true);
 
@@ -77,8 +78,8 @@ describe('Final Audit: Store-Level Verification', () => {
 
     expect(res.success).toBe(true);
 
-    // 1. Bag Change: 1000 + 2000 - 200 = 2800
-    expect(finalStats.bag).toBe(2800);
+    // 1. Bag Change: 1000 + (2000 * 1.15) - 200 = 1000 + 2300 - 200 = 3100
+    expect(finalStats.bag).toBe(3100);
 
     // 2-3. Clout/Aura: 100 + 2 = 102
     expect(finalStats.clout).toBe(102);
@@ -91,7 +92,7 @@ describe('Final Audit: Store-Level Verification', () => {
     expect(finalStats.heat).toBe(0);
 
     // 12. Receipts vs Reality
-    expect(event!.metadata.profit).toBe(2000);
+    expect(event!.metadata.profit).toBe(2300); // 2000 * 1.15
     expect(event!.metadata.yieldClout).toBe(2);
   });
 
@@ -250,10 +251,11 @@ describe('Final Audit: Store-Level Verification', () => {
     // Yacht gives 5% allGainsBonus. Tech Conglomerate boosts IT (the 5%) by 10% (multiplier 1.1x)
     // bonusScale = count (1) * flexBonusMultiplier (1.1) = 1.1
     // cashBonus = 5 * 1.1 = 5.5%
+    // Street Kid Origin Bonus: +15% Cash (multiplier 1.15)
 
     const res = executeHustle('cc', 1, true);
     // cc base yieldCash = 4000.
-    // 4000 * (1 + 5.5/100) = 4000 * 1.055 = 4220
-    expect(res.yieldCash).toBe(4220);
+    // Applied: 4000 * 1.15 (origin) * 1.055 (flex) = 4853
+    expect(res.yieldCash).toBe(4853);
   });
 });
