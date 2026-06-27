@@ -25,12 +25,38 @@ const THEMES: Record<string, { bg: string, glow: string }> = {
 // --- Local Minigame Components ---
 
 const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
+  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
+  const [phaseTimer, setPhaseTimer] = useState(2);
   const [gameState, setGameState] = useState<'waiting' | 'ready' | 'clicked' | 'too-soon'>('waiting');
   const [reactions, setReactions] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const finishedRef = useRef(false);
 
   useEffect(() => {
+    if (phase === 'instruction') {
+      const timer = setTimeout(() => {
+        setPhase('countdown');
+        setPhaseTimer(3);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+    if (phase === 'countdown') {
+      const timer = setInterval(() => {
+        setPhaseTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setPhase('playing');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0.1) {
@@ -44,33 +70,56 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, reactions]);
+  }, [onComplete, reactions, phase]);
 
   useEffect(() => {
-    if (gameState === 'waiting' && timeLeft > 0) {
-      const waitTime = 1000 + Math.random() * 2000;
+    if (phase === 'playing' && gameState === 'waiting' && timeLeft > 0) {
+      const waitTime = 500 + Math.random() * 1000;
       const timeout = setTimeout(() => {
         setGameState('ready');
       }, waitTime);
       return () => clearTimeout(timeout);
     }
-  }, [gameState, timeLeft]);
+  }, [gameState, timeLeft, phase]);
 
   const handleClick = () => {
+    if (phase !== 'playing') return;
     if (gameState === 'waiting') {
       setGameState('too-soon');
-      setTimeout(() => setGameState('waiting'), 500);
+      setTimeout(() => setGameState('waiting'), 300);
     } else if (gameState === 'ready') {
       setReactions(prev => prev + 1);
       setGameState('clicked');
-      setTimeout(() => setGameState('waiting'), 500);
+      setTimeout(() => setGameState('waiting'), 300);
     }
   };
 
+  if (phase === 'instruction') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none">
+        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
+          Tap the button the moment it lights up
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'countdown') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
+        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+      </div>
+    );
+  }
+
   return (
-    <div onMouseDown={handleClick} className={`w-full h-96 flex flex-col items-center justify-center cursor-pointer rounded-3xl transition-colors duration-200 border-8 ${
-      gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' : 'bg-slate-900 border-slate-800'
-    }`}>
+    <div
+      onPointerDown={handleClick}
+      style={{ touchAction: 'none' }}
+      className={`w-full h-96 flex flex-col items-center justify-center cursor-pointer rounded-3xl transition-colors duration-200 border-8 ${
+        gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' : 'bg-slate-900 border-slate-800'
+      }`}
+    >
        <div className="text-white text-center pointer-events-none">
           <div className="text-6xl mb-4">{gameState === 'ready' ? '⚡' : '🛑'}</div>
           <div className="text-xl font-black uppercase tracking-widest">
@@ -83,16 +132,42 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
 };
 
 const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
+  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
+  const [phaseTimer, setPhaseTimer] = useState(2);
   const [words, setWords] = useState<{ id: number, text: string, isGood: boolean, x: number, y: number, speed: number }[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const nextId = useRef(0);
   const finishedRef = useRef(false);
 
-  const GOOD_WORDS = ['VIRAL', 'TRENDING', 'EPIC', 'MUST-READ', 'SHOCKING'];
-  const BAD_WORDS = ['BORING', 'LAME', 'OLD', 'REPOST', 'AD'];
+  const GOOD_WORDS = ['CASH', 'PROFIT', 'BAG', 'CRYPTO', 'DEAL'];
+  const BAD_WORDS = ['TAXES', 'LOAN', 'SCAM', 'DEBT', 'LOSS'];
 
   useEffect(() => {
+    if (phase === 'instruction') {
+      const timer = setTimeout(() => {
+        setPhase('countdown');
+        setPhaseTimer(3);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+    if (phase === 'countdown') {
+      const timer = setInterval(() => {
+        setPhaseTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setPhase('playing');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0.1) {
@@ -106,9 +181,10 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, score]);
+  }, [onComplete, score, phase]);
 
   useEffect(() => {
+    if (phase !== 'playing') return;
     const spawnTimer = setInterval(() => {
       const isGood = Math.random() > 0.3;
       const text = isGood ? GOOD_WORDS[Math.floor(Math.random() * GOOD_WORDS.length)] : BAD_WORDS[Math.floor(Math.random() * BAD_WORDS.length)];
@@ -116,20 +192,21 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
         id: nextId.current++,
         text,
         isGood,
-        x: 10 + Math.random() * 80,
+        x: 15 + Math.random() * 70,
         y: 100,
         speed: 1.5 + Math.random() * 2
       }]);
-    }, 600);
+    }, 500);
     return () => clearInterval(spawnTimer);
-  }, []);
+  }, [phase]);
 
   useEffect(() => {
+    if (phase !== 'playing') return;
     const moveTimer = setInterval(() => {
       setWords(prev => prev.map(w => ({ ...w, y: w.y - w.speed })).filter(w => w.y > -10));
     }, 20);
     return () => clearInterval(moveTimer);
-  }, []);
+  }, [phase]);
 
   const handleTap = (id: number, isGood: boolean) => {
     if (isGood) setScore(s => s + 1);
@@ -137,8 +214,26 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
     setWords(prev => prev.filter(w => w.id !== id));
   };
 
+  if (phase === 'instruction') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none">
+        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
+          Tap only the money words
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'countdown') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
+        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-blue-400/30 relative overflow-hidden">
+    <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-blue-400/30 relative overflow-hidden">
       <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
       <AnimatePresence>
         {words.map(w => (
@@ -148,7 +243,7 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onPointerDown={() => handleTap(w.id, w.isGood)}
-            className={`absolute px-4 py-2 rounded-xl text-[10px] font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
+            className={`absolute px-6 py-4 min-w-[100px] min-h-[44px] rounded-xl text-xs font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
             style={{ left: `${w.x}%`, top: `${w.y}%`, transform: 'translateX(-50%)' }}
           >
             {w.text}
@@ -160,6 +255,8 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
 };
 
 const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
+  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
+  const [phaseTimer, setPhaseTimer] = useState(2);
   const [current, setCurrent] = useState(Math.floor(Math.random() * 13));
   const [next, setNext] = useState(Math.floor(Math.random() * 13));
   const [score, setScore] = useState(0);
@@ -170,9 +267,33 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
   const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
   useEffect(() => {
+    if (phase === 'instruction') {
+      const timer = setTimeout(() => {
+        setPhase('countdown');
+        setPhaseTimer(3);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+    if (phase === 'countdown') {
+      const timer = setInterval(() => {
+        setPhaseTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setPhase('playing');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 0.1 || rounds >= 8) {
+        if (prev <= 0.1 || rounds >= 12) {
           if (!finishedRef.current) {
             finishedRef.current = true;
             onComplete(score);
@@ -183,7 +304,7 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, score, rounds]);
+  }, [onComplete, score, rounds, phase]);
 
   const handleGuess = (higher: boolean) => {
     const correct = (higher && next >= current) || (!higher && next <= current);
@@ -193,8 +314,26 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
     setRounds(r => r + 1);
   };
 
+  if (phase === 'instruction') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 text-center pointer-events-none">
+        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
+          Will the next number be higher or lower?
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'countdown') {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
+        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-yellow-600 flex flex-col items-center justify-center p-6 space-y-8">
+    <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-yellow-600 flex flex-col items-center justify-center p-6 space-y-8 relative">
       <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
       <div className="text-center">
         <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">CURRENT DATA</div>
@@ -203,10 +342,10 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 w-full">
-        <button onClick={() => handleGuess(true)} className="bg-emerald-600 py-4 rounded-xl font-black text-white uppercase tracking-widest text-xs">Higher</button>
-        <button onClick={() => handleGuess(false)} className="bg-red-600 py-4 rounded-xl font-black text-white uppercase tracking-widest text-xs">Lower</button>
+        <button onPointerDown={() => handleGuess(true)} className="bg-emerald-600 py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px]">Higher</button>
+        <button onPointerDown={() => handleGuess(false)} className="bg-red-600 py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px]">Lower</button>
       </div>
-      <div className="text-[10px] text-slate-500 font-black uppercase">Round {rounds}/8</div>
+      <div className="text-[10px] text-slate-500 font-black uppercase">Round {rounds}/12</div>
     </div>
   );
 };
@@ -222,9 +361,17 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const [selectedVarId, setSelectedVarId] = useState<string | null>(null);
 
   const suggestedCategory = useMemo(() => {
-    const { street, dropout, benefactor } = scores;
-    if (street >= dropout && street >= benefactor) return 'street_kid';
-    if (dropout >= benefactor) return 'dropout';
+    const STREET_MAX = 12;
+    const DROPOUT_MAX = 20;
+    const BENEFACTOR_MAX = 12;
+
+    const s = scores.street / STREET_MAX;
+    const d = scores.dropout / DROPOUT_MAX;
+    const b = scores.benefactor / BENEFACTOR_MAX;
+
+    // Tiebreak: Street Kid -> Dropout -> Benefactor
+    if (s >= d && s >= b) return 'street_kid';
+    if (d >= b) return 'dropout';
     return 'benefactor';
   }, [scores]);
 
@@ -238,8 +385,9 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   };
 
   const handleFinalStart = () => {
-    if (name.trim() && activeVariation && winningCategory) {
-      onStart(name.trim().toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id);
+    const trimmedName = name.trim();
+    if (trimmedName.length >= 2 && activeVariation && winningCategory) {
+      onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id);
     }
   };
 
@@ -313,6 +461,22 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       benefactor: "The money always finds its way to you.",
     };
 
+    const bonusLines: Record<string, string> = {
+      street_kid: "Your instincts earned you +15% cash on street hustles",
+      dropout: "Your charisma earns you +20% clout through corporate tier",
+      benefactor: "Your smarts earn you +15% aura at corporate and elite tiers",
+    };
+
+    const STREET_MAX = 12;
+    const DROPOUT_MAX = 20;
+    const BENEFACTOR_MAX = 12;
+
+    const stats = [
+      { label: "Street Instinct", score: scores.street, max: STREET_MAX },
+      { label: "Street Charisma", score: scores.dropout, max: DROPOUT_MAX },
+      { label: "Street Smarts", score: scores.benefactor, max: BENEFACTOR_MAX },
+    ];
+
     return (
       <div className="relative min-h-screen w-full bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
         {grainOverlay}
@@ -324,22 +488,29 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             </motion.div>
             <h2 className="text-5xl font-black text-white uppercase tracking-tighter">{winningCategory?.name}</h2>
             <p className="text-[#4ade80] italic font-medium">"{destinyLines[winningCategory?.id || 'street_kid']}"</p>
+            <div className="text-[10px] text-white/60 font-black uppercase tracking-widest mt-2 max-w-[200px] mx-auto leading-relaxed">
+              {bonusLines[winningCategory?.id || 'street_kid']}
+            </div>
           </div>
 
           {!selectedCatId ? (
-            <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/5">
-              <div>
-                <div className="text-[8px] text-slate-500 font-black uppercase mb-1">STREET</div>
-                <div className="text-white font-mono font-black">{scores.street}</div>
-              </div>
-              <div>
-                <div className="text-[8px] text-slate-500 font-black uppercase mb-1">DROPOUT</div>
-                <div className="text-white font-mono font-black">{scores.dropout}</div>
-              </div>
-              <div>
-                <div className="text-[8px] text-slate-500 font-black uppercase mb-1">BENEFACTOR</div>
-                <div className="text-white font-mono font-black">{scores.benefactor}</div>
-              </div>
+            <div className="space-y-4 py-4 border-y border-white/5">
+              {stats.map(s => (
+                <div key={s.label}>
+                  <div className="flex justify-between text-[8px] text-slate-500 font-black uppercase mb-1">
+                    <span>{s.label}</span>
+                    <span>{Math.round((s.score / s.max) * 100)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (s.score / s.max) * 100)}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className="h-full bg-white/40"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
              <div className="grid grid-cols-1 gap-2">
@@ -417,15 +588,15 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
           <div className="pt-8">
              <button
-                disabled={!name.trim()}
+                disabled={name.trim().length < 2}
                 onClick={handleFinalStart}
-                className={`w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xl transition-all ${name.trim() ? 'bg-[#4ade80] text-black shadow-2xl shadow-[#4ade80]/20' : 'bg-white/5 text-slate-800 cursor-not-allowed'}`}
+                className={`w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xl transition-all ${name.trim().length >= 2 ? 'bg-[#4ade80] text-black shadow-2xl shadow-[#4ade80]/20' : 'bg-white/5 text-slate-800 cursor-not-allowed'}`}
              >
                 Enter the World
              </button>
              {activeVariation?.originBonus && (
-                <p className="mt-4 text-[10px] text-[#4ade80] font-black uppercase tracking-widest">
-                  Bonus: {activeVariation.originBonus.description}
+                <p className="mt-4 text-[10px] text-[#4ade80] font-black italic tracking-widest">
+                  {activeVariation.originBonus.description}
                 </p>
              )}
           </div>
