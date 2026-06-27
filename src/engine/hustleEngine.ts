@@ -447,12 +447,13 @@ const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, _level
   };
 };
 
-const fightPromoterStrategy: HustleStrategy = (_hustleId, _state, marketType, _levelData, currentLevel, minigameMultiplier, _forceSuccess) => {
+const fightPromoterStrategy: HustleStrategy = (_hustleId, _state, marketType, levelData, currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const mult = minigameMultiplier || 1;
-  const cost = 15000000 * market.expenseMultiplier;
-  const yieldBuffer = currentLevel === 1 ? 1.15 : 1.0;
-  const yieldCash = Math.floor(cost * mult * market.yieldMultiplier * yieldBuffer);
+  const cost = levelData.cost * market.expenseMultiplier;
+  // Apply 1.12x buffer to offset MOGUL yield tax (0.9x), ensuring break-even/profit at 1.0 performance
+  const yieldBuffer = currentLevel === 1 ? 1.12 : 1.0;
+  const yieldCash = Math.floor(levelData.yieldCash * mult * market.yieldMultiplier * yieldBuffer);
 
   return {
     success: mult >= 0.5,
@@ -467,13 +468,13 @@ const fightPromoterStrategy: HustleStrategy = (_hustleId, _state, marketType, _l
   };
 };
 
-const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, _levelData, currentLevel, minigameMultiplier, _forceSuccess) => {
+const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, levelData, currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
-  const cost = 100000000 * market.expenseMultiplier;
+  const cost = levelData.cost * market.expenseMultiplier;
   const mult = minigameMultiplier || 1.0;
-  // Apply 1.15x buffer to offset MOGUL yield tax (0.9x), ensuring break-even/profit at 1.0 performance
-  const yieldBuffer = currentLevel === 1 ? 1.15 : 1.12;
-  const yieldCash = Math.floor(cost * mult * market.yieldMultiplier * yieldBuffer);
+  // Apply 1.12x buffer to offset MOGUL yield tax (0.9x), ensuring break-even/profit at 1.0 performance
+  const yieldBuffer = currentLevel === 1 ? 1.12 : 1.12;
+  const yieldCash = Math.floor(levelData.yieldCash * mult * market.yieldMultiplier * yieldBuffer);
 
   return {
     success: mult >= 0.5,
@@ -488,22 +489,31 @@ const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, 
   };
 };
 
+
+
+
+
+
+
 const openIslandStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
   const result = defaultStrategy(hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  const plays = state.hustlePlays[hustleId] || 0;
   if (result.success) {
-    result.passiveAdded = 10000000;
+    // Return 2x base yield if already owned (plays > 0) to trigger dynamic stacking in hustleSlice.ts
+    // Delta = (2 * base) - base = base increment.
+    result.passiveAdded = (levelData.passiveYield || 0) * (plays > 0 ? 2 : 1);
   }
   return result;
 };
 
 const openSportsLeagueStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
   const result = defaultStrategy(hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  const plays = state.hustlePlays[hustleId] || 0;
   if (result.success) {
-    result.passiveAdded = 50000000;
+    result.passiveAdded = (levelData.passiveYield || 0) * (plays > 0 ? 2 : 1);
   }
   return result;
 };
-
 export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   festival: festivalStrategy,
   philanthropy_empire: philanthropyStrategy,

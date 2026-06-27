@@ -33,7 +33,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
   // Difficulty scaling
   const gameSpeed = (3 + (level - 1) * 0.8) * Math.sqrt(scaling);
   const spawnRate = Math.max(300, (1200 - (level - 1) * 200) / spawnFactor);
-  const targetDistance = Math.floor((1000 + (level - 1) * 500) * scaling);
+  const targetDistance = Math.floor((400 + (level - 1) * 200) * scaling);
 
   const handleLaneChange = (dir: 'left' | 'right') => {
     if (!gameActive) return;

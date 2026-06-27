@@ -40,7 +40,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   const [gameActive, setGameActive] = useState(true);
   const [magnetPos, setMagnetPos] = useState({ x: 50, y: 50 });
   const [isRareFound, setIsRareFound] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
   const itemId = useRef(0);
 
   // Centralized Scaling
@@ -93,8 +93,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   }, [gameActive, spawnRate, itemLifespan, level, itemEmojis, rareEmoji]);
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!gameActive || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    if (!gameActive || !playAreaRef.current) return;
+    const rect = playAreaRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     setMagnetPos({ x, y });
@@ -128,13 +128,13 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
 
   return (
     <div
-      ref={containerRef}
+      ref={playAreaRef}
       onPointerMove={handlePointerMove}
       onTouchMove={(e) => {
         e.preventDefault();
         const touch = e.touches[0];
-        if (!gameActive || !containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
+        if (!gameActive || !playAreaRef.current) return;
+        const rect = playAreaRef.current.getBoundingClientRect();
         const x = ((touch.clientX - rect.left) / rect.width) * 100;
         const y = ((touch.clientY - rect.top) / rect.height) * 100;
         setMagnetPos({ x, y });
