@@ -24,9 +24,20 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({
   const [currentAngle, setCurrentAngle] = useState(0);
   const [holdTime, setHoldTime] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
-  const [gameActive, setGameActive] = useState(true);
-  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [gameActive, setGameActive] = useState(false);
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const needsPermission = typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+    return !needsPermission ? true : null;
+  });
   const [result, setResult] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (permissionGranted !== null && !result) {
+      setGameActive(true);
+    }
+  }, [permissionGranted, result]);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -217,11 +228,40 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({
     }
   };
 
+  if (permissionGranted === null) {
+    return (
+      <div className="fixed inset-0 bg-slate-950 z-[110] flex flex-col items-center justify-center p-8 text-center select-none touch-none">
+           <div className="text-8xl mb-6">📱</div>
+           <h2 className="text-4xl font-black text-white mb-2 italic tracking-tighter uppercase">TILT TO PLAY</h2>
+           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-8">This game uses your phone's motion sensor</p>
+
+           <button
+             onPointerDown={requestPermission}
+             className="w-full max-w-xs px-8 py-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-lg transition-all active:scale-95 shadow-[0_0_40px_rgba(16,185,129,0.4)] border-b-8 border-emerald-800 mb-6"
+           >
+             ENABLE MOTION SENSOR
+           </button>
+
+           <button
+             onPointerDown={() => setPermissionGranted(false)}
+             className="text-slate-500 font-black uppercase tracking-widest underline decoration-2 underline-offset-4 hover:text-slate-300 transition-colors"
+           >
+             Use slider instead
+           </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={`fixed inset-0 transition-colors duration-300 flex flex-col items-center justify-center touch-none select-none p-4 z-[100] ${
+    <div className={`fixed inset-0 transition-colors duration-300 flex flex-col items-center justify-center select-none p-4 z-[100] ${
         isHolding ? 'bg-emerald-950/20' : 'bg-slate-950'
-    }`}>
+    } ${permissionGranted === true ? 'touch-none' : ''}`}>
       <div className="absolute top-12 text-center w-full px-8">
+        {permissionGranted === false && !result && (
+          <div className="text-xs text-emerald-400 font-black uppercase tracking-widest text-center mb-2">
+            DRAG THE SLIDER TO MATCH THE TARGET ANGLE
+          </div>
+        )}
         <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">GLOBAL FRANCHISE <span className="text-xs">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
             <motion.span animate={{ rotate: [0, 45, -45, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="text-emerald-500">🌍</motion.span>
@@ -229,30 +269,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({
         </div>
       </div>
 
-      {!permissionGranted && permissionGranted !== false && (
-        <div className="flex flex-col gap-4 z-20">
-          <button
-            onClick={requestPermission}
-            className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-sm transition-all active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)] border-b-4 border-emerald-800"
-          >
-            ACTIVATE GYROSCOPE
-          </button>
-          <button
-            onClick={() => setPermissionGranted(false)}
-            className="text-[10px] text-slate-500 font-black uppercase tracking-widest underline"
-          >
-            Manual Mode (Slider)
-          </button>
-        </div>
-      )}
-
-      {permissionGranted === false && !result && (
-        <div className="text-red-500 text-[10px] font-black uppercase mb-4 bg-red-500/10 p-3 rounded-xl border border-red-500/20 z-20">
-          Sensor access denied. Using manual control.
-        </div>
-      )}
-
-      {!result && (permissionGranted !== null || permissionGranted === false) && (
+      {!result && (
         <div className="flex flex-col items-center gap-8 w-full max-w-sm z-10">
           <div className="flex justify-between w-full px-4">
               <div className="text-center">
@@ -290,24 +307,26 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({
           </div>
 
           {permissionGranted === false && (
-              <input
-              type="range"
-              min="0"
-              max="180"
-              value={currentAngle}
-              onChange={(e) => {
-                const val = parseInt(e.target.value);
-                setCurrentAngle(val);
-                const currentTarget = coordinates[currentIndex]?.target;
-                const precision = Math.max(2, 8 / scaling);
-                if (currentTarget && Math.abs(val - currentTarget) <= precision) {
-                  setIsHolding(true);
-                } else {
-                  setIsHolding(false);
-                }
-              }}
-              className="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500 border border-slate-700"
-            />
+              <div className="w-full">
+                <input
+                  type="range"
+                  min="0"
+                  max="180"
+                  value={currentAngle}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setCurrentAngle(val);
+                    const currentTarget = coordinates[currentIndex]?.target;
+                    const precision = Math.max(2, 8 / scaling);
+                    if (currentTarget && Math.abs(val - currentTarget) <= precision) {
+                      setIsHolding(true);
+                    } else {
+                      setIsHolding(false);
+                    }
+                  }}
+                  className="w-full h-8 bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500 border border-slate-700 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-lg"
+                />
+              </div>
           )}
 
           <div className="w-full px-6">
