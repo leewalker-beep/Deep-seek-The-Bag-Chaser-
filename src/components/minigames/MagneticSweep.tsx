@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
@@ -29,7 +29,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   level = 1,
   tier = 'MUD',
   itemEmojis = ['🔩', '⚙️', '🖇️', '📎', '🔑'],
-  rareEmoji = '🪙',
+  rareEmoji = '⭐',
   scoreLabel = "SCRAP COLLECTED",
   rareLabel = "RARE FIND!",
   icon = "🧲"
@@ -51,6 +51,44 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   const targetScore = Math.floor((15 + (level - 1) * 3) * spawnFactor);
   const spawnRate = Math.max(200, (600 - (level - 1) * 100) / spawnFactor);
   const itemLifespan = Math.max(1000, (3000 - (level - 1) * 400) / Math.sqrt(scaling));
+
+  // Shared collection logic (taps and proximity)
+  const collectItem = useCallback((item: SweepItem) => {
+    setCollected(c => c + (item.isRare ? 5 : 1));
+    if (item.isRare) setIsRareFound(true);
+    if (navigator.vibrate) navigator.vibrate(item.isRare ? 50 : 10);
+    setItems(prev => prev.filter(i => i.id !== item.id));
+  }, []);
+
+  const handleCollect = useCallback((id: number) => {
+    setItems(prev => {
+        const item = prev.find(i => i.id === id);
+        if (item) {
+            setTimeout(() => collectItem(item), 0);
+        }
+        return prev;
+    });
+  }, [collectItem]);
+
+  const updatePosition = useCallback((x: number, y: number) => {
+    if (!gameActive) return;
+    setMagnetPos({ x, y });
+
+    // Proximity check
+    setItems(prev => {
+      const itemsToCollect = prev.filter(item => {
+        const dist = Math.sqrt(Math.pow(item.left - x, 2) + Math.pow(item.top - y, 2));
+        return dist < 8;
+      });
+
+      if (itemsToCollect.length > 0) {
+        setTimeout(() => {
+            itemsToCollect.forEach(collectItem);
+        }, 0);
+      }
+      return prev;
+    });
+  }, [gameActive, collectItem]);
 
   useEffect(() => {
     if (!gameActive) return;
@@ -92,29 +130,6 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     };
   }, [gameActive, spawnRate, itemLifespan, level, itemEmojis, rareEmoji]);
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!gameActive || !playAreaRef.current) return;
-    const rect = playAreaRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setMagnetPos({ x, y });
-
-    // Check collision with items
-    setItems(prev => {
-      const remaining = prev.filter(item => {
-        const dist = Math.sqrt(Math.pow(item.left - x, 2) + Math.pow(item.top - y, 2));
-        if (dist < 10) {
-          if (item.isRare) setIsRareFound(true);
-          setCollected(c => c + (item.isRare ? 5 : 1));
-          if (navigator.vibrate) navigator.vibrate(item.isRare ? 50 : 10);
-          return false;
-        }
-        return true;
-      });
-      return remaining;
-    });
-  };
-
   useEffect(() => {
     if (!gameActive) {
       let multiplier = 0.5;
@@ -129,29 +144,21 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   return (
     <div
       ref={playAreaRef}
-      onPointerMove={handlePointerMove}
+      onPointerMove={(e) => {
+        if (!playAreaRef.current) return;
+        const rect = playAreaRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        updatePosition(x, y);
+      }}
       onTouchMove={(e) => {
         e.preventDefault();
         const touch = e.touches[0];
-        if (!gameActive || !playAreaRef.current) return;
+        if (!playAreaRef.current) return;
         const rect = playAreaRef.current.getBoundingClientRect();
         const x = ((touch.clientX - rect.left) / rect.width) * 100;
         const y = ((touch.clientY - rect.top) / rect.height) * 100;
-        setMagnetPos({ x, y });
-        // collision check — copy the exact same logic from handlePointerMove
-        setItems(prev => {
-          const remaining = prev.filter(item => {
-            const dist = Math.sqrt(Math.pow(item.left - x, 2) + Math.pow(item.top - y, 2));
-            if (dist < 10) {
-              if (item.isRare) setIsRareFound(true);
-              setCollected(c => c + (item.isRare ? 5 : 1));
-              if (navigator.vibrate) navigator.vibrate(item.isRare ? 50 : 10);
-              return false;
-            }
-            return true;
-          });
-          return remaining;
-        });
+        updatePosition(x, y);
       }}
       className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]"
     >
@@ -179,12 +186,16 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         {/* Items */}
         <AnimatePresence>
           {items.map(item => (
-            <motion.div
+            <motion.button
               key={item.id}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              className="absolute w-12 h-12 flex items-center justify-center text-3xl z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCollect(item.id);
+              }}
+              className="absolute w-12 h-12 flex items-center justify-center text-3xl z-10 min-w-[44px] min-h-[44px]"
               style={{ top: `${item.top}%`, left: `${item.left}%`, transform: 'translate(-50%, -50%)' }}
             >
               {item.emoji}
@@ -195,7 +206,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
                     className="absolute inset-0 bg-yellow-400/20 rounded-full"
                   />
               )}
-            </motion.div>
+            </motion.button>
           ))}
         </AnimatePresence>
       </div>

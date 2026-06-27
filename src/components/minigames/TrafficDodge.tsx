@@ -18,6 +18,7 @@ interface TrafficDodgeProps {
 }
 
 const VEHICLES = ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'];
+const LANES = ['25%', '50%', '75%'];
 
 export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [lane, setLane] = useState(1); // 0, 1, 2
@@ -25,6 +26,10 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
   const [gameActive, setGameActive] = useState(true);
   const [distance, setDistance] = useState(0);
   const obstacleId = useRef(0);
+
+  // Ref-based lane for the interval closure
+  const laneRef = useRef(lane);
+  useEffect(() => { laneRef.current = lane; }, [lane]);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -63,16 +68,22 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
       setObstacles(prev => {
         const updated = prev.map(o => ({ ...o, y: o.y + gameSpeed }));
 
-        // Check collisions
-        const collision = updated.find(o => o.lane === lane && o.y > 75 && o.y < 90);
+        // Collision detection: if any obstacle has y > 75 AND y < 90 AND obstacle.lane === lane, that's a hit.
+        const collision = updated.find(o => o.lane === laneRef.current && o.y > 75 && o.y < 90);
         if (collision) {
           setGameActive(false);
           if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          const multiplier = Math.max(0.5, (distance / targetDistance) * 1.5);
-          setTimeout(() => onComplete(multiplier), 1000);
+          // multiplier based on how far they got
+          // using a functional state update here is okay for local distance,
+          // but we can just use the prev distance + gameSpeed for the multiplier calc
+          setDistance(d => {
+              const multiplier = Math.max(0.5, (d / targetDistance) * 1.5);
+              setTimeout(() => onComplete(multiplier), 1000);
+              return d;
+          });
         }
 
-        return updated.filter(o => o.y < 120);
+        return updated.filter(o => o.y < 105);
       });
     }, 50);
 
@@ -82,7 +93,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
         {
           id: obstacleId.current++,
           lane: Math.floor(Math.random() * 3),
-          y: -20,
+          y: 0,
           type: VEHICLES[Math.floor(Math.random() * VEHICLES.length)]
         }
       ]);
@@ -92,7 +103,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
       clearInterval(gameLoop);
       clearInterval(spawner);
     };
-  }, [gameActive, gameSpeed, lane, distance, targetDistance, spawnRate, scaling, onComplete]);
+  }, [gameActive, gameSpeed, targetDistance, spawnRate, scaling, onComplete]);
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
@@ -111,17 +122,17 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
         </div>
       </div>
 
-      <div className="relative w-72 h-[70vh] bg-slate-900 border-x-4 border-slate-800 overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,1)]">
-        {/* Road Lines */}
-        <div className="absolute left-1/3 top-0 bottom-0 w-1 bg-slate-800 border-r border-slate-700/50 dashed" style={{ backgroundImage: 'linear-gradient(to bottom, #1e293b 50%, transparent 50%)', backgroundSize: '1px 40px' }} />
-        <div className="absolute left-2/3 top-0 bottom-0 w-1 bg-slate-800 border-r border-slate-700/50 dashed" style={{ backgroundImage: 'linear-gradient(to bottom, #1e293b 50%, transparent 50%)', backgroundSize: '1px 40px' }} />
+      <div className="relative overflow-hidden w-full bg-slate-900 border-x-4 border-slate-800 shadow-[inset_0_0_100px_rgba(0,0,0,1)]" style={{ height: '380px' }}>
+        {/* Lane Dividers */}
+        <div className="absolute left-[33%] top-0 bottom-0 w-[1px] bg-slate-800" />
+        <div className="absolute left-[66%] top-0 bottom-0 w-[1px] bg-slate-800" />
 
         {/* Player */}
         <motion.div
-          className="absolute bottom-10 w-24 h-24 flex items-center justify-center text-6xl z-20 drop-shadow-[0_0_15px_rgba(52,211,153,0.4)]"
-          animate={{ left: `${(lane * 33.33) + 16.66}%` }}
+          className="absolute w-24 h-24 flex items-center justify-center text-6xl z-20 drop-shadow-[0_0_15px_rgba(52,211,153,0.4)]"
+          animate={{ left: LANES[lane] }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-          style={{ transform: 'translateX(-50%)' }}
+          style={{ position: 'absolute', bottom: '8px', transform: 'translateX(-50%)' }}
         >
           🚲
         </motion.div>
@@ -132,7 +143,13 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
             <div
               key={o.id}
               className="absolute w-24 h-24 flex items-center justify-center text-6xl z-10"
-              style={{ top: `${o.y}%`, left: `${(o.lane * 33.33) + 16.66}%`, transform: 'translateX(-50%)' }}
+              style={{
+                position: 'absolute',
+                left: LANES[o.lane],
+                top: `${o.y}%`,
+                transform: 'translateX(-50%)',
+                fontSize: '2rem'
+              }}
             >
               {o.type}
             </div>
@@ -165,7 +182,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
       </div>
 
       <div className="mt-6 text-[8px] text-slate-600 font-black uppercase tracking-widest text-center opacity-30">
-          SWIPE OR USE BUTTONS TO DODGE TRAFFIC
+          USE BUTTONS TO DODGE TRAFFIC
       </div>
     </div>
   );
