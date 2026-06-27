@@ -55,6 +55,14 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
     }
   }, [phase]);
 
+  const onCompleteRef = useRef(onComplete);
+  const reactionsRef = useRef(reactions);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    reactionsRef.current = reactions;
+  }, [onComplete, reactions]);
+
   useEffect(() => {
     if (phase !== 'playing') return;
     const timer = setInterval(() => {
@@ -62,7 +70,7 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
         if (prev <= 0.1) {
           if (!finishedRef.current) {
             finishedRef.current = true;
-            onComplete(reactions);
+            onCompleteRef.current(reactionsRef.current);
           }
           return 0;
         }
@@ -70,7 +78,7 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, reactions, phase]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase === 'playing' && gameState === 'waiting' && timeLeft > 0) {
@@ -80,7 +88,7 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
       }, waitTime);
       return () => clearTimeout(timeout);
     }
-  }, [gameState, timeLeft, phase]);
+  }, [gameState, phase]);
 
   const handleClick = () => {
     if (phase !== 'playing') return;
@@ -94,38 +102,32 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
     }
   };
 
-  if (phase === 'instruction') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none">
-        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
-          Tap the button the moment it lights up
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === 'countdown') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
-        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
-      </div>
-    );
-  }
-
   return (
     <div
       onPointerDown={handleClick}
       style={{ touchAction: 'none' }}
       className={`w-full h-96 flex flex-col items-center justify-center cursor-pointer rounded-3xl transition-colors duration-200 border-8 ${
-        gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' : 'bg-slate-900 border-slate-800'
+        phase === 'playing' && gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' : 'bg-slate-900 border-slate-800'
       }`}
     >
        <div className="text-white text-center pointer-events-none">
-          <div className="text-6xl mb-4">{gameState === 'ready' ? '⚡' : '🛑'}</div>
-          <div className="text-xl font-black uppercase tracking-widest">
-            {gameState === 'ready' ? 'TAP NOW!' : 'WAIT...'}
-          </div>
-          <div className="mt-8 text-4xl font-mono font-black">{timeLeft.toFixed(1)}s</div>
+          {phase === 'instruction' && (
+            <div className="text-xl font-black uppercase tracking-widest leading-tight p-8">
+              Tap the button the moment it lights up
+            </div>
+          )}
+          {phase === 'countdown' && (
+            <div className="text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+          )}
+          {phase === 'playing' && (
+            <>
+              <div className="text-6xl mb-4">{gameState === 'ready' ? '⚡' : '🛑'}</div>
+              <div className="text-xl font-black uppercase tracking-widest">
+                {gameState === 'ready' ? 'TAP NOW!' : 'WAIT...'}
+              </div>
+              <div className="mt-8 text-4xl font-mono font-black">{timeLeft.toFixed(1)}s</div>
+            </>
+          )}
        </div>
     </div>
   );
@@ -139,6 +141,14 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
   const [timeLeft, setTimeLeft] = useState(15);
   const nextId = useRef(0);
   const finishedRef = useRef(false);
+
+  const onCompleteRef = useRef(onComplete);
+  const scoreRef = useRef(score);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    scoreRef.current = score;
+  }, [onComplete, score]);
 
   const GOOD_WORDS = ['CASH', 'PROFIT', 'BAG', 'CRYPTO', 'DEAL'];
   const BAD_WORDS = ['TAXES', 'LOAN', 'SCAM', 'DEBT', 'LOSS'];
@@ -173,7 +183,7 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
         if (prev <= 0.1) {
           if (!finishedRef.current) {
             finishedRef.current = true;
-            onComplete(score);
+            onCompleteRef.current(scoreRef.current);
           }
           return 0;
         }
@@ -181,7 +191,7 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, score, phase]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -194,9 +204,9 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
         isGood,
         x: 15 + Math.random() * 70,
         y: 100,
-        speed: 1.5 + Math.random() * 2
+        speed: 0.4 + Math.random() * 0.2
       }]);
-    }, 500);
+    }, 1500);
     return () => clearInterval(spawnTimer);
   }, [phase]);
 
@@ -243,7 +253,7 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onPointerDown={() => handleTap(w.id, w.isGood)}
-            className={`absolute px-6 py-4 min-w-[100px] min-h-[44px] rounded-xl text-xs font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
+            className={`absolute px-5 py-3 min-w-[100px] min-h-[44px] rounded-xl text-lg font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
             style={{ left: `${w.x}%`, top: `${w.y}%`, transform: 'translateX(-50%)' }}
           >
             {w.text}
@@ -289,14 +299,24 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
     }
   }, [phase]);
 
+  const onCompleteRef = useRef(onComplete);
+  const scoreRef = useRef(score);
+  const roundsRef = useRef(rounds);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    scoreRef.current = score;
+    roundsRef.current = rounds;
+  }, [onComplete, score, rounds]);
+
   useEffect(() => {
     if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 0.1 || rounds >= 12) {
+        if (prev <= 0.1 || roundsRef.current >= 12) {
           if (!finishedRef.current) {
             finishedRef.current = true;
-            onComplete(score);
+            onCompleteRef.current(scoreRef.current);
           }
           return 0;
         }
@@ -304,7 +324,7 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onComplete, score, rounds, phase]);
+  }, [phase]);
 
   const handleGuess = (higher: boolean) => {
     const correct = (higher && next >= current) || (!higher && next <= current);
