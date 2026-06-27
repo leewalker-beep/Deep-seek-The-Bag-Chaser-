@@ -112,7 +112,7 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, 
           <p className="text-slate-400 text-xs font-black uppercase tracking-widest">Influence the masses L{level}</p>
           <button
             onClick={requestPermission}
-            className="px-10 py-5 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-lg transition-all active:scale-95 shadow-[0_0_50px_rgba(168,85,247,0.4)] border-b-8 border-purple-800"
+            className="px-10 py-8 bg-purple-600 hover:bg-purple-500 text-white rounded-[2rem] font-black text-lg transition-all active:scale-95 shadow-[0_0_50px_rgba(168,85,247,0.4)] border-b-8 border-purple-800"
           >
             START HYPE ENGINE
           </button>
