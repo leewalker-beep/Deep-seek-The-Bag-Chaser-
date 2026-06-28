@@ -1461,6 +1461,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (cons.heat) nextPl.heat += cons.heat;
     if (cons.mentalHealth) nextPl.mentalHealth += cons.mentalHealth;
 
+    // Apply Narrative Flags
+    if (choice.setFlags) {
+      nextPl.narrativeFlags = {
+        ...nextPl.narrativeFlags,
+        ...choice.setFlags
+      };
+    }
+
     // Apply permanent passive
     if (cons.passiveCash) {
       nextPl.dynamicPassives = {

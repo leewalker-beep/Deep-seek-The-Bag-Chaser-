@@ -125,6 +125,7 @@ export interface NarrativeChoice {
     passiveCash?: number;
     specializationLock?: string;
   };
+  setFlags?: Record<string, any>;
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
     background?: string[];
@@ -145,6 +146,7 @@ export interface NarrativeEvent {
     minMonth?: number;
     probability: number;
     once?: boolean;
+    flagReqs?: Record<string, any>;
   };
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
@@ -408,6 +410,7 @@ export interface PlayerStats {
   activeNarrative: string | null;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
+  narrativeFlags: Record<string, any>;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
