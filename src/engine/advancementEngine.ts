@@ -467,7 +467,14 @@ export function advanceMonth(
       if (event.trigger.category && !event.trigger.category.includes(newPl.chosenBackgroundCategory!)) return false;
       if (event.trigger.specialization && !event.trigger.specialization.includes(newPl.activeSpecializationId!)) return false;
 
-      // 2. Stat Requirements
+      // 2. Narrative Flag Requirements
+      if (event.trigger.flagReqs) {
+        for (const [key, value] of Object.entries(event.trigger.flagReqs)) {
+          if (newPl.narrativeFlags[key] !== value) return false;
+        }
+      }
+
+      // 3. Stat Requirements
       if (event.requirement?.stat) {
         const req = event.requirement.stat;
         const currentVal = (newPl as any)[req.type === 'mentalHealth' ? 'mentalHealth' : req.type];
