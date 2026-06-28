@@ -1,6 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { HUSTLES } from '../config/hustles/base';
+
+const TypewriterText = ({ text, stepIndex }: {
+  text: string;
+  stepIndex: number
+}) => {
+  const [displayed, setDisplayed] = useState('');
+  const [charIndex, setCharIndex] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed('');
+    setCharIndex(0);
+    setDone(false);
+  }, [stepIndex]);
+
+  useEffect(() => {
+    if (charIndex >= text.length) {
+      setDone(true);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDisplayed(prev => prev + text[charIndex]);
+      setCharIndex(prev => prev + 1);
+    }, 22);
+    return () => clearTimeout(timer);
+  }, [charIndex, text]);
+
+  if (done) {
+    const highlighted = text.replace(
+      /\b(bag|money|cash|clout|aura|hustle|minigame|multiply|heat|tier)\b/gi,
+      '<span class="text-emerald-400 font-black">$1</span>'
+    );
+    return <span dangerouslySetInnerHTML={{
+      __html: highlighted
+    }} />;
+  }
+
+  return <span>{displayed}</span>;
+};
 
 export const TutorialBox: React.FC = () => {
   const {
@@ -17,48 +57,48 @@ export const TutorialBox: React.FC = () => {
 
   const steps = [
     {
-      title: "Step 1: Earn Bag",
-      text: "Money is how you buy upgrades and progress.",
+      title: "Step 1: GET THAT BAG",
+      text: "No money, no moves. Every hustle puts cash in your pocket.",
       hustles: ['r_delivery', 'r_scrap'],
       goalText: "Goal: Earn $500 total",
       check: () => pl.bag >= 500,
       progress: () => Math.min(100, (pl.bag / 500) * 100),
     },
     {
-      title: "Step 2: Minigames",
-      text: "After each hustle a minigame launches. Play well to earn a bigger payout multiplier — up to 4x your base reward. Tap the button below to try one now.",
+      title: "Step 2: EVERY HUSTLE IS A TEST",
+      text: "Nail the minigame, multiply your cut. Slack off and you leave money on the table.",
       hustles: ['r_delivery'],
       goalText: "Goal: Complete a minigame",
       check: () => pl.totalHustlesCompleted >= 1 || pl.bag >= 50,
       progress: () => (pl.totalHustlesCompleted >= 1 || pl.bag >= 50) ? 100 : 0,
     },
     {
-      title: "Step 3: Earn Clout",
-      text: "Reputation unlocks new hustles and tiers.",
+      title: "Step 3: BUILD YOUR REP",
+      text: "Clout opens doors. Nobody moves up without people knowing their name.",
       hustles: ['cc', 'pod'],
       goalText: "Goal: Earn 10 Clout",
       check: () => pl.clout >= 10,
       progress: () => Math.min(100, (pl.clout / 10) * 100),
     },
     {
-      title: "Step 4: Earn Aura",
-      text: "Influence gives you access to special opportunities.",
+      title: "Step 4: COMMAND THE ROOM",
+      text: "Aura is how they look at you when you walk in. Earn it.",
       hustles: ['r_ghost_mode', 'street_eats'],
       goalText: "Goal: Earn 10 Aura",
       check: () => pl.aura >= 10,
       progress: () => Math.min(100, (pl.aura / 10) * 100),
     },
     {
-      title: "Step 5: Rest & Recover",
-      text: "Mental health and heat affect your performance. Keep them balanced.",
+      title: "Step 5: KNOW WHEN TO CHILL",
+      text: "Heat gets you caught. Cool down before the streets catch up to you.",
       hustles: ['r_sleep'],
       goalText: "Goal: Restore mental health",
       check: () => pl.mentalHealth >= 100,
       progress: () => pl.mentalHealth,
     },
     {
-      title: "Step 6: Advance Tier",
-      text: "Meet the requirements and move up to unlock new content.",
+      title: "Step 6: LEVEL UP OR GET LEFT BEHIND",
+      text: "Hit the targets. Move up. The mud doesn't wait for anyone.",
       hustles: [],
       goalText: "Goal: Tap to advance",
       check: () => pl.currentTier === 'STREET',
@@ -92,14 +132,19 @@ export const TutorialBox: React.FC = () => {
 
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-6">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              key={tutorialStep}
+            >
               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-none">
                 {currentStep.title.split(': ')[0]}
               </h2>
               <div className="text-emerald-400 font-bold text-sm uppercase tracking-widest mt-1">
                 {currentStep.title.split(': ')[1]}
               </div>
-            </div>
+            </motion.div>
             <button
               onClick={() => setTutorialSkipped(true)}
               onTouchEnd={(e) => { e.preventDefault(); setTutorialSkipped(true); }}
@@ -109,9 +154,9 @@ export const TutorialBox: React.FC = () => {
             </button>
           </div>
 
-          <p className="text-slate-400 text-sm mb-8 leading-relaxed font-medium">
-            {currentStep.text}
-          </p>
+          <div className="text-slate-400 text-sm mb-8 leading-relaxed font-medium min-h-[3rem]">
+            <TypewriterText text={currentStep.text} stepIndex={tutorialStep} />
+          </div>
 
           <div className="space-y-3 mb-10">
             {currentStep.hustles.map(hId => {
