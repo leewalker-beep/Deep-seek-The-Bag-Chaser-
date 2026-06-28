@@ -183,15 +183,17 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
                 className={`p-3 rounded-xl border text-center transition-all min-h-[100px] flex flex-col justify-center ${
                   isUnlocked
                     ? 'bg-slate-900 border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]'
-                    : 'bg-slate-950 border-slate-900 grayscale opacity-40 blur-[2px]'
+                    : 'bg-slate-900/20 border-slate-800/40 grayscale-0 opacity-100 blur-0'
                 }`}
               >
-                <div className="text-2xl mb-1">{isUnlocked ? '🎭' : '❓'}</div>
+                <div className={`mb-1 ${isUnlocked ? 'text-4xl' : 'text-4xl text-slate-600 font-black'}`}>
+                  {isUnlocked ? ending.emoji : '?'}
+                </div>
                 <div className={`text-[10px] font-black uppercase tracking-tight mb-1 ${isUnlocked ? 'text-purple-400' : 'text-slate-600'}`}>
                   {isUnlocked ? ending.title : '???'}
                 </div>
-                <p className="text-[9px] leading-tight text-slate-400">
-                  {isUnlocked ? ending.description : '???'}
+                <p className={`text-[9px] leading-tight ${isUnlocked ? 'text-slate-400' : 'text-slate-700 text-xs'}`}>
+                  {isUnlocked ? ending.description : 'Complete a run to unlock'}
                 </p>
               </div>
             );
