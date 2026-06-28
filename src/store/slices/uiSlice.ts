@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import type { GameState, Tier } from '../../types/game';
 
 export interface UISlice {
-  ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE';
+  ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
   activeTab: Tier | 'FLEX' | 'PRESIDENCY';
   activeHustleView: string | null;
   activeTierBadge: string | null;
@@ -13,7 +13,7 @@ export interface UISlice {
   tutorialStep: number;
   isTutorialSkipped: boolean;
 
-  setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
+  setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP') => void;
   setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;

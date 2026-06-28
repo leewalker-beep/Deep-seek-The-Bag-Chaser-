@@ -60,6 +60,7 @@ import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { EndgameSummary } from './components/EndgameSummary';
 import { HallOfFame } from './components/HallOfFame';
 import { DailyChallenges } from './components/DailyChallenges';
+import { LegacyShop } from './components/LegacyShop';
 import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
@@ -233,6 +234,19 @@ function App() {
 
   if (!isHydrated) {
     return <LoadingSkeleton />;
+  }
+
+  // Legacy Shop screen
+  if (ph === 'LEGACY_SHOP') {
+    return (
+      <LegacyShop
+        onProceed={() => {
+           // We can't use setPh directly as it's not exported in the same way
+           // and resetGame will handle it usually, but here we want to go to PROLOGUE
+           useGameStore.setState({ ph: 'PROLOGUE' });
+        }}
+      />
+    );
   }
 
   // Prologue screen

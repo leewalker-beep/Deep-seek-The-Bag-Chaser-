@@ -8,7 +8,6 @@ import { BACKGROUNDS } from '../config/backgrounds';
 import { SPECIALIZATIONS } from '../config/specializations';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
-
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
   STREET: 1000,
@@ -70,7 +69,8 @@ export function checkDeathConditions(pl: PlayerStats): { shouldDie: boolean; dea
 
 export function advanceMonth(
   pl: PlayerStats,
-  currentMarket: MarketType
+  currentMarket: MarketType,
+  unlockedLegacyUpgrades: string[] = []
 ): AdvancementResult {
   const news: (string | TickerMessage)[] = [];
   const newPl = { ...pl };
@@ -220,6 +220,9 @@ export function advanceMonth(
 
   // --- MULTIPLIERS ---
   const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
+  let legacyBoost = 1.0;
+  if (unlockedLegacyUpgrades.includes('passive_boost')) legacyBoost = 1.1;
+
   const marketYieldMult = MARKET_CONFIGS[currentMarket].yieldMultiplier;
 
   // FIX: Apply Specialization Bonuses to Passive Income
@@ -231,13 +234,13 @@ export function advanceMonth(
     }
   }
 
-  const finalTotal = Math.floor(baseTotal * legacyMultiplier * marketYieldMult * specMultiplier);
+  const finalTotal = Math.floor(baseTotal * legacyMultiplier * legacyBoost * marketYieldMult * specMultiplier);
 
   const passiveBreakdown: PassiveBreakdown = {
       sources,
       baseTotal,
       multipliers: {
-          legacy: legacyMultiplier,
+          legacy: legacyMultiplier * legacyBoost,
           market: marketYieldMult,
           specialization: specMultiplier
       },

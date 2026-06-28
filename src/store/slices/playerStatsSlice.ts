@@ -2,11 +2,14 @@ import type { StateCreator } from 'zustand';
 import type { GameState, PlayerStats, Artist } from '../../types/game';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
+import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
 
 export interface PlayerStatsSlice {
   pl: PlayerStats;
   difficulty: 1 | 2 | 3;
   chosenBackground?: string;
+  bankedLegacyPoints: number;
+  unlockedLegacyUpgradeIds: string[];
 
   setPlayerName: (name: string) => void;
   setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;
@@ -24,11 +27,27 @@ export interface PlayerStatsSlice {
   setCampaignDelegates: (delegates: number) => void;
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
   dropArtist: (artistId: string) => void;
+  unlockLegacyUpgrade: (upgradeId: string) => void;
 }
 
 export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStatsSlice> = (set, get) => ({
-  pl: getInitialStats(3),
+  pl: getInitialStats(3, undefined, undefined, undefined, []),
   difficulty: 3,
+  bankedLegacyPoints: 0,
+  unlockedLegacyUpgradeIds: [],
+
+  unlockLegacyUpgrade: (upgradeId) => {
+    const state = get();
+    const upgrade = LEGACY_UPGRADES.find((u: any) => u.id === upgradeId);
+    if (!upgrade) return;
+    if (state.bankedLegacyPoints < upgrade.cost) return;
+    if (state.unlockedLegacyUpgradeIds.includes(upgradeId)) return;
+
+    set({
+        bankedLegacyPoints: state.bankedLegacyPoints - upgrade.cost,
+        unlockedLegacyUpgradeIds: [...state.unlockedLegacyUpgradeIds, upgradeId]
+    });
+  },
 
   setPlayerName: (name: string) => {
     set((state) => ({

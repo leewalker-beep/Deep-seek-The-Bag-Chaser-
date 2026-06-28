@@ -43,7 +43,7 @@ export interface HustleSlice {
 }
 
 export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (set, get) => ({
-  unlockedHustles: getUnlockedHustles(3),
+  unlockedHustles: getUnlockedHustles(3, []),
 
   resetGame: (backgroundId, difficulty = 3, categoryId, variationId) => {
     const currentState = get();
@@ -60,7 +60,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       localStorage.removeItem('bag-chaser-save');
     }
 
-    const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId));
+    const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;
@@ -73,7 +73,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       ph: 'PROLOGUE',
       currentMarket: 'NORMAL',
       news: ['Game reset. Welcome back.'],
-      unlockedHustles: getUnlockedHustles(difficulty),
+      unlockedHustles: getUnlockedHustles(difficulty, currentState.unlockedLegacyUpgradeIds),
       activeTab: difficulty === 1 ? 'STREET' : 'MUD',
       activeHustleView: null,
       activeNarrative: null,
@@ -417,6 +417,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
+
       nextPl.deathCount = (nextPl.deathCount || 0) + 1;
       if (finalDeathBadge && !nextPl.collectedDeathBadges.includes(finalDeathBadge)) {
         nextPl.collectedDeathBadges.push(finalDeathBadge);
@@ -718,7 +720,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       passiveBreakdown
     } = advanceMonth(
       hustleResultPl,
-      state.currentMarket
+      state.currentMarket,
+      state.unlockedLegacyUpgradeIds
     );
 
     newPl.lastPassiveBreakdown = passiveBreakdown;
@@ -785,6 +788,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalPh = 'POST_MORTEM';
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
+
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (cappedPl.legacyScore || 0) });
 
       cappedPl.deathCount = (cappedPl.deathCount || 0) + 1;
 
@@ -1072,6 +1077,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
+
       newPl.deathCount = (newPl.deathCount || 0) + 1;
       if (finalDeathBadge && !newPl.collectedDeathBadges.includes(finalDeathBadge)) {
         newPl.collectedDeathBadges.push(finalDeathBadge);
@@ -1226,6 +1233,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalPh = 'POST_MORTEM';
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
+
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (plAfterPurchase.legacyScore || 0) });
 
       plAfterPurchase.deathCount = (plAfterPurchase.deathCount || 0) + 1;
       if (finalDeathBadge && !plAfterPurchase.collectedDeathBadges.includes(finalDeathBadge)) {

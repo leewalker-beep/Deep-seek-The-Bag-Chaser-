@@ -249,6 +249,15 @@ export function getEffectiveHustleStats(
   // 5. Apply Legacy Multiplier
   const legacyMultiplier = 1 + ((player.legacyPoints || 0) * 0.001);
 
+  const unlockedLegacyUpgrades = player.unlockedLegacyUpgradeIds || [];
+  if (unlockedLegacyUpgrades.includes('passive_boost')) {
+    if (effectiveResult.passiveAdded) {
+       // We'll apply this bonus where passive income is actually calculated if needed,
+       // but for now let's apply a 10% boost to the yieldCash if it comes from passives
+    }
+    // Actually, passive yields are handled in advancementEngine.
+  }
+
   effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * legacyMultiplier * finalYieldMult);
   effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * legacyMultiplier * finalCloutMult);
   effectiveResult.yieldAura = Math.floor(effectiveResult.yieldAura * legacyMultiplier * finalAuraMult);

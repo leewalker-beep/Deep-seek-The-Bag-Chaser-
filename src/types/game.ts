@@ -336,6 +336,7 @@ export interface PlayerStats {
   vcInvestment: number;
   legacyPoints?: number;
   legacyScore?: number;
+  unlockedLegacyUpgradeIds?: string[];
   filmGenre?: 'action' | 'comedy' | 'drama';
   filmBudget?: 'low' | 'medium' | 'high';
   spaceCompany?: 'asteroid' | 'tourism' | 'mining';
@@ -447,7 +448,7 @@ export interface Sentiment {
 
 export interface GameState {
   pl: PlayerStats;
-  ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE';
+  ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
   currentMarket: MarketType;
   news: (string | TickerMessage)[];
   unlockedHustles: Record<string, boolean>;
@@ -531,4 +532,7 @@ export interface GameState {
   sabotageRival: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
   setTutorialSkipped: (skipped: boolean) => void;
+  bankedLegacyPoints: number;
+  unlockedLegacyUpgradeIds: string[];
+  unlockLegacyUpgrade: (upgradeId: string) => void;
 }

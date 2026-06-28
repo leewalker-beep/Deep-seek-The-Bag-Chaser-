@@ -1,5 +1,6 @@
 import React from 'react';
 import { DEATH_MESSAGES } from '../config/deathMessages';
+import { useGameStore } from '../store/gameStore';
 
 interface DeathScreenProps {
   deathBadge: string | null;
@@ -26,12 +27,20 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause
         <div className="text-2xl font-bold text-white">💀 {displayBadge}</div>
       </div>
 
-      <button
-        onClick={onReset}
-        className="px-8 py-4 bg-red-600 text-white font-black uppercase tracking-wider rounded-xl active:scale-95 transition-all"
-      >
-        RUN IT BACK
-      </button>
+      <div className="flex flex-col gap-3 w-full max-w-sm">
+        <button
+          onClick={onReset}
+          className="px-8 py-4 bg-red-600 text-white font-black uppercase tracking-wider rounded-xl active:scale-95 transition-all"
+        >
+          RUN IT BACK
+        </button>
+        <button
+          onClick={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
+          className="px-8 py-3 bg-slate-900 text-slate-400 border border-slate-800 font-bold uppercase tracking-widest rounded-xl hover:text-white transition-all"
+        >
+          Legacy Shop
+        </button>
+      </div>
     </div>
   );
 };

@@ -42,6 +42,13 @@ const BENEFACTOR_BONUS: OriginBonus = {
   description: '+15% aura at corporate tiers'
 };
 
+const CHOSEN_ONE_BONUS: OriginBonus = {
+  type: 'cash',
+  multiplier: 1.1,
+  tiers: ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'],
+  description: 'A destiny realized: +10% cash across all tiers'
+};
+
 export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
     id: 'street_kid',
@@ -112,6 +119,26 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
         starterAura: 5,
         newsReferences: ['From graffiti tags to stock tickers.', 'The artist who redefined success.'],
         originBonus: STREET_KID_BONUS,
+      },
+    ],
+  },
+  {
+    id: 'legacy',
+    name: 'The Chosen',
+    description: 'A legacy foretold. You are the one they were waiting for.',
+    variations: [
+      {
+        id: 'lc_chosen',
+        name: 'The Chosen One',
+        flavor: 'You were born under a lucky star, or perhaps it was just the heavy weight of your family name. Either way, the path is open.',
+        backgroundStyle: 'tech',
+        icon: '👑',
+        flavorText: 'Destiny is a heavy burden, but you carry it well.',
+        starterBag: 10000,
+        starterClout: 100,
+        starterAura: 100,
+        newsReferences: ['The chosen one has finally arrived.', 'A legend reborn in the digital age.'],
+        originBonus: CHOSEN_ONE_BONUS,
       },
     ],
   },

@@ -42,6 +42,8 @@ export const useGameStore = create<GameState>()(
         lastLoginDate: state.lastLoginDate,
         dailyChallenges: state.dailyChallenges,
         originBonus: state.pl.originBonus,
+        bankedLegacyPoints: state.bankedLegacyPoints,
+        unlockedLegacyUpgradeIds: state.unlockedLegacyUpgradeIds,
       }),
     }
   )
