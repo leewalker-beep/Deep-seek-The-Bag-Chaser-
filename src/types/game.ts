@@ -271,11 +271,13 @@ export interface DailyChallenge {
 
 export interface HallOfFameEntry {
   runId: string;
+  playerName?: string;
   tier: string;
   legacyScore: number;
   finalBag: number;
   ending: string;
   deathBadge?: string;
+  lastHustle?: string;
   date: string;
   month: number;
 }

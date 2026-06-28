@@ -1,10 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import type { HallOfFameEntry } from '../types/game';
 import { getHallOfFameEntries, getBestRun } from '../utils/hallOfFame';
 import { ENDINGS } from '../config/endings';
+import { DEATH_MESSAGES } from '../config/deathMessages';
 import { BaseButton } from './ui/BaseButton';
 import { StatCard } from './ui/StatCard';
+import { ShareCard } from './ShareCard';
 
 interface HallOfFameProps {
   onNewRun: () => void;
@@ -13,7 +16,9 @@ interface HallOfFameProps {
 export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
   const [activeTab, setActiveTab] = useState<'BEST' | 'ALL' | 'ENDINGS'>('BEST');
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const [sharingRun, setSharingRun] = useState<HallOfFameEntry | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const entries = useMemo(() => getHallOfFameEntries(), []);
   const bestRun = useMemo(() => getBestRun(), []);
@@ -31,32 +36,65 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
     return Array.from(new Set([...runEndings, ...savedEndings]));
   }, [entries]);
 
-  const handleShare = async (run: HallOfFameEntry | null, shareId: string) => {
-    if (!run) return;
+  const handleShare = async (run: HallOfFameEntry | null) => {
+    if (!run || sharing) return;
 
-    const shareText = `I just finished a run of Bag Chaser! Hit ${run.tier} tier with $${run.finalBag.toLocaleString()} bag. Legacy score: ${run.legacyScore.toLocaleString()}. Can you beat me?`;
+    setSharing(true);
+    setSharingRun(run);
+
+    // Give React a frame to render the ShareCard in the portal
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      if (typeof navigator.share === 'function') {
-        await navigator.share({
-          title: 'Bag Chaser Run',
-          text: shareText,
-          url: window.location.origin,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareText);
-        setCopiedId(shareId);
-        setTimeout(() => setCopiedId(null), 2000);
-      }
+      if (!cardRef.current) throw new Error('Card ref not found');
+
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          setSharing(false);
+          return;
+        }
+
+        const fileName = `bagchaser-${run.playerName || 'run'}.png`;
+        const file = new File([blob], fileName, { type: 'image/png' });
+        const ending = ENDINGS.find(e => e.title === run.ending);
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Bag Chaser Run',
+              text: `${run.playerName || 'A player'} — ${ending?.title || 'Legend'}. Can you beat ${run.legacyScore.toLocaleString()} legacy?`
+            });
+          } catch (shareErr) {
+            // User cancelled or share failed, fallback to download
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+          }
+        } else {
+          // Fallback: download the image
+          const url = canvas.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.click();
+        }
+        setSharing(false);
+        setSharingRun(null);
+      }, 'image/png');
     } catch (err) {
       console.error('Share failed:', err);
-      try {
-        await navigator.clipboard.writeText(shareText);
-        setCopiedId(shareId);
-        setTimeout(() => setCopiedId(null), 2000);
-      } catch (clipErr) {
-        console.error('Clipboard fallback failed:', clipErr);
-      }
+      setSharing(false);
+      setSharingRun(null);
     }
   };
 
@@ -85,8 +123,13 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
         </div>
 
         <div className="pt-4">
-          <BaseButton variant="secondary" onClick={() => handleShare(bestRun, 'best')} className="w-full py-4 text-lg">
-            {copiedId === 'best' ? 'COPIED!' : 'SHARE BEST RUN'}
+          <BaseButton
+            variant="secondary"
+            onClick={() => handleShare(bestRun)}
+            className="w-full py-4 text-lg"
+            disabled={sharing}
+          >
+            {sharing ? 'CREATING CARD...' : 'SHARE BEST RUN'}
           </BaseButton>
         </div>
       </motion.div>
@@ -146,11 +189,12 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleShare(run, run.runId);
+                          handleShare(run);
                         }}
                         className="w-full py-2 text-[10px]"
+                        disabled={sharing}
                       >
-                        {copiedId === run.runId ? 'COPIED!' : 'SHARE THIS RUN'}
+                        {sharing && sharingRun?.runId === run.runId ? 'CREATING CARD...' : 'SHARE THIS RUN'}
                       </BaseButton>
                     </motion.div>
                   )}
@@ -161,8 +205,13 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
         </div>
 
         <div className="pt-2">
-          <BaseButton variant="secondary" onClick={() => handleShare(mostRecentRun, 'latest')} className="w-full py-3 text-sm">
-            {copiedId === 'latest' ? 'COPIED!' : 'SHARE LATEST RUN'}
+          <BaseButton
+            variant="secondary"
+            onClick={() => handleShare(mostRecentRun)}
+            className="w-full py-3 text-sm"
+            disabled={sharing}
+          >
+            {sharing && sharingRun?.runId === mostRecentRun?.runId ? 'CREATING CARD...' : 'SHARE LATEST RUN'}
           </BaseButton>
         </div>
       </div>
@@ -201,8 +250,13 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
         </div>
 
         <div className="pt-2">
-          <BaseButton variant="secondary" onClick={() => handleShare(mostRecentRun, 'collection')} className="w-full py-3 text-sm">
-            {copiedId === 'collection' ? 'COPIED!' : 'SHARE COLLECTION STATS'}
+          <BaseButton
+            variant="secondary"
+            onClick={() => handleShare(mostRecentRun)}
+            className="w-full py-3 text-sm"
+            disabled={sharing}
+          >
+             {sharing ? 'CREATING CARD...' : 'SHARE RUN CARD'}
           </BaseButton>
         </div>
       </div>
@@ -211,6 +265,24 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
 
   return (
     <div className="fixed inset-0 z-[3000] bg-slate-950 flex flex-col items-center p-4 overflow-y-auto">
+      {/* Hidden ShareCard for html2canvas capture */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        {sharingRun && (
+          <ShareCard
+            ref={cardRef}
+            playerName={sharingRun.playerName || 'Anonymous'}
+            tier={sharingRun.tier}
+            finalBag={sharingRun.finalBag}
+            legacyScore={sharingRun.legacyScore}
+            months={sharingRun.month}
+            endingTitle={sharingRun.ending}
+            endingEmoji={ENDINGS.find(e => e.title === sharingRun.ending)?.emoji || '💀'}
+            deathMessage={DEATH_MESSAGES[sharingRun.lastHustle || '']?.message || 'The streets claimed another one.'}
+            deathBadge={sharingRun.deathBadge || DEATH_MESSAGES[sharingRun.lastHustle || '']?.badge || 'UNKNOWN'}
+          />
+        )}
+      </div>
+
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col min-h-[90vh]">
         {/* Header */}
         <div className="p-6 pb-2 text-center border-b border-slate-800/50">
