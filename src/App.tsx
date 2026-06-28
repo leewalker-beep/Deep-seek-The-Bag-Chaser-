@@ -504,10 +504,10 @@ function App() {
             {/* Hustle Grid */}
             {!showFlexMarket && (
               <div className="grid grid-cols-2 gap-3">
-                {hustles.map((hustle) => {
+                {hustles.map((hustle, index) => {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
-                  const isRecommended = false;
+                  const isHot = index === 0;
 
                   return (
                     <button
@@ -519,11 +519,16 @@ function App() {
                         setShowMinigame(false);
                       }}
                       className={`${tierCardClass} rounded-xl p-4 text-center border transition-all active:scale-95 relative overflow-hidden ${
-                        isRecommended ? 'ring-2 ring-emerald-500 animate-pulse border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''
+                        isHot ? 'ring-1 ring-emerald-500/30 shadow-emerald-900/40 shadow-lg' : ''
                       }`}
                     >
+                      {isHot && (
+                        <span className="absolute top-2 right-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-950/60 border border-emerald-500/20 rounded px-1.5 py-0.5">
+                          HOT
+                        </span>
+                      )}
                       {isMastered && (
-                        <div className="absolute top-1 right-1 text-xs">👑</div>
+                        <div className={`absolute ${isHot ? 'top-1 left-1' : 'top-1 right-1'} text-xs`}>👑</div>
                       )}
                       <div className="text-4xl mb-2">{hustle.icon}</div>
                       <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
