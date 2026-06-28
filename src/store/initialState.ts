@@ -2,7 +2,13 @@ import type { PlayerStats } from '../types/game';
 import { HUSTLES } from '../config/hustles/base';
 import { BACKGROUNDS } from '../config/backgrounds';
 
-export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, categoryId?: string, variationId?: string): PlayerStats => {
+export const getInitialStats = (
+  difficulty: 1 | 2 | 3,
+  backgroundId?: string,
+  categoryId?: string,
+  variationId?: string,
+  unlockedUpgrades: string[] = []
+): PlayerStats => {
   const baseStats: PlayerStats = {
     runId: crypto.randomUUID?.() || Math.random().toString(36).substring(2, 15),
     bag: 0,
@@ -136,6 +142,7 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     completedDailyChallengesCount: 0,
     totalChallengesCompleted: 0,
     totalHustlesCompleted: 0,
+    unlockedLegacyUpgradeIds: [],
     stats: {
       totalHustles: 0,
       successfulHustles: 0,
@@ -182,10 +189,17 @@ export const getInitialStats = (difficulty: 1 | 2 | 3, backgroundId?: string, ca
     }
   }
 
+  // Apply Legacy Upgrades
+  stats.unlockedLegacyUpgradeIds = unlockedUpgrades;
+  if (unlockedUpgrades.includes('extra_cash')) stats.bag += 5000;
+  if (unlockedUpgrades.includes('extra_clout')) stats.clout += 50;
+  if (unlockedUpgrades.includes('extra_aura')) stats.aura += 50;
+  if (unlockedUpgrades.includes('early_vending')) stats.vendingCount += 1;
+
   return stats;
 };
 
-export const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolean> => {
+export const getUnlockedHustles = (difficulty: 1 | 2 | 3, unlockedUpgrades: string[] = []): Record<string, boolean> => {
   const allMud = [
     'r_labor',
     'r_delivery',
@@ -198,11 +212,17 @@ export const getUnlockedHustles = (difficulty: 1 | 2 | 3): Record<string, boolea
     'street_eats',
   ];
 
+  if (unlockedUpgrades.includes('unique_hustle_deli')) {
+    allMud.push('unique_hustle_deli');
+  }
+
   if (difficulty === 1) {
     // Trust Fund: all hustles unlocked
     return Object.keys(HUSTLES).reduce((acc, id) => ({ ...acc, [id]: true }), {});
   } else {
     // Both Middle Grind and Grinder now get all MUD hustles
-    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {});
+    return allMud.reduce((acc, id) => ({ ...acc, [id]: true }), {
+        ...(unlockedUpgrades.includes('unique_hustle_deli') ? { unique_hustle_deli: true } : {})
+    });
   }
 };

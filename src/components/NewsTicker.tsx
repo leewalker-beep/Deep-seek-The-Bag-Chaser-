@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TickerMessage, Tier } from '../types/game';
+import { useGameStore } from '../store/gameStore';
+import { MARKET_CONFIGS } from '../config/marketConfig';
 import { PROGRESSION_ORDER } from '../config/tiers';
 
 interface NewsTickerProps {
@@ -9,7 +11,21 @@ interface NewsTickerProps {
 }
 
 export const NewsTicker: React.FC<NewsTickerProps> = ({ news, currentTier }) => {
-  const filteredNews = news.filter(msg => {
+  const { unlockedLegacyUpgradeIds, currentMarket } = useGameStore();
+
+  const finalNews = [...news];
+
+  if (unlockedLegacyUpgradeIds.includes('market_insight')) {
+      const shiftNews = finalNews.find(m => typeof m === 'string' ? m.includes('ECONOMIC SHIFT') : m.text.includes('ECONOMIC SHIFT'));
+      if (!shiftNews) {
+          finalNews.unshift({
+              text: `🔮 MARKET INSIGHT: ${MARKET_CONFIGS[currentMarket].name} is stable for now.`,
+              colorClass: 'text-blue-400 italic'
+          });
+      }
+  }
+
+  const filteredNews = finalNews.filter(msg => {
     if (typeof msg === 'string') return true;
     if (!msg.tier) return true;
 

@@ -13,7 +13,9 @@ interface HallOfFameProps {
   onNewRun: () => void;
 }
 
-export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
+import { useGameStore } from '../store/gameStore';
+
+export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) => {
   const [activeTab, setActiveTab] = useState<'BEST' | 'ALL' | 'ENDINGS'>('BEST');
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
@@ -332,7 +334,10 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun }) => {
 
         {/* Footer */}
         <div className="p-6 bg-slate-900/50 border-t border-slate-800">
-          <BaseButton variant="primary" onClick={onNewRun} className="w-full py-4 text-xl">
+          <BaseButton variant="primary" onClick={() => {
+            // Instead of onNewRun which reloads the page, we go to LEGACY_SHOP
+            useGameStore.setState({ ph: 'LEGACY_SHOP' });
+          }} className="w-full py-4 text-xl">
             NEW RUN
           </BaseButton>
         </div>

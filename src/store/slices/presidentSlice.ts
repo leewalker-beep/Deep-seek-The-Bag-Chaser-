@@ -602,7 +602,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         pl: enforceStatCaps(updatedPl),
         ph: 'POST_MORTEM',
         deathBadge: deathInfo.badge,
-        fatalCause: gameOverCause
+        fatalCause: gameOverCause,
+        bankedLegacyPoints: state.bankedLegacyPoints + (updatedPl.legacyScore || 0)
       });
       return;
     }
@@ -628,7 +629,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     // 4. Regular advancement (passive income, rent, heat decay)
     const { newPl: advancedPl, newMarket, news: monthNews, shouldDie, deathCause } = advanceMonth(
       updatedPl,
-      currentMarket
+      currentMarket,
+      state.unlockedLegacyUpgradeIds
     );
 
     if (shouldDie) {
@@ -675,7 +677,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         pl: enforceStatCaps(advancedPl),
         ph: 'POST_MORTEM',
         fatalCause: deathCause,
-        deathBadge: 'CORRUPTION' // Generic presidential death badge
+        deathBadge: 'CORRUPTION', // Generic presidential death badge
+        bankedLegacyPoints: state.bankedLegacyPoints + (advancedPl.legacyScore || 0)
       });
       return;
     }

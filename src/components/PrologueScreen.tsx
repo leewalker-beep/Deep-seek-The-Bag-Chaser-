@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
+import { useGameStore } from '../store/gameStore';
 
 interface PrologueScreenProps {
   onStart: (name: string, backgroundId: string, categoryId: string, variationId: string) => void;
@@ -451,7 +452,18 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     return 'benefactor';
   }, [scores]);
 
-  const winningCategory = BACKGROUND_CATEGORIES.find(c => c.id === (selectedCatId || suggestedCategory));
+  const { unlockedLegacyUpgradeIds } = useGameStore();
+
+  const filteredCategories = useMemo(() => {
+    return BACKGROUND_CATEGORIES.filter(cat => {
+      if (cat.id === 'legacy') {
+        return unlockedLegacyUpgradeIds.includes('unique_origin_chosen');
+      }
+      return true;
+    });
+  }, [unlockedLegacyUpgradeIds]);
+
+  const winningCategory = filteredCategories.find(c => c.id === (selectedCatId || suggestedCategory));
   const suggestedVariation = winningCategory?.variations[0];
   const activeVariation = winningCategory?.variations.find(v => v.id === selectedVarId) || suggestedVariation;
 
@@ -696,7 +708,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
           {selectedCatId && (
             <div className="flex justify-center gap-2">
-               {BACKGROUND_CATEGORIES.map(c => (
+               {filteredCategories.map(c => (
                   <button key={c.id} onClick={() => { setSelectedCatId(c.id); setSelectedVarId(c.variations[0].id); }} className={`px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${selectedCatId === c.id ? 'bg-white text-black border-white' : 'text-slate-500 border-white/10'}`}>
                     {c.name}
                   </button>
