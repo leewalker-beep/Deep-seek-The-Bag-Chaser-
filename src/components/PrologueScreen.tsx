@@ -22,6 +22,35 @@ const THEMES: Record<string, { bg: string, glow: string }> = {
   tech: { bg: 'bg-gray-950', glow: 'shadow-emerald-500/20' },
 };
 
+const GrainOverlay = () => (
+  <>
+    <style>{`
+      @keyframes noise-anim {
+        0% { transform: translate(0,0) }
+        10% { transform: translate(-5%,-5%) }
+        20% { transform: translate(-10%,5%) }
+        30% { transform: translate(5%,-10%) }
+        40% { transform: translate(-5%,15%) }
+        50% { transform: translate(-10%,5%) }
+        60% { transform: translate(15%,0) }
+        70% { transform: translate(0,10%) }
+        80% { transform: translate(-15%,0) }
+        90% { transform: translate(10%,5%) }
+        100% { transform: translate(5%,0) }
+      }
+    `}</style>
+    <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
+      <div
+        className="absolute inset-[-200%] opacity-[0.4] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
+          animation: 'noise-anim 0.2s infinite steps(1)',
+        }}
+      />
+    </div>
+  </>
+);
+
 // --- Local Minigame Components ---
 
 const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
@@ -117,7 +146,16 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
             </div>
           )}
           {phase === 'countdown' && (
-            <div className="text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+            <motion.div
+              key={phaseTimer}
+              initial={{ scale: 1.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="font-black text-emerald-400"
+              style={{ fontSize: '120px', fontWeight: 900 }}
+            >
+              {Math.ceil(phaseTimer)}
+            </motion.div>
           )}
           {phase === 'playing' && (
             <>
@@ -237,7 +275,16 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
   if (phase === 'countdown') {
     return (
       <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
-        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+        <motion.div
+          key={phaseTimer}
+          initial={{ scale: 1.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="font-black text-blue-400"
+          style={{ fontSize: '120px', fontWeight: 900 }}
+        >
+          {Math.ceil(phaseTimer)}
+        </motion.div>
       </div>
     );
   }
@@ -347,7 +394,16 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
   if (phase === 'countdown') {
     return (
       <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
-        <div className="text-white text-8xl font-black">{Math.ceil(phaseTimer)}</div>
+        <motion.div
+          key={phaseTimer}
+          initial={{ scale: 1.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="font-black text-amber-400"
+          style={{ fontSize: '120px', fontWeight: 900 }}
+        >
+          {Math.ceil(phaseTimer)}
+        </motion.div>
       </div>
     );
   }
@@ -411,23 +467,29 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     }
   };
 
-  const grainOverlay = (
-    <div
-      className="absolute inset-0 pointer-events-none opacity-[0.05] z-[1] mix-blend-overlay"
-      style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')` }}
-    />
-  );
-
   // Screen 1: TITLE
   if (screen === 1) {
     return (
-      <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden flex flex-col items-center justify-center p-6 font-sans">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] to-[#050505] z-0" />
-        {grainOverlay}
+      <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center p-6 font-sans"
+        style={{ background: 'radial-gradient(ellipse at 50% 60%, #1a1a2e 0%, #0a0a0f 70%)' }}
+      >
+        <GrainOverlay />
+
+        {/* Background Blobs */}
+        <div className="absolute top-[-5%] left-[-10%] w-64 h-64 rounded-full bg-emerald-900/20 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-15%] w-80 h-80 rounded-full bg-purple-900/20 blur-3xl pointer-events-none" />
+
         <div className="relative z-10 w-full max-w-lg flex flex-col items-center text-center space-y-12">
           <div className="space-y-4">
-            <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="text-6xl md:text-8xl font-black text-white tracking-tighter">BAG CHASER</motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-slate-400 italic text-sm md:text-lg font-light tracking-widest uppercase opacity-70">
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-6xl md:text-8xl font-black text-white tracking-tighter"
+              style={{ textShadow: '0 0 80px rgba(255,255,255,0.15)' }}
+            >
+              BAG CHASER
+            </motion.h1>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-emerald-400 italic text-sm md:text-lg font-light tracking-widest uppercase">
               Escape the mud. Build the empire. Don't lose your soul.
             </motion.p>
           </div>
@@ -452,21 +514,66 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   // Screens 2-4: TRIALS
   if (screen >= 2 && screen <= 4) {
     const trials = [
-      { id: 'street', name: 'THE STREET KID', flavour: 'Survive on instinct. The city doesn\'t wait.', component: StreetKidTrial },
-      { id: 'dropout', name: 'THE DROPOUT', flavour: 'You\'ve always known the right thing to say.', component: DropoutTrial },
-      { id: 'benefactor', name: 'THE BENEFACTOR', flavour: 'Every decision is a calculated risk.', component: BenefactorTrial },
+      {
+        id: 'street',
+        name: 'THE STREET KID',
+        flavour: 'Survive on instinct. The city doesn\'t wait.',
+        component: StreetKidTrial,
+        bg: 'linear-gradient(135deg, #0a1a12 0%, #0a0a0f 100%)',
+        accent: 'text-emerald-400',
+        border: '1px solid rgba(16,185,129,0.3)',
+        shadow: '0 0 40px rgba(16,185,129,0.1)',
+        blob: 'bg-emerald-500/15'
+      },
+      {
+        id: 'dropout',
+        name: 'THE DROPOUT',
+        flavour: 'You\'ve always known the right thing to say.',
+        component: DropoutTrial,
+        bg: 'linear-gradient(135deg, #0a0f1a 0%, #0a0a0f 100%)',
+        accent: 'text-blue-400',
+        border: '1px solid rgba(59,130,246,0.3)',
+        shadow: '0 0 40px rgba(59,130,246,0.1)',
+        blob: 'bg-blue-500/15'
+      },
+      {
+        id: 'benefactor',
+        name: 'THE BENEFACTOR',
+        flavour: 'Every decision is a calculated risk.',
+        component: BenefactorTrial,
+        bg: 'linear-gradient(135deg, #1a140a 0%, #0a0a0f 100%)',
+        accent: 'text-amber-400',
+        border: '1px solid rgba(245,158,11,0.3)',
+        shadow: '0 0 40px rgba(245,158,11,0.1)',
+        blob: 'bg-amber-500/15'
+      },
     ];
     const t = trials[screen - 2];
     return (
-      <div className="relative min-h-screen w-full bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
-        {grainOverlay}
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 text-center"
+        style={{ background: t.bg }}
+      >
+        <GrainOverlay />
         <div className="w-full max-w-sm space-y-8 relative z-10">
           <div>
-            <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mb-2">TRIAL {screen - 1} OF 3</div>
-            <h2 className="text-3xl font-black text-white uppercase">{t.name}</h2>
+            <div className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 opacity-60 ${t.accent}`}>
+              TRIAL {screen - 1} OF 3
+            </div>
+            <h2 className={`text-3xl font-black uppercase ${t.accent}`}>{t.name}</h2>
             <p className="text-slate-400 text-sm mt-2 font-medium italic">"{t.flavour}"</p>
           </div>
-          <t.component onComplete={(s) => handleMinigameComplete(t.id as any, s)} />
+
+          <div className="relative">
+            {/* Centered color blob behind the box */}
+            <div className={`absolute inset-0 m-auto w-48 h-48 rounded-full blur-3xl pointer-events-none ${t.blob}`} />
+
+            <div className="relative z-10 rounded-3xl overflow-hidden"
+              style={{ border: t.border, boxShadow: t.shadow }}
+            >
+              <t.component onComplete={(s) => handleMinigameComplete(t.id as any, s)} />
+            </div>
+          </div>
+
           <div className="text-[10px] text-white/20 font-black uppercase tracking-widest">Score recorded silently</div>
         </div>
       </div>
@@ -492,22 +599,55 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     const BENEFACTOR_MAX = 12;
 
     const stats = [
-      { label: "Street Instinct", score: scores.street, max: STREET_MAX },
-      { label: "Street Charisma", score: scores.dropout, max: DROPOUT_MAX },
-      { label: "Street Smarts", score: scores.benefactor, max: BENEFACTOR_MAX },
+      { label: "Street Instinct", score: scores.street, max: STREET_MAX, color: 'bg-emerald-500' },
+      { label: "Street Charisma", score: scores.dropout, max: DROPOUT_MAX, color: 'bg-blue-500' },
+      { label: "Street Smarts", score: scores.benefactor, max: BENEFACTOR_MAX, color: 'bg-amber-500' },
     ];
 
+    const originStyles: Record<string, { bg: string, accent: string, button: string }> = {
+      street_kid: {
+        bg: 'linear-gradient(135deg, #0a1a12 0%, #0a0a0f 100%)',
+        accent: 'text-emerald-400',
+        button: 'bg-emerald-500 shadow-emerald-500/20'
+      },
+      dropout: {
+        bg: 'linear-gradient(135deg, #0a0f1a 0%, #0a0a0f 100%)',
+        accent: 'text-blue-400',
+        button: 'bg-blue-500 shadow-blue-500/20'
+      },
+      benefactor: {
+        bg: 'linear-gradient(135deg, #1a140a 0%, #0a0a0f 100%)',
+        accent: 'text-amber-400',
+        button: 'bg-amber-500 shadow-amber-500/20'
+      },
+    };
+
+    const style = originStyles[winningCategory?.id || 'street_kid'];
+
     return (
-      <div className="relative min-h-screen w-full bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
-        {grainOverlay}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 text-center"
+        style={{ background: style.bg }}
+      >
+        <GrainOverlay />
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-sm space-y-12 z-10">
           <div className="space-y-4">
             <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest">YOUR DESTINY IS SEALED</div>
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.3 }} className="text-9xl mb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
               {activeVariation?.icon}
             </motion.div>
-            <h2 className="text-5xl font-black text-white uppercase tracking-tighter">{winningCategory?.name}</h2>
-            <p className="text-[#4ade80] italic font-medium">"{destinyLines[winningCategory?.id || 'street_kid']}"</p>
+            <motion.h2
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-5xl font-black text-white uppercase tracking-tighter"
+            >
+              {winningCategory?.name}
+            </motion.h2>
+            <p className={`${style.accent} italic font-medium`}>"{destinyLines[winningCategory?.id || 'street_kid']}"</p>
             <div className="text-[10px] text-white/60 font-black uppercase tracking-widest mt-2 max-w-[200px] mx-auto leading-relaxed">
               {bonusLines[winningCategory?.id || 'street_kid']}
             </div>
@@ -515,7 +655,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
           {!selectedCatId ? (
             <div className="space-y-4 py-4 border-y border-white/5">
-              {stats.map(s => (
+              {stats.map((s, idx) => (
                 <div key={s.label}>
                   <div className="flex justify-between text-[8px] text-slate-500 font-black uppercase mb-1">
                     <span>{s.label}</span>
@@ -525,8 +665,8 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(100, (s.score / s.max) * 100)}%` }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                      className="h-full bg-white/40"
+                      transition={{ duration: 0.8, delay: 0.4 + idx * 0.2, ease: "easeOut" }}
+                      className={`h-full ${s.color}`}
                     />
                   </div>
                 </div>
@@ -546,7 +686,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           )}
 
           <div className="space-y-3">
-            <button onClick={() => setScreen(6)} className="w-full py-6 bg-[#4ade80] text-black font-black uppercase tracking-widest rounded-2xl text-xl shadow-2xl">
+            <button onClick={() => setScreen(6)} className={`w-full py-6 text-black font-black uppercase tracking-widest rounded-2xl text-xl shadow-2xl ${style.button}`}>
               This is me →
             </button>
             <button onClick={() => setSelectedCatId(selectedCatId ? null : suggestedCategory)} className="w-full py-4 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:text-white transition-colors">
@@ -564,7 +704,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             </div>
           )}
         </motion.div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -573,7 +713,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     const theme = THEMES[activeVariation?.backgroundStyle || 'gritty'];
     return (
       <div className={`relative min-h-screen w-full ${theme.bg} overflow-hidden flex flex-col items-center justify-center p-6 text-center`}>
-        {grainOverlay}
+        <GrainOverlay />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-12 z-10">
           <div className="flex flex-col items-center gap-2">
              <div className="text-4xl">{activeVariation?.icon}</div>
