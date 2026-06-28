@@ -216,11 +216,13 @@ function App() {
 
         saveHallOfFameEntry({
           runId: pl.runId,
+          playerName: pl.name,
           tier: pl.currentTier,
           legacyScore: pl.legacyScore || 0,
           finalBag: pl.bag,
           ending: ending.title,
           deathBadge: deathBadge || undefined,
+          lastHustle: pl.lastExecutedHustleId,
           date: new Date().toISOString(),
           month: pl.month,
         });
