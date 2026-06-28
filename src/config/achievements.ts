@@ -23,12 +23,23 @@ export interface AchievementConfig {
 
 const TIER_ORDER = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'];
 
+const PROGRESSION_STRINGS: Record<string, { name: string; description: string }> = {
+  MUD: { name: "Crawling Out", description: "You made it out of the mud. Barely." },
+  STREET: { name: "Off the Block", description: "The streets know your name now." },
+  STARTUP: { name: "In the Game", description: "You're building something. Don't blow it." },
+  CORPORATE: { name: "Suit Up", description: "Corner office. Glass ceiling. Break it." },
+  ELITE: { name: "Different League", description: "Most people never get here." },
+  MOGUL: { name: "Untouchable", description: "You own the game now." },
+  PRESIDENT: { name: "The Real Power", description: "They all answer to you." },
+  OPEN: { name: "God Mode", description: "There are no more rules." },
+};
+
 export const ACHIEVEMENTS: AchievementConfig[] = [
   // PROGRESSION (8)
   ...TIER_ORDER.map((tier, index) => ({
     id: `PROG_${tier}`,
-    name: `${tier} Bound`,
-    description: `Reach the ${tier} tier.`,
+    name: PROGRESSION_STRINGS[tier].name,
+    description: PROGRESSION_STRINGS[tier].description,
     category: 'PROGRESSION' as AchievementCategory,
     requirement: {
       check: (state: GameState) => TIER_ORDER.indexOf(state.pl.currentTier) >= index,
@@ -46,8 +57,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // HUSTLE MASTERY (12)
   {
     id: 'MASTERY_ANY_1',
-    name: 'Jack of One Trade',
-    description: 'Max level any hustle.',
+    name: 'First Blood',
+    description: 'Maxed your first hustle. Now do it again.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.length >= 1,
@@ -57,8 +68,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_ANY_5',
-    name: 'Versatile Grinder',
-    description: 'Max level 5 different hustles.',
+    name: 'Serial Grinder',
+    description: "Five hustles mastered. You don't stop.",
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.length >= 5,
@@ -69,7 +80,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'MASTERY_ANY_10',
     name: 'Master of Many',
-    description: 'Max level 10 different hustles.',
+    description: 'Ten hustles mastered. Respect the grind.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.length >= 10,
@@ -80,7 +91,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'MASTERY_ANY_20',
     name: 'Unstoppable Polymath',
-    description: 'Max level 20 different hustles.',
+    description: 'Twenty hustles mastered. You own every trade.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.length >= 20,
@@ -90,8 +101,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_TECH_FLIPPING',
-    name: 'Silicon Valley Flip',
-    description: 'Max level Tech Flipping.',
+    name: 'Silicon Flip',
+    description: 'Market moved. You profited.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('techFlip'),
@@ -101,8 +112,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_DROPSHIPPING',
-    name: 'Logistics Wizard',
-    description: 'Max level Dropshipping.',
+    name: 'Logistics King',
+    description: 'Supply met demand. You took the cut.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('drop'),
@@ -112,8 +123,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_STREET_EATS',
-    name: 'Michelin Street Star',
-    description: 'Max level Street Eats.',
+    name: 'Street Elite',
+    description: 'Five stars on the pavement.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('street_eats'),
@@ -123,8 +134,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_VENDING',
-    name: 'Passive King',
-    description: 'Master the Vending Machine business.',
+    name: 'Passive Power',
+    description: 'Money while you sleep.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('r_vending'),
@@ -134,8 +145,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_CRYPTO',
-    name: 'Network Architect',
-    description: 'Max level Crypto Mining.',
+    name: 'Chain Master',
+    description: 'Mining the future.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('crypto_mining'),
@@ -145,8 +156,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_REAL_ESTATE',
-    name: 'Skyline Owner',
-    description: 'Max level Real Estate Empire.',
+    name: 'Skyline Legend',
+    description: 'The city is your portfolio.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('real_estate_empire'),
@@ -156,8 +167,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_LOBBYING',
-    name: 'Shadow Government',
-    description: 'Max level Lobbying Firm.',
+    name: 'Puppet Master',
+    description: 'Laws are just suggestions.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('lobbying'),
@@ -167,8 +178,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'MASTERY_PRIVATE_EQUITY',
-    name: 'Corporate Raider',
-    description: 'Max level Private Equity.',
+    name: 'Asset Stripper',
+    description: 'Buy, gut, flip, repeat.',
     category: 'HUSTLE MASTERY',
     requirement: {
       check: (state: GameState) => state.pl.masteredHustles.includes('privateequity'),
@@ -180,8 +191,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // EARNINGS (7)
   {
     id: 'EARN_1M',
-    name: 'Million Dollar Milestone',
-    description: 'Earn $1,000,000 total profit.',
+    name: 'The Million',
+    description: 'Different breed.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000,
@@ -191,8 +202,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'EARN_10M',
-    name: 'Eight Figure Club',
-    description: 'Earn $10,000,000 total profit.',
+    name: 'Eight Zeros',
+    description: 'They study you now.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 10000000,
@@ -202,8 +213,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'EARN_100M',
-    name: 'Centimillionaire',
-    description: 'Earn $100,000,000 total profit.',
+    name: 'Nine Figures',
+    description: 'A global player.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 100000000,
@@ -214,7 +225,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: 'EARN_1B',
     name: 'The B-Word',
-    description: 'Earn $1,000,000,000 total profit.',
+    description: 'You own the board.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000000,
@@ -224,8 +235,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'EARN_10B',
-    name: 'Economic Force',
-    description: 'Earn $10,000,000,000 total profit.',
+    name: 'Decabillionaire',
+    description: 'Economic force.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 10000000000,
@@ -235,8 +246,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'EARN_100B',
-    name: 'Titan of Industry',
-    description: 'Earn $100,000,000,000 total profit.',
+    name: 'Centibillionaire',
+    description: 'Titan of industry.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 100000000000,
@@ -246,8 +257,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'EARN_1T',
-    name: 'The First Trillion',
-    description: 'Earn $1,000,000,000,000 total profit.',
+    name: 'The Trillionaire',
+    description: 'First of your kind.',
     category: 'EARNINGS',
     requirement: {
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000000000,
@@ -259,8 +270,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // MINIGAME SKILL (8)
   {
     id: 'SKILL_MASHER',
-    name: 'Button Masher Elite',
-    description: 'Get a perfect score in StruggleMash.',
+    name: 'Mash King',
+    description: 'Fingers of fury. Perfect score.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'StruggleMash' && event.metadata.multiplier >= 2.0,
@@ -270,8 +281,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_REACTION',
-    name: 'Light Speed Reflexes',
-    description: 'Perfect score in QuickReaction.',
+    name: 'Light Speed',
+    description: 'Frame-perfect reflexes.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'QuickReaction' && event.metadata.multiplier >= 2.0,
@@ -281,8 +292,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_SWIPE',
-    name: 'Smooth Swiper',
-    description: 'Perfect score in SwipeOrder.',
+    name: 'Clean Sweep',
+    description: 'Zero friction. Total control.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'SwipeOrder' && event.metadata.multiplier >= 2.0,
@@ -292,8 +303,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_TAP',
-    name: 'Rhythm Master',
-    description: 'Perfect score in TapRhythm.',
+    name: 'Perfect Rhythm',
+    description: 'In the pocket. Every time.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'TapRhythm' && event.metadata.multiplier >= 2.0,
@@ -303,8 +314,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_SEQUENCE',
-    name: 'Eidetic Memory',
-    description: 'Perfect score in SequenceRecall.',
+    name: 'Steel Trap',
+    description: 'You forget nothing.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'SequenceRecall' && event.metadata.multiplier >= 2.0,
@@ -314,8 +325,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_PATTERN',
-    name: 'Pattern Recognition',
-    description: 'Perfect score in PatternMemory.',
+    name: 'The Architect',
+    description: 'You see the code.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'PatternMemory' && event.metadata.multiplier >= 2.0,
@@ -325,8 +336,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_BALANCE',
-    name: 'Zen Master',
-    description: 'Perfect score in BalanceScale.',
+    name: 'Zen State',
+    description: 'Perfectly centered.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'BalanceScale' && event.metadata.multiplier >= 2.0,
@@ -336,8 +347,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'SKILL_GRID',
-    name: 'Grid Overlord',
-    description: 'Perfect score in ReactionGrid.',
+    name: 'Grid Ghost',
+    description: 'Moving faster than the eye.',
     category: 'MINIGAME SKILL',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'ReactionGrid' && event.metadata.multiplier >= 2.0,
@@ -349,8 +360,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // COLLECTION (7)
   {
     id: 'COLL_FLEX',
-    name: 'Diamond Encrusted',
-    description: 'Own all flex assets.',
+    name: 'Iced Out',
+    description: 'Every flex asset owned. Pure dominance.',
     category: 'COLLECTION',
     requirement: {
       check: (state: GameState) => Object.keys(state.pl.flexAssets).length >= 10,
@@ -449,8 +460,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // STREAKS (3)
   {
     id: 'STREAK_7',
-    name: 'Weekly Habit',
-    description: '7 day login streak.',
+    name: 'Weekly Grinder',
+    description: 'Seven days straight. Respect.',
     category: 'STREAKS',
     requirement: {
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 7,
@@ -460,8 +471,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'STREAK_30',
-    name: 'Dedicated Chaser',
-    description: '30 day login streak.',
+    name: 'No Days Off',
+    description: 'A month. No excuses.',
     category: 'STREAKS',
     requirement: {
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 30,
@@ -471,8 +482,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'STREAK_100',
-    name: 'Bag Chaser Forever',
-    description: '100 day login streak.',
+    name: 'Century Club',
+    description: '100 days straight. Untouchable.',
     category: 'STREAKS',
     requirement: {
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 100,
@@ -611,8 +622,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   // RIVALS
   {
     id: 'RIVAL_CRUSHED',
-    name: 'Rival Crushed',
-    description: 'Defeat a rival by completing their challenge.',
+    name: 'Smoke Cleared',
+    description: 'Rival buried. Market secured.',
     category: 'PROGRESSION',
     requirement: {
       check: (_state: GameState, event?: GameEvent) => event?.type === 'RIVAL_DEFEATED',

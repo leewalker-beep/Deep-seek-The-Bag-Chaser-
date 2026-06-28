@@ -22,6 +22,16 @@ const rentByTier: Record<Tier, number> = {
 
 import type { TickerMessage } from '../types/game';
 
+const TIER_MESSAGES: Record<string, string> = {
+  STREET: "🔥 STREET TIER. You're off the block.",
+  STARTUP: "🚀 STARTUP TIER. Build or get buried.",
+  CORPORATE: "💼 CORPORATE TIER. Play the long game.",
+  ELITE: "💎 ELITE TIER. Most never make it here.",
+  MOGUL: "👑 MOGUL TIER. You own this now.",
+  PRESIDENT: "🇺🇸 PRESIDENT TIER. They all answer to you.",
+  OPEN: "🌐 OPEN TIER. No ceiling. No rules.",
+};
+
 export interface AdvancementResult {
   newPl: PlayerStats;
   newMarket: MarketType;
@@ -291,7 +301,7 @@ export function advanceMonth(
       if (ratio > 2) {
         threat = 'RIVAL_DOMINANT';
         if (rival.tier === newPl.currentTier) {
-          news.push({ text: `⚠️ ${rival.name} is dominating the market. Costs are up 25% in ${rival.tier} tier.`, colorClass: 'text-red-400 font-bold' });
+          news.push({ text: `⚠️ ${rival.name} is running your tier. Costs up 25% until you take it back.`, colorClass: 'text-red-400 font-bold' });
         }
       } else if (ratio < 0.5) {
         threat = 'PLAYER_DOMINANT';
@@ -301,7 +311,7 @@ export function advanceMonth(
           // Market Leader Check (Permanent bonus)
           if (!newPl.marketLeaderTiers.includes(rival.tier)) {
             newPl.marketLeaderTiers.push(rival.tier);
-            news.push({ text: `🏆 MARKET LEADER: You've permanently established dominance in the ${rival.tier} tier! +5% Yield.`, colorClass: 'text-yellow-400 font-black animate-bounce' });
+            news.push({ text: `🏆 ${rival.tier} IS YOURS. Nobody eats here without your say-so. Yield locked at +5%.`, colorClass: 'text-yellow-400 font-black animate-bounce' });
           }
 
           // Trigger Challenge (20% chance if not already challenged by this rival)
@@ -315,7 +325,7 @@ export function advanceMonth(
               hustlesRequired: 3,
               monthsRemaining: 5
             });
-            news.push({ text: `⚔️ CHALLENGE: ${rival.name} has challenged you! Complete 3 hustles in ${rival.tier} tier within 5 months or lose 10% of your bag!`, colorClass: 'text-orange-400 font-black animate-pulse' });
+            news.push({ text: `⚔️ ${rival.name} WANTS SMOKE. Run 3 hustles in ${rival.tier} within 5 months or lose 10% of your bag. Don't sleep.`, colorClass: 'text-orange-400 font-black animate-pulse' });
           }
         }
       }
@@ -489,6 +499,11 @@ export function advanceMonth(
   // Add monthly summary to news
   const netChange = passiveIncome - totalRent;
   news.unshift(`📅 Month ${newPl.month}: Rent -$${totalRent.toLocaleString()} | Passive +$${passiveIncome.toLocaleString()} | Net: ${netChange >= 0 ? '+' : ''}$${netChange.toLocaleString()}`);
+
+  // Inject Tier Advancement news if tier just changed
+  if (pl.currentTier !== newPl.currentTier && TIER_MESSAGES[newPl.currentTier]) {
+    news.push({ text: TIER_MESSAGES[newPl.currentTier], colorClass: 'text-yellow-400 font-black animate-pulse' });
+  }
 
   // Check for death conditions
   const { shouldDie, deathCause } = checkDeathConditions(newPl);

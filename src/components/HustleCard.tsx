@@ -8,6 +8,17 @@ import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngi
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { useGameStore } from '../store/gameStore';
 
+const EXECUTE_LABEL: Record<string, string> = {
+  MUD: 'GET TO WORK',
+  STREET: 'RUN IT',
+  STARTUP: 'SHIP IT',
+  CORPORATE: 'EXECUTE',
+  ELITE: 'DEPLOY',
+  MOGUL: 'AUTHORIZE',
+  PRESIDENT: 'SIGN OFF',
+  OPEN: 'MAKE IT HAPPEN',
+};
+
 interface HustleCardProps {
   hustle: Hustle;
   player: PlayerStats;
@@ -191,7 +202,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (effectiveStats.cost > 0 ? `RUN IT (-$${effectiveStats.cost.toLocaleString()})` : 'EXECUTE'))}
+            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (effectiveStats.cost > 0 ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})` : (EXECUTE_LABEL[player.currentTier] || 'EXECUTE')))}
           </button>
         )}
 
@@ -207,7 +218,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
               }
               className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-[10px] uppercase transition-all active:scale-95 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:border-slate-800 disabled:text-slate-700 disabled:bg-transparent"
             >
-              Repeat {levelData.name}
+              {EXECUTE_LABEL[player.currentTier] || 'RUN IT'} {levelData.name}
               <br />
               ${effectiveStats.cost.toLocaleString()} ({hustle.id === 'r_vending' ? player.vendingCount : (levelData.id === 'l2a' ? player.flipCount : player.rentPortfolioCount)}/{levelData.maxRepeat})
             </button>
