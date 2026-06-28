@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import type { TickerMessage, Tier } from '../types/game';
 import { PROGRESSION_ORDER } from '../config/tiers';
 
@@ -20,23 +21,44 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news, currentTier }) => 
     return Math.abs(msgTierIdx - currentTierIdx) <= 2;
   });
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 p-2 z-50">
-      <div className="max-w-md mx-auto">
-        {filteredNews.slice(0, 4).map((msg, i) => {
-          const isObject = typeof msg === 'object';
-          const text = isObject ? msg.text : msg;
-          const colorClass = isObject ? msg.colorClass : 'text-slate-400';
+  const deduped = filteredNews.filter((msg, i) => {
+    const currentText = typeof msg === 'string' ? msg : msg.text;
+    if (i === 0) return true;
+    const prevMsg = filteredNews[i - 1];
+    const prevText = typeof prevMsg === 'string' ? prevMsg : (prevMsg as TickerMessage).text;
+    return currentText !== prevText;
+  }).map(msg => typeof msg === 'string' ? { text: msg } : msg);
 
-          return (
-            <div key={i} className={`text-[9px] font-mono truncate ${colorClass}`}>
-              <span className="text-slate-600">[{i + 1}]</span> {text}
-            </div>
-          );
-        })}
-        {news.length === 0 && (
-          <div className="text-[9px] font-mono text-slate-600 text-center">System ready...</div>
-        )}
+  if (deduped.length === 0) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 py-1.5 z-50">
+        <div className="text-[10px] font-mono text-slate-600 text-center uppercase tracking-widest">System ready...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="w-full overflow-hidden border-t border-slate-800 bg-slate-950/80 py-1.5">
+        <motion.div
+          className="flex gap-8 whitespace-nowrap"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{
+            duration: Math.max(deduped.length * 6, 20),
+            ease: 'linear',
+            repeat: Infinity
+          }}
+        >
+          {[...deduped, ...deduped].map((msg, i) => (
+            <span
+              key={i}
+              className={`text-xs shrink-0 ${msg.colorClass || 'text-slate-400'}`}
+            >
+              {msg.text}
+              <span className="mx-4 text-slate-700">•</span>
+            </span>
+          ))}
+        </motion.div>
       </div>
     </div>
   );

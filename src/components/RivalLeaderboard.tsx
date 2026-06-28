@@ -25,35 +25,65 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
     sabotageRival(rivalId);
   };
 
+  const tierLabel = pl.currentTier || 'STREET';
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Elite Leaderboard</h3>
-        <span className="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold uppercase">Net Worth</span>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+          {tierLabel} LEADERBOARD
+        </span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 border border-slate-700 rounded px-2 py-0.5">
+          NET WORTH
+        </span>
       </div>
 
       <div className="space-y-3">
         {allParticipants.map((p, index) => {
           const isPlayer = p.id === 'player';
           const pAsRival = p as Rival;
+
+          let cardStyle = "border border-slate-700/40 bg-slate-900/20 rounded-xl p-3";
+          let nameStyle = "text-slate-300 font-medium";
+          let prefixStyle = "text-slate-500";
+          let amountStyle = "text-slate-400";
+          let prefix = `#${index + 1}`;
+
+          if (index === 0) {
+            cardStyle = "border border-amber-500/40 bg-amber-950/20 rounded-xl p-3";
+            nameStyle = "text-amber-400 font-black text-base";
+            prefixStyle = "text-amber-400";
+            amountStyle = "text-amber-300 font-black";
+            prefix = `👑 #1`;
+          } else if (index === 1 || isPlayer) {
+            cardStyle = "border border-emerald-500/40 bg-emerald-950/20 rounded-xl p-3";
+            nameStyle = "text-emerald-400 font-bold text-base";
+            prefixStyle = "text-emerald-500";
+            amountStyle = "text-emerald-400 font-bold";
+            prefix = `#${index + 1}`;
+          }
+
           return (
             <div
               key={p.id}
-              className={`flex flex-col p-3 rounded-xl transition-all ${
-                isPlayer ? 'bg-blue-600/10 border border-blue-500/30' : 'bg-slate-950/50 border border-slate-800/50'
-              }`}
+              className={`flex flex-col transition-all ${cardStyle}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className={`text-[10px] font-black w-4 ${
-                    index === 0 ? 'text-yellow-400' : index === 1 ? 'text-slate-300' : index === 2 ? 'text-orange-400' : 'text-slate-600'
-                  }`}>
-                    #{index + 1}
+                  <span className={`text-[10px] font-black w-10 shrink-0 ${prefixStyle}`}>
+                    {prefix}
                   </span>
                   <div>
-                    <div className={`text-xs font-bold ${isPlayer ? 'text-white' : 'text-slate-300'}`}>
+                    <div className={nameStyle}>
                       {p.name} {isPlayer && '(YOU)'}
                     </div>
+
+                    {!isPlayer && (
+                      <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">
+                        {(pAsRival as any).currentHustle || (pAsRival as any).specialty || `${pAsRival.tier} OPERATOR`}
+                      </div>
+                    )}
+
                     {p.currentBid > 0 && (
                       <div className="text-[8px] text-red-400 font-bold uppercase animate-pulse">
                         Active Bid: ${p.currentBid.toLocaleString()}
@@ -70,7 +100,7 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     )}
                   </div>
                 </div>
-                <div className={`text-xs font-mono font-bold ${isPlayer ? 'text-emerald-400' : 'text-slate-400'}`}>
+                <div className={`text-xs font-mono ${amountStyle}`}>
                   ${p.netWorth.toLocaleString()}
                 </div>
               </div>
@@ -95,17 +125,15 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     </div>
                   )}
 
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap items-center">
                     {p.netWorth > playerBag && (
-                      <BaseButton
-                        variant="ghost"
-                        size="sm"
+                      <button
                         disabled={pAsRival.lastSabotagedMonth === pl.month}
-                        className="text-[8px] py-1 h-auto bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 disabled:opacity-50"
+                        className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-950/60 text-red-400 border border-red-500/30 rounded px-2 py-0.5 disabled:opacity-50"
                         onClick={() => handleSabotage(p.id)}
                       >
-                        {pAsRival.lastSabotagedMonth === pl.month ? 'Sabotaged' : `Spy/Sabotage ($${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}k)`}
-                      </BaseButton>
+                        ⚔️ {pAsRival.lastSabotagedMonth === pl.month ? 'SABOTAGED' : `SABOTAGE ACTIVE · $${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K`}
+                      </button>
                     )}
 
                     {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
