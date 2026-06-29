@@ -1,8 +1,17 @@
 {
-  "name": "app",
+  "name": "bag-chaser",
+  "description": "A high-stakes life simulator about climbing from the mud to the Oval Office.",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "keywords": [
+    "game",
+    "simulator",
+    "life-sim",
+    "react",
+    "typescript",
+    "strategy"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

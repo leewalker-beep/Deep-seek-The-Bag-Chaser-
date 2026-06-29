@@ -131,7 +131,7 @@ export const generateDynamicChallenges = (
     // Each challenge contributes ~2% to reach ~6% total.
     const nextTier = PROGRESSION_ORDER[PROGRESSION_ORDER.indexOf(pl.currentTier) + 1] || 'OPEN';
     const advancementFee = TIER_REQUIREMENTS[nextTier as Tier]?.fee || TIER_REQUIREMENTS.STREET.fee;
-    const baseRewardPool = advancementFee * 0.02;
+    const baseRewardPool = advancementFee * 0.008;
 
     let rewardCash = 0;
     if (template.type === 'earn_cash') {
