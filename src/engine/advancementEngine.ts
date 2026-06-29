@@ -313,7 +313,34 @@ export function advanceMonth(
 
   // Apply financial changes
   newPl.bag = newPl.bag + passiveIncome - totalRent;
+
+  const FLEX_THRESHOLDS: Record<number, string> = {
+    10000:       'watch',
+    50000:       'car',
+    500000:      'yacht',
+    1000000:     'penthouse',
+    5000000:     'jet',
+    25000000:    'island',
+    100000000:   'franchise',
+  };
+
+  for (const threshold of Object.keys(FLEX_THRESHOLDS)) {
+    const t = Number(threshold);
+    if (newPl.bag >= t &&
+        !(newPl.seenFlexThresholds || []).includes(t)) {
+      newPl.pendingFlexOffer = t;
+      newPl.seenFlexThresholds = [
+        ...(newPl.seenFlexThresholds || []), t
+      ];
+      break;
+    }
+  }
+
   newPl.month += 1;
+
+  if (newPl.month > 0 && newPl.month % 12 === 0) {
+    newPl.pendingAnnualStatement = true;
+  }
 
   // Decay heat (cool down over time)
   let heatDecay = 10;

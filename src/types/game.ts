@@ -426,6 +426,12 @@ export interface PlayerStats {
   collectedDeathBadges: string[];
   deathCount: number;
   tierBadges: string[];
+  pendingFlexOffer: number | null;
+  seenFlexThresholds: number[];
+  pendingAnnualStatement: boolean;
+  annualCashEarned: number;
+  annualCashSpent: number;
+  annualHustlesRun: number;
   tierStats: Record<string, { plays: number, earnings: number, favoriteHustle: string }>;
   hustlePlays: Record<string, number>;
   completedDailyChallengesCount: number;
@@ -543,4 +549,5 @@ export interface GameState {
   bankedLegacyPoints: number;
   unlockedLegacyUpgradeIds: string[];
   unlockLegacyUpgrade: (upgradeId: string) => void;
+  updatePl: (updates: Partial<PlayerStats>) => void;
 }

@@ -28,6 +28,7 @@ export interface PlayerStatsSlice {
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
   dropArtist: (artistId: string) => void;
   unlockLegacyUpgrade: (upgradeId: string) => void;
+  updatePl: (updates: Partial<PlayerStats>) => void;
 }
 
 export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStatsSlice> = (set, get) => ({
@@ -211,5 +212,11 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       }),
       news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
     });
+  },
+
+  updatePl: (updates) => {
+    set((state) => ({
+      pl: enforceStatCaps({ ...state.pl, ...updates })
+    }));
   },
 });

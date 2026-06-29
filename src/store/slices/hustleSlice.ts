@@ -668,6 +668,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
+      annualCashEarned: state.pl.annualCashEarned + Math.max(0, result.yieldCash || 0),
+      annualCashSpent: state.pl.annualCashSpent + (levelData.cost || 0),
+      annualHustlesRun: state.pl.annualHustlesRun + 1,
       approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + (result.approvalBonus || 0))),
       bag: newBag,
       clout: state.pl.clout + result.yieldClout,
