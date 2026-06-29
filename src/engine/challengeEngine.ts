@@ -92,17 +92,17 @@ export const generateDynamicChallenges = (
   });
 
   const selectedTemplates: ChallengeTemplate[] = [];
-  const pool = [...weightedTemplates];
+  const pool = [...weightedTemplates] as Array<ChallengeTemplate & { weight: number }>;
 
   for (let i = 0; i < 3; i++) {
-    const totalWeight = pool.reduce((sum, t) => sum + (t as any).weight, 0);
+    const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
     let random = Math.random() * totalWeight;
     for (let j = 0; j < pool.length; j++) {
-      if (random < (pool[j] as any).weight) {
+      if (random < pool[j].weight) {
         selectedTemplates.push(pool.splice(j, 1)[0]);
         break;
       }
-      random -= (pool[j] as any).weight;
+      random -= pool[j].weight;
     }
   }
 

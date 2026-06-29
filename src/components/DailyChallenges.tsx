@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import type { DailyChallenge } from '../types/game';
 
 interface DailyChallengesProps {
   isOpen: boolean;
@@ -8,7 +9,7 @@ interface DailyChallengesProps {
 }
 
 export const DailyChallenges: React.FC<DailyChallengesProps> = ({ isOpen, onClose }) => {
-  const { dailyChallenges, loginStreak } = useGameStore() as any;
+  const { dailyChallenges, loginStreak } = useGameStore();
 
   return (
     <AnimatePresence>
@@ -38,7 +39,7 @@ export const DailyChallenges: React.FC<DailyChallengesProps> = ({ isOpen, onClos
             </div>
 
             <div className="p-6 space-y-4">
-              {dailyChallenges.map((challenge: any) => {
+              {dailyChallenges.map((challenge: DailyChallenge) => {
                 const progress = Math.min(100, (challenge.current / challenge.target) * 100);
                 return (
                   <div key={challenge.id} className={`p-4 rounded-2xl border transition-colors ${

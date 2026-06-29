@@ -49,6 +49,6 @@ export const useGameStore = create<GameState>()(
   )
 );
 
-if (typeof window !== 'undefined') {
-  (window as any).useGameStore = useGameStore;
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>).useGameStore = useGameStore;
 }

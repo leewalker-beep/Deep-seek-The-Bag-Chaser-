@@ -80,7 +80,7 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
 
                     {!isPlayer && (
                       <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">
-                        {(pAsRival as any).currentHustle || (pAsRival as any).specialty || `${pAsRival.tier} OPERATOR`}
+                        {pAsRival.currentHustle || pAsRival.specialty || `${pAsRival.tier} OPERATOR`}
                       </div>
                     )}
 

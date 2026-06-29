@@ -442,7 +442,7 @@ function App() {
           activeTab={activeTab}
         currentTier={pl.currentTier}
           onTabChange={(tab) => {
-            setActiveTab(tab as any);
+            setActiveTab(tab as Tier | 'FLEX' | 'SCOREBOARD' | 'CHALLENGES' | 'LEGACY_SHOP' | 'PRESIDENCY');
             setShowMinigame(false);
           }}
         />
@@ -469,7 +469,7 @@ function App() {
             {showFlexMarket && <FlexMarket />}
 
             {/* Rival Leaderboard */}
-            {!showFlexMarket && activeTab !== ('PRESIDENCY' as any) && (
+            {!showFlexMarket && activeTab !== 'PRESIDENCY' && (
               <RivalLeaderboard
                 playerBag={pl.bag}
                 playerName={pl.name || 'You'}

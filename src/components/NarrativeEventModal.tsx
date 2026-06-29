@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
+import type { PlayerStats } from '../types/game';
 
 export const NarrativeEventModal: React.FC = () => {
   const { pl, resolveNarrativeEvent } = useGameStore();
@@ -54,8 +55,9 @@ export const NarrativeEventModal: React.FC = () => {
                     let reason = "";
 
                     if (req?.stat) {
-                        const current = (pl as any)[req.stat.type === 'mentalHealth' ? 'mentalHealth' : req.stat.type];
-                        if (+current < req.stat.value) {
+                        const statKey = req.stat.type === 'mentalHealth' ? 'mentalHealth' : req.stat.type;
+                        const current = pl[statKey as keyof PlayerStats];
+                        if (typeof current === 'number' && current < req.stat.value) {
                             disabled = true;
                             reason = `Requires ${req.stat.value} ${req.stat.type}`;
                         }

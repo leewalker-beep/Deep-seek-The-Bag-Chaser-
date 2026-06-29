@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction, Tier } from '../../types/game';
+import type { GameState, GameAction, Tier, GameEventType, Challenge } from '../../types/game';
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
@@ -13,7 +13,7 @@ import { getEnding } from '../../config/endings';
 import { showConfetti } from '../../components/effects/Confetti';
 import { FLEX_ASSETS } from '../../config/flexAssets';
 import { getUnlockedHustles, getInitialStats } from '../initialState';
-import { executeHustleAction } from '../../engine/hustleEngine';
+import { executeHustleAction, type HustleExecutionResult } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
@@ -26,8 +26,8 @@ import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
 
-  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => any;
-  executeBranch: (hustleId: string, branchId: string) => any;
+  executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => HustleExecutionResult;
+  executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   selectSpecialization: (specializationId: string) => void;
@@ -37,7 +37,7 @@ export interface HustleSlice {
   counterBid: (rivalId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
-  logEvent: (type: any, metadata?: any) => void;
+  logEvent: (type: GameEventType, metadata?: Record<string, unknown>) => void;
   checkMilestones: () => void;
   resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
 }
@@ -164,7 +164,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const masteredHustles = [...(state.pl.masteredHustles || [])];
     let totalBonusApproval = 0;
     const finalDemographicApproval = { ...(state.pl.demographicApproval || {}) };
-    const masteryBoostNews: any[] = [];
+    const masteryBoostNews: TickerMessage[] = [];
 
     Object.keys(HUSTLES).forEach(hId => {
       if (masteredHustles.includes(hId)) return;
@@ -225,7 +225,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             bonusApproval += demographicBonus;
           }
           totalBonusApproval += bonusApproval;
-          masteryBoostNews.push({ text: `Your mastery of ${h.name} has boosted your campaign!`, colorClass: 'text-yellow-400 font-bold' });
+          masteryBoostNews.push({
+            text: `Your mastery of ${h.name} has boosted your campaign!`,
+            type: 'MASTERY_BOOST',
+            colorClass: 'text-yellow-400 font-bold'
+          });
         }
 
         showConfetti();
@@ -236,7 +240,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           const currentTierIdx = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
           const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);
           if (currentTierIdx >= relevantTierIdx) {
-            masteryBoostNews.push({ text: `Your ${badge.name} is now active: ${badge.futureBenefit}`, colorClass: 'text-yellow-400 font-bold' });
+            masteryBoostNews.push({
+              text: `Your ${badge.name} is now active: ${badge.futureBenefit}`,
+              type: 'BADGE_ACTIVE',
+              colorClass: 'text-yellow-400 font-bold'
+            });
             get().logEvent('SPECIAL_EVENT', { type: 'BADGE_BENEFIT_ACTIVE', message: badge.futureBenefit });
           }
         }
@@ -504,15 +512,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           return { ...c, hustlesCompleted: newCompleted };
         }
         return c;
-      }).filter(Boolean) as any[];
+      }).filter(Boolean) as Challenge[];
 
       set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
     }
 
-    (get() as any).updateChallengeProgress('hustle_count', 1);
-    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
-    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
-    (get() as any).updateChallengeProgress('aura_gain', result.yieldAura);
+    const { updateChallengeProgress } = get();
+    updateChallengeProgress('hustle_count', 1);
+    updateChallengeProgress('earn_cash', result.yieldCash);
+    updateChallengeProgress('clout_gain', result.yieldClout);
+    updateChallengeProgress('aura_gain', result.yieldAura);
 
     get().logAction({
       month: state.pl.month,
@@ -550,7 +559,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     const currentTierIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
-    const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as any);
+    const hustleTierIndex = PROGRESSION_ORDER.indexOf(hustle.tier as Tier);
 
     const isTutorialBypass = !state.isTutorialSkipped && state.tutorialStep === 2 && (hustleId === 'cc' || hustleId === 'pod');
 
@@ -561,7 +570,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
     }
 
-    let levelData: any;
+    let levelData: HustleLevel | undefined;
     const currentLevel = state.pl.hustleLevels[hustleId] || 1;
 
     if (hustle.branches) {
@@ -703,10 +712,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       } : state.pl.hustleBranchIds,
     });
 
-    (get() as any).updateChallengeProgress('hustle_count', 1);
-    (get() as any).updateChallengeProgress('earn_cash', result.yieldCash);
-    (get() as any).updateChallengeProgress('clout_gain', result.yieldClout);
-    (get() as any).updateChallengeProgress('aura_gain', result.yieldAura);
+    const { updateChallengeProgress } = get();
+    updateChallengeProgress('hustle_count', 1);
+    updateChallengeProgress('earn_cash', result.yieldCash);
+    updateChallengeProgress('clout_gain', result.yieldClout);
+    updateChallengeProgress('aura_gain', result.yieldAura);
 
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
@@ -733,7 +743,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     newPl.lastPassiveBreakdown = passiveBreakdown;
 
-    const actionLogData: any = {
+    const actionLogData: Omit<GameAction, 'id' | 'timestamp'> = {
       month: state.pl.month,
       tier: state.pl.currentTier,
       hustleId,
@@ -885,14 +895,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           return { ...c, hustlesCompleted: newCompleted };
         }
         return c;
-      }).filter(Boolean) as any[];
+      }).filter(Boolean) as Challenge[];
 
       set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
     }
 
     if (result.success) {
       if (result.isRare) {
-        (get() as any).updateChallengeProgress('big_win', 1);
+        get().updateChallengeProgress('big_win', 1);
       }
       if (hustleId === 'real_estate_empire') {
         get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });

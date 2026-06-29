@@ -38,7 +38,7 @@ export interface GameEvent {
     heat: number;
     tier: Tier;
   };
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export type PassiveCategory = 'BUSINESS' | 'REAL_ESTATE' | 'FLEX' | 'ROYALTY' | 'BONUS';
@@ -107,6 +107,8 @@ export interface Rival {
   tier: Tier;
   lastSabotagedMonth?: number;
   vengeance?: number; // Multiplier for aggressive bidding chance
+  currentHustle?: string;
+  specialty?: string;
 }
 
 export interface Challenge {
@@ -131,7 +133,7 @@ export interface NarrativeChoice {
     passiveCash?: number;
     specializationLock?: string;
   };
-  setFlags?: Record<string, any>;
+  setFlags?: Record<string, string | number | boolean>;
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
     background?: string[];
@@ -152,7 +154,7 @@ export interface NarrativeEvent {
     minMonth?: number;
     probability: number;
     once?: boolean;
-    flagReqs?: Record<string, any>;
+    flagReqs?: Record<string, string | number | boolean>;
   };
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
@@ -419,7 +421,7 @@ export interface PlayerStats {
   activeNarrative: string | null;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
-  narrativeFlags: Record<string, any>;
+  narrativeFlags: Record<string, string | number | boolean>;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -451,6 +453,7 @@ export interface TickerMessage {
   text: string;
   colorClass?: string;
   tier?: Tier;
+  type?: string;
 }
 
 export interface Sentiment {
@@ -466,7 +469,7 @@ export interface GameState {
   currentMarket: MarketType;
   news: (string | TickerMessage)[];
   unlockedHustles: Record<string, boolean>;
-  activeTab: Tier | 'FLEX' | 'PRESIDENCY';
+  activeTab: Tier | 'FLEX' | 'SCOREBOARD' | 'CHALLENGES' | 'LEGACY_SHOP' | 'PRESIDENCY';
   activeHustleView: string | null;
   activeTierBadge: string | null;
   activeNarrative?: string | null;
@@ -531,7 +534,7 @@ export interface GameState {
   updateDemographicApproval: (demographic: string, value: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
-  logEvent: (type: GameEventType, metadata?: any) => void;
+  logEvent: (type: GameEventType, metadata?: Record<string, unknown>) => void;
   checkMilestones: () => void;
   processLogin: () => void;
   dailyChallenges: DailyChallenge[];
