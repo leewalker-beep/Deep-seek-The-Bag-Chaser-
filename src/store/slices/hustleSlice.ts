@@ -633,7 +633,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newHustlePlays = { ...state.pl.hustlePlays };
     newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
     if (result.passiveAdded !== undefined) {
-       newDynamicPassives[hustleId] = (newDynamicPassives[hustleId] || 0) + (result.passiveAdded - (levelData.passiveYield || 0));
+      const basePassive = levelData.passiveYield || 0;
+      const bonusPassive = result.passiveAdded
+        ? Math.max(0, result.passiveAdded - basePassive)
+        : 0;
+      newDynamicPassives[hustleId] = basePassive + bonusPassive;
     }
 
     const newStats = state.pl.stats

@@ -94,7 +94,10 @@ const festivalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelDa
     }
   }
 
-  const yieldCash = Math.floor((ticketPrice * venueCap * headlinerMult * attendanceMult) * market.yieldMultiplier);
+  let yieldCash = Math.floor((ticketPrice * venueCap * headlinerMult * attendanceMult) * market.yieldMultiplier);
+
+  const yieldCap = 7_000_000;
+  yieldCash = Math.min(yieldCash, yieldCap);
 
   return {
     success: true,
