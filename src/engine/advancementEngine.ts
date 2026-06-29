@@ -7,6 +7,8 @@ import { SENTIMENT_CATEGORIES, SENTIMENT_TEMPLATES } from '../config/sentiment';
 import { BACKGROUNDS } from '../config/backgrounds';
 import { SPECIALIZATIONS } from '../config/specializations';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
+import { WORLD_EVENTS } from '../config/worldEvents';
+import { HUSTLE_SECTORS } from '../config/sectors';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -86,6 +88,9 @@ export function advanceMonth(
   const sources: PassiveSource[] = [];
   let baseTotal = 0;
 
+  // World Event Context for Passive Income
+  const activeWorldEvent = newPl.activeWorldEvent ? WORLD_EVENTS.find(e => e.id === newPl.activeWorldEvent?.eventId) : null;
+
   // 1. Dynamic Hustle Passives (BUSINESS)
   const activeHustleIds = new Set([
     ...Object.keys(newPl.hustleLevels),
@@ -114,7 +119,16 @@ export function advanceMonth(
         multiplier = newPl.vendingCount || 0;
       }
 
-      const yieldAmount = levelData.passiveYield * multiplier;
+      let yieldAmount = levelData.passiveYield * multiplier;
+
+      // Apply World Event Sector Modifier to Passive
+      if (activeWorldEvent) {
+        const sector = HUSTLE_SECTORS[hustleId];
+        if (sector && activeWorldEvent.sectorModifiers[sector]) {
+            yieldAmount = Math.floor(yieldAmount * (1 + activeWorldEvent.sectorModifiers[sector]!));
+        }
+      }
+
       baseTotal += yieldAmount;
       sources.push({
         id: hustleId,
@@ -134,12 +148,13 @@ export function advanceMonth(
     const cycleMult = cycle === 'boom' ? 1.5 : (cycle === 'bust' ? 0.6 : 1.0);
     const baseProfit = 1000000;
 
-    // We calculate monthly passive for REAL ESTATE using base values,
-    // multipliers are applied to the total empire yield later.
-    // Note: The previous logic multiplied by yieldMultiplier here.
-    // We will keep it consistent with the "breakdown" by showing base yield and then multipliers.
     const monthlyBasePerProperty = (baseProfit * typeMult * leverageMult * cycleMult * 0.5);
-    const yieldAmount = Math.floor(monthlyBasePerProperty * newPl.rentalCount);
+    let yieldAmount = Math.floor(monthlyBasePerProperty * newPl.rentalCount);
+
+    // Apply World Event Sector Modifier (Real Estate)
+    if (activeWorldEvent && activeWorldEvent.sectorModifiers['Real Estate']) {
+        yieldAmount = Math.floor(yieldAmount * (1 + activeWorldEvent.sectorModifiers['Real Estate']!));
+    }
 
     baseTotal += yieldAmount;
     sources.push({
@@ -162,6 +177,15 @@ export function advanceMonth(
       if (asset.id !== 'tech_conglomerate') {
         assetPassive *= flexBonusMultiplier;
       }
+
+      // Apply World Event Sector Modifier to Flex (e.g. tech_conglomerate is Technology)
+      if (activeWorldEvent) {
+        const sector = HUSTLE_SECTORS[asset.id];
+        if (sector && activeWorldEvent.sectorModifiers[sector]) {
+            assetPassive = Math.floor(assetPassive * (1 + activeWorldEvent.sectorModifiers[sector]!));
+        }
+      }
+
       baseTotal += assetPassive;
       sources.push({
         id: asset.id,
@@ -188,7 +212,13 @@ export function advanceMonth(
   // 5. Music Royalties (ROYALTY)
   let totalRoyalties = 0;
   newPl.artists.forEach(artist => {
-    totalRoyalties += artist.royaltyRate;
+    let rate = artist.royaltyRate;
+    // Apply World Event Sector Modifier (Music/Entertainment)
+    if (activeWorldEvent && activeWorldEvent.sectorModifiers['Entertainment']) {
+        rate = Math.floor(rate * (1 + activeWorldEvent.sectorModifiers['Entertainment']!));
+    }
+    totalRoyalties += rate;
+
     artist.monthsActive++;
     if (artist.monthsActive % 12 === 0) {
       artist.hasReleased = true;
@@ -208,7 +238,15 @@ export function advanceMonth(
   // 6. Dynamic Passives (BUSINESS/BONUS)
   Object.entries(newPl.dynamicPassives || {}).forEach(([id, val]) => {
     if (val !== 0) {
-        baseTotal += val;
+        let dynamicVal = val;
+        // Apply World Event Sector Modifier
+        if (activeWorldEvent) {
+            const sector = HUSTLE_SECTORS[id];
+            if (sector && activeWorldEvent.sectorModifiers[sector]) {
+                dynamicVal = Math.floor(dynamicVal * (1 + activeWorldEvent.sectorModifiers[sector]!));
+            }
+        }
+        baseTotal += dynamicVal;
         sources.push({
             id: `dynamic_${id}`,
             name: HUSTLES[id]?.name || id,
@@ -246,6 +284,17 @@ export function advanceMonth(
       },
       finalTotal
   };
+
+  // Add world event multiplier to breakdown if active
+  if (newPl.activeWorldEvent) {
+    const worldEvent = WORLD_EVENTS.find(e => e.id === newPl.activeWorldEvent?.eventId);
+    if (worldEvent) {
+      passiveBreakdown.multipliers.worldEvent = {
+        name: worldEvent.name,
+        multiplier: 1.0 // Display 1.0 as it's now applied per-source for accuracy
+      };
+    }
+  }
 
   const passiveIncome = finalTotal;
 
@@ -422,6 +471,41 @@ export function advanceMonth(
     };
 
     news.push({ text: `📰 ${message}`, colorClass: isHype ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold' });
+  }
+
+  // World Event Lifecycle
+  if (newPl.activeWorldEvent) {
+    newPl.activeWorldEvent.monthsRemaining--;
+    if (newPl.activeWorldEvent.monthsRemaining <= 0) {
+      const event = WORLD_EVENTS.find(e => e.id === newPl.activeWorldEvent?.eventId);
+      if (event) {
+        news.push({ text: `🌍 WORLD EVENT ENDED: ${event.newsTemplates.end}`, colorClass: 'text-slate-400 font-bold' });
+      }
+      newPl.activeWorldEvent = null;
+      newPl.worldEventCooldown = 4 + Math.floor(Math.random() * 5); // 4-8 months cooldown
+    }
+  } else if (newPl.worldEventCooldown > 0) {
+    newPl.worldEventCooldown--;
+  }
+
+  // World Event Triggering (if no event active and cooldown is 0)
+  if (!newPl.activeWorldEvent && (newPl.worldEventCooldown || 0) <= 0) {
+    const triggerChance = 0.08; // 8% per month
+    if (Math.random() < triggerChance) {
+      // Common events are 4x more likely than Rare
+      const isRare = Math.random() < 0.2;
+      const pool = WORLD_EVENTS.filter(e => isRare ? e.rarity === 'RARE' : e.rarity === 'COMMON');
+      const event = pool[Math.floor(Math.random() * pool.length)] || WORLD_EVENTS[0];
+
+      const duration = Math.floor(Math.random() * (event.duration[1] - event.duration[0] + 1)) + event.duration[0];
+
+      newPl.activeWorldEvent = {
+        eventId: event.id,
+        monthsRemaining: duration
+      };
+
+      news.push({ text: `🌍 ${event.newsTemplates.start} (${duration} months)`, colorClass: 'text-yellow-400 font-black animate-pulse' });
+    }
   }
 
   // Random market shift (15% chance) - Skipped if President has Market Control
