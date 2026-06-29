@@ -56,6 +56,35 @@ export const FlexMarket: React.FC = () => {
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
                 {asset.name}
               </div>
+              {asset.maxCloutBoost > 0 && (
+                <div className="text-[9px] text-purple-400">
+                  📣 +{asset.maxCloutBoost} Clout cap
+                </div>
+              )}
+              {asset.maxAuraBoost > 0 && (
+                <div className="text-[9px] text-blue-400">
+                  ✨ +{asset.maxAuraBoost} Aura cap
+                </div>
+              )}
+              {asset.passiveYield > 0 && (
+                <div className="text-[9px] text-emerald-400">
+                  💵 +${(asset.passiveYield/1000).toFixed(0)}K/mo passive
+                </div>
+              )}
+              {asset.heatDecayBonus && (
+                <div className="text-[9px] text-cyan-400">
+                  ❄️ -{asset.heatDecayBonus}% Heat decay
+                </div>
+              )}
+              {asset.allGainsBonus && (
+                <div className="text-[9px] text-amber-400">
+                  ⚡ +{asset.allGainsBonus}% All gains
+                </div>
+              )}
+              <div className="text-[10px] font-black
+                text-slate-400 mt-2">
+                ${asset.cost.toLocaleString()}
+              </div>
             </button>
           );
         })}

@@ -63,6 +63,8 @@ import { DailyChallenges } from './components/DailyChallenges';
 import { LegacyShop } from './components/LegacyShop';
 import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
+import { FlexOpportunityModal } from './components/FlexOpportunityModal';
+import { AnnualStatement } from './components/AnnualStatement';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -926,6 +928,30 @@ function App() {
 
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />
+
+      {pl.pendingAnnualStatement && (
+        <AnnualStatement
+          onDismiss={() =>
+            useGameStore.getState().updatePl({
+              pendingAnnualStatement: false,
+              annualCashEarned: 0,
+              annualCashSpent: 0,
+              annualHustlesRun: 0,
+            })
+          }
+        />
+      )}
+
+      {pl.pendingFlexOffer && (
+        <FlexOpportunityModal
+          threshold={pl.pendingFlexOffer}
+          onDismiss={() =>
+            useGameStore.getState().updatePl({
+              pendingFlexOffer: null
+            })
+          }
+        />
+      )}
     </div>
   );
 }
