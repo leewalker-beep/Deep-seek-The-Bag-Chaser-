@@ -10,6 +10,8 @@ import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
 import { EndingModal } from './components/EndingModal';
+import { AnimatePresence } from 'framer-motion';
+import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import { SwipeOrder } from './components/minigames/SwipeOrder';
@@ -320,62 +322,18 @@ function App() {
 
   const tierClass = `${pl.currentTier.toLowerCase()}-tier`;
 
-  const TierDecoration = () => {
-    switch (pl.currentTier) {
-      case 'MUD':
-        return (
-          <>
-            <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-            <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]" />
-          </>
-        );
-      case 'STREET':
-        return (
-          <>
-            <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.3),transparent_70%)]" />
-            <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-10" />
-          </>
-        );
-      case 'STARTUP':
-        return <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-5" />;
-      case 'CORPORATE':
-        return (
-          <>
-            <div className="fixed inset-0 pointer-events-none opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,#fbbf24_1px,#fbbf24_2px)] bg-[size:100%_4px]" />
-            <div className="fixed inset-0 pointer-events-none border-[1px] border-yellow-500/10" />
-          </>
-        );
-      case 'ELITE':
-        return <div className="fixed inset-0 pointer-events-none border-[30px] border-purple-950/30" />;
-      case 'MOGUL':
-        return (
-          <>
-            <div className="fixed inset-0 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] opacity-10" />
-            <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
-          </>
-        );
-      case 'PRESIDENT':
-        return (
-          <>
-             <div className="fixed inset-0 pointer-events-none opacity-5 bg-[url('https://www.transparenttextures.com/patterns/padded.png')]" />
-             <div className="fixed inset-0 pointer-events-none border-x-[50px] border-blue-900/10" />
-          </>
-        );
-      case 'OPEN':
-        return (
-          <>
-            <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.4),transparent)]" />
-            <div className="fixed inset-0 pointer-events-none opacity-10 bg-[url('https://www.transparenttextures.com/patterns/beach-dust.png')]" />
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative`}>
-      <TierDecoration />
+      <AnimatePresence mode="wait">
+        <TierBackground
+          key={pl.currentTier}
+          tier={pl.currentTier}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+        />
+      </AnimatePresence>
       {/* Hidden StatsPanel to run its side effects (warning system) */}
       <div className="hidden">
         <StatsPanel stats={pl} market={currentMarket} />
