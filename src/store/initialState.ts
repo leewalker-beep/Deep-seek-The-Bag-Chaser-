@@ -127,6 +127,8 @@ export const getInitialStats = (
     rivalThreats: {},
     activeChallenges: [],
     activeSentiment: null,
+    activeWorldEvent: null,
+    worldEventCooldown: 0,
     completedNarrativeEvents: [],
     activeNarrative: null,
     narrativeFlags: {},

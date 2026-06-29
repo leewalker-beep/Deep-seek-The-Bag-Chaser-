@@ -3,6 +3,8 @@ import type { HustleLevel } from '../config/hustles/base';
 import { HUSTLE_BADGES } from '../config/badges';
 import { HUSTLES } from '../config/hustles/base';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
+import { HUSTLE_SECTORS } from '../config/sectors';
+import { WORLD_EVENTS } from '../config/worldEvents';
 import { getMasteryCount } from '../utils/masteryUtils';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { SPECIALIZATIONS } from '../config/specializations';
@@ -176,12 +178,27 @@ export function getEffectiveHustleStats(
   const effectiveResult = { ...result };
 
   // 1. Apply Sentiment Multiplier
+  let sentimentMult = 1.0;
   if (player.activeSentiment) {
     const category = SENTIMENT_CATEGORIES.find(c => c.id === player.activeSentiment?.category);
     if (category && category.hustleIds.includes(hustleId)) {
-      effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * player.activeSentiment.multiplier);
+      sentimentMult = player.activeSentiment.multiplier;
     }
   }
+
+  // 1b. Apply World Event Sector Modifiers
+  let worldEventMult = 1.0;
+  if (player.activeWorldEvent) {
+    const worldEvent = WORLD_EVENTS.find(e => e.id === player.activeWorldEvent?.eventId);
+    const sector = HUSTLE_SECTORS[hustleId];
+    if (worldEvent && sector && worldEvent.sectorModifiers[sector]) {
+      worldEventMult = (1 + worldEvent.sectorModifiers[sector]!);
+    }
+  }
+
+  // 1c. Conservative Modifier Stacking (Cap total dynamic multiplier to prevent runaway/decimation)
+  const combinedDynamicMult = Math.max(0.3, Math.min(2.5, sentimentMult * worldEventMult));
+  effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * combinedDynamicMult);
 
   // 2. Apply Badge Buffs
   let finalYieldMult = 1.0;

@@ -1,4 +1,9 @@
 export type Tier = 'MUD' | 'STREET' | 'STARTUP' | 'CORPORATE' | 'ELITE' | 'MOGUL' | 'PRESIDENT' | 'OPEN';
+
+export interface WorldEventInstance {
+  eventId: string;
+  monthsRemaining: number;
+}
 export type MarketType = 'NORMAL' | 'RECESSION' | 'BULL_MARKET' | 'CRACKDOWN';
 export type CrisisType = 'shadowban' | 'blacklist' | 'strike' | 'frozen';
 
@@ -53,6 +58,7 @@ export interface PassiveBreakdown {
     legacy: number;
     market: number;
     specialization: number;
+    worldEvent?: { name: string; multiplier: number };
   };
   finalTotal: number;
 }
@@ -408,6 +414,8 @@ export interface PlayerStats {
   rivalThreats: Record<string, 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT'>;
   activeChallenges: Challenge[];
   activeSentiment: Sentiment | null;
+  activeWorldEvent: WorldEventInstance | null;
+  worldEventCooldown: number;
   activeNarrative: string | null;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
