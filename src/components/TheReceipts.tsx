@@ -52,16 +52,19 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               )}
               {metadata.passiveIncomeTotal > 0 && (
-                <div className="text-emerald-500 flex items-center gap-1">
-                  PASSIVE: +${metadata.passiveIncomeTotal.toLocaleString()}
-                  {metadata.passiveBreakdown && (
-                    <button
-                      onClick={() => setExpandedLedger(expandedLedger === event.id ? null : event.id)}
-                      className="ml-1 px-1.5 py-0.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-[8px] font-black rounded border border-emerald-500/30 transition-colors uppercase"
-                    >
-                      {expandedLedger === event.id ? 'Hide Ledger' : 'View Ledger'}
-                    </button>
-                  )}
+                <div className="text-emerald-500 flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1">
+                    MONTHLY PASSIVE TOTAL: +${metadata.passiveIncomeTotal.toLocaleString()}
+                    {metadata.passiveBreakdown && (
+                      <button
+                        onClick={() => setExpandedLedger(expandedLedger === event.id ? null : event.id)}
+                        className="ml-1 px-1.5 py-0.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-[8px] font-black rounded border border-emerald-500/30 transition-colors uppercase"
+                      >
+                        {expandedLedger === event.id ? 'Hide Ledger' : 'View Ledger'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-[9px] text-slate-600">your total passive income per month</div>
                 </div>
               )}
               {metadata.passiveAdded > 0 && (
