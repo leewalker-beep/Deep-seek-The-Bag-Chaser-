@@ -2,78 +2,89 @@
 
 Escape the mud. Build the empire. Don't lose your soul.
 
-## Backlog
-- Vending machine aging fix (advance month on purchase)
+**Bag Chaser** is a high-stakes life simulator where you climb from the bottom of the economic ladder to the highest office in the land. Balance your wealth, clout, and reputation while navigating a dynamic world of market shifts, rivalries, and life-changing choices.
 
-## Tech Stack
-- React + TypeScript + Vite
+## 🚀 Core Gameplay Loop
 
-Currently, two official plugins are available:
+1.  **Hustle**: Execute various jobs and business ventures to earn Cash, Clout, and Aura.
+2.  **Upgrade**: Reinvest your earnings to unlock better hustles and passive income streams.
+3.  **Advance**: Meet tier requirements to move from the "Mud" to "President."
+4.  **Manage**: Balance your mental health and keep the law (Heat) off your back.
+5.  **Evolve**: When a run ends, use your Legacy Points to unlock permanent buffs for the next run.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📈 Progression Tiers
 
-## React Compiler
+-   **MUD**: Starting with nothing but grit.
+-   **STREET**: Building a local reputation.
+-   **STARTUP**: Scaling digital and physical ventures.
+-   **CORPORATE**: Navigating institutional power.
+-   **ELITE**: Joining the global shadow cabinet.
+-   **MOGUL**: Owning the world.
+-   **PRESIDENT**: Running the country.
+-   **OPEN**: Infinite sandbox scaling.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠 Tech Stack
 
-## Expanding the ESLint configuration
+-   **Frontend**: React 19, TypeScript, Tailwind CSS
+-   **State**: Zustand (with Persistence)
+-   **Animations**: Framer Motion
+-   **Build**: Vite
+-   **Testing**: Vitest & Playwright
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📂 Project Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── components/     # React UI components & Minigames
+├── config/         # Game content & balance configuration
+├── engine/         # Pure logic and math modules
+├── store/          # Zustand store and slices
+├── types/          # TypeScript definitions
+└── utils/          # Generic helpers
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📖 Documentation
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Detailed documentation is available in the `docs/` folder:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+-   [**Architecture**](./docs/ARCHITECTURE.md): Technical deep-dive.
+-   [**Game Design**](./docs/GAME_DESIGN.md): Mechanics and systems.
+-   [**Adding Content**](./docs/ADDING_CONTENT.md): How to extend the game.
+-   [**Balancing**](./docs/BALANCING.md): Economy and math.
+-   [**Contributing**](./docs/CONTRIBUTING.md): Dev standards and workflow.
+
+## 🛠 Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run unit tests
+npm run test
+
+# Build for production
+npm run build
 ```
+
+## 💾 Save Compatibility
+
+Game progress is automatically saved to `localStorage`.
+- **Run Progress**: Reset upon "Game Over" or manual restart.
+- **Legacy Progress**: Points and unlocked upgrades are permanent.
+
+## 🤝 Adding Content
+
+To add new content, refer to the [Adding Content Guide](./docs/ADDING_CONTENT.md). You can easily add:
+- Hustles
+- Minigames
+- Narrative Events
+- World Events
+- Legacy Upgrades
+- Specializations
+
+## 📜 License
+
+[MIT License](LICENSE)
