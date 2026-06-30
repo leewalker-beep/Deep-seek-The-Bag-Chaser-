@@ -39,13 +39,13 @@ export interface HustleSlice {
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
   checkMilestones: () => void;
-  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
+  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string, avatarId?: string) => void;
 }
 
 export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (set, get) => ({
   unlockedHustles: getUnlockedHustles(3, []),
 
-  resetGame: (backgroundId, difficulty = 3, categoryId, variationId) => {
+  resetGame: (backgroundId, difficulty = 3, categoryId, variationId, avatarId) => {
     const currentState = get();
     const persistentStats = {
       totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
@@ -61,6 +61,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
+    newPl.avatarId = avatarId || 'av_m1';
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;

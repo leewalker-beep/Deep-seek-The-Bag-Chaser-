@@ -1,7 +1,9 @@
 import { forwardRef } from 'react';
+import Avatar from './Avatar';
 
 interface ShareCardProps {
   playerName: string;
+  avatarId: string;
   tier: string;
   finalBag: number;
   legacyScore: number;
@@ -30,6 +32,7 @@ const formatLegacy = (n: number) => {
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>((props, ref) => {
   const {
     playerName,
+    avatarId,
     tier,
     finalBag,
     legacyScore,
@@ -82,6 +85,16 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>((props, ref)
           >
             {playerName}
           </h1>
+
+          <div className="flex justify-center mt-3">
+            <Avatar
+              avatarId={avatarId}
+              size={80}
+              ring="ring-emerald-500/40"
+              className="shadow-2xl"
+            />
+          </div>
+
           <div className="text-xl font-black text-amber-400 uppercase tracking-wider mt-1">
             {endingEmoji} {endingTitle}
           </div>

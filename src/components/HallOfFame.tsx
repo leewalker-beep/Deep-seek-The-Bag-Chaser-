@@ -273,6 +273,7 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
           <ShareCard
             ref={cardRef}
             playerName={sharingRun.playerName || 'Anonymous'}
+            avatarId={sharingRun.avatarId || 'av_m1'}
             tier={sharingRun.tier}
             finalBag={sharingRun.finalBag}
             legacyScore={sharingRun.legacyScore}

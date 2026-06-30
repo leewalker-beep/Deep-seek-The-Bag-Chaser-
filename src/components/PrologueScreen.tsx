@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
 import { useGameStore } from '../store/gameStore';
+import { PLAYER_AVATARS } from '../config/avatars';
+import Avatar from './Avatar';
 
 interface PrologueScreenProps {
-  onStart: (name: string, backgroundId: string, categoryId: string, variationId: string) => void;
+  onStart: (name: string, backgroundId: string, categoryId: string, variationId: string, avatarId: string) => void;
 }
 
 const SILHOUETTES = [
@@ -432,6 +434,7 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
 export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const [screen, setScreen] = useState<number>(1);
   const [name, setName] = useState('');
+  const [selectedAvatarId, setSelectedAvatarId] = useState('av_m1');
   const [scores, setScores] = useState<{ street: number, dropout: number, benefactor: number }>({ street: 0, dropout: 0, benefactor: 0 });
 
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
@@ -475,7 +478,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const handleFinalStart = () => {
     const trimmedName = name.trim();
     if (trimmedName.length >= 2 && activeVariation && winningCategory) {
-      onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id);
+      onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id, selectedAvatarId);
     }
   };
 
@@ -730,6 +733,30 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           <div className="flex flex-col items-center gap-2">
              <div className="text-4xl">{activeVariation?.icon}</div>
              <div className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em]">{activeVariation?.name}</div>
+          </div>
+
+          <div className="mb-6">
+            <div className="text-[10px] text-slate-500 uppercase tracking-widest text-center mb-3">
+              CHOOSE YOUR FACE
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {PLAYER_AVATARS.map(av => (
+                <button
+                  key={av.id}
+                  onClick={() => setSelectedAvatarId(av.id)}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95 ${
+                    selectedAvatarId === av.id
+                      ? 'bg-emerald-500/20 ring-2 ring-emerald-500'
+                      : 'bg-slate-900/60 ring-1 ring-slate-700/50'
+                  }`}
+                >
+                  <Avatar avatarId={av.id} size={52} />
+                  <span className="text-[9px] text-slate-400 font-bold">
+                    {av.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-4">

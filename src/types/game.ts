@@ -462,6 +462,7 @@ export interface DailyChallenge {
 export interface HallOfFameEntry {
   runId: string;
   playerName?: string;
+  avatarId?: string;
   tier: string;
   legacyScore: number;
   finalBag: number;
@@ -482,6 +483,7 @@ export interface OriginBonus {
 export interface PlayerStats {
   runId: string;
   name?: string;
+  avatarId: string;
   bag: number;
   clout: number;
   aura: number;
@@ -664,7 +666,7 @@ export interface GameState {
   chosenBackgroundVariation?: string;
 
   // Actions
-  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
+  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string, avatarId?: string) => void;
   setPlayerName: (name: string) => void;
   setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;

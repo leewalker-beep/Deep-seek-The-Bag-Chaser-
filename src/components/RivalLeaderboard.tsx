@@ -3,6 +3,8 @@ import type { Rival } from '../types/game';
 import { BaseButton } from './ui/BaseButton';
 import { useGameStore } from '../store/gameStore';
 import { GAME_CONSTANTS } from '../config/gameConstants';
+import { getRivalAvatarId } from '../config/avatars';
+import Avatar from './Avatar';
 
 interface RivalLeaderboardProps {
   playerBag: number;
@@ -73,6 +75,13 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                   <span className={`text-[10px] font-black w-10 shrink-0 ${prefixStyle}`}>
                     {prefix}
                   </span>
+                  <Avatar
+                    avatarId={isPlayer ? (pl.avatarId || 'av_m1') : getRivalAvatarId(p.name)}
+                    size={36}
+                    ring={index === 0
+                      ? 'ring-amber-500'
+                      : 'ring-slate-700'}
+                  />
                   <div>
                     <div className={nameStyle}>
                       {p.name} {isPlayer && '(YOU)'}
