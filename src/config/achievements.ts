@@ -307,7 +307,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (_state: GameState, event?: GameEvent) => {
         if (event?.type !== 'HUSTLE_COMPLETED') return false;
         const m = event.metadata as HustleCompletedMetadata;
-        return m.miniGame === 'SwipeOrder' && m.multiplier >= 2.0;
+        return (m.miniGame === 'SwipeOrder' || m.miniGame === 'FamilyDeli') && m.multiplier >= 2.0;
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
@@ -685,5 +685,44 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       }
     },
     reward: { aura: 100 }
+  },
+
+  // FAMILY DELI SPECIFIC
+  {
+    id: 'DELI_LUNCH_RUSH',
+    name: 'Lunch Rush',
+    description: 'Handled the midday chaos at the deli.',
+    category: 'MINIGAME SKILL',
+    requirement: {
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.hustleId === 'unique_hustle_deli' && m.multiplier >= 1.5;
+      },
+      progress: (_state: GameState) => ({ current: 0, target: 1 })
+    },
+    reward: { cash: 500 }
+  },
+  {
+    id: 'DELI_COMMUNITY_FAVE',
+    name: 'Community Favourite',
+    description: 'Everyone in the neighborhood knows your sandwiches.',
+    category: 'HUSTLE MASTERY',
+    requirement: {
+      check: (state: GameState) => (state.pl.hustleLevels['unique_hustle_deli'] || 0) >= 2,
+      progress: (state: GameState) => ({ current: state.pl.hustleLevels['unique_hustle_deli'] || 0, target: 2 })
+    },
+    reward: { aura: 50 }
+  },
+  {
+    id: 'DELI_LOCAL_LEGEND',
+    name: 'Local Legend',
+    description: 'The Family Deli is now a city institution.',
+    category: 'HUSTLE MASTERY',
+    requirement: {
+      check: (state: GameState) => state.pl.masteredHustles.includes('unique_hustle_deli'),
+      progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('unique_hustle_deli') ? 1 : 0, target: 1 })
+    },
+    reward: { clout: 100, aura: 100 }
   }
 ];

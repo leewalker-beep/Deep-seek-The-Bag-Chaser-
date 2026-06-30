@@ -825,11 +825,11 @@ HUSTLES.unique_hustle_deli = {
   tier: 'MUD',
   icon: '🥪',
   description: 'A legacy of sandwiches. Stable and respected.',
-  miniGame: 'SwipeOrder',
+  miniGame: 'FamilyDeli',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Service Counter', cost: 0, yieldCash: 1200, yieldClout: 2, yieldAura: 5, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'SwipeOrder' },
-    l2: { level: 2, id: 'l2', name: 'Catering Service', cost: 5000, yieldCash: 8000, yieldClout: 10, yieldAura: 15, mentalHit: -8, cloutReq: 30, auraReq: 40, passiveYield: 1000, nextBranches: ['l3'], miniGame: 'SwipeOrder' },
-    l3: { level: 3, id: 'l3', name: 'City Institution', cost: 50000, yieldCash: 60000, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 150, auraReq: 200, passiveYield: 5000, miniGame: 'SwipeOrder' },
+    l1: { level: 1, id: 'l1', name: 'Service Counter', cost: 0, yieldCash: 1200, yieldClout: 2, yieldAura: 5, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'FamilyDeli' },
+    l2: { level: 2, id: 'l2', name: 'Catering Service', cost: 5000, yieldCash: 8000, yieldClout: 10, yieldAura: 15, mentalHit: -8, cloutReq: 30, auraReq: 40, passiveYield: 1000, nextBranches: ['l3'], miniGame: 'FamilyDeli' },
+    l3: { level: 3, id: 'l3', name: 'City Institution', cost: 50000, yieldCash: 60000, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 150, auraReq: 200, passiveYield: 5000, miniGame: 'FamilyDeli' },
   }
 };
