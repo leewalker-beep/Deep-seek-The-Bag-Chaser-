@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, PlayerStats, Artist } from '../../types/game';
+import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
@@ -39,7 +40,7 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
 
   unlockLegacyUpgrade: (upgradeId) => {
     const state = get();
-    const upgrade = LEGACY_UPGRADES.find((u: any) => u.id === upgradeId);
+    const upgrade = LEGACY_UPGRADES.find((u: LegacyUpgrade) => u.id === upgradeId);
     if (!upgrade) return;
     if (state.bankedLegacyPoints < upgrade.cost) return;
     if (state.unlockedLegacyUpgradeIds.includes(upgradeId)) return;

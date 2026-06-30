@@ -637,8 +637,9 @@ export function advanceMonth(
       // 3. Stat Requirements
       if (event.requirement?.stat) {
         const req = event.requirement.stat;
-        const currentVal = (newPl as any)[req.type === 'mentalHealth' ? 'mentalHealth' : req.type];
-        if (currentVal < req.value) return false;
+        const statKey = req.type === 'mentalHealth' ? 'mentalHealth' : req.type;
+        const currentVal = newPl[statKey as keyof PlayerStats];
+        if (typeof currentVal === 'number' && currentVal < req.value) return false;
       }
 
       return true;

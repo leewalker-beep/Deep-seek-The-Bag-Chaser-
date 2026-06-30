@@ -41,7 +41,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {['career', 'portfolio', 'history', 'badges', 'achievements', 'endings', 'deaths'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab as 'career' | 'portfolio' | 'history' | 'badges' | 'achievements' | 'endings' | 'deaths')}
               className={`flex-shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                 activeTab === tab ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'
               }`}
@@ -286,7 +286,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="space-y-2">
                   {achievements.map((a) => {
                     const config = ACHIEVEMENTS.find(c => c.id === a.id);
-                    const prog = config?.requirement.progress((useGameStore.getState() as any));
+                    const prog = config?.requirement.progress(useGameStore.getState());
                     const progressValue = prog ? (prog.current / prog.target) * 100 : 0;
 
                     return (

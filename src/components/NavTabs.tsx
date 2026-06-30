@@ -1,12 +1,12 @@
 import React from 'react';
 import { PROGRESSION_ORDER } from '../config/tiers';
-import type { Tier } from '../types/game';
+import type { Tier, AppTab } from '../types/game';
 import { useGameStore } from '../store/gameStore';
 
 interface NavTabsProps {
-  activeTab: Tier | 'FLEX' | 'PRESIDENCY';
+  activeTab: AppTab;
   currentTier: Tier;
-  onTabChange: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
+  onTabChange: (tab: AppTab) => void;
 }
 
 export const NavTabs: React.FC<NavTabsProps> = ({
@@ -20,7 +20,7 @@ export const NavTabs: React.FC<NavTabsProps> = ({
   const currentIndex = PROGRESSION_ORDER.indexOf(currentTier);
   const flexUnlocked = currentIndex >= 3;
 
-  const allTabs: (Tier | 'FLEX' | 'PRESIDENCY')[] = isPresident
+  const allTabs: AppTab[] = isPresident
     ? ['PRESIDENCY']
     : [...PROGRESSION_ORDER, 'FLEX'];
 

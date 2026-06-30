@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import type { GameEvent } from '../types/game';
+import type {
+  GameEvent,
+  HustleCompletedMetadata,
+  PropertyPurchasedMetadata,
+  BusinessPurchasedMetadata,
+  PromotionEarnedMetadata,
+  EconomicEventMetadata,
+  ReflectionMetadata,
+  LawPassedMetadata,
+  CrisisResolvedMetadata,
+  CabinetAppointedMetadata,
+  RivalDefeatedMetadata,
+  SpecialEventMetadata,
+  PassiveSource
+} from '../types/game';
 
 export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const pl = useGameStore(state => state.pl);
@@ -20,17 +34,30 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   // Calculate stats from events
   const totalProfit = events
     .filter(e => e.type === 'HUSTLE_COMPLETED')
-    .reduce((sum, e) => sum + (e.metadata.profit || 0), 0);
+    .reduce((sum, e) => {
+        const m = e.metadata as HustleCompletedMetadata;
+        return sum + (m.profit || 0);
+    }, 0);
 
-  const houseFlips = events.filter(e => e.type === 'PROPERTY_PURCHASED' && e.metadata.branchId === 'l2a').length;
-  const vendingCount = events.filter(e => e.type === 'BUSINESS_PURCHASED' && e.metadata.assetId === 'vending').length;
+  const houseFlips = events.filter(e => {
+    if (e.type !== 'PROPERTY_PURCHASED') return false;
+    const m = e.metadata as PropertyPurchasedMetadata;
+    return m.branchId === 'l2a';
+  }).length;
+
+  const vendingCount = events.filter(e => {
+    if (e.type !== 'BUSINESS_PURCHASED') return false;
+    const m = e.metadata as BusinessPurchasedMetadata;
+    return m.assetId === 'vending';
+  }).length;
 
   const renderEvent = (event: GameEvent) => {
-    const { playerStats, metadata, timestamp } = event;
+    const { playerStats, timestamp } = event;
     const dateStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     switch (event.type) {
-      case 'HUSTLE_COMPLETED':
+      case 'HUSTLE_COMPLETED': {
+        const metadata = event.metadata as HustleCompletedMetadata;
         return (
           <div key={event.id} className="bg-slate-900 rounded-lg p-3 border border-slate-800">
             <div className="flex justify-between text-[10px] text-slate-500 mb-1">
@@ -46,12 +73,12 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className={`${metadata.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 CASH: {metadata.profit >= 0 ? '+' : ''}${metadata.profit.toLocaleString()}
               </div>
-              {metadata.rentDeducted > 0 && (
+              {metadata.rentDeducted && metadata.rentDeducted > 0 && (
                 <div className="text-red-500">
                   RENT: -${metadata.rentDeducted.toLocaleString()}
                 </div>
               )}
-              {metadata.passiveIncomeTotal > 0 && (
+              {metadata.passiveIncomeTotal && metadata.passiveIncomeTotal > 0 && (
                 <div className="text-emerald-500 flex flex-col gap-0.5">
                   <div className="flex items-center gap-1">
                     MONTHLY PASSIVE TOTAL: +${metadata.passiveIncomeTotal.toLocaleString()}
@@ -67,7 +94,7 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <div className="text-[9px] text-slate-600">your total passive income per month</div>
                 </div>
               )}
-              {metadata.passiveAdded > 0 && (
+              {metadata.passiveAdded && metadata.passiveAdded > 0 && (
                 <div className="text-blue-400 font-bold">
                   ADDED PASSIVE: +${metadata.passiveAdded.toLocaleString()}
                 </div>
@@ -101,7 +128,7 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <span>ROI Breakdown</span>
                 </div>
                 <div className="space-y-1">
-                    {metadata.passiveBreakdown.sources.map((src: any) => (
+                    {metadata.passiveBreakdown.sources.map((src: PassiveSource) => (
                         <div key={src.id} className="flex justify-between items-center text-[10px]">
                             <div className="flex items-center gap-1.5">
                                 <span className={`w-1 h-1 rounded-full ${
@@ -111,7 +138,7 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 }`} />
                                 <span className="text-slate-300 uppercase font-bold tracking-tighter">
                                     {src.name}
-                                    {src.count > 1 && <span className="text-slate-600 ml-1">x{src.count}</span>}
+                                    {src.count && src.count > 1 && <span className="text-slate-600 ml-1">x{src.count}</span>}
                                 </span>
                             </div>
                             <span className="font-mono text-emerald-400">+${src.amount.toLocaleString()}</span>
@@ -147,7 +174,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             )}
           </div>
         );
-      case 'PROMOTION_EARNED':
+      }
+      case 'PROMOTION_EARNED': {
+        const metadata = event.metadata as PromotionEarnedMetadata;
         return (
           <div key={event.id} className="bg-purple-900/20 rounded-lg p-3 border border-purple-500/30">
             <div className="text-[10px] text-purple-400 font-black mb-1 uppercase tracking-widest">RANK UP</div>
@@ -157,7 +186,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-[9px] text-slate-400 mt-1">Institutional Fee: ${metadata.fee.toLocaleString()}</div>
           </div>
         );
-      case 'BUSINESS_PURCHASED':
+      }
+      case 'BUSINESS_PURCHASED': {
+        const metadata = event.metadata as BusinessPurchasedMetadata;
         return (
           <div key={event.id} className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30">
             <div className="text-[10px] text-blue-400 font-black mb-1 uppercase tracking-widest">ASSET ACQUIRED</div>
@@ -165,7 +196,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-[9px] text-red-400">-${metadata.cost.toLocaleString()}</div>
           </div>
         );
-      case 'PROPERTY_PURCHASED':
+      }
+      case 'PROPERTY_PURCHASED': {
+        const metadata = event.metadata as PropertyPurchasedMetadata;
         return (
           <div key={event.id} className="bg-emerald-900/20 rounded-lg p-3 border border-emerald-500/30">
             <div className="text-[10px] text-emerald-400 font-black mb-1 uppercase tracking-widest">REAL ESTATE</div>
@@ -173,15 +206,21 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-[9px] text-red-400">-${metadata.cost.toLocaleString()}</div>
           </div>
         );
-      case 'SPECIAL_EVENT':
+      }
+      case 'SPECIAL_EVENT': {
+        const metadata = event.metadata as SpecialEventMetadata;
         return (
           <div key={event.id} className="bg-yellow-900/20 rounded-lg p-3 border border-yellow-500/30">
             <div className="text-[10px] text-yellow-400 font-black mb-1 uppercase tracking-widest">MILESTONE</div>
-            <div className="font-bold text-white">{metadata.achievementName || metadata.hustleName || 'Achieved'}</div>
+            <div className="font-bold text-white">
+                {'achievementName' in metadata ? metadata.achievementName : ('hustleName' in metadata ? metadata.hustleName : 'Achieved')}
+            </div>
             <div className="text-[9px] text-slate-400 mt-1 capitalize">{metadata.type.toLowerCase().replace('_', ' ')}</div>
           </div>
         );
-      case 'RIVAL_DEFEATED':
+      }
+      case 'RIVAL_DEFEATED': {
+        const metadata = event.metadata as RivalDefeatedMetadata;
         return (
           <div key={event.id} className="bg-red-900/20 rounded-lg p-3 border border-red-500/30">
             <div className="text-[10px] text-red-400 font-black mb-1 uppercase tracking-widest">RIVAL SMOKED</div>
@@ -196,14 +235,18 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
         );
-      case 'ECONOMIC_EVENT':
+      }
+      case 'ECONOMIC_EVENT': {
+        const metadata = event.metadata as EconomicEventMetadata;
         return (
           <div key={event.id} className="bg-slate-800 rounded-lg p-2 border border-slate-700 text-center">
             <div className="text-[9px] text-slate-500 uppercase font-black">MARKET SHIFT</div>
             <div className="text-xs font-bold text-white">→ {metadata.to}</div>
           </div>
         );
-      case 'REFLECTION':
+      }
+      case 'REFLECTION': {
+        const metadata = event.metadata as ReflectionMetadata;
         return (
           <div key={event.id} className="bg-emerald-900/10 rounded-lg p-4 border-l-4 border-emerald-500 italic">
             <div className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-2">PERSONAL REFLECTION</div>
@@ -215,7 +258,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
         );
-      case 'LAW_PASSED':
+      }
+      case 'LAW_PASSED': {
+        const metadata = event.metadata as LawPassedMetadata;
         return (
           <div key={event.id} className="bg-blue-900/40 rounded-lg p-3 border border-blue-400/50 shadow-lg shadow-blue-900/20">
             <div className="flex justify-between items-start mb-1">
@@ -231,7 +276,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
         );
-      case 'CRISIS_RESOLVED':
+      }
+      case 'CRISIS_RESOLVED': {
+        const metadata = event.metadata as CrisisResolvedMetadata;
         return (
           <div key={event.id} className="bg-emerald-900/40 rounded-lg p-3 border border-emerald-400/50 shadow-lg shadow-emerald-900/20">
             <div className="text-[10px] text-emerald-300 font-black uppercase tracking-tighter mb-1">CRISIS RESOLVED</div>
@@ -244,7 +291,9 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
         );
-      case 'CABINET_APPOINTED':
+      }
+      case 'CABINET_APPOINTED': {
+        const metadata = event.metadata as CabinetAppointedMetadata;
         return (
           <div key={event.id} className="bg-slate-800 rounded-lg p-3 border border-slate-600">
             <div className="text-[10px] text-slate-400 font-black uppercase mb-1">CABINET APPOINTMENT</div>
@@ -252,11 +301,12 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="text-xs text-slate-300 italic">"I appoint {metadata.name} to this office."</div>
           </div>
         );
+      }
       default:
         return (
           <div key={event.id} className="bg-slate-900/50 rounded-lg p-2 border border-slate-800">
              <div className="text-[8px] text-slate-600 font-black uppercase">{event.type}</div>
-             <div className="text-[10px] text-slate-400 italic">{JSON.stringify(metadata)}</div>
+             <div className="text-[10px] text-slate-400 italic">{JSON.stringify(event.metadata)}</div>
           </div>
         );
     }

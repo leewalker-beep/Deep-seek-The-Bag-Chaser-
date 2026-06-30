@@ -26,6 +26,183 @@ export type GameEventType =
   | 'REFLECTION'
   | 'SPECIAL_EVENT';
 
+export interface HustleCompletedMetadata {
+  hustleId: string;
+  hustleName: string;
+  success: boolean;
+  profit: number;
+  yieldClout: number;
+  yieldAura: number;
+  mentalHit: number;
+  heatHit: number;
+  level: number;
+  miniGame?: string;
+  multiplier: number;
+  rentDeducted?: number;
+  passiveIncomeTotal?: number;
+  passiveBreakdown?: PassiveBreakdown;
+  passiveAdded?: number;
+}
+
+export interface PromotionEarnedMetadata {
+  from: Tier;
+  to: Tier;
+  fee: number;
+  specialization?: string;
+}
+
+export interface BusinessPurchasedMetadata {
+  assetId: string;
+  cost: number;
+}
+
+export interface PropertyPurchasedMetadata {
+  branchId?: string;
+  branchName?: string;
+  type?: string;
+  cost: number;
+}
+
+export interface AchievementUnlockedMetadata {
+  type: 'ACHIEVEMENT_UNLOCKED';
+  achievementId: string;
+  achievementName: string;
+}
+
+export interface HustleMasteryMetadata {
+  type: 'HUSTLE_MASTERY';
+  hustleId: string;
+  hustleName: string;
+}
+
+export interface TierBadgeEarnedMetadata {
+  type: 'TIER_BADGE_EARNED';
+  tier: Tier;
+}
+
+export interface EndingUnlockedMetadata {
+  type: 'ENDING_UNLOCKED';
+  title: string;
+  legacyPoints: number;
+}
+
+export interface BadgeBenefitActiveMetadata {
+  type: 'BADGE_BENEFIT_ACTIVE';
+  message: string;
+}
+
+export interface MediaExpansionMetadata {
+  type: 'MEDIA_EXPANSION';
+  level: number;
+  passiveAdded?: number;
+}
+
+export interface RivalRetaliationMetadata {
+  type: 'RIVAL_RETALIATION';
+  rivalId: string;
+  rivalName: string;
+  cost: number;
+}
+
+export interface RivalSabotageMetadata {
+  type: 'RIVAL_SABOTAGE';
+  rivalId: string;
+  success: boolean;
+  cost: number;
+}
+
+export interface RivalCounterBidMetadata {
+  type: 'RIVAL_COUNTER_BID';
+  rivalId: string;
+  cost: number;
+}
+
+export interface ScandalTriggeredMetadata {
+  type: 'DATA_BREACH' | 'POLICE_RAID_RISK';
+  heat?: number;
+}
+
+export type SpecialEventMetadata =
+  | AchievementUnlockedMetadata
+  | HustleMasteryMetadata
+  | TierBadgeEarnedMetadata
+  | EndingUnlockedMetadata
+  | BadgeBenefitActiveMetadata
+  | MediaExpansionMetadata
+  | RivalRetaliationMetadata
+  | RivalSabotageMetadata
+  | RivalCounterBidMetadata;
+
+export interface MarketWinMetadata {
+  type: 'VC_EXIT' | 'TRADE_SUCCESS';
+  profit: number;
+}
+
+export interface InvestmentMadeMetadata {
+  type: 'ARTIST_SCOUT' | 'VC_INVESTMENT';
+  tier?: string;
+  artistName?: string;
+  sector?: string;
+  investment?: number;
+  cost?: number;
+}
+
+export interface RivalDefeatedMetadata {
+  rivalId?: string;
+  rivalName: string;
+  bonus?: number;
+  bid?: number;
+}
+
+export interface EconomicEventMetadata {
+  from: MarketType;
+  to: MarketType;
+}
+
+export interface ReflectionMetadata {
+  eventId?: string;
+  choiceId?: string;
+  choiceLabel?: string;
+  text?: string;
+  month?: number;
+  tier?: Tier;
+}
+
+export interface LawPassedMetadata {
+  hustleId: string;
+  name: string;
+  cost: number;
+  cloutCost: number;
+  approvalImpact: number;
+}
+
+export interface CrisisResolvedMetadata {
+  name: string;
+  cost: number;
+}
+
+export interface CabinetAppointedMetadata {
+  role: string;
+  name: string;
+}
+
+export type GameEventMetadata =
+  | HustleCompletedMetadata
+  | PromotionEarnedMetadata
+  | BusinessPurchasedMetadata
+  | PropertyPurchasedMetadata
+  | SpecialEventMetadata
+  | RivalDefeatedMetadata
+  | EconomicEventMetadata
+  | ReflectionMetadata
+  | LawPassedMetadata
+  | CrisisResolvedMetadata
+  | CabinetAppointedMetadata
+  | MarketWinMetadata
+  | InvestmentMadeMetadata
+  | ScandalTriggeredMetadata
+  | Record<string, unknown>;
+
 export interface GameEvent {
   id: string;
   type: GameEventType;
@@ -38,7 +215,7 @@ export interface GameEvent {
     heat: number;
     tier: Tier;
   };
-  metadata: any;
+  metadata: GameEventMetadata;
 }
 
 export type PassiveCategory = 'BUSINESS' | 'REAL_ESTATE' | 'FLEX' | 'ROYALTY' | 'BONUS';
@@ -108,6 +285,8 @@ export interface Rival {
   clout?: number;
   lastSabotagedMonth?: number;
   vengeance?: number; // Multiplier for aggressive bidding chance
+  currentHustle?: string;
+  specialty?: string;
 }
 
 export interface Challenge {
@@ -132,7 +311,7 @@ export interface NarrativeChoice {
     passiveCash?: number;
     specializationLock?: string;
   };
-  setFlags?: Record<string, any>;
+  setFlags?: Record<string, string | number | boolean>;
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
     background?: string[];
@@ -153,7 +332,7 @@ export interface NarrativeEvent {
     minMonth?: number;
     probability: number;
     once?: boolean;
-    flagReqs?: Record<string, any>;
+    flagReqs?: Record<string, string | number | boolean>;
   };
   requirement?: {
     stat?: { type: 'clout' | 'aura' | 'bag' | 'heat' | 'mentalHealth'; value: number };
@@ -250,6 +429,8 @@ export interface ExecutiveOrder {
   }[];
   regionalImpacts?: Record<string, number>;
 }
+
+export type AppTab = Tier | 'FLEX' | 'SCOREBOARD' | 'CHALLENGES' | 'LEGACY_SHOP' | 'PRESIDENCY';
 
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
 
@@ -420,7 +601,7 @@ export interface PlayerStats {
   activeNarrative: string | null;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
-  narrativeFlags: Record<string, any>;
+  narrativeFlags: Record<string, string | number | boolean>;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -452,6 +633,7 @@ export interface TickerMessage {
   text: string;
   colorClass?: string;
   tier?: Tier;
+  type?: string;
 }
 
 export interface Sentiment {
@@ -467,7 +649,7 @@ export interface GameState {
   currentMarket: MarketType;
   news: (string | TickerMessage)[];
   unlockedHustles: Record<string, boolean>;
-  activeTab: Tier | 'FLEX' | 'PRESIDENCY';
+  activeTab: AppTab;
   activeHustleView: string | null;
   activeTierBadge: string | null;
   activeNarrative?: string | null;
@@ -484,7 +666,7 @@ export interface GameState {
   // Actions
   resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
   setPlayerName: (name: string) => void;
-  setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
+  setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;
@@ -532,7 +714,7 @@ export interface GameState {
   updateDemographicApproval: (demographic: string, value: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
-  logEvent: (type: GameEventType, metadata?: any) => void;
+  logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
   checkMilestones: () => void;
   processLogin: () => void;
   dailyChallenges: DailyChallenge[];

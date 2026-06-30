@@ -38,7 +38,7 @@ export const InteractiveCard: React.FC<InteractiveCardProps> = ({
         isLocked && 'opacity-50 grayscale contrast-75',
         className
       )}
-      style={{ '--glow-color': glowColor } as any}
+      style={{ '--glow-color': glowColor } as React.CSSProperties}
       {...props}
     >
       {isLocked && (
