@@ -1,9 +1,9 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, Tier } from '../../types/game';
+import type { GameState, AppTab } from '../../types/game';
 
 export interface UISlice {
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
-  activeTab: Tier | 'FLEX' | 'PRESIDENCY';
+  activeTab: AppTab;
   activeHustleView: string | null;
   activeTierBadge: string | null;
   activeNarrative: string | null | undefined;
@@ -14,7 +14,7 @@ export interface UISlice {
   isTutorialSkipped: boolean;
 
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP') => void;
-  setActiveTab: (tab: Tier | 'FLEX' | 'PRESIDENCY') => void;
+  setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
   dismissNarrative: () => void;

@@ -66,7 +66,7 @@ export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle }) => {
           <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Headliner</label>
           <select
             value={choices.headliner}
-            onChange={(e) => setFestivalChoices({ ...choices, headliner: e.target.value as any })}
+            onChange={(e) => setFestivalChoices({ ...choices, headliner: e.target.value as 'budget' | 'premium' | 'luxury' })}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-white"
           >
             <option value="budget">Budget Artist ($50k)</option>
@@ -80,7 +80,7 @@ export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle }) => {
           <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Venue Size</label>
           <select
             value={choices.venue}
-            onChange={(e) => setFestivalChoices({ ...choices, venue: e.target.value as any })}
+            onChange={(e) => setFestivalChoices({ ...choices, venue: e.target.value as 'small' | 'medium' | 'large' })}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-white"
           >
             <option value="small">Club (5k Cap)</option>
@@ -94,7 +94,7 @@ export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle }) => {
           <label className="text-[10px] font-black text-slate-500 uppercase mb-1 block">Marketing Campaign</label>
           <select
             value={choices.marketing}
-            onChange={(e) => setFestivalChoices({ ...choices, marketing: e.target.value as any })}
+            onChange={(e) => setFestivalChoices({ ...choices, marketing: e.target.value as 'basic' | 'standard' | 'aggressive' })}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-white"
           >
             <option value="basic">Social Media ($10k)</option>

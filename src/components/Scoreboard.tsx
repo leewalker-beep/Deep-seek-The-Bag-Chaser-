@@ -7,7 +7,6 @@ import { HUSTLE_BADGES } from '../config/badges';
 import { PROGRESSION_ORDER } from '../config/tiers';
 import { ACHIEVEMENTS } from '../config/achievements';
 import { ProgressBar } from './ui/ProgressBar';
-import type { Tier } from '../types/game';
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, achievements } = useGameStore();

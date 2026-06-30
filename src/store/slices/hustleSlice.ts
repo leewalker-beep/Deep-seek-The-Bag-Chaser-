@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction, Tier, GameEventType, Challenge } from '../../types/game';
+import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata } from '../../types/game';
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
@@ -37,7 +37,7 @@ export interface HustleSlice {
   counterBid: (rivalId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
-  logEvent: (type: GameEventType, metadata?: Record<string, unknown>) => void;
+  logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
   checkMilestones: () => void;
   resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string) => void;
 }
@@ -101,7 +101,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
   },
 
-  logEvent: (type, metadata = {}) => {
+  logEvent: (type, metadata = {} as GameEventMetadata) => {
     const state = get();
     const newEvent = {
       id: Math.random().toString(36).substring(7),
@@ -128,7 +128,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     // Check for achievements after logging the event
-    if (type !== 'SPECIAL_EVENT' || metadata.type !== 'ACHIEVEMENT_UNLOCKED') {
+    const isAchievementUnlockEvent = type === 'SPECIAL_EVENT' && (metadata as SpecialEventMetadata).type === 'ACHIEVEMENT_UNLOCKED';
+    if (!isAchievementUnlockEvent) {
       const newlyUnlocked = checkAchievements(get(), newEvent);
       newlyUnlocked.forEach(id => get().unlockAchievement(id));
     }
@@ -902,7 +903,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     if (result.success) {
       if (result.isRare) {
-        get().updateChallengeProgress('big_win', 1);
+        const { updateChallengeProgress: updateCP } = get();
+        updateCP('big_win', 1);
       }
       if (hustleId === 'real_estate_empire') {
         get().logEvent('PROPERTY_PURCHASED', { type: state.pl.realEstateType, cost: result.cost });

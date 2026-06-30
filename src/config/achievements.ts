@@ -1,4 +1,4 @@
-import type { GameState, GameEvent } from '../types/game';
+import type { GameState, GameEvent, HustleCompletedMetadata, SpecialEventMetadata } from '../types/game';
 
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
 
@@ -274,7 +274,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Fingers of fury. Perfect score.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'StruggleMash' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'StruggleMash' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -285,7 +289,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Frame-perfect reflexes.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'QuickReaction' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'QuickReaction' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -296,7 +304,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Zero friction. Total control.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'SwipeOrder' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'SwipeOrder' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -307,7 +319,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'In the pocket. Every time.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'TapRhythm' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'TapRhythm' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -318,7 +334,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'You forget nothing.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'SequenceRecall' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'SequenceRecall' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -329,7 +349,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'You see the code.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'PatternMemory' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'PatternMemory' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -340,7 +364,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Perfectly centered.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'BalanceScale' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'BalanceScale' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -351,7 +379,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Moving faster than the eye.',
     category: 'MINIGAME SKILL',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'HUSTLE_COMPLETED' && event.metadata.miniGame === 'ReactionGrid' && event.metadata.multiplier >= 2.0,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'HUSTLE_COMPLETED') return false;
+        const m = event.metadata as HustleCompletedMetadata;
+        return m.miniGame === 'ReactionGrid' && m.multiplier >= 2.0;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 1000 }
@@ -580,7 +612,12 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Unlock low legacy ending.',
     category: 'ENDINGS',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'SPECIAL_EVENT' && event.metadata.type === 'ENDING_UNLOCKED' && event.metadata.legacyPoints < 100,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'SPECIAL_EVENT') return false;
+        const m = event.metadata as SpecialEventMetadata;
+        if (m.type !== 'ENDING_UNLOCKED') return false;
+        return m.legacyPoints < 100;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 5000 }
@@ -591,7 +628,12 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Unlock medium legacy ending.',
     category: 'ENDINGS',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'SPECIAL_EVENT' && event.metadata.type === 'ENDING_UNLOCKED' && event.metadata.legacyPoints >= 100 && event.metadata.legacyPoints < 1000,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'SPECIAL_EVENT') return false;
+        const m = event.metadata as SpecialEventMetadata;
+        if (m.type !== 'ENDING_UNLOCKED') return false;
+        return m.legacyPoints >= 100 && m.legacyPoints < 1000;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 50000 }
@@ -602,7 +644,12 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Unlock high legacy ending.',
     category: 'ENDINGS',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'SPECIAL_EVENT' && event.metadata.type === 'ENDING_UNLOCKED' && event.metadata.legacyPoints >= 1000 && event.metadata.legacyPoints < 5000,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'SPECIAL_EVENT') return false;
+        const m = event.metadata as SpecialEventMetadata;
+        if (m.type !== 'ENDING_UNLOCKED') return false;
+        return m.legacyPoints >= 1000 && m.legacyPoints < 5000;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 500000 }
@@ -613,7 +660,12 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Unlock legendary legacy ending.',
     category: 'ENDINGS',
     requirement: {
-      check: (_state: GameState, event?: GameEvent) => event?.type === 'SPECIAL_EVENT' && event.metadata.type === 'ENDING_UNLOCKED' && event.metadata.legacyPoints >= 5000,
+      check: (_state: GameState, event?: GameEvent) => {
+        if (event?.type !== 'SPECIAL_EVENT') return false;
+        const m = event.metadata as SpecialEventMetadata;
+        if (m.type !== 'ENDING_UNLOCKED') return false;
+        return m.legacyPoints >= 5000;
+      },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
     reward: { cash: 5000000 }

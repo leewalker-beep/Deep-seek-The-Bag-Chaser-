@@ -92,7 +92,7 @@ import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
-import type { Tier } from './types/game';
+import type { Tier, AppTab } from './types/game';
 
 function App() {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -442,7 +442,7 @@ function App() {
           activeTab={activeTab}
         currentTier={pl.currentTier}
           onTabChange={(tab) => {
-            setActiveTab(tab as Tier | 'FLEX' | 'SCOREBOARD' | 'CHALLENGES' | 'LEGACY_SHOP' | 'PRESIDENCY');
+            setActiveTab(tab as AppTab);
             setShowMinigame(false);
           }}
         />
@@ -469,7 +469,7 @@ function App() {
             {showFlexMarket && <FlexMarket />}
 
             {/* Rival Leaderboard */}
-            {!showFlexMarket && activeTab !== 'PRESIDENCY' && (
+            {!showFlexMarket && (
               <RivalLeaderboard
                 playerBag={pl.bag}
                 playerName={pl.name || 'You'}
