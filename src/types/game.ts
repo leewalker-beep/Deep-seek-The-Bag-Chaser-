@@ -105,6 +105,7 @@ export interface Rival {
   currentBid: number;
   isNpc: boolean;
   tier: Tier;
+  clout?: number;
   lastSabotagedMonth?: number;
   vengeance?: number; // Multiplier for aggressive bidding chance
 }

@@ -27,6 +27,8 @@ export const useGameStore = create<GameState>()(
         pl: {
           ...state.pl,
           actionLog: state.pl.actionLog?.slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE),
+          seenFlexThresholds: state.pl.seenFlexThresholds,
+          pendingFlexOffer: state.pl.pendingFlexOffer,
         },
         rivals: state.pl.rivals,
         ph: state.ph,

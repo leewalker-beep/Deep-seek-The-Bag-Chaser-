@@ -307,7 +307,10 @@ export function advanceMonth(
       newPl.aura = Math.floor(newPl.aura + 50);
       newPl.grammyCount = (newPl.grammyCount || 0) + 1;
       artist.isGrammyWinner = true;
-      news.push(`🏆 GRAMMY AWARD: ${artist.name} won a Grammy! +$500k | +100 Clout | +50 Aura`);
+      news.push({
+        text: `🏆 GRAMMY AWARD: ${artist.name} won a Grammy! +$500k | +100 Clout | +50 Aura`,
+        colorClass: 'text-yellow-400 font-black'
+      });
     }
   });
 
@@ -422,6 +425,49 @@ export function advanceMonth(
         // Rivals bid based on their scale
         currentBid = Math.floor(newNetWorth * (0.05 + Math.random() * 0.1));
         news.push({ text: `⚠️ RIVAL ALERT: ${rival.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`, colorClass: 'text-red-400 font-bold' });
+      }
+
+      const threatRoll = Math.random();
+
+      if (rival.tier === newPl.currentTier && threatRoll < 0.15) {
+        const actionRoll = Math.random();
+
+        if (actionRoll < 0.33) {
+          // Rival poaches your passive income
+          const hustleIds = Object.keys(newPl.dynamicPassives).filter(k => !k.startsWith('counter_bid'));
+
+          if (hustleIds.length > 0) {
+            const target = hustleIds[Math.floor(Math.random() * hustleIds.length)];
+            newPl.dynamicPassives[target] = Math.floor((newPl.dynamicPassives[target] || 0) * 0.8);
+            news.push({
+              text: `⚔️ ${rival.name} cut into your ${target.replace(/_/g,' ')} operation. Passive down 20% this month.`,
+              colorClass: 'text-red-400 font-bold'
+            });
+          }
+
+        } else if (actionRoll < 0.66) {
+          // Rival spreads rumours — heat +5
+          newPl.heat = Math.min(100, newPl.heat + 5);
+          news.push({
+            text: `🗣️ ${rival.name} is talking about you. Heat +5%.`,
+            colorClass: 'text-orange-400 font-bold'
+          });
+
+        } else {
+          // Rival power move — clout battle
+          if (newPl.clout <= (rival.clout || 100)) {
+            newPl.clout = Math.max(0, newPl.clout - 10);
+            news.push({
+              text: `👑 ${rival.name} flexed on you. -10 Clout.`,
+              colorClass: 'text-purple-400 font-bold'
+            });
+          } else {
+            news.push({
+              text: `💪 ${rival.name} tried it. Your clout held them off.`,
+              colorClass: 'text-emerald-400 font-bold'
+            });
+          }
+        }
       }
 
       return { ...rival, netWorth: newNetWorth, currentBid };
