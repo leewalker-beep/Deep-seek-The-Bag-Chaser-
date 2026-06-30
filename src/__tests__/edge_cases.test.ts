@@ -15,6 +15,7 @@ global.localStorage = {
 
 describe('Edge Case Tests', () => {
   it('detects death from 0 mental health and assigns correct ending', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
     const pl = getInitialStats(3);
     pl.mentalHealth = 0;
 
