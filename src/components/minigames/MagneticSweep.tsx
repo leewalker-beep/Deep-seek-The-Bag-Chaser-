@@ -37,7 +37,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   const [items, setItems] = useState<SweepItem[]>([]);
   const [collected, setCollected] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
-  const [gameActive, setGameActive] = useState(true);
+  const [gameActive, setGameActive] = useState(false);
+  const [showInstruction, setShowInstruction] = useState(true);
   const [magnetPos, setMagnetPos] = useState({ x: 50, y: 50 });
   const [isRareFound, setIsRareFound] = useState(false);
   const playAreaRef = useRef<HTMLDivElement>(null);
@@ -89,6 +90,14 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
       return prev;
     });
   }, [gameActive, collectItem]);
+
+  useEffect(() => {
+    const introTimer = setTimeout(() => {
+      setShowInstruction(false);
+      setGameActive(true);
+    }, 1500);
+    return () => clearTimeout(introTimer);
+  }, []);
 
   useEffect(() => {
     if (!gameActive) return;
@@ -143,23 +152,6 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
 
   return (
     <div
-      ref={playAreaRef}
-      onPointerMove={(e) => {
-        if (!playAreaRef.current) return;
-        const rect = playAreaRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        updatePosition(x, y);
-      }}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        if (!playAreaRef.current) return;
-        const rect = playAreaRef.current.getBoundingClientRect();
-        const x = ((touch.clientX - rect.left) / rect.width) * 100;
-        const y = ((touch.clientY - rect.top) / rect.height) * 100;
-        updatePosition(x, y);
-      }}
       className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]"
     >
       <div className="absolute top-12 text-center w-full z-20">
@@ -167,7 +159,42 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         <div className="mt-2 text-emerald-400 font-mono font-black text-2xl">{scoreLabel}: {collected}</div>
       </div>
 
-      <div className="relative w-full h-full bg-slate-950 overflow-hidden">
+      <div
+        ref={playAreaRef}
+        onPointerMove={(e) => {
+          if (!playAreaRef.current) return;
+          const rect = playAreaRef.current.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          updatePosition(x, y);
+        }}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          if (!playAreaRef.current) return;
+          const rect = playAreaRef.current.getBoundingClientRect();
+          const x = ((touch.clientX - rect.left) / rect.width) * 100;
+          const y = ((touch.clientY - rect.top) / rect.height) * 100;
+          updatePosition(x, y);
+        }}
+        className="relative w-full h-full bg-slate-950 overflow-hidden"
+        style={{ position: 'relative', width: '100%', height: '100%' }}
+      >
+        <AnimatePresence>
+          {showInstruction && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              className="absolute inset-0 flex items-center justify-center z-50 px-8"
+            >
+              <div className="text-emerald-400 font-black text-center text-xl uppercase tracking-tighter leading-tight">
+                DRAG THE MAGNET OVER THE SCRAP — OR TAP IT
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Magnet Visual */}
         <motion.div
           className="absolute w-20 h-20 flex items-center justify-center text-5xl z-30 pointer-events-none drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]"
@@ -195,8 +222,14 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
                 e.stopPropagation();
                 handleCollect(item.id);
               }}
-              className="absolute w-12 h-12 flex items-center justify-center text-3xl z-10 min-w-[44px] min-h-[44px]"
-              style={{ top: `${item.top}%`, left: `${item.left}%`, transform: 'translate(-50%, -50%)' }}
+              className="absolute w-16 h-16 flex items-center justify-center text-4xl z-10 min-w-[44px] min-h-[44px]"
+              style={{
+                position: 'absolute',
+                top: `${item.top}%`,
+                left: `${item.left}%`,
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10
+              }}
             >
               {item.emoji}
               {item.isRare && (

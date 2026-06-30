@@ -30,6 +30,14 @@ const NEGATIVE_HEADLINES = [
   "HOUSING BUBBLE ABOUT TO BURST"
 ];
 
+const INSTANT_FAIL_HEADLINES = [
+  "BREAKING: YOUR CLIENT CAUGHT IN SEX SCANDAL",
+  "EXCLUSIVE: LEAKED DMs DESTROY PR FIRM",
+  "JUST IN: CEO CAUGHT ON CAMERA — GAME OVER",
+  "ALERT: CRISIS PR NEEDED — FIRM IMPLICATED",
+  "SHOCK: YOUR BIGGEST CLIENT ARRESTED",
+];
+
 interface TapApproveProps {
   onComplete: (multiplier: number) => void;
   level?: number;
@@ -37,11 +45,13 @@ interface TapApproveProps {
 }
 
 export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
-  const [headlines, setHeadlines] = useState<{ id: number, text: string, isPositive: boolean }[]>([]);
+  const [headlines, setHeadlines] = useState<{ id: number, text: string, isPositive: boolean, isInstantFail: boolean }[]>([]);
   const [score, setScore] = useState(0);
   const [_missed, setMissed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [nextId, setNextId] = useState(0);
+  const [gameActive, setGameActive] = useState(true);
+  const [showFailFlash, setShowFailFlash] = useState(false);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -53,16 +63,27 @@ export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, t
   const targetScore = Math.floor((10 + (level - 1) * 5) * Math.sqrt(scaling));
 
   useEffect(() => {
+    if (!gameActive) return;
+
     const spawnInterval = setInterval(() => {
-      const isPositive = Math.random() > (0.1 + (level - 1) * 0.05);
-      const text = isPositive
-        ? POSITIVE_HEADLINES[Math.floor(Math.random() * POSITIVE_HEADLINES.length)]
-        : NEGATIVE_HEADLINES[Math.floor(Math.random() * NEGATIVE_HEADLINES.length)];
+      const failChance = 0.05 + (level - 1) * 0.05;
+      const isInstantFail = Math.random() < failChance;
+      const isPositive = !isInstantFail && Math.random() > (0.1 + (level - 1) * 0.05);
+
+      let text = "";
+      if (isInstantFail) {
+        text = INSTANT_FAIL_HEADLINES[Math.floor(Math.random() * INSTANT_FAIL_HEADLINES.length)];
+      } else if (isPositive) {
+        text = POSITIVE_HEADLINES[Math.floor(Math.random() * POSITIVE_HEADLINES.length)];
+      } else {
+        text = NEGATIVE_HEADLINES[Math.floor(Math.random() * NEGATIVE_HEADLINES.length)];
+      }
 
       const newHeadline = {
         id: nextId,
         text,
-        isPositive
+        isPositive,
+        isInstantFail
       };
       setHeadlines(prev => [...prev, newHeadline]);
       setNextId(id => id + 1);
@@ -96,6 +117,14 @@ export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, t
   const handleAction = (id: number, isApprove: boolean) => {
     const headline = headlines.find(h => h.id === id);
     if (!headline) return;
+
+    if (isApprove && headline.isInstantFail) {
+      setGameActive(false);
+      setShowFailFlash(true);
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      setTimeout(() => onComplete(0), 1500);
+      return;
+    }
 
     if (isApprove === headline.isPositive) {
       setScore(s => s + 1);
@@ -139,9 +168,15 @@ export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, t
                 if (h.isPositive) setMissed(m => m + 1);
                 setHeadlines(prev => prev.filter(item => item.id !== h.id));
               }}
-              className="absolute left-6 right-6 bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3"
+              className={`absolute left-6 right-6 bg-slate-900 border-2 rounded-2xl p-4 shadow-xl flex flex-col gap-3 ${
+                h.isInstantFail ? 'border-red-500' : 'border-slate-800'
+              }`}
             >
-              <div className="text-white font-black text-xs leading-tight">{h.text}</div>
+              <div className={`font-black text-xs leading-tight ${
+                h.isInstantFail ? 'text-red-400' : 'text-white'
+              }`}>
+                {h.isInstantFail && '☠️ '}{h.text}
+              </div>
               <div className="flex gap-2">
                   <button
                     onClick={() => handleAction(h.id, true)}
@@ -173,6 +208,18 @@ export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, t
       </div>
 
       <AnimatePresence>
+        {showFailFlash && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-red-950/90 flex items-center justify-center z-50 p-6"
+          >
+            <div className="text-red-500 font-black text-center text-2xl uppercase tracking-tighter">
+              CAREER ENDING MISTAKE
+            </div>
+          </motion.div>
+        )}
+
         {timeLeft === 0 && (
             <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}

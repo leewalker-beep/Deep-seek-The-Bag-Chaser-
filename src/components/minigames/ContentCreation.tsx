@@ -51,8 +51,8 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const timerFactor = getTimerFactor(level, tier);
 
   // Difficulty scaling: less time per topic, more topics
-  const timePerTopic = useMemo(() => Math.max(0.6, 2.5 * timerFactor), [timerFactor]);
-  const totalTopics = useMemo(() => Math.min(25, 5 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
+  const timePerTopic = useMemo(() => Math.max(1.5, 2.5 * timerFactor), [timerFactor]);
+  const totalTopics = useMemo(() => Math.min(25, 3 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
   const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
 
   const [shuffledTopics] = useState(() => {

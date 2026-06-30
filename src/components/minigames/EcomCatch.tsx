@@ -11,13 +11,39 @@ interface EcomCatchProps {
 }
 
 export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
-  const [items, setItems] = useState<{ id: number; icon: string; x: number; y: number }[]>([]);
+  const [items, setItems] = useState<{ id: number; icon: string; name: string; x: number; y: number }[]>([]);
   const [score, setScore] = useState(0);
   const [missed, setMissed] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [feedback, setFeedback] = useState<'catch' | 'miss' | null>(null);
   const nextId = useRef(0);
-  const ICONS = ['👟', '👕', '📱', '👜', '🎧', '⌚', '💎', '💻'];
+
+  const TIERED_PRODUCTS = [
+    // Level 1 - knockoffs
+    { icon: '👟', name: 'Nuke Sneakers', minLevel: 1 },
+    { icon: '👕', name: 'Adibas Tee', minLevel: 1 },
+    { icon: '📱', name: 'Samesung Phone', minLevel: 1 },
+    { icon: '👜', name: 'LB Bag', minLevel: 1 },
+    // Level 2 - mid range real
+    { icon: '🎧', name: 'AirPots', minLevel: 2 },
+    { icon: '⌚', name: 'Casio G', minLevel: 2 },
+    { icon: '👟', name: 'Nike SB', minLevel: 2 },
+    { icon: '💻', name: 'Lenovo X1', minLevel: 2 },
+    // Level 3 - high end
+    { icon: '⌚', name: 'Ralex Watch', minLevel: 3 },
+    { icon: '👜', name: 'Luton Bag', minLevel: 3 },
+    { icon: '💎', name: 'Diamondique', minLevel: 3 },
+    { icon: '🕶️', name: 'Versage Frames', minLevel: 3 },
+    // Level 4+ - ultra luxury
+    { icon: '⌚', name: 'Rolex Daytona', minLevel: 4 },
+    { icon: '👜', name: 'Birkin Bag', minLevel: 4 },
+    { icon: '💎', name: 'VVS Chain', minLevel: 4 },
+    { icon: '🛥️', name: 'Yacht Share', minLevel: 4 },
+  ];
+
+  const availableProducts = TIERED_PRODUCTS.filter(
+    p => p.minLevel <= level
+  );
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -33,9 +59,13 @@ export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1, tie
     if (!gameActive) return;
 
     const spawner = setInterval(() => {
+      const product = availableProducts[
+        Math.floor(Math.random() * availableProducts.length)
+      ];
       setItems(prev => [...prev, {
         id: nextId.current++,
-        icon: ICONS[Math.floor(Math.random() * Math.min(ICONS.length, 4 + level))],
+        icon: product.icon,
+        name: product.name,
         x: Math.random() * 80 + 10,
         y: -10
       }]);
@@ -123,10 +153,13 @@ export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1, tie
               exit={{ scale: 2.5, opacity: 0 }}
               whileTap={{ scale: 0.8 }}
               onClick={() => handleCatch(item.id)}
-              className="absolute p-4 drop-shadow-2xl active:scale-125 transition-transform"
+              className="absolute p-4 drop-shadow-2xl active:scale-125 transition-transform flex flex-col items-center"
               style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translate(-50%, -50%)' }}
             >
               <div className="text-6xl">{item.icon}</div>
+              <div className="text-[8px] text-slate-400 font-bold text-center leading-tight mt-0.5">
+                {item.name}
+              </div>
             </motion.button>
           ))}
         </AnimatePresence>

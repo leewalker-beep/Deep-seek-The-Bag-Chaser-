@@ -98,8 +98,11 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
             {Math.floor(stats.aura)} / {getTierMax(stats.currentTier).aura}
           </div>
         </div>
-        <div className="bg-slate-800 rounded-lg p-2">
+        <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">MENTAL</div>
+          <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl text-right">
+            Burnout risk. Reaching 0% ends your run. Restore at mud/street tier.
+          </div>
           <div className={`text-sm font-bold ${stats.mentalHealth < 30 ? 'text-red-400' : 'text-white'}`}>
             {Math.floor(stats.mentalHealth)}%
             {stats.mentalShieldTurns > 0 && (
@@ -107,8 +110,11 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
             )}
           </div>
         </div>
-        <div className="bg-slate-800 rounded-lg p-2">
+        <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">HEAT</div>
+          <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl text-right">
+            Police attention. High heat increases raid risk. Cool down in Ghost Mode.
+          </div>
           <div className={`text-sm font-bold ${stats.heat > 70 ? 'text-orange-400' : 'text-white'}`}>
             {Math.floor(stats.heat)}%
           </div>

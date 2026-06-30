@@ -159,6 +159,35 @@ HUSTLES.street_eats = {
   }
 };
 
+HUSTLES.cleaning = {
+  id: 'cleaning',
+  name: 'Cleaning Services',
+  tier: 'MUD',
+  icon: '🧹',
+  description: 'Someone has to do it.',
+  miniGame: 'ScoopThePoop',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1',
+      name: 'Dog Walker', cost: 0,
+      yieldCash: 800, yieldClout: 1, yieldAura: 0,
+      mentalHit: -8, cloutReq: 0, auraReq: 0,
+      nextBranches: ['l2'],
+      miniGame: 'ScoopThePoop' },
+    l2: { level: 2, id: 'l2',
+      name: 'Home Cleaner', cost: 500,
+      yieldCash: 2500, yieldClout: 3, yieldAura: 0,
+      mentalHit: -10, cloutReq: 10, auraReq: 0,
+      nextBranches: ['l3'],
+      miniGame: 'ScoopThePoop' },
+    l3: { level: 3, id: 'l3',
+      name: 'Cleaning Company', cost: 5000,
+      yieldCash: 8000, yieldClout: 8, yieldAura: 2,
+      mentalHit: -12, cloutReq: 30, auraReq: 0,
+      miniGame: 'ScoopThePoop' },
+  }
+};
+
 // STREET Tier Hustles (Target: ~$3,000 profit/month, ~30 months)
 HUSTLES.cc = {
   id: 'cc',
@@ -796,11 +825,11 @@ HUSTLES.unique_hustle_deli = {
   tier: 'MUD',
   icon: '🥪',
   description: 'A legacy of sandwiches. Stable and respected.',
-  miniGame: 'StreetEats',
+  miniGame: 'SwipeOrder',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Service Counter', cost: 0, yieldCash: 1200, yieldClout: 2, yieldAura: 5, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'Catering Service', cost: 5000, yieldCash: 8000, yieldClout: 10, yieldAura: 15, mentalHit: -8, cloutReq: 30, auraReq: 40, passiveYield: 1000, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'City Institution', cost: 50000, yieldCash: 60000, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 150, auraReq: 200, passiveYield: 5000 },
+    l1: { level: 1, id: 'l1', name: 'Service Counter', cost: 0, yieldCash: 1200, yieldClout: 2, yieldAura: 5, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'SwipeOrder' },
+    l2: { level: 2, id: 'l2', name: 'Catering Service', cost: 5000, yieldCash: 8000, yieldClout: 10, yieldAura: 15, mentalHit: -8, cloutReq: 30, auraReq: 40, passiveYield: 1000, nextBranches: ['l3'], miniGame: 'SwipeOrder' },
+    l3: { level: 3, id: 'l3', name: 'City Institution', cost: 50000, yieldCash: 60000, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 150, auraReq: 200, passiveYield: 5000, miniGame: 'SwipeOrder' },
   }
 };

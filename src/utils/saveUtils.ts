@@ -11,7 +11,6 @@ export const backupSave = () => {
     const currentSave = localStorage.getItem(SAVE_KEY);
     if (currentSave) {
       localStorage.setItem(BACKUP_KEY, currentSave);
-      console.log('🛡️ Emergency backup created.');
     }
   } catch (e) {
     console.error('Failed to create emergency backup:', e);

@@ -218,6 +218,7 @@ export const getUnlockedHustles = (difficulty: 1 | 2 | 3, unlockedUpgrades: stri
     'r_sleep',
     'r_vending',
     'street_eats',
+    'cleaning',
   ];
 
   if (unlockedUpgrades.includes('unique_hustle_deli')) {
