@@ -51,10 +51,10 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1, t
   useEffect(() => {
     if (!isActive) {
       let base = 0.5;
-      if (progress > 90) base = 3.0;
-      else if (progress > 70) base = 2.0;
-      else if (progress > 40) base = 1.2;
-      else if (progress > 20) base = 0.8;
+      if (progress > 70) base = 3.0;
+      else if (progress > 50) base = 2.0;
+      else if (progress > 30) base = 1.2;
+      else if (progress > 15) base = 0.8;
 
       const multiplier = base * (0.8 + scaling * 0.2);
 
@@ -102,7 +102,7 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({ onComplete, level = 1, t
 
         <div className="flex justify-between items-center text-[10px] font-bold text-stone-500 uppercase">
           <span>Time: {timeLeft.toFixed(1)}s</span>
-          <span className={progress >= 90 ? 'text-emerald-500' : 'text-orange-500/50'}>Target: 90%+</span>
+          <span className={progress >= 70 ? 'text-emerald-500' : 'text-orange-500/50'}>Target: 70%+</span>
         </div>
       </div>
     </div>
