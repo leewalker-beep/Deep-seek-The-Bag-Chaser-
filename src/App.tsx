@@ -31,6 +31,7 @@ import { PinchToZoom } from './components/minigames/PinchToZoom';
 import { RotateToScale } from './components/minigames/RotateToScale';
 import { MarketPredictor } from './components/minigames/MarketPredictor';
 import { BoardroomBattle } from './components/minigames/BoardroomBattle';
+import Avatar from './components/Avatar';
 import { SlotMachine } from './components/minigames/SlotMachine';
 import { HigherLower } from './components/minigames/HigherLower';
 import { Blackjack } from './components/minigames/Blackjack';
@@ -223,6 +224,7 @@ function App() {
         saveHallOfFameEntry({
           runId: pl.runId,
           playerName: pl.name,
+          avatarId: pl.avatarId,
           tier: pl.currentTier,
           legacyScore: pl.legacyScore || 0,
           finalBag: pl.bag,
@@ -258,8 +260,8 @@ function App() {
   if (ph === 'PROLOGUE') {
     return (
       <PrologueScreen
-        onStart={(name, backgroundId, categoryId, variationId) => {
-          resetGame(backgroundId, 3, categoryId, variationId);
+        onStart={(name, backgroundId, categoryId, variationId, avatarId) => {
+          resetGame(backgroundId, 3, categoryId, variationId, avatarId);
           setPlayerName(name);
         }}
       />
@@ -368,7 +370,15 @@ function App() {
               📰 {pl.activeSentiment.label} ({pl.activeSentiment.monthsRemaining}m)
             </div>
           ) : (
-            <div>OP: <span className="text-white">{pl.name}</span></div>
+            <div className="flex items-center gap-1.5">
+              <Avatar
+                avatarId={pl.avatarId || 'av_m1'}
+                size={22}
+                ring="ring-emerald-500/50"
+              />
+              <span className="text-white font-black
+                text-[10px]">{pl.name}</span>
+            </div>
           )}
           <div className="flex items-center gap-1">
             {MARKET_CONFIGS[currentMarket].icon} <span className="text-white">{MARKET_CONFIGS[currentMarket].name}</span>
