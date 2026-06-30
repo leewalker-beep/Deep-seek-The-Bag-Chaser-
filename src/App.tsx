@@ -44,6 +44,7 @@ import { TrafficDodge } from './components/minigames/TrafficDodge';
 import { PlasmaDonation } from './components/minigames/PlasmaDonation';
 import { GhostMode } from './components/minigames/GhostMode';
 import { StreetEats } from './components/minigames/StreetEats';
+import { FamilyDeli } from './components/minigames/FamilyDeli';
 import { ScoopThePoop } from './components/minigames/ScoopThePoop';
 import { StreetwearMatch } from './components/minigames/StreetwearMatch';
 import { HashtagTap } from './components/minigames/HashtagTap';
@@ -611,6 +612,7 @@ function App() {
                   />
                 );
                 if (activeMiniGame === 'StreetEats') return <StreetEats onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'FamilyDeli') return <FamilyDeli onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'ScoopThePoop') return <ScoopThePoop onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'PatternMemory') return <PatternMemory onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SequenceRecall') return <SequenceRecall onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
