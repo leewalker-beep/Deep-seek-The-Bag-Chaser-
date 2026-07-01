@@ -93,6 +93,7 @@ import { getEnding } from './config/endings';
 import { getDominantStat } from './utils/endingUtils';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
+import { rentByTier } from './engine/advancementEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier, AppTab } from './types/game';
@@ -466,33 +467,51 @@ function App() {
           <PresidentDashboard />
         ) : !activeHustleView ? (
           <>
-            {/* Advance Tier Button */}
-            {canAdvance && activeTab !== 'FLEX' && (
-              <button
-                id="advance-tier-button"
-                onClick={() => advanceTier()}
-                className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
-              >
-                ⚡ ADVANCE TO NEXT TIER ⚡
-              </button>
-            )}
+            {(() => {
+              const tabIndex = activeTab === 'FLEX' ? 999 : PROGRESSION_ORDER.indexOf(activeTab as Tier);
+              const isLocked = activeTab !== 'FLEX' && tabIndex > currentTierIndex;
 
-            {/* Flex Market */}
-            {showFlexMarket && <FlexMarket />}
+              if (isLocked) {
+                const req = TIER_REQUIREMENTS[activeTab as Tier];
+                return (
+                  <div className="flex flex-col items-center justify-center h-64 gap-3 bg-slate-900/50 rounded-3xl border border-slate-800 border-dashed">
+                    <span className="text-5xl">🔒</span>
+                    <div className="text-xs text-slate-500 uppercase tracking-widest text-center px-8">
+                      Reach {req.clout} Clout, {req.aura} Aura and ${req.cash.toLocaleString()} to unlock {activeTab}
+                    </div>
+                  </div>
+                );
+              }
 
-            {/* Rival Leaderboard */}
-            {!showFlexMarket && (
-              <RivalLeaderboard
-                playerBag={pl.bag}
-                playerName={pl.name || 'You'}
-                rivals={pl.rivals.filter(r => r.tier === activeTab || r.tier === pl.currentTier)}
-              />
-            )}
+              return (
+                <>
+                  {/* Advance Tier Button */}
+                  {canAdvance && activeTab !== 'FLEX' && (
+                    <button
+                      id="advance-tier-button"
+                      onClick={() => advanceTier()}
+                      className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
+                    >
+                      ⚡ ADVANCE TO NEXT TIER ⚡
+                    </button>
+                  )}
 
-            {/* Hustle Grid */}
-            {!showFlexMarket && (
-              <div className="grid grid-cols-2 gap-3">
-                {hustles.map((hustle, index) => {
+                  {/* Flex Market */}
+                  {showFlexMarket && <FlexMarket />}
+
+                  {/* Rival Leaderboard */}
+                  {!showFlexMarket && (
+                    <RivalLeaderboard
+                      playerBag={pl.bag}
+                      playerName={pl.name || 'You'}
+                      rivals={pl.rivals.filter(r => r.tier === activeTab || r.tier === pl.currentTier)}
+                    />
+                  )}
+
+                  {/* Hustle Grid */}
+                  {!showFlexMarket && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {hustles.map((hustle, index) => {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
                   const isHot = index === 0;
@@ -524,17 +543,20 @@ function App() {
                       </div>
                     </button>
                   );
-                })}
-              </div>
-            )}
+                      })}
+                    </div>
+                  )}
 
-            {/* No hustles message */}
-            {!showFlexMarket && hustles.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-slate-600 text-sm">No hustles available in {activeTab} tier yet.</div>
-                <div className="text-slate-700 text-xs mt-2">Advance from lower tiers to unlock more.</div>
-              </div>
-            )}
+                  {/* No hustles message */}
+                  {!showFlexMarket && hustles.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="text-slate-600 text-sm">No hustles available in {activeTab} tier yet.</div>
+                      <div className="text-slate-700 text-xs mt-2">Advance from lower tiers to unlock more.</div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </>
         ) : (
           <div className="mt-4 animate-in fade-in zoom-in duration-200">
@@ -868,6 +890,11 @@ function App() {
               label: 'Cash Flow',
               value: activeHustleResult.yieldCash - activeHustleResult.cost,
               colorClass: (activeHustleResult.yieldCash - activeHustleResult.cost) >= 0 ? 'text-emerald-400' : 'text-red-400'
+            },
+            {
+              label: 'Rent Contribution',
+              value: -(rentByTier[pl.currentTier] * MARKET_CONFIGS[currentMarket].expenseMultiplier),
+              colorClass: 'text-red-400'
             },
             { label: 'Clout', value: activeHustleResult.yieldClout, colorClass: 'text-blue-400' },
             { label: 'Aura', value: activeHustleResult.yieldAura, colorClass: 'text-purple-400' },

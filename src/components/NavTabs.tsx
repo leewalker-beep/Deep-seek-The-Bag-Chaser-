@@ -1,5 +1,5 @@
 import React from 'react';
-import { PROGRESSION_ORDER } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
 import type { Tier, AppTab } from '../types/game';
 import { useGameStore } from '../store/gameStore';
 
@@ -30,24 +30,35 @@ export const NavTabs: React.FC<NavTabsProps> = ({
         if (tab === 'FLEX' && !flexUnlocked) return null;
 
         const tabIndex = tab === 'FLEX' || tab === 'PRESIDENCY' ? 999 : PROGRESSION_ORDER.indexOf(tab as Tier);
-        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1);
+        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex);
         const isActive = activeTab === tab;
 
+        const req = (tab !== 'FLEX' && tab !== 'PRESIDENCY') ? TIER_REQUIREMENTS[tab as Tier] : null;
+        const unlockRequirement = req ? `${req.clout}C / ${req.aura}A / $${(req.cash / 1000).toFixed(0)}K` : '';
+
         return (
-          <button
-            key={tab} data-testid={`nav-tab-${tab.toLowerCase()}`}
-            onClick={() => !isLocked && onTabChange(tab)}
-            disabled={!!isLocked}
-            className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 ${
-              isActive
-                ? 'bg-emerald-500 text-black'
-                : isLocked
-                ? 'opacity-50 bg-slate-800 text-slate-600 cursor-not-allowed'
-                : 'bg-slate-800 text-slate-300 active:scale-95'
-            }`}
-          >
-            {tab}
-          </button>
+          <div key={tab} className="flex flex-col items-center shrink-0">
+            <button
+              data-testid={`nav-tab-${tab.toLowerCase()}`}
+              onClick={() => !isLocked && onTabChange(tab)}
+              disabled={!!isLocked}
+              className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                isActive
+                  ? 'bg-emerald-500 text-black'
+                  : isLocked
+                  ? 'opacity-30 bg-slate-800 text-slate-600 cursor-not-allowed'
+                  : 'bg-slate-800 text-slate-300 active:scale-95'
+              }`}
+            >
+              {isLocked && <span className="text-[8px] mr-1">🔒</span>}
+              {tab}
+            </button>
+            {isLocked && (
+              <div className="text-[7px] text-slate-600 uppercase tracking-wider mt-0.5">
+                {unlockRequirement}
+              </div>
+            )}
+          </div>
         );
       })}
     </div>

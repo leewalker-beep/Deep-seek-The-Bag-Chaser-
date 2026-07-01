@@ -59,6 +59,7 @@ describe('Rival Logic Mechanical Impact', () => {
   describe('Challenge Expiration', () => {
     it('penalizes 10% bag when challenge expires', () => {
       const pl = getInitialStats(3);
+      pl.rivals = []; // Prevent new random challenges
       pl.bag = 10000;
       pl.activeChallenges = [{
         rivalId: 'r1',
@@ -70,10 +71,10 @@ describe('Rival Logic Mechanical Impact', () => {
       }];
 
       const result = advanceMonth(pl, 'NORMAL');
-      // Initial: 10000. Rent: 200. Bag after rent: 9800.
-      // Penalty: 10% of 9800 = 980.
-      // Final: 9800 - 980 = 8820.
-      expect(result.newPl.bag).toBe(8820);
+      // Initial: 10000. Rent: 50. Bag after rent: 9950.
+      // Penalty: 10% of 9950 = 995.
+      // Final: 9950 - 995 = 8955.
+      expect(result.newPl.bag).toBe(8955);
       expect(result.newPl.activeChallenges.length).toBe(0);
       expect(result.news.some(n => typeof n === 'object' && n.text.includes('CHALLENGE FAILED'))).toBe(true);
     });

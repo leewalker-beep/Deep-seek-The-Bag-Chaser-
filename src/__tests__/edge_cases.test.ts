@@ -14,14 +14,26 @@ global.localStorage = {
 };
 
 describe('Edge Case Tests', () => {
-  it('detects death from 0 mental health and assigns correct ending', () => {
+  it('detects warning from 0 mental health and but not instant death', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.9);
     const pl = getInitialStats(3);
     pl.mentalHealth = 0;
 
     const res = advanceMonth(pl, 'NORMAL');
+    expect(res.shouldDie).toBe(false);
+    expect(res.news.some(n => typeof n === 'object' && n.text.includes('MENTAL COLLAPSE IMMINENT'))).toBe(true);
+  });
+
+  it('detects death from 0 mental health AND 0 bag', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
+    const pl = getInitialStats(3);
+    pl.mentalHealth = 0;
+    pl.bag = 0;
+
+    const res = advanceMonth(pl, 'NORMAL');
+    // After rent deduction and passive (which is 0), bag will be <= 0
     expect(res.shouldDie).toBe(true);
-    expect(res.deathCause).toContain('Burnout');
+    expect(res.deathCause).toContain('Bag gone. Mind gone.');
 
     // Simulate saving ending
     const dominant = getDominantStat(res.newPl);

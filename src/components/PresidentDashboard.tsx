@@ -255,7 +255,7 @@ export const PresidentDashboard: React.FC = () => {
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div
                     className="bg-blue-500 h-full transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                    style={{ width: `${((pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth) / 48) * 100}%` }}
+                    style={{ width: `${Math.min(100, ((pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth) / 48) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -528,7 +528,7 @@ export const PresidentDashboard: React.FC = () => {
             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                <div
                 className="bg-blue-500 h-full transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                style={{ width: `${(displayMonth / 48) * 100}%` }}
+                style={{ width: `${Math.min(100, (displayMonth / 48) * 100)}%` }}
               />
             </div>
 

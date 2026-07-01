@@ -26,16 +26,16 @@ describe('Legacy Evolution System', () => {
         }
     });
 
-    // We need to trigger a death. Low mental health is easiest.
+    // We need to trigger a death. Negative bag (debt spiral) or Aura <= 0.
+    // Let's use Aura <= 0.
     useGameStore.setState({
         pl: {
             ...useGameStore.getState().pl,
-            mentalHealth: 1
+            aura: 0
         }
     });
 
-    // Execute a hustle that hits mental health
-    // r_plasma hits -10 mental
+    // Execute a hustle to trigger check
     executeHustle('r_plasma');
 
     expect(useGameStore.getState().ph).toBe('POST_MORTEM');

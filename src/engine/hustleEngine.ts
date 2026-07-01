@@ -614,6 +614,11 @@ export const executeHustleAction = (
     effective.heatHit -= 1;
   }
 
+  // Minimum yield guarantee
+  if (levelData.minimumYield && effective.yieldCash < levelData.minimumYield) {
+    effective.yieldCash = levelData.minimumYield;
+  }
+
   return {
     ...result,
     cost: effective.cost,
