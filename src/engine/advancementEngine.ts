@@ -10,8 +10,8 @@ import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import { WORLD_EVENTS } from '../config/worldEvents';
 import { HUSTLE_SECTORS } from '../config/sectors';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
-const rentByTier: Record<Tier, number> = {
-  MUD: 200,
+export const rentByTier: Record<Tier, number> = {
+  MUD: 50,
   STREET: 1000,
   STARTUP: 5000,
   CORPORATE: 20000,
@@ -664,6 +664,25 @@ export function advanceMonth(
     }
   }
 
+  // Heat-based consequences
+  if (newPl.heat >= 100) {
+    const raidRoll = Math.random();
+    if (raidRoll < 0.4) {
+      const loss = Math.floor(Math.max(0, newPl.bag) * 0.3);
+      newPl.bag -= loss;
+      newPl.heat = Math.max(0, newPl.heat - 20);
+      news.push({
+        text: `🚔 BUSTED. Police raid cost you $${loss.toLocaleString()}. Heat cooled.`,
+        colorClass: 'text-red-400 font-black'
+      });
+    } else {
+      news.push({
+        text: "🚔 Police are watching. One more wrong move and you're done.",
+        colorClass: 'text-orange-400 font-black'
+      });
+    }
+  }
+
   // Add monthly summary to news
   const netChange = passiveIncome - totalRent;
   news.unshift(`📅 Month ${newPl.month}: Rent -$${totalRent.toLocaleString()} | Passive +$${passiveIncome.toLocaleString()} | Net: ${netChange >= 0 ? '+' : ''}$${netChange.toLocaleString()}`);
@@ -673,8 +692,47 @@ export function advanceMonth(
     news.push({ text: TIER_MESSAGES[newPl.currentTier], colorClass: 'text-yellow-400 font-black animate-pulse' });
   }
 
-  // Check for death conditions
-  const { shouldDie, deathCause } = checkDeathConditions(newPl);
+  // Passive death check — fires each month
+  let shouldDie = false;
+  let deathCause: string | null = null;
+
+  if (newPl.bag <= 0 && newPl.mentalHealth <= 0) {
+    shouldDie = true;
+    deathCause = 'Bag gone. Mind gone. The streets collected their debt.';
+    news.push({
+      text: `💀 ${deathCause}`,
+      colorClass: 'text-red-500 font-black'
+    });
+  } else if (newPl.bag < 0 && newPl.bag < -(passiveIncome * 3)) {
+    // Debt spiral — bag deeply negative
+    shouldDie = true;
+    deathCause = 'Debt spiral. You owed more than you could ever earn back.';
+    news.push({
+      text: `📉 ${deathCause}`,
+      colorClass: 'text-red-500 font-black'
+    });
+  } else if (newPl.mentalHealth <= 0) {
+    // Mental collapse warning — not instant death
+    // but add a strong warning message
+    news.push({
+      text: '⚠️ MENTAL COLLAPSE IMMINENT. Rest now or lose everything.',
+      colorClass: 'text-orange-500 font-black'
+    });
+  }
+
+  // Fallback to standard death conditions if not already dead
+  if (!shouldDie) {
+    const standardDeath = checkDeathConditions(newPl);
+    if (standardDeath.shouldDie) {
+      // Burnout is handled as a warning in the passive check
+      if (standardDeath.deathCause?.toLowerCase().includes('burnout')) {
+        // Skip instant death
+      } else {
+        shouldDie = true;
+        deathCause = standardDeath.deathCause;
+      }
+    }
+  }
 
   // Convert all news to TickerMessage objects and stamp current tier
   const stampedNews = news.map(m => {

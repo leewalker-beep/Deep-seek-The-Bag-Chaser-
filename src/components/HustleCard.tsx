@@ -110,7 +110,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
 
   return (
     <div
-      className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}
+      className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden flex flex-col h-full`}
       data-testid={`hustle-card-${hustle.id}`}
     >
       <ConfirmationModal
@@ -178,7 +178,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mt-auto">
         {isVending ? (
           <div className="space-y-2">
             <div className="flex justify-between items-center px-1">
@@ -202,7 +202,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (effectiveStats.cost > 0 ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})` : (EXECUTE_LABEL[player.currentTier] || 'EXECUTE')))}
+            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? `PLAY (${EXECUTE_LABEL[player.currentTier] || 'RUN IT'})` : (effectiveStats.cost > 0 ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})` : (EXECUTE_LABEL[player.currentTier] || 'EXECUTE')))}
           </button>
         )}
 
