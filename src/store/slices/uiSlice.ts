@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, AppTab } from '../../types/game';
+import { type HeroArtwork } from '../../config/heroArtwork';
 
 export interface UISlice {
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
@@ -12,6 +13,8 @@ export interface UISlice {
   pendingSpecialization: boolean;
   tutorialStep: number;
   isTutorialSkipped: boolean;
+  activeTransition: HeroArtwork | null;
+  transitionQueue: HeroArtwork[];
 
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP') => void;
   setActiveTab: (tab: AppTab) => void;
@@ -21,9 +24,11 @@ export interface UISlice {
   setTutorialStep: (step: number) => void;
   setTutorialSkipped: (skipped: boolean) => void;
   setPendingSpecialization: (pending: boolean) => void;
+  triggerTransition: (artwork: HeroArtwork) => void;
+  clearTransition: () => void;
 }
 
-export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => ({
+export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get) => ({
   ph: 'PROLOGUE',
   activeTab: 'MUD',
   activeHustleView: null,
@@ -34,6 +39,8 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
   pendingSpecialization: false,
   tutorialStep: 0,
   isTutorialSkipped: false,
+  activeTransition: null,
+  transitionQueue: [],
 
   setPh: (ph) => set({ ph }),
   setActiveTab: (tab) => set({ activeTab: tab, activeHustleView: null }),
@@ -47,5 +54,22 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set) => 
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');
     }
     set({ isTutorialSkipped: skipped });
+  },
+  triggerTransition: (artwork) => {
+    const { activeTransition, transitionQueue } = get();
+    if (activeTransition) {
+      set({ transitionQueue: [...transitionQueue, artwork] });
+    } else {
+      set({ activeTransition: artwork });
+    }
+  },
+  clearTransition: () => {
+    const { transitionQueue } = get();
+    if (transitionQueue.length > 0) {
+      const [next, ...rest] = transitionQueue;
+      set({ activeTransition: next, transitionQueue: rest });
+    } else {
+      set({ activeTransition: null });
+    }
   },
 });

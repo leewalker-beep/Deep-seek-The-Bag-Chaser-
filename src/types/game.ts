@@ -645,6 +645,8 @@ export interface Sentiment {
   monthsRemaining: number;
 }
 
+import { type HeroArtwork } from '../config/heroArtwork';
+
 export interface GameState {
   pl: PlayerStats;
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
@@ -661,6 +663,8 @@ export interface GameState {
   tutorialStep: number;
   isTutorialSkipped: boolean;
   difficulty: 1 | 2 | 3;
+  activeTransition: HeroArtwork | null;
+  transitionQueue: HeroArtwork[];
   chosenBackground?: string;
   chosenBackgroundCategory?: string;
   chosenBackgroundVariation?: string;
@@ -735,4 +739,6 @@ export interface GameState {
   unlockedLegacyUpgradeIds: string[];
   unlockLegacyUpgrade: (upgradeId: string) => void;
   updatePl: (updates: Partial<PlayerStats>) => void;
+  triggerTransition: (artwork: HeroArtwork) => void;
+  clearTransition: () => void;
 }

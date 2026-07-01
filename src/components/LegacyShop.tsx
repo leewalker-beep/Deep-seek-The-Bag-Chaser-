@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { HERO_ARTWORK } from '../config/heroArtwork';
 import { LEGACY_UPGRADES } from '../config/legacyUpgrades';
 
 export const LegacyShop: React.FC<{ onProceed: () => void }> = ({ onProceed }) => {
-  const { bankedLegacyPoints, unlockedLegacyUpgradeIds, unlockLegacyUpgrade } = useGameStore();
+  const { bankedLegacyPoints, unlockedLegacyUpgradeIds, unlockLegacyUpgrade, triggerTransition } = useGameStore();
+
+  useEffect(() => {
+    triggerTransition(HERO_ARTWORK.LEGACY_SHOP);
+  }, [triggerTransition]);
 
   const categories = ['STARTING_STATS', 'ASSETS', 'HUSTLES', 'PERKS', 'ORIGINS'];
 
