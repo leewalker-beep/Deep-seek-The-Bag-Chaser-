@@ -15,6 +15,7 @@ export const NavTabs: React.FC<NavTabsProps> = ({
   onTabChange,
 }) => {
   const campaignStage = useGameStore(state => state.pl.campaignStage || 0);
+  const inJail = useGameStore(state => state.pl.inJail);
   const isPresident = campaignStage >= 8;
 
   const currentIndex = PROGRESSION_ORDER.indexOf(currentTier);
@@ -30,14 +31,14 @@ export const NavTabs: React.FC<NavTabsProps> = ({
         if (tab === 'FLEX' && !flexUnlocked) return null;
 
         const tabIndex = tab === 'FLEX' || tab === 'PRESIDENCY' ? 999 : PROGRESSION_ORDER.indexOf(tab as Tier);
-        const isLocked = (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1);
+        const isLocked = inJail || (tab !== 'FLEX' && tab !== 'PRESIDENCY' && tabIndex > currentIndex + 1);
         const isActive = activeTab === tab;
 
         return (
           <button
             key={tab} data-testid={`nav-tab-${tab.toLowerCase()}`}
             onClick={() => !isLocked && onTabChange(tab)}
-            disabled={!!isLocked}
+            disabled={isLocked}
             className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shrink-0 ${
               isActive
                 ? 'bg-emerald-500 text-black'

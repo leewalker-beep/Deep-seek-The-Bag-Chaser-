@@ -621,6 +621,10 @@ export interface PlayerStats {
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   totalHustlesCompleted: number;
+  inJail: boolean;
+  jailMonthsRemaining: number;
+  jailSentenceTotal: number;
+  jailCharge: string;
   deathContext?: {
     mentalHealthAtDeath: number;
     lastHustleMentalHit: number;
@@ -726,6 +730,7 @@ export interface GameState {
   advancePresidentialMonth: () => void;
   updatePresidentialStat: (stat: string, value: number) => void;
   updateDemographicApproval: (demographic: string, value: number) => void;
+  serveMonth: () => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;

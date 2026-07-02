@@ -30,6 +30,7 @@ export interface HustleSlice {
   executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
+  serveMonth: () => void;
   selectSpecialization: (specializationId: string) => void;
   purchaseFlexAsset: (assetId: string) => boolean;
   retaliateRival: (rivalId: string) => boolean;
@@ -301,6 +302,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
   executeBranch: (hustleId, branchId) => {
     const state = get();
+    if (state.pl.inJail) return { success: false, message: 'Cannot work while in jail' };
     const hustle = HUSTLES[hustleId];
     const branch = hustle?.branches?.[branchId];
 
@@ -560,6 +562,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
   executeHustle: (hustleId, minigameMultiplier = 1, forceSuccess) => {
     const state = get();
+    if (state.pl.inJail) {
+      return {
+        success: false, netChange: 0, message: 'Cannot work while in jail',
+        cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
+      };
+    }
     const hustle = HUSTLES[hustleId];
 
     if (!hustle) {
@@ -968,6 +976,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
   upgradeHustle: (hustleId, branchId) => {
     const state = get();
+    if (state.pl.inJail) return false;
     const hustle = HUSTLES[hustleId];
 
     if (!hustle) return false;
@@ -1210,6 +1219,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
   advanceTier: () => {
     const state = get();
+    if (state.pl.inJail) return false;
     const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const nextTier = PROGRESSION_ORDER[currentIndex + 1];
 
@@ -1339,6 +1349,55 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     get().logEvent('BUSINESS_PURCHASED', { assetId, cost: asset.cost });
 
     return true;
+  },
+
+  serveMonth: () => {
+    const state = get();
+    if (!state.pl.inJail) return;
+
+    const {
+      newPl,
+      newMarket,
+      news: monthNews,
+      shouldDie,
+      deathCause,
+    } = advanceMonth(
+      state.pl,
+      state.currentMarket,
+      state.unlockedLegacyUpgradeIds
+    );
+
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (shouldDie) {
+      const deathInfo = DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = deathCause;
+
+      newPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: 'Prison',
+        heatAtDeath: Math.floor(newPl.heat),
+        monthsPlayed: newPl.month,
+        tier: newPl.currentTier,
+      };
+
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(newPl) || 0) });
+      newPl.deathCount = (newPl.deathCount || 0) + 1;
+    }
+
+    set({
+      pl: enforceStatCaps(newPl),
+      currentMarket: newMarket,
+      news: [...monthNews, ...state.news].slice(0, 50),
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
+    });
   },
 
   selectSpecialization: (specializationId) => {

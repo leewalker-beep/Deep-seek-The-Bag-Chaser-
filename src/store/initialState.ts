@@ -151,6 +151,10 @@ export const getInitialStats = (
     completedDailyChallengesCount: 0,
     totalChallengesCompleted: 0,
     totalHustlesCompleted: 0,
+    inJail: false,
+    jailMonthsRemaining: 0,
+    jailSentenceTotal: 0,
+    jailCharge: '',
     unlockedLegacyUpgradeIds: [],
     stats: {
       totalHustles: 0,
