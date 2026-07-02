@@ -40,31 +40,54 @@ export interface AdvancementResult {
   news: (string | TickerMessage)[];
   shouldDie: boolean;
   deathCause: string | null;
+  fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
+  fatalStatValue?: number;
   totalRent: number;
   passiveIncome: number;
   passiveBreakdown: PassiveBreakdown;
 }
 
-export function checkDeathConditions(pl: PlayerStats): { shouldDie: boolean; deathCause: string | null } {
+export function checkDeathConditions(pl: PlayerStats): {
+  shouldDie: boolean;
+  deathCause: string | null;
+  fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
+  fatalStatValue?: number;
+} {
+  // Never die during tutorial
+  if (!pl.isTutorialSkipped && pl.tutorialStep < 6) {
+    return { shouldDie: false, deathCause: null };
+  }
+
+  if (pl.clout <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Irrelevant: The world has moved on without you.',
+      fatalStat: 'clout',
+      fatalStatValue: pl.clout,
+    };
+  }
+  if (pl.aura <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Canceled: Your reputation is destroyed.',
+      fatalStat: 'aura',
+      fatalStatValue: pl.aura,
+    };
+  }
+  if (pl.mentalHealth <= 0) {
+    return {
+      shouldDie: true,
+      deathCause: 'Burnout: Your mind and body collapsed.',
+      fatalStat: 'mental',
+      fatalStatValue: pl.mentalHealth,
+    };
+  }
   if (pl.bag < 0) {
     return {
       shouldDie: true,
-      deathCause: 'Bankruptcy: You ran out of money and the creditors came for everything.'
-    };
-  } else if (pl.mentalHealth <= 0) {
-    return {
-      shouldDie: true,
-      deathCause: 'Burnout: Your mind and body collapsed under the pressure.'
-    };
-  } else if (pl.aura <= 0) {
-    return {
-      shouldDie: true,
-      deathCause: 'Canceled: Your reputation is destroyed. No one will work with you.'
-    };
-  } else if (pl.clout <= 0) {
-    return {
-      shouldDie: true,
-      deathCause: 'Irrelevant: The world has moved on without you.'
+      deathCause: 'Bankruptcy.',
+      fatalStat: 'bag',
+      fatalStatValue: pl.bag,
     };
   }
   return { shouldDie: false, deathCause: null };
@@ -708,7 +731,21 @@ export function advanceMonth(
   }
 
   // Check for death conditions
-  const { shouldDie, deathCause } = checkDeathConditions(newPl);
+  let shouldDie = false;
+  let deathCause: string | null = null;
+  let fatalStat: any = undefined;
+  let fatalStatValue: number | undefined = undefined;
+
+  // Skip passive death if in tutorial
+  if (!newPl.isTutorialSkipped && newPl.tutorialStep < 6) {
+    // skip death checks this month
+  } else {
+    const deathResult = checkDeathConditions(newPl);
+    shouldDie = deathResult.shouldDie;
+    deathCause = deathResult.deathCause;
+    fatalStat = deathResult.fatalStat;
+    fatalStatValue = deathResult.fatalStatValue;
+  }
 
   if (shouldDie) {
     newPl.deathContext = {
@@ -718,6 +755,8 @@ export function advanceMonth(
       heatAtDeath: Math.floor(newPl.heat),
       monthsPlayed: newPl.month,
       tier: newPl.currentTier,
+      fatalStat,
+      fatalStatValue,
     };
   }
 
@@ -735,6 +774,8 @@ export function advanceMonth(
     news: stampedNews,
     shouldDie,
     deathCause,
+    fatalStat,
+    fatalStatValue,
     totalRent,
     passiveIncome,
     passiveBreakdown

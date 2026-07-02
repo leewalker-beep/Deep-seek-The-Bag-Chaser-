@@ -418,7 +418,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
-    const { shouldDie, deathCause } = checkDeathConditions(nextPl);
+    const { shouldDie, deathCause, fatalStat, fatalStatValue } = checkDeathConditions(nextPl);
     let finalPh = state.ph;
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
@@ -436,6 +436,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatAtDeath: Math.floor(nextPl.heat),
         monthsPlayed: nextPl.month,
         tier: nextPl.currentTier,
+        fatalStat,
+        fatalStatValue,
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
@@ -751,6 +753,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       news: monthNews,
       shouldDie,
       deathCause,
+      fatalStat,
+      fatalStatValue,
       totalRent,
       passiveIncome,
       passiveBreakdown
@@ -832,6 +836,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatAtDeath: Math.floor(cappedPl.heat),
         monthsPlayed: cappedPl.month,
         tier: cappedPl.currentTier,
+        fatalStat,
+        fatalStatValue,
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (cappedPl.legacyScore || 0) });
@@ -1113,7 +1119,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
     }
 
-    const { shouldDie, deathCause } = checkDeathConditions(newPl);
+    const { shouldDie, deathCause, fatalStat, fatalStatValue } = checkDeathConditions(newPl);
     let finalPh = state.ph;
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
@@ -1131,6 +1137,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatAtDeath: Math.floor(newPl.heat),
         monthsPlayed: newPl.month,
         tier: newPl.currentTier,
+        fatalStat,
+        fatalStatValue,
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
@@ -1280,7 +1288,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
-    const { shouldDie, deathCause } = checkDeathConditions(plAfterPurchase);
+    const { shouldDie, deathCause, fatalStat, fatalStatValue } = checkDeathConditions(plAfterPurchase);
     let finalPh = state.ph;
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
@@ -1298,6 +1306,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatAtDeath: Math.floor(plAfterPurchase.heat),
         monthsPlayed: plAfterPurchase.month,
         tier: plAfterPurchase.currentTier,
+        fatalStat,
+        fatalStatValue,
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plAfterPurchase.legacyScore || 0) });
@@ -1361,6 +1371,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       news: monthNews,
       shouldDie,
       deathCause,
+      fatalStat,
+      fatalStatValue,
     } = advanceMonth(
       state.pl,
       state.currentMarket,
@@ -1384,6 +1396,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         heatAtDeath: Math.floor(newPl.heat),
         monthsPlayed: newPl.month,
         tier: newPl.currentTier,
+        fatalStat,
+        fatalStatValue,
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(newPl) || 0) });
