@@ -13,6 +13,8 @@ interface DeathScreenProps {
     heatAtDeath: number;
     monthsPlayed: number;
     tier: string;
+    fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
+    fatalStatValue?: number;
   };
   onReset: () => void;
 }
@@ -36,7 +38,50 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause
             WHAT HAPPENED
           </div>
 
-          {deathContext.lastHustleMentalHit > 0 && (
+          {/* Show the fatal stat prominently */}
+          {deathContext.fatalStat === 'clout' && (
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-slate-500">
+                Clout dropped to zero
+              </span>
+              <span className="text-purple-400 font-bold">
+                Nobody knows your name
+              </span>
+            </div>
+          )}
+          {deathContext.fatalStat === 'aura' && (
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-slate-500">
+                Aura hit zero
+              </span>
+              <span className="text-blue-400 font-bold">
+                Reputation destroyed
+              </span>
+            </div>
+          )}
+          {deathContext.fatalStat === 'mental' && (
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-slate-500">
+                Mental health collapsed
+              </span>
+              <span className="text-orange-400 font-bold">
+                Complete burnout
+              </span>
+            </div>
+          )}
+          {deathContext.fatalStat === 'bag' && (
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-slate-500">
+                Bag went negative
+              </span>
+              <span className="text-red-400 font-bold">
+                Broke and buried
+              </span>
+            </div>
+          )}
+
+          {/* Last hustle only shown if it was mental */}
+          {deathContext.fatalStat === 'mental' && deathContext.lastHustleMentalHit > 0 && (
             <div className="flex justify-between text-xs">
               <span className="text-slate-500">
                 {deathContext.lastHustleName}
@@ -47,43 +92,27 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause
             </div>
           )}
 
-          <div className="flex justify-between text-xs">
+          {/* Always show these */}
+          <div className="flex justify-between text-xs mt-2">
             <span className="text-slate-500">
               Mental health at death
             </span>
             <span className={`font-bold ${
-              deathContext.mentalHealthAtDeath < 20
-                ? 'text-red-400' : 'text-orange-400'
+              deathContext.mentalHealthAtDeath < 30
+                ? 'text-red-400' : 'text-slate-400'
             }`}>
               {deathContext.mentalHealthAtDeath}%
             </span>
           </div>
 
-          {deathContext.heatAtDeath > 60 && (
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">
-                Heat level
-              </span>
-              <span className="text-orange-400 font-bold">
-                {deathContext.heatAtDeath}% 🔥
-              </span>
-            </div>
-          )}
-
-          <div className="flex justify-between text-xs">
+          <div className="flex justify-between text-xs mt-1">
             <span className="text-slate-500">
               Survived
             </span>
             <span className="text-slate-400">
-              {deathContext.monthsPlayed} months in {deathContext.tier}
+              {deathContext.monthsPlayed} {deathContext.monthsPlayed === 1 ? 'month' : 'months'} in {deathContext.tier}
             </span>
           </div>
-
-          {deathContext.lastHustleMentalHit > 0 && deathContext.mentalHealthAtDeath < 30 && (
-            <div className="text-[10px] text-slate-600 italic mt-2 pt-2 border-t border-slate-800">
-              You ran {deathContext.lastHustleName} with only {deathContext.mentalHealthAtDeath + deathContext.lastHustleMentalHit}% mental health. It cost you {deathContext.lastHustleMentalHit}% — you had {deathContext.mentalHealthAtDeath}% left after. Not enough.
-            </div>
-          )}
         </div>
       )}
 

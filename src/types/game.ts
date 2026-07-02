@@ -625,6 +625,8 @@ export interface PlayerStats {
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
   jailCharge: string;
+  tutorialStep: number;
+  isTutorialSkipped: boolean;
   deathContext?: {
     mentalHealthAtDeath: number;
     lastHustleMentalHit: number;
@@ -632,6 +634,8 @@ export interface PlayerStats {
     heatAtDeath: number;
     monthsPlayed: number;
     tier: string;
+    fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
+    fatalStatValue?: number;
   };
   stats?: {
     totalHustles: number;

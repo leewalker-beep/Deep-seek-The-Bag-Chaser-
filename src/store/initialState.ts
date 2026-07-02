@@ -155,6 +155,8 @@ export const getInitialStats = (
     jailMonthsRemaining: 0,
     jailSentenceTotal: 0,
     jailCharge: '',
+    tutorialStep: 0,
+    isTutorialSkipped: false,
     unlockedLegacyUpgradeIds: [],
     stats: {
       totalHustles: 0,

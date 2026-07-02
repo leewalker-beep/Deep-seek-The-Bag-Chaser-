@@ -47,13 +47,19 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   setActiveHustleView: (hustleId) => set({ activeHustleView: hustleId }),
   setActiveTierBadge: (badge) => set({ activeTierBadge: badge }),
   dismissNarrative: () => set({ activeNarrative: null }),
-  setTutorialStep: (step) => set({ tutorialStep: step }),
+  setTutorialStep: (step) => set((state) => ({
+    tutorialStep: step,
+    pl: { ...state.pl, tutorialStep: step }
+  })),
   setPendingSpecialization: (pending) => set({ pendingSpecialization: pending }),
   setTutorialSkipped: (skipped) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');
     }
-    set({ isTutorialSkipped: skipped });
+    set((state) => ({
+      isTutorialSkipped: skipped,
+      pl: { ...state.pl, isTutorialSkipped: skipped }
+    }));
   },
   triggerTransition: (artwork) => {
     const { activeTransition, transitionQueue } = get();
