@@ -59,6 +59,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     if (typeof window !== 'undefined') {
       localStorage.removeItem('bag-chaser-save');
+      localStorage.removeItem('bag-chaser-tutorial-complete');
     }
 
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
@@ -85,6 +86,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       chosenBackground: backgroundId,
       chosenBackgroundCategory: categoryId,
       chosenBackgroundVariation: variationId,
+      tutorialStep: 0,
+      isTutorialSkipped: false,
     });
   },
 

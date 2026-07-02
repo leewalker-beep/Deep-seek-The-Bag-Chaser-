@@ -149,6 +149,7 @@ export const getInitialStats = (
     tierStats: {},
     hustlePlays: {},
     completedDailyChallengesCount: 0,
+    seenCinematicIds: [],
     totalChallengesCompleted: 0,
     totalHustlesCompleted: 0,
     inJail: false,

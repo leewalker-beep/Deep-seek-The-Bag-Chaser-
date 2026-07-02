@@ -165,6 +165,7 @@ function App() {
     activeTransition,
     triggerTransition,
     clearTransition,
+    updatePl,
   } = useGameStore();
 
   useEffect(() => {
@@ -174,16 +175,27 @@ function App() {
   // Detect Tier Advancement
   const lastTierRef = useRef<Tier | null>(null);
   useEffect(() => {
-    if (pl?.currentTier && lastTierRef.current && lastTierRef.current !== pl.currentTier) {
-      const artwork = HERO_ARTWORK[pl.currentTier];
-      if (artwork) {
-        triggerTransition(artwork);
+    if (ph === 'PLAYING' && pl?.currentTier && lastTierRef.current) {
+      const oldIndex = PROGRESSION_ORDER.indexOf(lastTierRef.current);
+      const newIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
+
+      if (newIndex > oldIndex) {
+        const artwork = HERO_ARTWORK[pl.currentTier];
+        const alreadySeen = pl.seenCinematicIds?.includes(pl.currentTier);
+
+        if (artwork && !alreadySeen) {
+          triggerTransition(artwork);
+          updatePl({
+            seenCinematicIds: [...(pl.seenCinematicIds || []), pl.currentTier]
+          });
+        }
       }
     }
+
     if (pl?.currentTier) {
       lastTierRef.current = pl.currentTier;
     }
-  }, [pl?.currentTier, triggerTransition]);
+  }, [pl?.currentTier, ph, triggerTransition, updatePl, pl?.seenCinematicIds]);
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
@@ -923,7 +935,7 @@ function App() {
       )}
 
       {/* New Tutorial Box */}
-      {!isTutorialSkipped && <TutorialBox />}
+      {!activeTransition && !isTutorialSkipped && <TutorialBox />}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
       <NarrativeEventModal />

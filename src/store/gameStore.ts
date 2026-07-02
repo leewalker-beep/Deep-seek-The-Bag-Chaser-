@@ -35,6 +35,7 @@ export const useGameStore = create<GameState>()(
           jailMonthsRemaining: state.pl.jailMonthsRemaining,
           jailSentenceTotal: state.pl.jailSentenceTotal,
           jailCharge: state.pl.jailCharge,
+          seenCinematicIds: state.pl.seenCinematicIds,
         },
         rivals: state.pl.rivals,
         ph: state.ph,

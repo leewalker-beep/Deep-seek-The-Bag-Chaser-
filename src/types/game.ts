@@ -621,6 +621,7 @@ export interface PlayerStats {
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   totalHustlesCompleted: number;
+  seenCinematicIds: string[];
   inJail: boolean;
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
