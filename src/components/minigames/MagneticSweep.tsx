@@ -38,6 +38,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   const [collected, setCollected] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [gameActive, setGameActive] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [showInstruction, setShowInstruction] = useState(true);
   const [magnetPos, setMagnetPos] = useState({ x: 50, y: 50 });
   const [isRareFound, setIsRareFound] = useState(false);
@@ -92,6 +93,13 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   }, [gameActive, collectItem]);
 
   useEffect(() => {
+    const startDelay = setTimeout(() => {
+      setHasStarted(true);
+    }, 500);
+    return () => clearTimeout(startDelay);
+  }, []);
+
+  useEffect(() => {
     const introTimer = setTimeout(() => {
       setShowInstruction(false);
       setGameActive(true);
@@ -140,7 +148,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   }, [gameActive, spawnRate, itemLifespan, level, itemEmojis, rareEmoji]);
 
   useEffect(() => {
-    if (!gameActive) {
+    if (!gameActive && hasStarted) {
       let multiplier = 0.5;
       if (collected >= targetScore) multiplier = 3.5;
       else if (collected >= targetScore * 0.6) multiplier = 2.0;
@@ -148,7 +156,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
 
       onComplete({ multiplier, isRare: isRareFound });
     }
-  }, [gameActive, collected, targetScore, onComplete, isRareFound]);
+  }, [gameActive, hasStarted, collected, targetScore, onComplete, isRareFound]);
 
   return (
     <div
@@ -180,20 +188,19 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         className="relative w-full h-full bg-slate-950 overflow-hidden"
         style={{ position: 'relative', width: '100%', height: '100%' }}
       >
-        <AnimatePresence>
-          {showInstruction && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              className="absolute inset-0 flex items-center justify-center z-50 px-8"
-            >
-              <div className="text-emerald-400 font-black text-center text-xl uppercase tracking-tighter leading-tight">
-                DRAG THE MAGNET OVER THE SCRAP — OR TAP IT
+        {showInstruction && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="text-center">
+              <div className="text-4xl mb-3">🧲</div>
+              <div className="text-emerald-400 font-black text-sm uppercase tracking-widest">
+                DRAG THE MAGNET
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <div className="text-slate-500 text-xs mt-1">
+                or tap the scrap directly
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Magnet Visual */}
         <motion.div

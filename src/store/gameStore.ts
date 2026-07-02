@@ -30,6 +30,7 @@ export const useGameStore = create<GameState>()(
           seenFlexThresholds: state.pl.seenFlexThresholds,
           pendingFlexOffer: state.pl.pendingFlexOffer,
           avatarId: state.pl.avatarId,
+          deathContext: state.pl.deathContext,
         },
         rivals: state.pl.rivals,
         ph: state.ph,

@@ -676,6 +676,17 @@ export function advanceMonth(
   // Check for death conditions
   const { shouldDie, deathCause } = checkDeathConditions(newPl);
 
+  if (shouldDie) {
+    newPl.deathContext = {
+      mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
+      lastHustleMentalHit: 0,
+      lastHustleName: 'Monthly Expenses',
+      heatAtDeath: Math.floor(newPl.heat),
+      monthsPlayed: newPl.month,
+      tier: newPl.currentTier,
+    };
+  }
+
   // Convert all news to TickerMessage objects and stamp current tier
   const stampedNews = news.map(m => {
     if (typeof m === 'string') {

@@ -427,6 +427,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      nextPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(nextPl.mentalHealth),
+        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
+        lastHustleName: branch.name || hustle.name,
+        heatAtDeath: Math.floor(nextPl.heat),
+        monthsPlayed: nextPl.month,
+        tier: nextPl.currentTier,
+      };
+
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
 
       nextPl.deathCount = (nextPl.deathCount || 0) + 1;
@@ -808,6 +817,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      cappedPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(cappedPl.mentalHealth),
+        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
+        lastHustleName: levelData.name || hustle.name,
+        heatAtDeath: Math.floor(cappedPl.heat),
+        monthsPlayed: cappedPl.month,
+        tier: cappedPl.currentTier,
+      };
+
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (cappedPl.legacyScore || 0) });
 
       cappedPl.deathCount = (cappedPl.deathCount || 0) + 1;
@@ -1097,6 +1115,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
+      newPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
+        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
+        lastHustleName: targetNodeData.name || hustle.name,
+        heatAtDeath: Math.floor(newPl.heat),
+        monthsPlayed: newPl.month,
+        tier: newPl.currentTier,
+      };
+
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
 
       newPl.deathCount = (newPl.deathCount || 0) + 1;
@@ -1253,6 +1280,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalPh = 'POST_MORTEM';
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
+
+      plAfterPurchase.deathContext = {
+        mentalHealthAtDeath: Math.floor(plAfterPurchase.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: asset.name,
+        heatAtDeath: Math.floor(plAfterPurchase.heat),
+        monthsPlayed: plAfterPurchase.month,
+        tier: plAfterPurchase.currentTier,
+      };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plAfterPurchase.legacyScore || 0) });
 
