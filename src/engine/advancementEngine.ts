@@ -686,6 +686,7 @@ export function advanceMonth(
 
       // 2. Narrative Flag Requirements
       if (event.trigger.flagReqs) {
+        if (!newPl.narrativeFlags) return false;
         for (const [key, value] of Object.entries(event.trigger.flagReqs)) {
           if (newPl.narrativeFlags[key] !== value) return false;
         }

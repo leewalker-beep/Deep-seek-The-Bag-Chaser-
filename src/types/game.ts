@@ -289,6 +289,19 @@ export interface Rival {
   specialty?: string;
 }
 
+export type CharacterStatus = 'alive' | 'disappeared' | 'rival' | 'ally' | 'deceased';
+
+export interface Character {
+  id: string;
+  name: string;
+  portraitId: string;
+  background: string;
+  personality: string;
+  firstAppearanceTier: Tier;
+  futureAppearanceTiers: Tier[];
+  initialStatus: CharacterStatus;
+}
+
 export interface Challenge {
   rivalId: string;
   rivalName: string;
@@ -324,6 +337,7 @@ export interface NarrativeEvent {
   title: string;
   description: string;
   image?: string;
+  characterId?: string;
   trigger: {
     tier?: Tier[];
     background?: string[];

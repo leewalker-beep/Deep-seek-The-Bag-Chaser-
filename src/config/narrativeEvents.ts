@@ -696,6 +696,518 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
     ]
   },
 
+  // --- CHARACTER CHAINS ---
+
+  // Marcus Chain
+  {
+    id: 'char_marcus_1',
+    characterId: 'char_marcus',
+    title: 'A Favor for a Friend',
+    description: 'Marcus "Mook" Miller cornered you near your old block. "Listen, I got into some trouble with the wrong people," he says, looking around nervously. "I need 5k to clear my name. You\'re doing well, right?"',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'marcus_help',
+        label: 'Help Marcus',
+        description: 'Give him the money. He\'s your brother.',
+        consequences: {
+          bag: -5000,
+          aura: 50
+        },
+        setFlags: { 'rel_marcus': 50, 'trust_marcus': 100, 'status_marcus': 'ally' }
+      },
+      {
+        id: 'marcus_refuse',
+        label: 'Refuse Him',
+        description: 'You can\'t afford to be a charity. He needs to learn his own lessons.',
+        consequences: {
+          clout: 20,
+          aura: -30
+        },
+        setFlags: { 'rel_marcus': -20, 'trust_marcus': 0, 'status_marcus': 'alive' }
+      }
+    ]
+  },
+  {
+    id: 'char_marcus_2',
+    characterId: 'char_marcus',
+    title: 'Marcus\'s Opportunity',
+    description: 'Marcus reaches out again. He\'s found a lead on some "high-end electronics" that fell off a truck. He wants you to provide the storage space.',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true,
+      flagReqs: { 'status_marcus': 'ally' }
+    },
+    choices: [
+      {
+        id: 'marcus_storage',
+        label: 'Provide Storage',
+        description: 'Use your warehouse. A little risk for a lot of reward.',
+        consequences: {
+          bag: 20000,
+          heat: 30,
+          aura: -50
+        },
+        setFlags: { 'rel_marcus': 70, 'trust_marcus': 120 }
+      },
+      {
+        id: 'marcus_decline_crime',
+        label: 'Refuse Crime',
+        description: 'You\'re going legit. You can\'t risk the heat.',
+        consequences: {
+          aura: 30,
+          heat: -10
+        },
+        setFlags: { 'rel_marcus': 40, 'trust_marcus': 80 }
+      }
+    ]
+  },
+
+  // Ashley Weaver Chain
+  {
+    id: 'char_ashley_1',
+    characterId: 'char_ashley',
+    title: 'The Journalist\'s Inquiry',
+    description: 'Ashley Weaver from the Metro Gazette is writing a piece on the "rising stars" of the city. She wants an exclusive interview.',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'ashley_interview_clean',
+        label: 'The Clean Story',
+        description: 'Tell her about your humble beginnings and your drive for success.',
+        consequences: {
+          clout: 40,
+          aura: 30
+        },
+        setFlags: { 'rel_ashley': 30, 'trust_ashley': 50 }
+      },
+      {
+        id: 'ashley_interview_raw',
+        label: 'The Raw Truth',
+        description: 'Give her the gritty details. It\'s risky, but it\'ll be a bestseller.',
+        consequences: {
+          clout: 100,
+          heat: 20,
+          aura: -20
+        },
+        setFlags: { 'rel_ashley': 50, 'trust_ashley': 80 }
+      }
+    ]
+  },
+  {
+    id: 'char_ashley_2',
+    characterId: 'char_ashley',
+    title: 'The Leak',
+    description: 'Ashley has found some dirt on Victor Kane, but her editor is blocking the story. She needs an anonymous source to "verify" the documents.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'rel_ashley': 30 }
+    },
+    choices: [
+      {
+        id: 'ashley_leak_verify',
+        label: 'Verify the Docs',
+        description: 'Confirm the details. It\'s time Kane took a hit.',
+        consequences: {
+          clout: 100,
+          aura: 50,
+          heat: 15
+        },
+        setFlags: { 'rel_ashley': 80, 'trust_ashley': 100, 'kane_weakened': true }
+      },
+      {
+        id: 'ashley_leak_refuse',
+        label: 'Protect Yourself',
+        description: 'Kane is dangerous. You can\'t be seen helping the press.',
+        consequences: {
+          aura: 20,
+          clout: -20
+        },
+        setFlags: { 'rel_ashley': 10, 'trust_ashley': 30 }
+      }
+    ]
+  },
+
+  // Detective Cole Chain
+  {
+    id: 'char_cole_1',
+    characterId: 'char_cole',
+    title: 'Cole\'s Warning',
+    description: 'Detective Silas Cole pays you a visit. "I\'ve seen guys like you come and go," he says. "Keep your nose clean, or I\'ll be the one who shuts you down."',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 40 }
+    },
+    choices: [
+      {
+        id: 'cole_cooperate',
+        label: 'Offer Information',
+        description: 'Give him a tip about a minor rival. Show him you\'re on the "right" side.',
+        consequences: {
+          heat: -30,
+          aura: -40,
+          clout: 30
+        },
+        setFlags: { 'rel_cole': 20, 'trust_cole': 40 }
+      },
+      {
+        id: 'cole_defiant',
+        label: 'Be Defiant',
+        description: 'You have nothing to say to the police.',
+        consequences: {
+          heat: 10,
+          clout: 50
+        },
+        setFlags: { 'rel_cole': -30, 'trust_cole': 0 }
+      }
+    ]
+  },
+
+  // Investor Chen Chain
+  {
+    id: 'char_chen_1',
+    characterId: 'char_chen',
+    title: 'Chen\'s Entrance',
+    description: 'Lawrence Chen has noticed your growth. "You have potential," he says. "But potential is just another word for someone who hasn\'t made it yet. I can provide 500k, but I want a seat on your board."',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'chen_accept',
+        label: 'Accept Chen',
+        description: 'Take the money and the expertise.',
+        consequences: {
+          bag: 500000,
+          clout: 100,
+          aura: -20
+        },
+        setFlags: { 'rel_chen': 50, 'trust_chen': 30, 'chen_on_board': true }
+      },
+      {
+        id: 'chen_decline',
+        label: 'Maintain Autonomy',
+        description: 'You don\'t need his help or his control.',
+        consequences: {
+          aura: 50,
+          clout: 20
+        },
+        setFlags: { 'rel_chen': 10, 'trust_chen': 10, 'chen_on_board': false }
+      }
+    ]
+  },
+
+  // Maya Vane Chain
+  {
+    id: 'char_maya_1',
+    characterId: 'char_maya',
+    title: 'A Sister\'s Concern',
+    description: 'Your sister Maya visits. She\'s worried that your success is coming at too high a cost. "The neighborhood is changing," she says. "And not for the better. We need a community center, not more luxury condos."',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'maya_fund_center',
+        label: 'Fund the Center',
+        description: 'Commit 100k to the community project.',
+        consequences: {
+          bag: -100000,
+          aura: 200,
+          clout: 50
+        },
+        setFlags: { 'rel_maya': 100, 'trust_maya': 100, 'community_hero': true }
+      },
+      {
+        id: 'maya_ignore',
+        label: 'Focus on Business',
+        description: 'Explain that the business comes first. You can help later.',
+        consequences: {
+          aura: -50,
+          clout: 30
+        },
+        setFlags: { 'rel_maya': 20, 'trust_maya': 40, 'community_hero': false }
+      }
+    ]
+  },
+
+  // Victor Kane Chain
+  {
+    id: 'char_victor_1',
+    characterId: 'char_victor',
+    title: 'Kane\'s Ultimatum',
+    description: 'Victor Kane invites you to his penthouse. "You\'re becoming a nuisance," he says calmly. "Sell me your core business now for 2M, or I will dismantle everything you\'ve built."',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'victor_sell',
+        label: 'Take the Deal',
+        description: 'Cash out while you still can.',
+        consequences: {
+          bag: 2000000,
+          clout: -300,
+          aura: -100
+        },
+        setFlags: { 'rel_victor': 50, 'status_victor': 'ally', 'kane_merger': true }
+      },
+      {
+        id: 'victor_refuse',
+        label: 'Declare War',
+        description: 'You\'re not selling. Not to him.',
+        consequences: {
+          clout: 100,
+          aura: 50
+        },
+        setFlags: { 'rel_victor': -100, 'status_victor': 'rival', 'kane_hostile': true }
+      }
+    ]
+  },
+
+  // Sofia Ramirez Chain
+  {
+    id: 'char_sofia_1',
+    characterId: 'char_sofia',
+    title: 'Political Alliance',
+    description: 'Sofia Ramirez is running for office. She needs a high-profile endorsement and a campaign contribution.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'sofia_endorse',
+        label: 'Endorse Sofia',
+        description: 'Publicly support her and donate 500k.',
+        consequences: {
+          bag: -500000,
+          clout: 150,
+          aura: 50
+        },
+        setFlags: { 'rel_sofia': 80, 'trust_sofia': 60, 'sofia_ally': true }
+      },
+      {
+        id: 'sofia_ignore',
+        label: 'Stay Neutral',
+        description: 'Politics is a dirty game. Better to stay out of it.',
+        consequences: {
+          aura: 20
+        },
+        setFlags: { 'rel_sofia': 10, 'trust_sofia': 10, 'sofia_ally': false }
+      }
+    ]
+  },
+
+  // Ghost Chain
+  {
+    id: 'char_ghost_1',
+    characterId: 'char_ghost',
+    title: 'The Digital Handshake',
+    description: 'A message appears on your screen: "I see what you\'re doing. I can make your digital footprint disappear, for a price. Or I can make it very, very loud."',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.12,
+      once: true
+    },
+    choices: [
+      {
+        id: 'ghost_hire',
+        label: 'Hire Ghost',
+        description: 'Pay for digital security and anonymity.',
+        consequences: {
+          bag: -50000,
+          heat: -50,
+          clout: 20
+        },
+        setFlags: { 'rel_ghost': 40, 'trust_ghost': 70, 'ghost_hired': true }
+      },
+      {
+        id: 'ghost_report',
+        label: 'Try to Trace',
+        description: 'Alert your security team to find the source. You don\'t negotiate with hackers.',
+        consequences: {
+          clout: 50,
+          heat: 20,
+          aura: -20
+        },
+        setFlags: { 'rel_ghost': -50, 'trust_ghost': 0, 'ghost_hostile': true }
+      }
+    ]
+  },
+
+  // Leo Thorne Chain
+  {
+    id: 'char_leo_1',
+    characterId: 'char_leo',
+    title: 'The Viral Partnership',
+    description: 'Leo Thorne wants to do a collab video. "Your brand is elite, but it\'s a bit... stiff," he says. "Let\'s show the world you know how to live."',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'leo_collab',
+        label: 'Do the Collab',
+        description: 'Host a massive party and film the highlights.',
+        consequences: {
+          bag: -100000,
+          clout: 250,
+          aura: 100,
+          heat: 20
+        },
+        setFlags: { 'rel_leo': 60, 'trust_leo': 40, 'leo_collab': true }
+      },
+      {
+        id: 'leo_refuse',
+        label: 'Decline the Offer',
+        description: 'You\'re a serious business person, not a clown.',
+        consequences: {
+          aura: 30,
+          clout: -50
+        },
+        setFlags: { 'rel_leo': -20, 'trust_leo': 10 }
+      }
+    ]
+  },
+
+  // Sarah Jenkins Chain
+  {
+    id: 'char_sarah_1',
+    characterId: 'char_sarah',
+    title: 'Union Demands',
+    description: 'Sarah Jenkins and the United Workers Union are threatening a strike unless you improve working conditions and pay across your industries.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'sarah_concede',
+        label: 'Meet the Demands',
+        description: 'Increase wages and benefits. It\'ll hurt your margins, but keep the peace.',
+        consequences: {
+          passiveCash: -10000,
+          aura: 200,
+          clout: 50
+        },
+        setFlags: { 'rel_sarah': 90, 'trust_sarah': 100, 'union_ally': true }
+      },
+      {
+        id: 'sarah_fight',
+        label: 'Break the Strike',
+        description: 'Hire replacement workers and use legal maneuvers to stop the union.',
+        consequences: {
+          clout: 100,
+          aura: -200,
+          heat: 40
+        },
+        setFlags: { 'rel_sarah': -100, 'trust_sarah': 0, 'union_enemy': true }
+      }
+    ]
+  },
+
+  // President Volkov Chain
+  {
+    id: 'char_volkov_1',
+    characterId: 'char_volkov',
+    title: 'The Foreign Asset',
+    description: 'President Mikhail Volkov offers a "strategic partnership" between your conglomerate and his state-owned industries. "The world is changing," he says. "Isolation is for the weak."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'volkov_partner',
+        label: 'Partner with Volkov',
+        description: 'Access foreign markets and resources.',
+        consequences: {
+          bag: 5000000,
+          clout: 300,
+          heat: 50,
+          aura: -100
+        },
+        setFlags: { 'rel_volkov': 70, 'trust_volkov': 50, 'volkov_partner': true }
+      },
+      {
+        id: 'volkov_refuse',
+        label: 'Keep it National',
+        description: 'Refuse the offer. You won\'t be a pawn for a foreign power.',
+        consequences: {
+          aura: 100,
+          clout: 100
+        },
+        setFlags: { 'rel_volkov': -30, 'trust_volkov': 20, 'volkov_partner': false }
+      }
+    ]
+  },
+
+  // Elena Vance Chain
+  {
+    id: 'char_elena_1',
+    characterId: 'char_elena',
+    title: 'The Fixer\'s Proposal',
+    description: 'Elena Vance can make your legal problems "disappear" permanently. "I have connections the public doesn\'t even know exist," she whispers.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 60 }
+    },
+    choices: [
+      {
+        id: 'elena_retain',
+        label: 'Retain Elena',
+        description: 'Pay her a massive retainer for "discretionary services."',
+        consequences: {
+          bag: -1000000,
+          heat: -80,
+          aura: -50
+        },
+        setFlags: { 'rel_elena': 60, 'trust_elena': 80, 'elena_retained': true }
+      },
+      {
+        id: 'elena_refuse',
+        label: 'Handle it Yourself',
+        description: 'You don\'t need her brand of "fixing."',
+        consequences: {
+          aura: 30,
+          clout: 20
+        },
+        setFlags: { 'rel_elena': 0, 'trust_elena': 10 }
+      }
+    ]
+  },
+
   // GENERAL - HIGH HEAT
   {
     id: 'heat_crackdown',
