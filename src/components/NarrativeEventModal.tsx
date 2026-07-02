@@ -2,6 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
+import { CHARACTERS } from '../config/characters';
+import { Avatar } from './Avatar';
 import type { PlayerStats } from '../types/game';
 
 export const NarrativeEventModal: React.FC = () => {
@@ -12,6 +14,8 @@ export const NarrativeEventModal: React.FC = () => {
 
   const event = NARRATIVE_EVENTS.find(e => e.id === eventId);
   if (!event) return null;
+
+  const character = event.characterId ? CHARACTERS.find(c => c.id === event.characterId) : null;
 
   return (
     <AnimatePresence>
@@ -31,12 +35,23 @@ export const NarrativeEventModal: React.FC = () => {
         >
           {/* Header */}
           <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-6 py-4">
-             <div className="flex items-center gap-3">
-                <span className="text-2xl animate-pulse">⚡</span>
-                <div>
-                   <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">Critical Event</h2>
-                   <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Immediate Decision Required</p>
+             <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                   <span className="text-2xl animate-pulse">⚡</span>
+                   <div>
+                      <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                        {character ? character.name : 'Critical Event'}
+                      </h2>
+                      <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">
+                        {character ? character.personality : 'Immediate Decision Required'}
+                      </p>
+                   </div>
                 </div>
+                {character && (
+                  <div className="w-12 h-12 rounded-full border-2 border-yellow-500/30 overflow-hidden bg-slate-800">
+                    <Avatar avatarId={character.portraitId} />
+                  </div>
+                )}
              </div>
           </div>
 
