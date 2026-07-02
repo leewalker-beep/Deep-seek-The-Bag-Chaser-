@@ -39,6 +39,9 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
             bag: state.pl.bag + (achievement.reward?.cash || 0),
             clout: state.pl.clout + (achievement.reward?.clout || 0),
             aura: state.pl.aura + (achievement.reward?.aura || 0),
+            heat: Math.max(0, state.pl.heat + (achievement.reward?.heat || 0)),
+            mentalHealth: Math.min(100, state.pl.mentalHealth + (achievement.reward?.mentalHealth || 0)),
+            legacyPoints: (state.pl.legacyPoints || 0) + (achievement.reward?.legacyPoints || 0),
             unlockedAchievements: Array.from(new Set([...(state.pl.unlockedAchievements || []), id])),
           }
         };

@@ -17,6 +17,9 @@ export interface AchievementConfig {
     cash?: number;
     clout?: number;
     aura?: number;
+    heat?: number;
+    mentalHealth?: number;
+    legacyPoints?: number;
     buff?: string;
   };
 }
@@ -199,6 +202,39 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 1000000 })
     },
     reward: { aura: 100 }
+  },
+  {
+    id: 'ARC_BUSINESS_COMPLETE',
+    name: 'Industry Titan',
+    description: 'Completed the Business Empire storyline.',
+    category: 'PROGRESSION',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags['business_arc_complete'],
+      progress: (state: GameState) => ({ current: state.pl.narrativeFlags['business_arc_complete'] ? 1 : 0, target: 1 })
+    },
+    reward: { clout: 1000, aura: 500 }
+  },
+  {
+    id: 'ARC_FAMILY_COMPLETE',
+    name: 'Family Legacy',
+    description: 'Completed the Family storyline.',
+    category: 'PROGRESSION',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags['family_arc_complete'],
+      progress: (state: GameState) => ({ current: state.pl.narrativeFlags['family_arc_complete'] ? 1 : 0, target: 1 })
+    },
+    reward: { aura: 1000, clout: 200 }
+  },
+  {
+    id: 'ARC_CRIME_COMPLETE',
+    name: 'Syndicate Lord',
+    description: 'Completed the Crime storyline.',
+    category: 'PROGRESSION',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags['crime_arc_complete'],
+      progress: (state: GameState) => ({ current: state.pl.narrativeFlags['crime_arc_complete'] ? 1 : 0, target: 1 })
+    },
+    reward: { clout: 2000, heat: -50 }
   },
   {
     id: 'EARN_10M',

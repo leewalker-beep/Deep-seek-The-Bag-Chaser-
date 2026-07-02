@@ -240,9 +240,133 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
           bag: -5000000,
           clout: -500,
           aura: -200,
-          mentalHealth: -40
+          mentalHealth: -40,
+          biographyEntry: 'Lost a massive corporate war against the shadowy Investor known as The Architect.'
         },
         setFlags: { 'architect_hostile': false, 'architect_debt': false, 'architect_victorious': true }
+      }
+    ]
+  },
+  {
+    id: 'investor_chain_4',
+    title: 'Kane\'s Intervention',
+    description: 'Victor Kane reaches out. "I see you\'re having trouble with the Architect," he says. "I have no love for them. I can provide the leverage to bury them once and for all, but I want your loyalty in the coming trade wars."',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.25,
+      once: true,
+      flagReqs: { 'architect_hostile': true, 'architect_debt': true }
+    },
+    choices: [
+      {
+        id: 'kane_alliance',
+        label: 'Align with Kane',
+        description: 'Accept his help. The Architect will fall, but you\'ll be in Kane\'s debt.',
+        consequences: {
+          clout: 150,
+          aura: -50,
+          biographyEntry: 'Formed a strategic alliance with Victor Kane to dismantle The Architect\'s network.'
+        },
+        setFlags: { 'kane_ally': true, 'architect_hostile': false, 'architect_debt': false, 'architect_defeated': true }
+      },
+      {
+        id: 'kane_refuse_alliance',
+        label: 'Reject Kane',
+        description: 'You won\'t trade one master for another. You\'ll fight the Architect on your own terms.',
+        consequences: {
+          aura: 100,
+          clout: 50,
+          biographyEntry: 'Defiantly rejected Victor Kane\'s offer of a predatory alliance.'
+        },
+        setFlags: { 'kane_hostile_arc': true }
+      }
+    ]
+  },
+  {
+    id: 'investor_chain_5',
+    title: 'Hostile Negotiations',
+    description: 'The market is reeling from your recent moves. Victor Kane is aggressively moving against your holdings, attempting to force you into a merger.',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'kane_hostile_arc': true }
+    },
+    choices: [
+      {
+        id: 'fight_kane',
+        label: 'Counter-Offensive',
+        description: 'Launch a aggressive media campaign and legal battle to block Kane\'s moves.',
+        consequences: {
+          bag: -5000000,
+          clout: 300,
+          aura: 100,
+          biographyEntry: 'Successfully defended the empire against a hostile takeover attempt by Victor Kane.'
+        },
+        setFlags: { 'kane_defeated': true, 'kane_hostile_arc': false }
+      },
+      {
+        id: 'merge_kane',
+        label: 'Strategic Merger',
+        description: 'Merge your operations with Kane\'s. You lose autonomy, but the combined power is undeniable.',
+        consequences: {
+          bag: 10000000,
+          clout: 500,
+          aura: -200,
+          biographyEntry: 'Merged the business empire with Victor Kane\'s conglomerate, becoming a global powerhouse at the cost of independence.'
+        },
+        setFlags: { 'kane_merged': true, 'kane_hostile_arc': false }
+      }
+    ]
+  },
+  {
+    id: 'investor_chain_6',
+    title: 'The Titan\'s Ascent',
+    description: 'Your empire is now at its peak. The world recognizes you as a true Titan of industry. How do you choose to solidify your legacy?',
+    trigger: {
+      tier: ['PRESIDENT', 'OPEN'],
+      probability: 0.3,
+      once: true,
+      flagReqs: { 'architect_defeated': true }
+    },
+    choices: [
+      {
+        id: 'monopolize_market',
+        label: 'Total Monopoly',
+        description: 'Crush the remaining competition and establish absolute dominance.',
+        requirement: { specialization: ['institutional'] },
+        consequences: {
+          clout: 1000,
+          aura: -500,
+          passiveCash: 500000,
+          biographyEntry: 'Established a global monopoly, becoming the undisputed ruler of the markets.'
+        },
+        setFlags: { 'business_arc_complete': 'monopoly' }
+      },
+      {
+        id: 'shadow_influence',
+        label: 'Shadow Hand',
+        description: 'Retreat from the public eye and control the world\'s finances through hidden networks.',
+        requirement: { specialization: ['shadow'] },
+        consequences: {
+          clout: 500,
+          aura: 500,
+          heat: -100,
+          biographyEntry: 'Vanished from the public eye to rule the global economy from the shadows.'
+        },
+        setFlags: { 'business_arc_complete': 'shadow' }
+      },
+      {
+        id: 'philanthropic_legacy',
+        label: 'Public Foundation',
+        description: 'Pivot your entire empire towards philanthropy and global improvement.',
+        consequences: {
+          aura: 1000,
+          clout: 200,
+          bag: -20000000,
+          biographyEntry: 'Transformed a business empire into a global force for humanitarian progress.'
+        },
+        setFlags: { 'business_arc_complete': 'philanthropy' }
       }
     ]
   },
@@ -310,9 +434,158 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
         consequences: {
           bag: -200000,
           clout: -100,
-          heat: -20
+          heat: -20,
+          biographyEntry: 'Severed ties with the Whispering Hand syndicate after the risks became too great.'
         },
         setFlags: { 'syndicate_member': false, 'syndicate_threatened': true }
+      }
+    ]
+  },
+  {
+    id: 'syndicate_chain_3',
+    title: 'Cole\'s Pursuit',
+    description: 'Detective Silas Cole has been tracking the syndicate\'s shipments, and the trail is leading straight to your warehouses. He offers you a chance to be a confidential informant.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'syndicate_member': true }
+    },
+    choices: [
+      {
+        id: 'syndicate_informant',
+        label: 'Become Informant',
+        description: 'Feed Cole information on the syndicate\'s movements in exchange for immunity.',
+        consequences: {
+          heat: -50,
+          aura: -100,
+          clout: 50,
+          biographyEntry: 'Began working as a confidential informant for Detective Silas Cole against the Whispering Hand.'
+        },
+        setFlags: { 'syndicate_informant': true, 'rel_cole': 50 }
+      },
+      {
+        id: 'syndicate_loyal',
+        label: 'Remain Loyal',
+        description: 'Tell Cole nothing. You don\'t talk to the feds.',
+        consequences: {
+          heat: 30,
+          clout: 100,
+          biographyEntry: 'Chose loyalty to the syndicate over cooperation with Detective Cole\'s investigation.'
+        },
+        setFlags: { 'syndicate_loyalist': true, 'rel_cole': -50 }
+      }
+    ]
+  },
+  {
+    id: 'syndicate_chain_4',
+    title: 'The High-Stakes Heist',
+    description: 'The Whispering Hand is planning a massive heist of a federal reserve transport. They need you to provide the specialized logistics and "clean" the take.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.25,
+      once: true,
+      flagReqs: { 'syndicate_member': true, 'syndicate_loyalist': true }
+    },
+    choices: [
+      {
+        id: 'syndicate_heist_join',
+        label: 'Join the Heist',
+        description: 'Commit your full resources. This is the big one.',
+        consequences: {
+          bag: 5000000,
+          heat: 80,
+          aura: -300,
+          biographyEntry: 'Masterminded the logistics for the Whispering Hand\'s legendary federal reserve heist.'
+        },
+        setFlags: { 'syndicate_heist_success': true }
+      },
+      {
+        id: 'syndicate_heist_refuse',
+        label: 'Refuse Participation',
+        description: 'This is too big, even for the syndicate. You\'re out.',
+        consequences: {
+          clout: -200,
+          aura: 50,
+          biographyEntry: 'Refused to participate in a high-stakes heist, narrowly avoiding a massive federal crackdown.'
+        },
+        setFlags: { 'syndicate_member': false, 'syndicate_retired': true }
+      }
+    ]
+  },
+  {
+    id: 'syndicate_chain_5',
+    title: 'Internal Affairs',
+    description: 'The syndicate is being torn apart by internal paranoia. They suspect a mole. As a high-ranking member, you are tasked with "handling" the suspicion.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'syndicate_member': true }
+    },
+    choices: [
+      {
+        id: 'syndicate_mole_frame',
+        label: 'Frame a Rival',
+        description: 'Point the finger at a business rival to clear your own name.',
+        consequences: {
+          clout: 100,
+          aura: -100,
+          heat: 10,
+          biographyEntry: 'Ruthlessly framed a rival to protect their position within the Whispering Hand.'
+        },
+        setFlags: { 'syndicate_cleared': true }
+      },
+      {
+        id: 'syndicate_mole_ghost',
+        label: 'Ghost Protocol',
+        description: 'Use your technical expertise to scrub all records and disappear from the syndicate\'s tracking.',
+        requirement: { specialization: ['shadow'] },
+        consequences: {
+          heat: -40,
+          clout: -50,
+          biographyEntry: 'Used elite technical skills to ghost the syndicate and erase all traces of their involvement.'
+        },
+        setFlags: { 'syndicate_member': false, 'syndicate_ghosted': true }
+      }
+    ]
+  },
+  {
+    id: 'syndicate_chain_6',
+    title: 'Judgment Day',
+    description: 'The final showdown. The feds are moving in for a total sweep. Do you stand with the syndicate, or do you make your final move for freedom?',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT', 'OPEN'],
+      probability: 0.3,
+      once: true,
+      flagReqs: { 'syndicate_member': true }
+    },
+    choices: [
+      {
+        id: 'syndicate_kingpin',
+        label: 'Take Control',
+        description: 'Eliminate the current leadership and take over the remains of the syndicate as the new Kingpin.',
+        consequences: {
+          bag: 20000000,
+          clout: 1000,
+          aura: -500,
+          heat: 100,
+          biographyEntry: 'Seized control of the Whispering Hand, becoming the city\'s undisputed criminal Kingpin.'
+        },
+        setFlags: { 'crime_arc_complete': 'kingpin' }
+      },
+      {
+        id: 'syndicate_states_witness',
+        label: 'States Witness',
+        description: 'Turn over the entire syndicate leadership to Detective Cole. Trade your life of crime for a new identity.',
+        consequences: {
+          bag: -10000000,
+          clout: -500,
+          aura: 500,
+          heat: -100,
+          biographyEntry: 'Dismantled the Whispering Hand as a star witness, choosing a life of redemption over power.'
+        },
+        setFlags: { 'crime_arc_complete': 'witness', 'rel_cole': 100 }
       }
     ]
   },
@@ -943,9 +1216,161 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
         description: 'Explain that the business comes first. You can help later.',
         consequences: {
           aura: -50,
-          clout: 30
+          clout: 30,
+          biographyEntry: 'Prioritized business growth over family-led community projects, straining relations with Maya.'
         },
         setFlags: { 'rel_maya': 20, 'trust_maya': 40, 'community_hero': false }
+      }
+    ]
+  },
+  {
+    id: 'char_maya_2',
+    characterId: 'char_maya',
+    title: 'Zoning Wars',
+    description: 'Maya\'s community center project is being blocked by a local development firm, "Chadwick Holdings". They want to build a luxury high-rise on that lot. They\'ve offered you a "finder\'s fee" to convince Maya to drop the project.',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'community_hero': true }
+    },
+    choices: [
+      {
+        id: 'maya_defend_center',
+        label: 'Defend the Center',
+        description: 'Use your influence and legal resources to block Chadwick\'s permit.',
+        consequences: {
+          bag: -50000,
+          aura: 100,
+          clout: 50,
+          biographyEntry: 'Successfully defended the community center against Chadwick Holdings\' predatory development plans.'
+        },
+        setFlags: { 'rel_maya': 120, 'chadwick_hostile': true }
+      },
+      {
+        id: 'maya_betray_center',
+        label: 'Accept the Fee',
+        description: 'Take the money. Maya will understand... eventually.',
+        consequences: {
+          bag: 200000,
+          aura: -200,
+          clout: 100,
+          biographyEntry: 'Betrayed Maya\'s trust by accepting a payoff to sabotage the community center project.'
+        },
+        setFlags: { 'rel_maya': 0, 'trust_maya': 0, 'community_hero': false, 'chadwick_ally': true }
+      }
+    ]
+  },
+  {
+    id: 'char_maya_3',
+    characterId: 'char_maya',
+    title: 'Community Outreach',
+    description: 'The community center is thriving, but it needs more funding to expand its programs. Maya suggests a high-profile fundraiser.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'community_hero': true }
+    },
+    choices: [
+      {
+        id: 'maya_fundraiser_viral',
+        label: 'Viral Campaign',
+        description: 'Use your influencer connections to make the fundraiser a global event.',
+        requirement: { specialization: ['influencer'] },
+        consequences: {
+          clout: 300,
+          aura: 200,
+          biographyEntry: 'Leveraged massive digital influence to turn a local community center into a national symbol of hope.'
+        },
+        setFlags: { 'maya_center_fame': 'global' }
+      },
+      {
+        id: 'maya_fundraiser_personal',
+        label: 'Personal Donation',
+        description: 'Quietly write a check for the full expansion cost.',
+        consequences: {
+          bag: -1000000,
+          aura: 500,
+          biographyEntry: 'Quietly funded the total expansion of Maya\'s community foundation.'
+        },
+        setFlags: { 'maya_center_fame': 'local' }
+      }
+    ]
+  },
+  {
+    id: 'char_maya_4',
+    characterId: 'char_maya',
+    title: 'Legacy Conflict',
+    description: 'Maya visits you in your new office. She\'s concerned about the ruthless tactics you\'ve used to reach the top. "Is this really the legacy you want to leave?" she asks.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'rel_maya': 30 }
+    },
+    choices: [
+      {
+        id: 'maya_reform',
+        label: 'Vow Reform',
+        description: 'Commit to more ethical business practices. It will be harder to grow, but your conscience will be cleaner.',
+        consequences: {
+          aura: 500,
+          clout: -200,
+          biographyEntry: 'Pledged to reform the empire\'s ethics after a soul-searching confrontation with Maya.'
+        },
+        setFlags: { 'maya_reformed': true }
+      },
+      {
+        id: 'maya_dismiss',
+        label: 'Dismiss Concerns',
+        description: 'Explain that the world is a hard place, and you did what was necessary.',
+        consequences: {
+          clout: 100,
+          aura: -100,
+          biographyEntry: 'Chose the path of the pragmatist, dismissing family concerns in favor of absolute power.'
+        },
+        setFlags: { 'maya_dismissed': true, 'rel_maya': 10 }
+      }
+    ]
+  },
+  {
+    id: 'char_maya_5',
+    characterId: 'char_maya',
+    title: 'The Vane Foundation',
+    description: 'Your final decision on the future of the Vane family legacy. Will you use your power to lift others, or to secure your own throne?',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT', 'OPEN'],
+      probability: 0.3,
+      once: true,
+      flagReqs: { 'rel_maya': 10 }
+    },
+    choices: [
+      {
+        id: 'maya_true_hero',
+        label: 'Community Foundation',
+        description: 'Establish a massive, permanent foundation that will serve the city for generations.',
+        requirement: { background: ['sk_scrap', 'sk_delivery'] },
+        consequences: {
+          bag: -50000000,
+          aura: 1000,
+          clout: 500,
+          biographyEntry: 'Honored their Street Kid roots by creating the city\'s largest humanitarian foundation.'
+        },
+        setFlags: { 'family_arc_complete': 'hero' }
+      },
+      {
+        id: 'maya_dynasty',
+        label: 'Family Dynasty',
+        description: 'Focus your wealth on securing the future of the Vane bloodline for centuries to come.',
+        requirement: { background: ['bn_mining', 'bn_tech'] },
+        consequences: {
+          bag: -10000000,
+          clout: 1000,
+          aura: -300,
+          biographyEntry: 'Solidified the Vane dynasty, ensuring the family\'s dominance for generations.'
+        },
+        setFlags: { 'family_arc_complete': 'dynasty' }
       }
     ]
   },

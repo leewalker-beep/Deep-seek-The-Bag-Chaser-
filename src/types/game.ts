@@ -323,6 +323,7 @@ export interface NarrativeChoice {
     heat?: number;
     passiveCash?: number;
     specializationLock?: string;
+    biographyEntry?: string;
   };
   setFlags?: Record<string, string | number | boolean>;
   requirement?: {
@@ -459,6 +460,9 @@ export interface Achievement {
     cash?: number;
     clout?: number;
     aura?: number;
+    heat?: number;
+    mentalHealth?: number;
+    legacyPoints?: number;
     buff?: string;
   };
 }
@@ -617,6 +621,7 @@ export interface PlayerStats {
   activeNarrative: string | null;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
+  biography: string[];
   narrativeFlags: Record<string, string | number | boolean>;
   actionLog: GameAction[];
   milestones: Milestone[];

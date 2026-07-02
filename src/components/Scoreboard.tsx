@@ -10,7 +10,7 @@ import { ProgressBar } from './ui/ProgressBar';
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, achievements } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'history' | 'badges' | 'achievements' | 'endings' | 'deaths'>('career');
+  const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'history' | 'biography' | 'badges' | 'achievements' | 'endings' | 'deaths'>('career');
 
   const { setPh } = useGameStore();
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
@@ -38,10 +38,10 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="flex bg-slate-950/50 p-1 m-4 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
-          {['career', 'portfolio', 'history', 'badges', 'achievements', 'endings', 'deaths'].map((tab) => (
+          {['career', 'portfolio', 'history', 'biography', 'badges', 'achievements', 'endings', 'deaths'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as 'career' | 'portfolio' | 'history' | 'badges' | 'achievements' | 'endings' | 'deaths')}
+              onClick={() => setActiveTab(tab as any)}
               className={`flex-shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                 activeTab === tab ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'
               }`}
@@ -391,6 +391,32 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                      </div>
                    </div>
                  ))}
+              </motion.div>
+            )}
+
+            {activeTab === 'biography' && (
+              <motion.div
+                key="biography"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-3"
+              >
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Life Path</div>
+                {!pl.biography || pl.biography.length === 0 ? (
+                  <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl font-bold uppercase tracking-tighter">
+                    Your story is still being written.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {pl.biography.map((entry, idx) => (
+                      <div key={idx} className="bg-slate-950 border border-slate-800/50 p-4 rounded-2xl flex gap-4 items-start">
+                        <span className="text-yellow-500 font-black text-sm italic">#{(idx + 1).toString().padStart(2, '0')}</span>
+                        <p className="text-[11px] text-slate-300 leading-relaxed font-medium uppercase tracking-tight">{entry}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

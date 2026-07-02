@@ -100,6 +100,22 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
           <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
         </div>
 
+        {pl.biography && pl.biography.length > 0 && (
+          <div className="mb-8">
+            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 text-center">Life Path & Milestones</div>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {pl.biography.map((entry, idx) => (
+                <div key={idx} className="bg-slate-950/30 border border-slate-800/50 p-3 rounded-xl">
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <span className="text-yellow-500/50 mr-2">◈</span>
+                    {entry}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
           <div className="flex gap-3">
             <BaseButton variant="primary" onClick={onRestart} className="flex-[2] py-4 text-lg">
