@@ -17,6 +17,9 @@ export interface AchievementConfig {
     cash?: number;
     clout?: number;
     aura?: number;
+    heat?: number;
+    mentalHealth?: number;
+    legacyPoints?: number;
     buff?: string;
   };
 }

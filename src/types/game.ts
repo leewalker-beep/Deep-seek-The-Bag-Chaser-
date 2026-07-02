@@ -460,6 +460,9 @@ export interface Achievement {
     cash?: number;
     clout?: number;
     aura?: number;
+    heat?: number;
+    mentalHealth?: number;
+    legacyPoints?: number;
     buff?: string;
   };
 }
