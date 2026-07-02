@@ -555,6 +555,16 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     if (isGameOver) {
       state.addTickerMessage(gameOverCause, "text-red-500 font-black");
+
+      updatedPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(updatedPl.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: updatedPl.lastExecutedHustleId || 'Presidency',
+        heatAtDeath: Math.floor(updatedPl.heat),
+        monthsPlayed: updatedPl.month,
+        tier: updatedPl.currentTier,
+      };
+
       // Manually trigger death/endgame logic
       const lastHustleId = updatedPl.lastExecutedHustleId || 'president_campaign';
       const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
@@ -634,6 +644,15 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     );
 
     if (shouldDie) {
+      advancedPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(advancedPl.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: 'Presidential Duties',
+        heatAtDeath: Math.floor(advancedPl.heat),
+        monthsPlayed: advancedPl.month,
+        tier: advancedPl.currentTier,
+      };
+
       const dominantStat = getDominantStat(advancedPl);
       const ending = getEnding(advancedPl.legacyPoints || 0, dominantStat);
       let savedEndings = [];

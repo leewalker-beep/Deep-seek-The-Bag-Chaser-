@@ -621,6 +621,14 @@ export interface PlayerStats {
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   totalHustlesCompleted: number;
+  deathContext?: {
+    mentalHealthAtDeath: number;
+    lastHustleMentalHit: number;
+    lastHustleName: string;
+    heatAtDeath: number;
+    monthsPlayed: number;
+    tier: string;
+  };
   stats?: {
     totalHustles: number;
     successfulHustles: number;

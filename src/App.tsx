@@ -316,6 +316,7 @@ function App() {
             deathBadge={deathBadge}
             fatalCause={fatalCause}
             lastHustleId={pl?.lastExecutedHustleId}
+            deathContext={pl?.deathContext}
             onReset={() => setShowSummary(true)}
           />
         )}
