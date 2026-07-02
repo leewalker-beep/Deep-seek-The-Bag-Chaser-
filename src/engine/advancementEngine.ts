@@ -9,6 +9,7 @@ import { SPECIALIZATIONS } from '../config/specializations';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import { WORLD_EVENTS } from '../config/worldEvents';
 import { HUSTLE_SECTORS } from '../config/sectors';
+import { getSentence } from '../config/jailSentences';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
@@ -340,6 +341,39 @@ export function advanceMonth(
   }
 
   newPl.month += 1;
+
+  // JAIL CHECK — fires after month increment
+  if (newPl.heat >= 100 && !newPl.inJail) {
+    const sentence = getSentence(newPl.currentTier);
+    newPl.inJail = true;
+    newPl.jailMonthsRemaining = sentence.months;
+    newPl.jailSentenceTotal = sentence.months;
+    newPl.jailCharge = sentence.charge;
+    newPl.heat = 0; // heat resets on arrest
+    news.push({
+      text: `🚔 BUSTED. ${sentence.charge}. ${sentence.months} months.`,
+      colorClass: 'text-red-500 font-black'
+    });
+  }
+
+  // SERVE TIME — if already in jail (only if NOT just arrested this month)
+  else if (newPl.inJail && newPl.jailMonthsRemaining > 0) {
+    const sentence = getSentence(newPl.currentTier);
+
+    // Passive losses while inside
+    newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
+    newPl.clout = Math.max(0, newPl.clout - sentence.cloutLossPerMonth);
+
+    newPl.jailMonthsRemaining--;
+
+    if (newPl.jailMonthsRemaining <= 0) {
+      newPl.inJail = false;
+      news.push({
+        text: `🔓 RELEASED. You served your time for ${newPl.jailCharge}.`,
+        colorClass: 'text-emerald-400 font-black'
+      });
+    }
+  }
 
   if (newPl.month > 0 && newPl.month % 12 === 0) {
     newPl.pendingAnnualStatement = true;

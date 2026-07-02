@@ -73,6 +73,7 @@ import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { FlexOpportunityModal } from './components/FlexOpportunityModal';
 import { AnnualStatement } from './components/AnnualStatement';
 import { SimpleFallback } from './components/minigames/SimpleFallback';
+import { JailOverlay } from './components/JailOverlay';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { TierBadgeCelebration } from './components/effects/TierBadgeCelebration';
@@ -926,6 +927,7 @@ function App() {
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
       <NarrativeEventModal />
+      <JailOverlay />
 
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />
