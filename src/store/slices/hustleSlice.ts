@@ -1607,6 +1607,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
     }
 
+    // Apply Biography Entry
+    if (cons.biographyEntry) {
+      nextPl.biography = [...(nextPl.biography || []), cons.biographyEntry];
+    }
+
     // Apply permanent passive
     if (cons.passiveCash) {
       nextPl.dynamicPassives = {

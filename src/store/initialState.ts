@@ -131,6 +131,7 @@ export const getInitialStats = (
     activeWorldEvent: null,
     worldEventCooldown: 0,
     completedNarrativeEvents: [],
+    biography: [],
     activeNarrative: null,
     narrativeFlags: {},
     originBonus: null,

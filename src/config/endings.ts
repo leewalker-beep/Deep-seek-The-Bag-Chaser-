@@ -34,6 +34,11 @@ export const ENDINGS: Ending[] = [
   { id: 'immortal_aura', title: 'The Divine', description: 'They built temples in your honor.', emoji: '🕌', requirement: { legacyMin: 10000, legacyMax: 999999, dominantStat: 'aura' } },
   { id: 'immortal_heat', title: 'The Godfather', description: 'Everyone answers to you. Even in death.', emoji: '🐍', requirement: { legacyMin: 10000, legacyMax: 999999, dominantStat: 'heat' } },
   { id: 'immortal_balanced', title: 'The Legend', description: "You mastered everything. Bag, rep, power, soul. They'll be talking about you for a century.", emoji: '👑', requirement: { legacyMin: 10000, legacyMax: 999999, dominantStat: 'balanced' } },
+
+  // Storyline Endings
+  { id: 'ending_business_titan', title: 'The Market Master', description: 'You didn\'t just play the game; you rewrote the rules for the entire world economy.', emoji: '🌎', requirement: { legacyMin: 5000, legacyMax: 999999, dominantStat: 'clout' } },
+  { id: 'ending_family_hero', title: 'The Neighborhood Savior', description: 'Your legacy isn\'t in bank accounts, but in the thousands of lives you lifted up.', emoji: '🤝', requirement: { legacyMin: 5000, legacyMax: 999999, dominantStat: 'aura' } },
+  { id: 'ending_syndicate_kingpin', title: 'The Shadow Sovereign', description: 'The law, the markets, the streets—they all belong to you now. From the shadows.', emoji: '🕵️', requirement: { legacyMin: 5000, legacyMax: 999999, dominantStat: 'balanced' } },
 ];
 
 export const getEnding = (legacyPoints: number, dominantStat: string): Ending => {
