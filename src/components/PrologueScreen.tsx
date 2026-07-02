@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
 import { useGameStore } from '../store/gameStore';
 import { PLAYER_AVATARS } from '../config/avatars';
+import { HERO_ARTWORK } from '../config/heroArtwork';
 import Avatar from './Avatar';
 
 interface PrologueScreenProps {
@@ -475,10 +476,15 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     setScreen(prev => prev + 1);
   };
 
+  const { triggerTransition } = useGameStore();
+
   const handleFinalStart = () => {
     const trimmedName = name.trim();
     if (trimmedName.length >= 2 && activeVariation && winningCategory) {
-      onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id, selectedAvatarId);
+      triggerTransition(HERO_ARTWORK.NEW_RUN);
+      setTimeout(() => {
+        onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id, selectedAvatarId);
+      }, 500); // Small delay to let transition start
     }
   };
 

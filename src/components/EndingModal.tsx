@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { getEnding } from '../config/endings';
 import { useGameStore } from '../store/gameStore';
 import { getDominantStat } from '../utils/endingUtils';
+import { HERO_ARTWORK } from '../config/heroArtwork';
 
 interface EndingModalProps {
   onClose: () => void;
@@ -9,7 +10,11 @@ interface EndingModalProps {
 }
 
 export const EndingModal: React.FC<EndingModalProps> = ({ onClose, onNewGamePlus }) => {
-  const { pl } = useGameStore();
+  const { pl, triggerTransition } = useGameStore();
+
+  useEffect(() => {
+    triggerTransition(HERO_ARTWORK.ENDING);
+  }, [triggerTransition]);
 
   const finalStat = getDominantStat(pl);
   const ending = getEnding(pl.legacyPoints || 0, finalStat);

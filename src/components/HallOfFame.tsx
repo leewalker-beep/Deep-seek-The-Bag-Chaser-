@@ -14,8 +14,14 @@ interface HallOfFameProps {
 }
 
 import { useGameStore } from '../store/gameStore';
+import { HERO_ARTWORK } from '../config/heroArtwork';
 
 export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) => {
+  const { triggerTransition } = useGameStore();
+
+  React.useEffect(() => {
+    triggerTransition(HERO_ARTWORK.HALL_OF_FAME);
+  }, [triggerTransition]);
   const [activeTab, setActiveTab] = useState<'BEST' | 'ALL' | 'ENDINGS'>('BEST');
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);

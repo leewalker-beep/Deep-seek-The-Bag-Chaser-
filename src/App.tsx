@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer, useMemo } from 'react';
+import { useEffect, useState, useReducer, useMemo, useRef } from 'react';
 import { useGameStore } from './store/gameStore';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
@@ -11,6 +11,8 @@ import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
 import { EndingModal } from './components/EndingModal';
 import { AnimatePresence } from 'framer-motion';
+import { CinematicTransition } from './components/effects/CinematicTransition';
+import { HERO_ARTWORK } from './config/heroArtwork';
 import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
@@ -159,11 +161,28 @@ function App() {
     resetGame,
     addTickerMessage,
     processLogin,
+    activeTransition,
+    triggerTransition,
+    clearTransition,
   } = useGameStore();
 
   useEffect(() => {
     processLogin();
   }, [processLogin]);
+
+  // Detect Tier Advancement
+  const lastTierRef = useRef<Tier | null>(null);
+  useEffect(() => {
+    if (pl?.currentTier && lastTierRef.current && lastTierRef.current !== pl.currentTier) {
+      const artwork = HERO_ARTWORK[pl.currentTier];
+      if (artwork) {
+        triggerTransition(artwork);
+      }
+    }
+    if (pl?.currentTier) {
+      lastTierRef.current = pl.currentTier;
+    }
+  }, [pl?.currentTier, triggerTransition]);
 
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
@@ -328,6 +347,15 @@ function App() {
 
   return (
     <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative`}>
+      <AnimatePresence>
+        {activeTransition && (
+          <CinematicTransition
+            key={activeTransition.id}
+            artwork={activeTransition}
+            onComplete={clearTransition}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence mode="wait">
         <TierBackground
           key={pl.currentTier}
