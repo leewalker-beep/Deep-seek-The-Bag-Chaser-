@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import { CHARACTERS } from '../config/characters';
-import { Avatar } from './Avatar';
+import Avatar from './Avatar';
 import type { PlayerStats } from '../types/game';
 
 export const NarrativeEventModal: React.FC = () => {

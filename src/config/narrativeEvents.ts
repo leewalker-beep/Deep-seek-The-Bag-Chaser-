@@ -848,10 +848,10 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
     trigger: {
       tier: ['STREET', 'STARTUP'],
       probability: 0.15,
-      once: true,
-      requirement: {
-        stat: { type: 'heat', value: 40 }
-      }
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 40 }
     },
     choices: [
       {
@@ -1178,10 +1178,10 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
     trigger: {
       tier: ['ELITE', 'MOGUL'],
       probability: 0.15,
-      once: true,
-      requirement: {
-        stat: { type: 'heat', value: 60 }
-      }
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 60 }
     },
     choices: [
       {

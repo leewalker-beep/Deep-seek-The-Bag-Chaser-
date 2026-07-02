@@ -99,8 +99,21 @@ describe('Narrative Events Logic', () => {
   it('respects once:true trigger requirement', () => {
     const { executeHustle } = useGameStore.getState();
 
+    // Mark all potentially triggering events as completed to ensure we are testing 'once' correctly
     useGameStore.setState(s => ({
-        pl: { ...s.pl, completedNarrativeEvents: ['scavenger_prototype'] }
+        pl: {
+            ...s.pl,
+            completedNarrativeEvents: [
+                'scavenger_prototype',
+                'char_marcus_1',
+                'char_marcus_2',
+                'char_ashley_1',
+                'char_cole_1',
+                'char_chen_1',
+                'char_maya_1',
+                'char_ghost_1'
+            ]
+        }
     }));
 
     const spy = vi.spyOn(Math, 'random').mockReturnValue(0.01);

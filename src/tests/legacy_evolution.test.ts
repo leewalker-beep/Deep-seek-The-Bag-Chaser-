@@ -30,7 +30,9 @@ describe('Legacy Evolution System', () => {
     useGameStore.setState({
         pl: {
             ...useGameStore.getState().pl,
-            mentalHealth: 1
+            mentalHealth: 1,
+            isTutorialSkipped: true,
+            tutorialStep: 10
         }
     });
 
