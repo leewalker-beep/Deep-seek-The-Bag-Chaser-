@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { PLAYER_AVATARS } from '../config/avatars';
 import { HERO_ARTWORK } from '../config/heroArtwork';
 import Avatar from './Avatar';
+import { getHallOfFameEntries } from '../utils/hallOfFame';
 
 interface PrologueScreenProps {
   onStart: (name: string, backgroundId: string, categoryId: string, variationId: string, avatarId: string) => void;
@@ -501,6 +502,24 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
         <div className="absolute bottom-[-10%] right-[-15%] w-80 h-80 rounded-full bg-purple-900/20 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-lg flex flex-col items-center text-center space-y-12">
+          {(() => {
+            const entries = getHallOfFameEntries();
+            const biographies = entries.flatMap(e => e.biography || []);
+            if (biographies.length === 0) return null;
+            const randomBio = biographies[Math.floor(Math.random() * biographies.length)];
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-slate-950/40 border border-white/5 backdrop-blur-sm p-4 rounded-2xl max-w-xs"
+              >
+                <div className="text-[8px] text-slate-500 font-black uppercase tracking-[0.3em] mb-2">Echoes of a Past Life</div>
+                <p className="text-[10px] text-slate-400 italic font-medium leading-relaxed uppercase tracking-tighter">
+                  "{randomBio}"
+                </p>
+              </motion.div>
+            );
+          })()}
           <div className="space-y-4">
             <motion.h1
               initial={{ opacity: 0, y: 40 }}

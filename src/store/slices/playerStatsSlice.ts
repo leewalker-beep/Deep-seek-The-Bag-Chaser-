@@ -4,6 +4,7 @@ import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
+import * as Bio from '../../engine/biographyEngine';
 
 export interface PlayerStatsSlice {
   pl: PlayerStats;
@@ -45,9 +46,15 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     if (state.bankedLegacyPoints < upgrade.cost) return;
     if (state.unlockedLegacyUpgradeIds.includes(upgradeId)) return;
 
+    const bioUpdate = Bio.recordLegacyUnlock(state.pl, upgrade.name);
     set({
         bankedLegacyPoints: state.bankedLegacyPoints - upgrade.cost,
-        unlockedLegacyUpgradeIds: [...state.unlockedLegacyUpgradeIds, upgradeId]
+        unlockedLegacyUpgradeIds: [...state.unlockedLegacyUpgradeIds, upgradeId],
+        pl: {
+          ...state.pl,
+          biography: bioUpdate ? [...(state.pl.biography || []), bioUpdate.entry] : state.pl.biography,
+          recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(state.pl.recordedBioKeys || []), bioUpdate.key] : state.pl.recordedBioKeys
+        }
     });
   },
 

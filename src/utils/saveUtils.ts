@@ -7,6 +7,7 @@ const BACKUP_KEY = 'bag-chaser-backup';
 const SAVE_KEY = 'bag-chaser-save';
 
 export const backupSave = () => {
+  if (typeof localStorage === 'undefined') return;
   try {
     const currentSave = localStorage.getItem(SAVE_KEY);
     if (currentSave) {
@@ -18,6 +19,7 @@ export const backupSave = () => {
 };
 
 export const restoreBackup = () => {
+  if (typeof localStorage === 'undefined') return;
   try {
     const backup = localStorage.getItem(BACKUP_KEY);
     if (backup) {

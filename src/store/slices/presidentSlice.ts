@@ -7,6 +7,7 @@ import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
 import { getDominantStat } from '../../utils/endingUtils';
 import { getEnding } from '../../config/endings';
+import * as Bio from '../../engine/biographyEngine';
 
 export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
@@ -159,6 +160,11 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       pendingPresidentialImpacts: newPendingImpacts
     };
 
+    const bioUpdate = Bio.recordPresidencyAchievement(state.pl, order.name);
+    if (bioUpdate) {
+      newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+      newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+    }
     set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
     if (masteryBonus > 0) {

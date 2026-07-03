@@ -20,6 +20,8 @@ import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
 import { GAME_CONSTANTS } from '../../config/gameConstants';
 import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
+import * as Bio from '../../engine/biographyEngine';
+import { BACKGROUNDS } from '../../config/backgrounds';
 
 
 
@@ -63,6 +65,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
     newPl.avatarId = avatarId || 'av_m1';
+
+    const background = BACKGROUNDS.find(b => b.id === backgroundId);
+    if (background) {
+      const bioUpdate = Bio.recordOrigin(newPl, background.name, newPl.currentTier);
+      if (bioUpdate) {
+        newPl.biography = [bioUpdate.entry];
+        newPl.recordedBioKeys = [bioUpdate.key!];
+      }
+    }
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;
@@ -165,6 +176,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     // Mastery Check
     const masteredHustles = [...(state.pl.masteredHustles || [])];
+    const newBiography = [...(state.pl.biography || [])];
+    const newBioKeys = [...(state.pl.recordedBioKeys || [])];
     let totalBonusApproval = 0;
     const finalDemographicApproval = { ...(state.pl.demographicApproval || {}) };
     const masteryBoostNews: TickerMessage[] = [];
@@ -210,6 +223,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           achievedAtMonth: state.pl.month,
           tier: state.pl.currentTier
         });
+        const bioUpdate = Bio.recordMastery(state.pl, h.name);
+        if (bioUpdate) {
+          newBiography.push(bioUpdate.entry);
+          if (bioUpdate.key) newBioKeys.push(bioUpdate.key);
+        }
         get().logEvent('SPECIAL_EVENT', { type: 'HUSTLE_MASTERY', hustleId: hId, hustleName: h.name });
 
         // Immediate Campaign Impact
@@ -288,7 +306,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           masteredHustles,
           tierBadges: newTierBadges,
           approvalRating: Math.min(100, state.pl.approvalRating + totalBonusApproval),
-          demographicApproval: finalDemographicApproval
+          demographicApproval: finalDemographicApproval,
+          biography: newBiography,
+          recordedBioKeys: newBioKeys,
         }),
         activeTierBadge: newlyEarnedTierBadge,
         news: [
@@ -449,6 +469,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const finalStat = getDominantStat(nextPl);
       const ending = getEnding(nextPl.legacyPoints || 0, finalStat);
+      const arrestSummary = Bio.recordArrestSummary(nextPl);
+      if (arrestSummary) {
+        nextPl.biography = [...(nextPl.biography || []), arrestSummary.entry];
+        nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), arrestSummary.key!];
+      }
+      const bioUpdate = Bio.recordDeath(nextPl, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
+        nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+      }
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -479,21 +509,30 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     }
 
-    set({
-      pl: nextPl,
-      ph: finalPh,
-      deathBadge: finalDeathBadge,
-      fatalCause: finalFatalCause,
-      news: [`⬆️ Upgraded: ${branch.name} (-$${result.cost.toLocaleString()})`, ...state.news.slice(0, 49)],
-    });
-
     const isVendingBuy = hustleId === 'r_vending';
     const isRealEstateBuy = ['l2a', 'l2b', 'l3a'].includes(branchId) && hustleId === 'r_labor';
 
+    let plWithBio = nextPl;
     if (isVendingBuy) {
       get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
+      const bioUpdate = Bio.recordBusiness(plWithBio, 'Vending Machine Empire', 18 + Math.floor(state.pl.month / 12));
+      if (bioUpdate) {
+        plWithBio = {
+          ...plWithBio,
+          biography: [...(plWithBio.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(plWithBio.recordedBioKeys || []), bioUpdate.key!]
+        };
+      }
     } else if (isRealEstateBuy) {
       get().logEvent('PROPERTY_PURCHASED', { branchId, branchName: branch.name, cost: result.cost });
+      const bioUpdate = Bio.recordBusiness(plWithBio, branch.name || 'Real Estate Portfolio', 18 + Math.floor(state.pl.month / 12));
+      if (bioUpdate) {
+        plWithBio = {
+          ...plWithBio,
+          biography: [...(plWithBio.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(plWithBio.recordedBioKeys || []), bioUpdate.key!]
+        };
+      }
     }
 
     get().logEvent('HUSTLE_COMPLETED', {
@@ -511,6 +550,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     // Update active challenges
+    let finalNextPl = plWithBio;
     if (state.pl.activeChallenges.length > 0) {
       const updatedChallenges = state.pl.activeChallenges.map(c => {
         if (c.tier === hustle.tier) {
@@ -519,9 +559,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             // Challenge Won
             const bonus = Math.floor(state.pl.bag * 0.1);
             get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
-            set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
+
+            const bioUpdate = Bio.recordRivalDefeat(finalNextPl, c.rivalName, c.tier);
+            finalNextPl = {
+              ...finalNextPl,
+              bag: finalNextPl.bag + bonus,
+              biography: bioUpdate ? [...(finalNextPl.biography || []), bioUpdate.entry] : finalNextPl.biography,
+              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(finalNextPl.recordedBioKeys || []), bioUpdate.key] : finalNextPl.recordedBioKeys,
+              crushedRivals: [...finalNextPl.crushedRivals, c.rivalId]
+            };
             get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
-            set((s) => ({ pl: { ...s.pl, crushedRivals: [...s.pl.crushedRivals, c.rivalId] } }));
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -529,8 +576,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         return c;
       }).filter(Boolean) as Challenge[];
 
-      set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
+      finalNextPl = { ...finalNextPl, activeChallenges: updatedChallenges };
     }
+
+    set({
+      pl: finalNextPl,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
+      news: [`⬆️ Upgraded: ${branch.name} (-$${result.cost.toLocaleString()})`, ...state.news.slice(0, 49)],
+    });
 
     const { updateChallengeProgress } = get();
     updateChallengeProgress('hustle_count', 1);
@@ -742,9 +797,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
       get().logEvent('SCANDAL_TRIGGERED', { type: 'DATA_BREACH' });
+      const bioUpdate = Bio.recordScandal(hustleResultPl, 'DATA_BREACH');
+      if (bioUpdate) {
+        hustleResultPl.biography = [...(hustleResultPl.biography || []), bioUpdate.entry];
+        hustleResultPl.recordedBioKeys = [...(hustleResultPl.recordedBioKeys || []), bioUpdate.key!];
+      }
     }
     if (hustleResultPl.heat > 90) {
       get().logEvent('SCANDAL_TRIGGERED', { type: 'POLICE_RAID_RISK', heat: hustleResultPl.heat });
+      const bioUpdate = Bio.recordScandal(hustleResultPl, 'POLICE_RAID_RISK');
+      if (bioUpdate) {
+        hustleResultPl.biography = [...(hustleResultPl.biography || []), bioUpdate.entry];
+        hustleResultPl.recordedBioKeys = [...(hustleResultPl.recordedBioKeys || []), bioUpdate.key!];
+      }
     }
 
     const {
@@ -799,11 +864,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       newPl.rivals = newPl.rivals.map(r => ({ ...r, currentBid: 0 }));
     }
 
-    const cappedPl = enforceStatCaps(newPl);
-
     if (hustleId === 'r_vending' && result.success) {
       get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
+      const bioUpdate = Bio.recordBusiness(newPl, 'Vending Machine', 18 + Math.floor(state.pl.month / 12));
+      if (bioUpdate) {
+        newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+        newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+      }
     }
+
+    const cappedPl = enforceStatCaps(newPl);
 
     const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, tier: cappedPl.currentTier };
     const finalNews = [
@@ -850,6 +920,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const finalStat = getDominantStat(cappedPl);
       const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
+      const arrestSummary = Bio.recordArrestSummary(cappedPl);
+      if (arrestSummary) {
+        cappedPl.biography = [...(cappedPl.biography || []), arrestSummary.entry];
+        cappedPl.recordedBioKeys = [...(cappedPl.recordedBioKeys || []), arrestSummary.key!];
+      }
+      const bioUpdate = Bio.recordDeath(cappedPl, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        cappedPl.biography = [...(cappedPl.biography || []), bioUpdate.entry];
+        cappedPl.recordedBioKeys = [...(cappedPl.recordedBioKeys || []), bioUpdate.key!];
+      }
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -901,18 +981,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     };
 
-    set({
-      pl: cappedPl,
-      currentMarket: newMarket,
-      news: finalNews,
-      ph: finalPh,
-      deathBadge: finalDeathBadge,
-      fatalCause: finalFatalCause,
-    });
-
-    get().logEvent(eventToLog.type, eventToLog.metadata);
-
     // Update active challenges
+    let plAfterChallenges = cappedPl;
     if (result.success && state.pl.activeChallenges.length > 0) {
       const updatedChallenges = state.pl.activeChallenges.map(c => {
         if (c.tier === hustle.tier) {
@@ -921,9 +991,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             // Challenge Won
             const bonus = Math.floor(state.pl.bag * 0.1);
             get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
-            set((s) => ({ pl: { ...s.pl, bag: s.pl.bag + bonus } }));
+
+            const bioUpdate = Bio.recordRivalDefeat(plAfterChallenges, c.rivalName, c.tier);
+            plAfterChallenges = {
+              ...plAfterChallenges,
+              bag: plAfterChallenges.bag + bonus,
+              biography: bioUpdate ? [...(plAfterChallenges.biography || []), bioUpdate.entry] : plAfterChallenges.biography,
+              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(plAfterChallenges.recordedBioKeys || []), bioUpdate.key] : plAfterChallenges.recordedBioKeys,
+              crushedRivals: [...plAfterChallenges.crushedRivals, c.rivalId]
+            };
             get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
-            set((s) => ({ pl: { ...s.pl, crushedRivals: [...s.pl.crushedRivals, c.rivalId] } }));
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -931,8 +1008,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         return c;
       }).filter(Boolean) as Challenge[];
 
-      set((s) => ({ pl: { ...s.pl, activeChallenges: updatedChallenges } }));
+      plAfterChallenges = { ...plAfterChallenges, activeChallenges: updatedChallenges };
     }
+
+    set({
+      pl: plAfterChallenges,
+      currentMarket: newMarket,
+      news: finalNews,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
+    });
+
+    get().logEvent(eventToLog.type, eventToLog.metadata);
 
     if (result.success) {
       if (result.isRare) {
@@ -1150,6 +1238,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const finalStat = getDominantStat(newPl);
       const ending = getEnding(newPl.legacyPoints || 0, finalStat);
+      const arrestSummary = Bio.recordArrestSummary(newPl);
+      if (arrestSummary) {
+        newPl.biography = [...(newPl.biography || []), arrestSummary.entry];
+        newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), arrestSummary.key!];
+      }
+      const bioUpdate = Bio.recordDeath(newPl, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+        newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+      }
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -1319,6 +1417,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const finalStat = getDominantStat(plAfterPurchase);
       const ending = getEnding(plAfterPurchase.legacyPoints || 0, finalStat);
+      const arrestSummary = Bio.recordArrestSummary(plAfterPurchase);
+      if (arrestSummary) {
+        plAfterPurchase.biography = [...(plAfterPurchase.biography || []), arrestSummary.entry];
+        plAfterPurchase.recordedBioKeys = [...(plAfterPurchase.recordedBioKeys || []), arrestSummary.key!];
+      }
+      const bioUpdate = Bio.recordDeath(plAfterPurchase, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        plAfterPurchase.biography = [...(plAfterPurchase.biography || []), bioUpdate.entry];
+        plAfterPurchase.recordedBioKeys = [...(plAfterPurchase.recordedBioKeys || []), bioUpdate.key!];
+      }
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -1451,6 +1559,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
+    const bioUpdate = Bio.recordTierAdvancement(state.pl, nextTier, spec.name);
+    if (bioUpdate) {
+      nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
+      nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+    }
+
     const revealedBenefits: string[] = [];
     const masteredHustles = nextPl.masteredHustles || [];
     masteredHustles.forEach(hId => {
@@ -1497,8 +1611,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       bag: state.pl.bag - cost,
       rivals: state.pl.rivals.map(r =>
         r.id === rivalId ? { ...r, netWorth: Math.floor(r.netWorth * 0.4) } : r
-      ),
+      )
     });
+
+    const bioUpdate = Bio.recordRivalDefeat(nextPl, rival.name, rival.tier);
+    if (bioUpdate) {
+      nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
+      nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+    }
 
     set({
       pl: nextPl,
@@ -1572,6 +1692,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       dynamicPassives: { ...state.pl.dynamicPassives, [`counter_bid_bonus_${rival.tier}`]: 1 }
     };
 
+    const bioUpdate = Bio.recordRivalDefeat(nextPl, rival.name, rival.tier);
+    if (bioUpdate) {
+      nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
+      nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+    }
+
     set({
       pl: enforceStatCaps(nextPl),
       news: [{ text: `🤝 COUNTER-BID: You bought out ${rival.name}'s position! Clout +300. 1.2x Yield bonus for ${rival.tier} active.`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
@@ -1609,7 +1735,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     // Apply Biography Entry
     if (cons.biographyEntry) {
-      nextPl.biography = [...(nextPl.biography || []), cons.biographyEntry];
+      const bioUpdate = Bio.recordEvent(nextPl, cons.biographyEntry, `narrative_${event!.id}_${choiceId}`);
+      if (bioUpdate) {
+        nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
+        nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+      }
     }
 
     // Apply permanent passive

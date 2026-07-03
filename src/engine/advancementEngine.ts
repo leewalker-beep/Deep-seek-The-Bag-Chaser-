@@ -11,6 +11,7 @@ import { WORLD_EVENTS } from '../config/worldEvents';
 import { HUSTLE_SECTORS } from '../config/sectors';
 import { getSentence } from '../config/jailSentences';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
+import * as Bio from './biographyEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
   STREET: 1000,
@@ -373,6 +374,12 @@ export function advanceMonth(
     newPl.jailSentenceTotal = sentence.months;
     newPl.jailCharge = sentence.charge;
     newPl.heat = 0; // heat resets on arrest
+    newPl.arrestCount = (newPl.arrestCount || 0) + 1;
+    const bioUpdate = Bio.recordScandal(newPl, 'ARREST');
+    if (bioUpdate) {
+      newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+      newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+    }
     news.push({
       text: `🚔 BUSTED. ${sentence.charge}. ${sentence.months} months.`,
       colorClass: 'text-red-500 font-black'
@@ -613,6 +620,13 @@ export function advanceMonth(
       }
       newPl.activeWorldEvent = null;
       newPl.worldEventCooldown = 4 + Math.floor(Math.random() * 5); // 4-8 months cooldown
+      if (event) {
+        const bioUpdate = Bio.recordWorldEventSurvival(newPl, event.name);
+        if (bioUpdate) {
+          newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+          newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+        }
+      }
     }
   } else if (newPl.worldEventCooldown > 0) {
     newPl.worldEventCooldown--;
