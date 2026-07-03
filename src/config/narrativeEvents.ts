@@ -1668,5 +1668,886 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
         }
       }
     ]
+  },
+
+  // --- NEW CHARACTER INTEGRATION EVENTS ---
+
+  // MUD / STREET - Pops Mentorship
+  {
+    id: 'char_pops_garden',
+    characterId: 'char_pops',
+    title: 'Pops\' Wisdom',
+    description: 'Arthur "Pops" Jenkins calls you over to the community garden. "You\'re moving fast, kid," he says, handing you a fresh tomato. "But remember, a plant that grows too fast without deep roots will fall in the first storm. What are you building for the future?"',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'pops_learn',
+        label: 'Listen to Pops',
+        description: 'Spend the afternoon learning about the neighborhood\'s history and the importance of community.',
+        consequences: {
+          aura: 40,
+          mentalHealth: 10,
+          biographyEntry: 'Learned the true history of the blocks from Arthur "Pops" Jenkins.'
+        },
+        setFlags: { 'rel_pops': 50, 'pops_mentor': true }
+      },
+      {
+        id: 'pops_dismiss',
+        label: 'Too Busy',
+        description: 'Politely decline. You have deals to close.',
+        consequences: {
+          clout: 10
+        }
+      }
+    ]
+  },
+
+  // MUD / STREET - Slick\'s Tip
+  {
+    id: 'char_slick_tip',
+    characterId: 'char_slick',
+    title: 'Slick\'s "Sure Thing"',
+    description: 'Slick Reed leans against a lamp post as you pass. "Hey, hey! Just the person I wanted to see. I got a tip on a shipment of... let\'s call them \'premium electronics\'... arriving at the docks tonight. No security. Five large and we split the take. You in?"',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.15,
+      once: false
+    },
+    choices: [
+      {
+        id: 'slick_accept',
+        label: 'Take the Tip',
+        description: 'Invest $5,000 in Slick\'s scheme.',
+        consequences: {
+          bag: -5000
+        },
+        setFlags: { 'slick_deal_active': true }
+      },
+      {
+        id: 'slick_refuse',
+        label: 'Ignore Him',
+        description: 'Slick\'s "sure things" usually lead to handcuffs.',
+        consequences: {
+          heat: -5
+        }
+      }
+    ]
+  },
+
+  // MUD / STREET - Rosa\'s Request
+  {
+    id: 'char_rosa_request',
+    characterId: 'char_rosa',
+    title: 'Mama Rosa\'s Kitchen',
+    description: 'Rosa Mendez finds you on the block. "The city is cutting funding for the youth program again," she says, her eyes flashing. "We need 2k for supplies, or these kids will be out on the street with nothing to do. You can help, right?"',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'rosa_help',
+        label: 'Donate to Youth',
+        description: 'Give Rosa the money for the kids.',
+        consequences: {
+          bag: -2000,
+          aura: 60,
+          biographyEntry: 'Became a local hero by funding Mama Rosa\'s youth program.'
+        },
+        setFlags: { 'rel_rosa': 60, 'neighborhood_hero': true }
+      },
+      {
+        id: 'rosa_refuse',
+        label: 'Can\'t Help Today',
+        description: 'Explain that money is tight. Rosa doesn\'t look happy.',
+        consequences: {
+          aura: -20
+        },
+        setFlags: { 'rel_rosa': -10 }
+      }
+    ]
+  },
+
+  // STREET / STARTUP - Miller\'s Warning
+  {
+    id: 'char_miller_cop_warning',
+    characterId: 'char_miller_cop',
+    title: 'Officer Miller\'s Patrol',
+    description: 'Officer Frank Miller pulls his cruiser alongside you. "I\'m seeing your name in places it shouldn\'t be," he says quietly. "The higher-ups are starting to notice your activities. Clean it up, or I won\'t be able to look the other way much longer."',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 30 }
+    },
+    choices: [
+      {
+        id: 'miller_clean_up',
+        label: 'Lay Low',
+        description: 'Reduce your more visible operations for a while.',
+        consequences: {
+          heat: -20,
+          clout: -10
+        },
+        setFlags: { 'rel_miller': 40 }
+      },
+      {
+        id: 'miller_ignore',
+        label: 'Stay the Course',
+        description: 'It\'s just business. Miller is just one cop.',
+        consequences: {
+          heat: 10
+        },
+        setFlags: { 'rel_miller': -20 }
+      }
+    ]
+  },
+
+  // STREET / STARTUP - J-Dog\'s Promotion
+  {
+    id: 'char_jdog_promo',
+    characterId: 'char_jdog',
+    title: 'The J-Dog Experience',
+    description: 'J-Dog cornered you with a pair of headphones. "Yo, you gotta hear this new track! It\'s fire! I just need a little push to get it on the local radio. A few thousand for some... \'promotion\'... and we both go viral. What you think?"',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.12,
+      once: false
+    },
+    choices: [
+      {
+        id: 'jdog_invest',
+        label: 'Invest in J-Dog',
+        description: 'Give him $3,000 for "marketing".',
+        consequences: {
+          bag: -3000,
+          clout: 20
+        },
+        setFlags: { 'jdog_promo_active': true }
+      },
+      {
+        id: 'jdog_decline',
+        label: 'Pass on the Track',
+        description: 'You\'ve heard enough.',
+        consequences: {
+          mentalHealth: 5
+        }
+      }
+    ]
+  },
+
+  // STARTUP / CORPORATE - Alistair Clark\'s Arrival
+  {
+    id: 'char_clark_intro',
+    characterId: 'char_clark',
+    title: 'Legal Scrutiny',
+    description: 'Alistair Clark, "The Closer", has sent a formal inquiry regarding your recent business acquisitions. He represents a group of "concerned competitors" and is hinting at a massive antitrust lawsuit unless you "realign" your interests.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'clark_retain',
+        label: 'Retain Clark',
+        description: 'Pay him a massive retainer to switch sides and represent you instead.',
+        consequences: {
+          bag: -100000,
+          clout: 50,
+          heat: -20,
+          biographyEntry: 'Turned a legal threat into a powerful asset by retaining Alistair "The Closer" Clark.'
+        },
+        setFlags: { 'rel_clark': 70, 'clark_ally': true }
+      },
+      {
+        id: 'clark_fight',
+        label: 'Fight the Lawsuit',
+        description: 'Your own legal team says they can beat him, but it will be expensive.',
+        consequences: {
+          bag: -50000,
+          clout: 20,
+          aura: -10
+        },
+        setFlags: { 'rel_clark': -50, 'clark_rival': true }
+      }
+    ]
+  },
+
+  // STARTUP / CORPORATE - Brooke Summers\' Investment
+  {
+    id: 'char_summers_collab',
+    characterId: 'char_summers',
+    title: 'The Viral VC',
+    description: 'Brooke Summers has noticed your growth and wants to feature your latest venture on her stream. "Your brand is so \'now\'," she says. "Let\'s do a collab. I invest, you get the clout, and we both win."',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'summers_accept',
+        label: 'Partner with Summers',
+        description: 'Accept the investment and the public exposure.',
+        consequences: {
+          bag: 200000,
+          clout: 150,
+          aura: 50
+        },
+        setFlags: { 'rel_summers': 80, 'summers_partner': true }
+      },
+      {
+        id: 'summers_decline',
+        label: 'Stay Independent',
+        description: 'You don\'t want your business model dictated by social media trends.',
+        consequences: {
+          clout: 20
+        },
+        setFlags: { 'rel_summers': 10 }
+      }
+    ]
+  },
+
+  // CORPORATE / ELITE - Julian Vane\'s Master Plan
+  {
+    id: 'char_julian_intro',
+    characterId: 'char_julian',
+    title: 'The Architect\'s Vision',
+    description: 'Julian Vane, "The Architect", presents a plan for a new "Elite District" that would require clearing out parts of your old neighborhood. He wants your backing to secure the necessary zoning changes.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'julian_back',
+        label: 'Support the District',
+        description: 'The profits from the new development would be astronomical.',
+        consequences: {
+          bag: 1000000,
+          clout: 200,
+          aura: -300
+        },
+        setFlags: { 'rel_julian': 80, 'architect_ally': true }
+      },
+      {
+        id: 'julian_oppose',
+        label: 'Oppose Development',
+        description: 'Protect the neighborhood. Julian won\'t forget this.',
+        consequences: {
+          aura: 400,
+          clout: -100
+        },
+        setFlags: { 'rel_julian': -100, 'architect_rival': true }
+      }
+    ]
+  },
+
+  // ELITE / MOGUL - Selena Rosso\'s Endorsement
+  {
+    id: 'char_selena_endorse',
+    characterId: 'char_selena',
+    title: 'The Pop Star\'s Plea',
+    description: 'Selena Rosso reaches out. She\'s launching a global initiative for "Digital Freedom" and wants you to be the primary corporate sponsor. "You have the resources to make this real," she tells you.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'selena_sponsor',
+        label: 'Sponsor the Initiative',
+        description: 'Commit $5M to the cause. Your Aura will be legendary.',
+        consequences: {
+          bag: -5000000,
+          aura: 1000,
+          clout: 300,
+          biographyEntry: 'Partnered with pop star Selena Rosso to launch the Global Digital Freedom initiative.'
+        },
+        setFlags: { 'rel_selena': 100, 'digital_freedom_hero': true }
+      },
+      {
+        id: 'selena_refuse',
+        label: 'Decline Sponsorship',
+        description: 'It\'s too expensive and too controversial.',
+        consequences: {
+          bag: 1000000,
+          aura: -50
+        }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - General Whitaker\'s Briefing
+  {
+    id: 'char_whitaker_brief',
+    characterId: 'char_whitaker',
+    title: 'National Security Briefing',
+    description: 'General Silas Whitaker requests a private meeting. "The situation in the East is deteriorating," he says. "We need your manufacturing base to pivot to defense production immediately. It\'s a matter of national survival."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'whitaker_defense',
+        label: 'Pivot to Defense',
+        description: 'Convert your factories. The government contracts are lucrative, but the world gets more dangerous.',
+        consequences: {
+          bag: 10000000,
+          clout: 500,
+          aura: -200
+        },
+        setFlags: { 'rel_whitaker': 80, 'military_industrial_complex': true }
+      },
+      {
+        id: 'whitaker_refuse',
+        label: 'Maintain Civilian Focus',
+        description: 'Refuse to become a war profiteer.',
+        consequences: {
+          aura: 500,
+          clout: -200
+        },
+        setFlags: { 'rel_whitaker': -30 }
+      }
+    ]
+  },
+
+  // PRESIDENT - Judge Holloway\'s Ruling
+  {
+    id: 'char_holloway_ruling',
+    characterId: 'char_holloway',
+    title: 'The Supreme Challenge',
+    description: 'Judge Margaret Holloway is presiding over a case that could dismantle your primary executive order. Her ruling depends on your ability to provide "unassailable legal justification".',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'holloway_legal_warfare',
+        label: 'Intense Legal Defense',
+        description: 'Spend $20M on the best legal scholars to sway the court.',
+        consequences: {
+          bag: -20000000,
+          clout: 500
+        },
+        setFlags: { 'holloway_swayed': true }
+      },
+      {
+        id: 'holloway_accept',
+        label: 'Accept the Ruling',
+        description: 'Let the court decide. If you lose, your power is significantly diminished.',
+        consequences: {
+          aura: 200,
+          clout: -500
+        }
+      }
+    ]
+  },
+
+  // PRESIDENT - Director Blackwood\'s Secrets
+  {
+    id: 'char_blackwood_secrets',
+    characterId: 'char_blackwood',
+    title: 'The Spymaster\'s Offer',
+    description: 'Director Elias Blackwood places a folder on your desk. "Your political rival is... vulnerable," he says. "I can make this information go public, or I can bury it. Depending on your next budget allocation for my department."',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'blackwood_leak',
+        label: 'Leak the Info',
+        description: 'Destroy your rival. But now Blackwood owns you.',
+        consequences: {
+          clout: 1000,
+          aura: -500,
+          heat: 50
+        },
+        setFlags: { 'rel_blackwood': 100, 'blackwood_debt': true }
+      },
+      {
+        id: 'blackwood_refuse',
+        label: 'Bury the Folder',
+        description: 'You won\'t play his games.',
+        consequences: {
+          aura: 500,
+          mentalHealth: -20
+        },
+        setFlags: { 'rel_blackwood': -50 }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - Marcus Stone\'s Strategy
+  {
+    id: 'char_stone_strategy',
+    characterId: 'char_stone',
+    title: 'The Kingmaker\'s Plan',
+    description: 'Marcus Stone has a plan to guarantee your election. "We don\'t need to win hearts," he says, grinning. "We just need to make them hate the other guy more. I need $50M for a \'saturated media campaign\'."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'stone_hire',
+        label: 'Hire Stone',
+        description: 'Launch the smear campaign.',
+        consequences: {
+          bag: -50000000,
+          clout: 1500,
+          aura: -800
+        },
+        setFlags: { 'rel_stone': 80, 'kingmaker_active': true }
+      },
+      {
+        id: 'stone_refuse',
+        label: 'Run a Clean Race',
+        description: 'Stone is too dirty, even for you.',
+        consequences: {
+          aura: 500,
+          clout: 200
+        }
+      }
+    ]
+  },
+
+  // PRESIDENT - Secretary Valdez\'s Trade Deal
+  {
+    id: 'char_valdez_deal',
+    characterId: 'char_valdez',
+    title: 'The Grand Bargain',
+    description: 'Secretary Elena Valdez has negotiated a historic trade deal with the Eastern Bloc. "It will stabilize the global economy for a decade," she says. "But it requires significant domestic concessions that will anger your base."',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'valdez_sign',
+        label: 'Sign the Deal',
+        description: 'Global stability at a domestic cost.',
+        consequences: {
+          aura: 1000,
+          clout: 500,
+          bag: 20000000
+        },
+        setFlags: { 'rel_valdez': 100, 'global_stabilizer': true }
+      },
+      {
+        id: 'valdez_refuse',
+        label: 'Protect Domestic Interests',
+        description: 'Refuse the deal. Your base will love it, but the world gets more volatile.',
+        consequences: {
+          clout: 800,
+          aura: -300
+        },
+        setFlags: { 'rel_valdez': -20 }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - William Thornton\'s Narrative
+  {
+    id: 'char_thornton_narrative',
+    characterId: 'char_thornton',
+    title: 'Media Monopoly',
+    description: 'William Thornton is offering to make his networks "extremely favorable" to your administration. "I can make you a saint or a sinner," he laughs. "All I want is the repeal of the new media ownership laws."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'thornton_agree',
+        label: 'Repeal the Laws',
+        description: 'Give Thornton what he wants for total narrative control.',
+        consequences: {
+          clout: 1000,
+          aura: 200,
+          heat: 40
+        },
+        setFlags: { 'rel_thornton': 80, 'media_monopoly_active': true }
+      },
+      {
+        id: 'thornton_refuse',
+        label: 'Enforce the Laws',
+        description: 'Thornton\'s networks will now be your greatest enemy.',
+        consequences: {
+          aura: 500,
+          clout: -500
+        },
+        setFlags: { 'rel_thornton': -100, 'media_warfare': true }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - Diana Ross\'s Audit
+  {
+    id: 'char_ross_audit',
+    characterId: 'char_ross',
+    title: 'The Hammer Falls',
+    description: 'Diana Ross has arrived at your headquarters with a federal warrant. "There are... irregularities... in your offshore accounts," she says, her voice like ice. "I can spend the next year digging, or we can reach a settlement now."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'heat', value: 70 }
+    },
+    choices: [
+      {
+        id: 'ross_settle',
+        label: 'Pay the Settlement',
+        description: 'Pay a massive $100M fine to end the investigation.',
+        consequences: {
+          bag: -100000000,
+          heat: -80,
+          aura: -200
+        }
+      },
+      {
+        id: 'ross_fight',
+        label: 'Fight the Audit',
+        description: 'Use your political power to slow down the investigation. Extremely risky.',
+        consequences: {
+          heat: 30,
+          clout: 200,
+          aura: -500
+        }
+      }
+    ]
+  },
+
+  // PRESIDENT - Dr. Adler\'s Model
+  {
+    id: 'char_adler_model',
+    characterId: 'char_adler',
+    title: 'Economic Equilibrium',
+    description: 'Dr. Hans Adler has developed a new economic model that could eliminate inflation entirely. "It requires a complete overhaul of the tax system," he explains. "The wealthy will pay more, but the system will be unbreakable."',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'adler_implement',
+        label: 'Implement the Model',
+        description: 'A gamble for long-term stability.',
+        consequences: {
+          aura: 1500,
+          bag: -50000000,
+          clout: -500
+        },
+        setFlags: { 'adler_economics_active': true }
+      },
+      {
+        id: 'adler_refuse',
+        label: 'Too Radical',
+        description: 'Stick to traditional economic policies.',
+        consequences: {
+          clout: 300,
+          aura: -100
+        }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - Anya Singh\'s Space Race
+  {
+    id: 'char_singh_space',
+    characterId: 'char_singh',
+    title: 'The Final Frontier',
+    description: 'Anya Singh wants to partner with your administration to establish the first permanent lunar colony. "History won\'t remember your trade deals," she says. "It will remember this."',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'singh_partner',
+        label: 'Fund the Colony',
+        description: 'Commit $500M to the lunar project.',
+        consequences: {
+          bag: -500000000,
+          aura: 2000,
+          clout: 1000,
+          biographyEntry: 'Solidified a place in history by funding the first permanent lunar colony with Anya Singh.'
+        },
+        setFlags: { 'lunar_colony_active': true, 'rel_singh': 100 }
+      },
+      {
+        id: 'singh_refuse',
+        label: 'Focus on Earth',
+        description: 'We have enough problems down here.',
+        consequences: {
+          bag: 100000000,
+          aura: -200
+        }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - Ivan Morozov\'s Threat
+  {
+    id: 'char_morozov_threat',
+    characterId: 'char_morozov',
+    title: 'Oligarch\'s Gambit',
+    description: 'Ivan Morozov has started aggressively shorting your companies while launching cyberattacks on your infrastructure. "The world isn\'t big enough for two titans," he sends in a simple, encrypted text.',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'morozov_counter',
+        label: 'Launch Counter-Offensive',
+        description: 'Use your intelligence assets to seize his foreign holdings.',
+        consequences: {
+          bag: -50000000,
+          clout: 800,
+          heat: 40
+        },
+        setFlags: { 'morozov_war_active': true, 'rel_morozov': -100 }
+      },
+      {
+        id: 'morozov_negotiate',
+        label: 'Negotiate a Truce',
+        description: 'Pay him off to leave you alone.',
+        consequences: {
+          bag: -200000000,
+          clout: -500,
+          aura: -200
+        }
+      }
+    ]
+  },
+
+  // MOGUL / PRESIDENT - Sarah Lane\'s Protest
+  {
+    id: 'char_lane_protest',
+    characterId: 'char_lane',
+    title: 'Voice of the People',
+    description: 'Sarah Lane has organized a massive, peaceful protest outside your gates. "You forgot where you came from!" she shouts to the crowd. She is demanding an audience to discuss your impact on the working class.',
+    trigger: {
+      tier: ['MOGUL', 'PRESIDENT'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'lane_meet',
+        label: 'Meet with Lane',
+        description: 'Listen to her demands. It will show empathy but might look weak to your donors.',
+        consequences: {
+          aura: 800,
+          clout: -300
+        },
+        setFlags: { 'rel_lane': 80, 'lane_ally': true }
+      },
+      {
+        id: 'lane_disperse',
+        label: 'Disperse the Crowd',
+        description: 'Order the security teams to clear the area. Order must be maintained.',
+        consequences: {
+          clout: 500,
+          aura: -1000,
+          heat: 60
+        },
+        setFlags: { 'rel_lane': -100, 'lane_enemy': true }
+      }
+    ]
+  },
+
+  // STARTUP / CORPORATE - Cassie\'s Intel
+  {
+    id: 'char_cassie_intel',
+    characterId: 'char_cassie',
+    title: 'Cassie\'s Information Exchange',
+    description: 'Cassie Thorne reaches out. "I\'ve heard some interesting rumors about your newest competitor," she says, leaning over the counter. "For a small fee, I can tell you exactly where they\'re vulnerable."',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: false
+    },
+    choices: [
+      {
+        id: 'cassie_buy',
+        label: 'Buy the Intel',
+        description: 'Pay $10,000 for the information.',
+        consequences: {
+          bag: -10000,
+          clout: 50
+        },
+        setFlags: { 'rel_cassie': 40 }
+      },
+      {
+        id: 'cassie_ignore',
+        label: 'Don\'t Need It',
+        description: 'You prefer to do your own research.',
+        consequences: {
+          aura: 10
+        }
+      }
+    ]
+  },
+
+  // MUD / STREET - Vinnie\'s Collection
+  {
+    id: 'char_vinnie_collection',
+    characterId: 'char_vinnie',
+    title: 'Vinnie\'s Visit',
+    description: 'Vincent "Vinnie" Moretti finds you. "My boss says your recent... activities... are cutting into our business," he says, sounding almost apologetic. "He wants a 10% \'neighborhood tax\' on your next haul. Just to keep things friendly."',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.15,
+      once: false
+    },
+    choices: [
+      {
+        id: 'vinnie_pay',
+        label: 'Pay the Tax',
+        description: 'Better to keep Vinnie friendly.',
+        consequences: {
+          bag: -1000,
+          aura: -10
+        },
+        setFlags: { 'rel_vinnie': 30 }
+      },
+      {
+        id: 'vinnie_refuse',
+        label: 'Refuse to Pay',
+        description: 'You don\'t pay taxes to thugs. Vinnie looks disappointed.',
+        consequences: {
+          clout: 30,
+          heat: 5
+        },
+        setFlags: { 'rel_vinnie': -40 }
+      }
+    ]
+  },
+
+  // MUD / STREET - Beatrice\'s Clinic
+  {
+    id: 'char_beatrice_clinic',
+    characterId: 'char_beatrice',
+    title: 'Clinic Crisis',
+    description: 'Beatrice Vance meets you outside the clinic. "We\'re out of basic antibiotics," she says, her voice trembling with exhaustion. "The distributor won\'t ship until we pay the back-bill. It\'s 5k. Please."',
+    trigger: {
+      tier: ['MUD', 'STREET'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'beatrice_fund',
+        label: 'Fund the Clinic',
+        description: 'Pay the clinic\'s debt. Save lives.',
+        consequences: {
+          bag: -5000,
+          aura: 150
+        },
+        setFlags: { 'rel_beatrice': 80, 'clinic_savior': true }
+      },
+      {
+        id: 'beatrice_refuse',
+        label: 'Can\'t Help',
+        description: 'It\'s not your responsibility. Beatrice just nods and walks away.',
+        consequences: {
+          aura: -50
+        }
+      }
+    ]
+  },
+
+  // STREET / STARTUP - Ray\'s Security
+  {
+    id: 'char_ray_security',
+    characterId: 'char_ray',
+    title: 'Sarge\'s Solution',
+    description: 'Raymond "Sarge" Strode offers to upgrade your physical security. "Your current setup is amateur hour," he grunts. "One professional team could wipe you out in five minutes. Let me handle it. I need 20k for equipment and training."',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'ray_hire',
+        label: 'Hire Sarge',
+        description: 'Upgrade your security protocols.',
+        consequences: {
+          bag: -20000,
+          heat: -30,
+          clout: 30
+        },
+        setFlags: { 'rel_ray': 60, 'sarge_security_active': true }
+      },
+      {
+        id: 'ray_refuse',
+        label: 'Stay Low-Tech',
+        description: 'You\'ve been fine so far.',
+        consequences: {
+          bag: 5000
+        }
+      }
+    ]
+  },
+
+  // STREET / STARTUP - Lexi\'s Mural
+  {
+    id: 'char_lexi_mural',
+    characterId: 'char_lexi',
+    title: 'The Muralist\'s Mark',
+    description: 'Lexi Chen wants to paint a massive mural on the side of your main building. "It will tell the story of the block," she says. "But I need you to promise you won\'t let the city paint over it."',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'lexi_permit',
+        label: 'Authorize the Mural',
+        description: 'Give Lexi the space and the protection.',
+        consequences: {
+          aura: 100,
+          clout: 40
+        },
+        setFlags: { 'rel_lexi': 70, 'lexi_mural_active': true }
+      },
+      {
+        id: 'lexi_refuse',
+        label: 'No Murals',
+        description: 'You need to maintain a professional corporate image.',
+        consequences: {
+          clout: 20,
+          aura: -20
+        }
+      }
+    ]
   }
 ];
