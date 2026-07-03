@@ -17,10 +17,13 @@ const ConfettiInternal: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
   useEffect(() => {
     const colors = ['#fbbf24', '#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#a855f7', '#ec4899'];
     const newPieces: ConfettiPiece[] = [];
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1000;
+    const height = typeof window !== 'undefined' ? window.innerHeight : 1000;
+
     for (let i = 0; i < 100; i++) {
       newPieces.push({
         id: i,
-        x: Math.random() * window.innerWidth,
+        x: Math.random() * width,
         y: -50 - Math.random() * 100,
         color: colors[Math.floor(Math.random() * colors.length)],
         size: 5 + Math.random() * 10,
@@ -37,7 +40,7 @@ const ConfettiInternal: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
           x: p.x + p.velocityX,
           y: p.y + p.velocityY,
         }));
-        const remaining = updated.filter(p => p.y < window.innerHeight + 100);
+        const remaining = updated.filter(p => p.y < height + 100);
         if (remaining.length === 0) {
           clearInterval(interval);
           onComplete();

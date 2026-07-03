@@ -1,24 +1,26 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { FLEX_ASSETS } from '../config/flexAssets';
+import { CinematicModal } from './ui/CinematicModal';
+import { PortraitCard } from './ui/PortraitCard';
 
 interface Props {
   threshold: number;
   onDismiss: () => void;
 }
 
+const FLEX_THRESHOLDS: Record<number, string> = {
+  10000:       'watch',
+  50000:       'car',
+  500000:      'yacht',
+  1000000:     'penthouse',
+  5000000:     'jet',
+  25000000:    'island',
+  100000000:   'franchise',
+};
+
 export const FlexOpportunityModal: React.FC<Props> = ({ threshold, onDismiss }) => {
   const { pl, purchaseFlexAsset } = useGameStore();
-
-  const FLEX_THRESHOLDS: Record<number, string> = {
-    10000:       'watch',
-    50000:       'car',
-    500000:      'yacht',
-    1000000:     'penthouse',
-    5000000:     'jet',
-    25000000:    'island',
-    100000000:   'franchise',
-  };
 
   const assetId = FLEX_THRESHOLDS[threshold];
   const asset = FLEX_ASSETS.find(a => a.id === assetId);
@@ -28,85 +30,97 @@ export const FlexOpportunityModal: React.FC<Props> = ({ threshold, onDismiss }) 
   const canAfford = pl.bag >= asset.cost;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col overflow-y-auto p-6"
-      style={{ background: 'linear-gradient(160deg, #0a0a0f 0%, #0f0a1a 100%)' }}>
-
-      <div className="max-w-md mx-auto w-full flex flex-col">
-        <div className="text-8xl text-center mt-16 animate-bounce">
-          {asset.icon}
+    <CinematicModal
+      isOpen={true}
+      onClose={onDismiss}
+      title={asset.name}
+      subtitle="NEW FLEX OPPORTUNITY"
+      accentColor="amber"
+    >
+      <div className="flex flex-col items-center">
+        <div className="w-full max-w-[240px] mb-6">
+          <PortraitCard
+            name={asset.name}
+            role="NEWSPAPER"
+            rarity="LEGENDARY"
+            image={asset.icon}
+          />
         </div>
 
-        <div className="text-xs text-emerald-400 uppercase tracking-[0.3em] text-center mt-6 font-black">
-          YOU CAN AFFORD THIS
+        <div className="text-center mb-8">
+           <div className="text-2xl font-black text-amber-400 font-mono">
+             ${asset.cost.toLocaleString()}
+           </div>
+           <p className="text-slate-400 text-sm mt-2 font-medium italic">
+             "Success isn't just about making money. It's about what you do with it."
+           </p>
         </div>
 
-        <div className="text-4xl font-black text-white text-center mt-2 uppercase tracking-tight">
-          {asset.name}
-        </div>
+        <div className="w-full bg-slate-950/50 border border-amber-500/20 rounded-2xl p-6 mb-8 space-y-4">
+          <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-2 border-b border-amber-500/10 pb-2">
+            PRESTIGE BENEFITS
+          </h4>
 
-        <div className="text-xl text-slate-400 text-center mt-1 font-mono">
-          ${asset.cost.toLocaleString()}
-        </div>
-
-        <div className="bg-slate-900/80 border border-slate-700/50 rounded-2xl p-6 mt-6 space-y-3">
           {asset.maxCloutBoost > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">Clout Capacity</span>
-              <span className="text-purple-400 font-black">📣 +{asset.maxCloutBoost}</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Clout Capacity</span>
+              <span className="text-purple-400 font-black text-xs">📣 +{asset.maxCloutBoost}</span>
             </div>
           )}
           {asset.maxAuraBoost > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">Aura Capacity</span>
-              <span className="text-blue-400 font-black">✨ +{asset.maxAuraBoost}</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Aura Capacity</span>
+              <span className="text-blue-400 font-black text-xs">✨ +{asset.maxAuraBoost}</span>
             </div>
           )}
           {asset.passiveYield > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">Monthly Passive</span>
-              <span className="text-emerald-400 font-black">💵 +${(asset.passiveYield/1000).toFixed(0)}K</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Monthly Passive</span>
+              <span className="text-emerald-400 font-black text-xs">💵 +${(asset.passiveYield/1000).toFixed(0)}K</span>
             </div>
           )}
           {asset.heatDecayBonus && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">Heat Decay</span>
-              <span className="text-cyan-400 font-black">❄️ -{asset.heatDecayBonus}%</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Heat Decay</span>
+              <span className="text-cyan-400 font-black text-xs">❄️ -{asset.heatDecayBonus}%</span>
             </div>
           )}
           {asset.allGainsBonus && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">All Gains</span>
-              <span className="text-amber-400 font-black">⚡ +{asset.allGainsBonus}%</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">All Gains</span>
+              <span className="text-amber-400 font-black text-xs">⚡ +{asset.allGainsBonus}%</span>
             </div>
           )}
           {asset.mentalRecoveryBonus && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-xs uppercase font-bold">Mental Recovery</span>
-              <span className="text-pink-400 font-black">🧠 +{asset.mentalRecoveryBonus}%</span>
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Mental Recovery</span>
+              <span className="text-pink-400 font-black text-xs">🧠 +{asset.mentalRecoveryBonus}%</span>
             </div>
           )}
         </div>
 
-        <button
-          onClick={() => {
-            purchaseFlexAsset(asset.id);
-            onDismiss();
-          }}
-          disabled={!canAfford}
-          className={`w-full py-5 bg-emerald-500 text-black font-black text-lg rounded-2xl uppercase tracking-widest mt-6 transition-all active:scale-95 ${
-            !canAfford ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-emerald-400 shadow-lg shadow-emerald-500/20'
-          }`}
-        >
-          FLEX IT
-        </button>
+        <div className="w-full space-y-4">
+          <button
+            onClick={() => {
+              purchaseFlexAsset(asset.id);
+              onDismiss();
+            }}
+            disabled={!canAfford}
+            className={`w-full py-4 bg-amber-500 text-black font-black text-sm rounded-xl uppercase tracking-[0.2em] transition-all active:scale-95 ${
+              !canAfford ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
+            }`}
+          >
+            ACQUIRE ASSET
+          </button>
 
-        <button
-          onClick={onDismiss}
-          className="text-slate-600 text-xs text-center mt-6 font-bold uppercase tracking-widest hover:text-slate-400 transition-colors"
-        >
-          Maybe later — keep grinding
-        </button>
+          <button
+            onClick={onDismiss}
+            className="w-full text-slate-500 text-[10px] text-center font-bold uppercase tracking-[0.2em] hover:text-slate-300 transition-colors"
+          >
+            Return to Hustle
+          </button>
+        </div>
       </div>
-    </div>
+    </CinematicModal>
   );
 };

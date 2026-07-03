@@ -30,17 +30,22 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   const tierLabel = pl.currentTier || 'STREET';
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-          {tierLabel} LEADERBOARD
-        </span>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 border border-slate-700 rounded px-2 py-0.5">
+    <div className="bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-3xl p-6 mb-8 shadow-xl">
+      <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1">
+            REGIONAL STANDINGS
+          </span>
+          <h2 className="text-xl font-black text-white italic tracking-tighter uppercase italic">
+            {tierLabel} Elite
+          </h2>
+        </div>
+        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-800/50 rounded-full px-3 py-1 border border-slate-700/50">
           NET WORTH
         </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {allParticipants.map((p, index) => {
           const isPlayer = p.id === 'player';
           const pAsRival = p as Rival;
@@ -52,16 +57,28 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
           let prefix = `#${index + 1}`;
 
           if (index === 0) {
-            cardStyle = "border border-amber-500/40 bg-amber-950/20 rounded-xl p-3";
-            nameStyle = "text-amber-400 font-black text-base";
-            prefixStyle = "text-amber-400";
-            amountStyle = "text-amber-300 font-black";
+            cardStyle = "border-2 border-amber-500/30 bg-amber-500/5 rounded-2xl p-4 shadow-[0_0_20px_rgba(245,158,11,0.05)]";
+            nameStyle = "text-amber-400 font-black text-lg italic tracking-tight";
+            prefixStyle = "text-amber-500";
+            amountStyle = "text-amber-300 font-black font-mono";
             prefix = `👑 #1`;
-          } else if (index === 1 || isPlayer) {
-            cardStyle = "border border-emerald-500/40 bg-emerald-950/20 rounded-xl p-3";
-            nameStyle = "text-emerald-400 font-bold text-base";
+          } else if (isPlayer) {
+            cardStyle = "border-2 border-emerald-500/30 bg-emerald-500/5 rounded-2xl p-4 shadow-[0_0_20px_rgba(16,185,129,0.05)]";
+            nameStyle = "text-emerald-400 font-black text-lg italic tracking-tight";
             prefixStyle = "text-emerald-500";
-            amountStyle = "text-emerald-400 font-bold";
+            amountStyle = "text-emerald-400 font-black font-mono";
+            prefix = `#${index + 1}`;
+          } else if (index === 1) {
+            cardStyle = "border border-slate-700 bg-slate-800/30 rounded-2xl p-4";
+            nameStyle = "text-slate-200 font-black text-base italic tracking-tight";
+            prefixStyle = "text-slate-400";
+            amountStyle = "text-slate-300 font-bold font-mono";
+            prefix = `#${index + 1}`;
+          } else {
+            cardStyle = "border border-slate-800/50 bg-slate-900/30 rounded-2xl p-4 opacity-80";
+            nameStyle = "text-slate-400 font-bold text-sm tracking-tight";
+            prefixStyle = "text-slate-600";
+            amountStyle = "text-slate-500 font-medium font-mono";
             prefix = `#${index + 1}`;
           }
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { DEATH_MESSAGES } from '../config/deathMessages';
 import { useGameStore } from '../store/gameStore';
+import { CinematicModal } from './ui/CinematicModal';
+import { PortraitCard } from './ui/PortraitCard';
 
 interface DeathScreenProps {
   deathBadge: string | null;
@@ -24,117 +26,76 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause
   const displayBadge = deathBadge || deathInfo.badge;
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
-      <h1 className="text-6xl font-black text-red-600 mb-6 tracking-tighter italic">GAME OVER</h1>
-
-      <div className="bg-slate-900 border border-red-900/50 rounded-2xl p-6 max-w-sm mb-8">
-        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">FATAL CAUSE</div>
-        <p className="text-slate-300 text-sm italic">{fatalCause || deathInfo.message}</p>
-      </div>
-
-      {deathContext && (
-        <div className="bg-slate-900/80 border border-slate-700/30 rounded-2xl p-4 max-w-sm mb-6 text-left space-y-2">
-          <div className="text-[9px] text-slate-600 uppercase tracking-widest mb-3">
-            WHAT HAPPENED
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
+      <CinematicModal
+        isOpen={true}
+        title="BURNED OUT"
+        subtitle="POST MORTEM"
+        accentColor="red"
+      >
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-[200px] mb-8">
+            <PortraitCard
+              name={displayBadge || 'FALLEN'}
+              role="DECEASED"
+              flavorText={fatalCause || deathInfo.message}
+              variant="newspaper"
+              size="lg"
+              image="💀"
+            />
           </div>
 
-          {/* Show the fatal stat prominently */}
-          {deathContext.fatalStat === 'clout' && (
-            <div className="flex justify-between text-xs mb-2">
-              <span className="text-slate-500">
-                Clout dropped to zero
-              </span>
-              <span className="text-purple-400 font-bold">
-                Nobody knows your name
-              </span>
-            </div>
-          )}
-          {deathContext.fatalStat === 'aura' && (
-            <div className="flex justify-between text-xs mb-2">
-              <span className="text-slate-500">
-                Aura hit zero
-              </span>
-              <span className="text-blue-400 font-bold">
-                Reputation destroyed
-              </span>
-            </div>
-          )}
-          {deathContext.fatalStat === 'mental' && (
-            <div className="flex justify-between text-xs mb-2">
-              <span className="text-slate-500">
-                Mental health collapsed
-              </span>
-              <span className="text-orange-400 font-bold">
-                Complete burnout
-              </span>
-            </div>
-          )}
-          {deathContext.fatalStat === 'bag' && (
-            <div className="flex justify-between text-xs mb-2">
-              <span className="text-slate-500">
-                Bag went negative
-              </span>
-              <span className="text-red-400 font-bold">
-                Broke and buried
-              </span>
-            </div>
-          )}
+          <div className="w-full space-y-6">
+            {deathContext && (
+              <div className="bg-slate-950/50 border border-red-500/20 rounded-2xl p-6 space-y-4">
+                <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-2 border-b border-red-500/10 pb-2">
+                  THE FINAL RECORD
+                </h4>
 
-          {/* Last hustle only shown if it was mental */}
-          {deathContext.fatalStat === 'mental' && deathContext.lastHustleMentalHit > 0 && (
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">
-                {deathContext.lastHustleName}
-              </span>
-              <span className="text-red-400 font-bold">
-                -{deathContext.lastHustleMentalHit}% mental
-              </span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Cause of Collapse</span>
+                    <span className="text-red-400 font-black text-xs uppercase">
+                      {deathContext.fatalStat || 'STRESS'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Peak Tier</span>
+                    <span className="text-slate-300 font-black text-xs uppercase">{deathContext.tier}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Time Survived</span>
+                    <span className="text-slate-300 font-black text-xs uppercase">{deathContext.monthsPlayed} Months</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Final Impact</span>
+                    <span className="text-red-500 font-black text-xs italic">"{deathContext.lastHustleName}"</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4 pt-4">
+              <button
+                onClick={onReset}
+                className="w-full py-5 bg-red-600 text-white font-black text-sm rounded-xl uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:bg-red-500 transition-all active:scale-95"
+              >
+                RUN IT BACK
+              </button>
+
+              <button
+                onClick={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
+                className="w-full py-4 bg-slate-900 text-slate-400 border border-slate-800 font-bold text-[10px] uppercase tracking-[0.2em] rounded-xl hover:text-white transition-all"
+              >
+                Enter Legacy Shop
+              </button>
             </div>
-          )}
-
-          {/* Always show these */}
-          <div className="flex justify-between text-xs mt-2">
-            <span className="text-slate-500">
-              Mental health at death
-            </span>
-            <span className={`font-bold ${
-              deathContext.mentalHealthAtDeath < 30
-                ? 'text-red-400' : 'text-slate-400'
-            }`}>
-              {deathContext.mentalHealthAtDeath}%
-            </span>
-          </div>
-
-          <div className="flex justify-between text-xs mt-1">
-            <span className="text-slate-500">
-              Survived
-            </span>
-            <span className="text-slate-400">
-              {deathContext.monthsPlayed} {deathContext.monthsPlayed === 1 ? 'month' : 'months'} in {deathContext.tier}
-            </span>
           </div>
         </div>
-      )}
-
-      <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 mb-8">
-        <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">DEATH BADGE</div>
-        <div className="text-2xl font-bold text-white">💀 {displayBadge}</div>
-      </div>
-
-      <div className="flex flex-col gap-3 w-full max-w-sm">
-        <button
-          onClick={onReset}
-          className="px-8 py-4 bg-red-600 text-white font-black uppercase tracking-wider rounded-xl active:scale-95 transition-all"
-        >
-          RUN IT BACK
-        </button>
-        <button
-          onClick={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
-          className="px-8 py-3 bg-slate-900 text-slate-400 border border-slate-800 font-bold uppercase tracking-widest rounded-xl hover:text-white transition-all"
-        >
-          Legacy Shop
-        </button>
-      </div>
+      </CinematicModal>
     </div>
   );
 };

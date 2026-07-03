@@ -175,24 +175,28 @@ export const PresidentDashboard: React.FC = () => {
 
             {pl.presidentMonth === 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-900/40 border border-blue-400/50 rounded-2xl p-6 shadow-2xl"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-blue-900/20 border-2 border-blue-500/30 rounded-[2.5rem] p-8 shadow-[0_0_50px_rgba(59,130,246,0.15)] relative overflow-hidden"
               >
-                <h2 className="text-xl font-serif font-black text-white uppercase tracking-tighter mb-2">The People's Choice</h2>
-                <p className="text-blue-200 font-serif italic leading-relaxed">
-                  "You came from <span className="text-white font-black">{pl.prePresidencyTier || 'MOGUL'}</span>,
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <div className="text-8xl font-black italic select-none">USA</div>
+                </div>
+                <div className="text-[10px] text-blue-400 font-black uppercase tracking-[0.4em] mb-2">INAUGURATION DAY</div>
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-4">The People's Choice</h2>
+                <p className="text-blue-200 font-serif italic text-sm leading-relaxed relative z-10">
+                  "You came from <span className="text-white font-black underline decoration-blue-500/50">{pl.prePresidencyTier || 'MOGUL'}</span>,
                   mastered <span className="text-white font-black">{pl.masteredHustles.length}</span> hustles,
-                  crushed <span className="text-white font-black">{pl.crushedRivals.length}</span> rivals,
-                  and now you're President."
+                  and now the nation answers to you."
                 </p>
               </motion.div>
             )}
 
-            <div className="bg-slate-900/80 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 shadow-2xl relative z-10">
-              <div className="text-center mb-6">
-                <div className={`text-6xl font-serif font-black ${approvalColor}`}>{pl.approvalRating}%</div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-2">National Approval Rating</div>
+            <div className="bg-slate-900/40 backdrop-blur-md border border-blue-500/20 rounded-[2rem] p-8 shadow-2xl relative z-10">
+              <div className="text-center mb-8">
+                <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mb-2 leading-none">NATIONAL MANDATE</div>
+                <div className={`text-7xl font-black italic tracking-tighter ${approvalColor}`}>{pl.approvalRating}%</div>
+                <div className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-3">Approval Rating</div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-6 pt-4 border-t border-slate-800">

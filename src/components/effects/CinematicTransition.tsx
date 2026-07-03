@@ -53,25 +53,32 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
           </span>
         </motion.div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 relative">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-400"
+            className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-2"
             style={{ color: artwork.color }}
           >
             {artwork.subtitle}
           </motion.div>
 
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="text-6xl font-black text-white uppercase tracking-tighter"
+            className="text-7xl font-black text-white uppercase tracking-tighter italic"
           >
             {artwork.title}
           </motion.h2>
+
+          <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: '100%' }}
+             transition={{ delay: 1, duration: 1.5, ease: "easeInOut" }}
+             className="h-1 bg-white/20 mt-4 mx-auto"
+          />
         </div>
 
         <motion.div

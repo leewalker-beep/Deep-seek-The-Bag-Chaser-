@@ -115,34 +115,38 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
   },
 
   logEvent: (type, metadata = {} as GameEventMetadata) => {
-    const state = get();
-    const newEvent = {
-      id: Math.random().toString(36).substring(7),
-      type,
-      timestamp: Date.now(),
-      playerStats: {
-        bag: state.pl.bag,
-        clout: state.pl.clout,
-        aura: state.pl.aura,
-        mental: state.pl.mentalHealth,
-        heat: state.pl.heat,
-        tier: state.pl.currentTier,
-      },
-      metadata,
-    };
-    const updatedPl = enforceStatCaps({
-      ...state.pl,
-      events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
-    });
-    updatedPl.legacyScore = calculateLegacyScore(updatedPl);
+    let newEvent: any = null;
 
-    set({
-      pl: updatedPl,
+    set((state) => {
+      newEvent = {
+        id: Math.random().toString(36).substring(7),
+        type,
+        timestamp: Date.now(),
+        playerStats: {
+          bag: state.pl.bag,
+          clout: state.pl.clout,
+          aura: state.pl.aura,
+          mental: state.pl.mentalHealth,
+          heat: state.pl.heat,
+          tier: state.pl.currentTier,
+        },
+        metadata,
+      };
+
+      const updatedPl = enforceStatCaps({
+        ...state.pl,
+        events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
+      });
+      updatedPl.legacyScore = calculateLegacyScore(updatedPl);
+
+      return {
+        pl: updatedPl,
+      };
     });
 
     // Check for achievements after logging the event
     const isAchievementUnlockEvent = type === 'SPECIAL_EVENT' && (metadata as SpecialEventMetadata).type === 'ACHIEVEMENT_UNLOCKED';
-    if (!isAchievementUnlockEvent) {
+    if (!isAchievementUnlockEvent && newEvent) {
       const newlyUnlocked = checkAchievements(get(), newEvent);
       newlyUnlocked.forEach(id => get().unlockAchievement(id));
     }
@@ -512,45 +516,32 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const isVendingBuy = hustleId === 'r_vending';
     const isRealEstateBuy = ['l2a', 'l2b', 'l3a'].includes(branchId) && hustleId === 'r_labor';
 
-    let plWithBio = nextPl;
+    let finalNextPl = nextPl;
+    const sideEvents: { type: GameEventType, metadata: any }[] = [];
+
     if (isVendingBuy) {
-      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
-      const bioUpdate = Bio.recordBusiness(plWithBio, 'Vending Machine Empire', 18 + Math.floor(state.pl.month / 12));
+      sideEvents.push({ type: 'BUSINESS_PURCHASED', metadata: { assetId: 'vending', cost: result.cost } });
+      const bioUpdate = Bio.recordBusiness(finalNextPl, 'Vending Machine', 18 + Math.floor(state.pl.month / 12));
       if (bioUpdate) {
-        plWithBio = {
-          ...plWithBio,
-          biography: [...(plWithBio.biography || []), bioUpdate.entry],
-          recordedBioKeys: [...(plWithBio.recordedBioKeys || []), bioUpdate.key!]
+        finalNextPl = {
+          ...finalNextPl,
+          biography: [...(finalNextPl.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(finalNextPl.recordedBioKeys || []), bioUpdate.key!]
         };
       }
     } else if (isRealEstateBuy) {
-      get().logEvent('PROPERTY_PURCHASED', { branchId, branchName: branch.name, cost: result.cost });
-      const bioUpdate = Bio.recordBusiness(plWithBio, branch.name || 'Real Estate Portfolio', 18 + Math.floor(state.pl.month / 12));
+      sideEvents.push({ type: 'PROPERTY_PURCHASED', metadata: { branchId, branchName: branch.name, cost: result.cost } });
+      const bioUpdate = Bio.recordBusiness(finalNextPl, branch.name || 'Real Estate Portfolio', 18 + Math.floor(state.pl.month / 12));
       if (bioUpdate) {
-        plWithBio = {
-          ...plWithBio,
-          biography: [...(plWithBio.biography || []), bioUpdate.entry],
-          recordedBioKeys: [...(plWithBio.recordedBioKeys || []), bioUpdate.key!]
+        finalNextPl = {
+          ...finalNextPl,
+          biography: [...(finalNextPl.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(finalNextPl.recordedBioKeys || []), bioUpdate.key!]
         };
       }
     }
 
-    get().logEvent('HUSTLE_COMPLETED', {
-      hustleId,
-      hustleName: hustle.name,
-      success: true,
-      profit: -result.cost,
-      yieldClout: result.yieldClout,
-      yieldAura: result.yieldAura,
-      mentalHit: result.mentalHit,
-      heatHit: result.heatHit,
-      branchId,
-      miniGame: hustle.miniGame || branch.miniGame,
-      multiplier: 1.0
-    });
-
     // Update active challenges
-    let finalNextPl = plWithBio;
     if (state.pl.activeChallenges.length > 0) {
       const updatedChallenges = state.pl.activeChallenges.map(c => {
         if (c.tier === hustle.tier) {
@@ -568,7 +559,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
               recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(finalNextPl.recordedBioKeys || []), bioUpdate.key] : finalNextPl.recordedBioKeys,
               crushedRivals: [...finalNextPl.crushedRivals, c.rivalId]
             };
-            get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            sideEvents.push({ type: 'RIVAL_DEFEATED', metadata: { rivalId: c.rivalId, rivalName: c.rivalName, bonus } });
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -585,6 +576,22 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       deathBadge: finalDeathBadge,
       fatalCause: finalFatalCause,
       news: [`⬆️ Upgraded: ${branch.name} (-$${result.cost.toLocaleString()})`, ...state.news.slice(0, 49)],
+    });
+
+    sideEvents.forEach(e => get().logEvent(e.type, e.metadata));
+
+    get().logEvent('HUSTLE_COMPLETED', {
+      hustleId,
+      hustleName: hustle.name,
+      success: true,
+      profit: -result.cost,
+      yieldClout: result.yieldClout,
+      yieldAura: result.yieldAura,
+      mentalHit: result.mentalHit,
+      heatHit: result.heatHit,
+      branchId,
+      miniGame: hustle.miniGame || branch.miniGame,
+      multiplier: 1.0
     });
 
     const { updateChallengeProgress } = get();
@@ -788,27 +795,29 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       } : state.pl.hustleBranchIds,
     });
 
-    const { updateChallengeProgress } = get();
-    updateChallengeProgress('hustle_count', 1);
-    updateChallengeProgress('earn_cash', result.yieldCash);
-    updateChallengeProgress('clout_gain', result.yieldClout);
-    updateChallengeProgress('aura_gain', result.yieldAura);
-
+    let runningPl = hustleResultPl;
+    const sideEvents: { type: GameEventType, metadata: any }[] = [];
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
-      get().logEvent('SCANDAL_TRIGGERED', { type: 'DATA_BREACH' });
-      const bioUpdate = Bio.recordScandal(hustleResultPl, 'DATA_BREACH');
+      sideEvents.push({ type: 'SCANDAL_TRIGGERED', metadata: { type: 'DATA_BREACH' } });
+      const bioUpdate = Bio.recordScandal(runningPl, 'DATA_BREACH');
       if (bioUpdate) {
-        hustleResultPl.biography = [...(hustleResultPl.biography || []), bioUpdate.entry];
-        hustleResultPl.recordedBioKeys = [...(hustleResultPl.recordedBioKeys || []), bioUpdate.key!];
+        runningPl = {
+          ...runningPl,
+          biography: [...(runningPl.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(runningPl.recordedBioKeys || []), bioUpdate.key!]
+        };
       }
     }
-    if (hustleResultPl.heat > 90) {
-      get().logEvent('SCANDAL_TRIGGERED', { type: 'POLICE_RAID_RISK', heat: hustleResultPl.heat });
-      const bioUpdate = Bio.recordScandal(hustleResultPl, 'POLICE_RAID_RISK');
+    if (runningPl.heat > 90) {
+      sideEvents.push({ type: 'SCANDAL_TRIGGERED', metadata: { type: 'POLICE_RAID_RISK', heat: runningPl.heat } });
+      const bioUpdate = Bio.recordScandal(runningPl, 'POLICE_RAID_RISK');
       if (bioUpdate) {
-        hustleResultPl.biography = [...(hustleResultPl.biography || []), bioUpdate.entry];
-        hustleResultPl.recordedBioKeys = [...(hustleResultPl.recordedBioKeys || []), bioUpdate.key!];
+        runningPl = {
+          ...runningPl,
+          biography: [...(runningPl.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(runningPl.recordedBioKeys || []), bioUpdate.key!]
+        };
       }
     }
 
@@ -824,12 +833,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       passiveIncome,
       passiveBreakdown
     } = advanceMonth(
-      hustleResultPl,
+      runningPl,
       state.currentMarket,
       state.unlockedLegacyUpgradeIds
     );
 
-    newPl.lastPassiveBreakdown = passiveBreakdown;
+    let plFinal = enforceStatCaps(newPl);
+    plFinal.lastPassiveBreakdown = passiveBreakdown;
 
     const actionLogData: Omit<GameAction, 'id' | 'timestamp'> = {
       month: state.pl.month,
@@ -855,30 +865,31 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     };
 
     if (newMarket !== state.currentMarket) {
-      get().logEvent('ECONOMIC_EVENT', { from: state.currentMarket, to: newMarket });
+      sideEvents.push({ type: 'ECONOMIC_EVENT', metadata: { from: state.currentMarket, to: newMarket } });
     }
 
-    newPl.mentalShieldTurns += (result.shieldTurns || 0);
+    plFinal.mentalShieldTurns += (result.shieldTurns || 0);
 
-    if (newPl.rivals) {
-      newPl.rivals = newPl.rivals.map(r => ({ ...r, currentBid: 0 }));
+    if (plFinal.rivals) {
+      plFinal.rivals = plFinal.rivals.map(r => ({ ...r, currentBid: 0 }));
     }
 
     if (hustleId === 'r_vending' && result.success) {
-      get().logEvent('BUSINESS_PURCHASED', { assetId: 'vending', cost: result.cost });
-      const bioUpdate = Bio.recordBusiness(newPl, 'Vending Machine', 18 + Math.floor(state.pl.month / 12));
+      sideEvents.push({ type: 'BUSINESS_PURCHASED', metadata: { assetId: 'vending', cost: result.cost } });
+      const bioUpdate = Bio.recordBusiness(plFinal, 'Vending Machine', 18 + Math.floor(state.pl.month / 12));
       if (bioUpdate) {
-        newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
-        newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+        plFinal = {
+          ...plFinal,
+          biography: [...(plFinal.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(plFinal.recordedBioKeys || []), bioUpdate.key!]
+        };
       }
     }
 
-    const cappedPl = enforceStatCaps(newPl);
-
-    const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, tier: cappedPl.currentTier };
+    const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, tier: plFinal.currentTier };
     const finalNews = [
       ...monthNews,
-      ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce', tier: cappedPl.currentTier }] : []),
+      ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce', tier: plFinal.currentTier }] : []),
       executionNews,
       ...(result.tickerMessages || []),
       ...get().news
@@ -887,48 +898,54 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     let finalPh = state.ph;
 
     // Recalculate legacy score before saving
-    cappedPl.legacyScore = calculateLegacyScore(cappedPl);
+    plFinal.legacyScore = calculateLegacyScore(plFinal);
 
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
 
     if (shouldDie) {
-      const lastHustleId = cappedPl.lastExecutedHustleId || 'DEFAULT';
+      const lastHustleId = plFinal.lastExecutedHustleId || 'DEFAULT';
       const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
       finalPh = 'POST_MORTEM';
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      cappedPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(cappedPl.mentalHealth),
+      plFinal.deathContext = {
+        mentalHealthAtDeath: Math.floor(plFinal.mentalHealth),
         lastHustleMentalHit: Math.abs(result.mentalHit || 0),
         lastHustleName: levelData.name || hustle.name,
-        heatAtDeath: Math.floor(cappedPl.heat),
-        monthsPlayed: cappedPl.month,
-        tier: cappedPl.currentTier,
+        heatAtDeath: Math.floor(plFinal.heat),
+        monthsPlayed: plFinal.month,
+        tier: plFinal.currentTier,
         fatalStat,
         fatalStatValue,
       };
 
-      set({ bankedLegacyPoints: state.bankedLegacyPoints + (cappedPl.legacyScore || 0) });
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (plFinal.legacyScore || 0) });
 
-      cappedPl.deathCount = (cappedPl.deathCount || 0) + 1;
+      plFinal.deathCount = (plFinal.deathCount || 0) + 1;
 
-      if (finalDeathBadge && !cappedPl.collectedDeathBadges.includes(finalDeathBadge)) {
-        cappedPl.collectedDeathBadges.push(finalDeathBadge);
+      if (finalDeathBadge && !plFinal.collectedDeathBadges.includes(finalDeathBadge)) {
+        plFinal.collectedDeathBadges.push(finalDeathBadge);
       }
 
-      const finalStat = getDominantStat(cappedPl);
-      const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
-      const arrestSummary = Bio.recordArrestSummary(cappedPl);
+      const dominantStat = getDominantStat(plFinal);
+      const ending = getEnding(plFinal.legacyPoints || 0, dominantStat);
+      const arrestSummary = Bio.recordArrestSummary(plFinal);
       if (arrestSummary) {
-        cappedPl.biography = [...(cappedPl.biography || []), arrestSummary.entry];
-        cappedPl.recordedBioKeys = [...(cappedPl.recordedBioKeys || []), arrestSummary.key!];
+        plFinal = {
+          ...plFinal,
+          biography: [...(plFinal.biography || []), arrestSummary.entry],
+          recordedBioKeys: [...(plFinal.recordedBioKeys || []), arrestSummary.key!]
+        };
       }
-      const bioUpdate = Bio.recordDeath(cappedPl, ending.title, finalFatalCause || 'Unknown cause');
+      const bioUpdate = Bio.recordDeath(plFinal, ending.title, finalFatalCause || 'Unknown cause');
       if (bioUpdate) {
-        cappedPl.biography = [...(cappedPl.biography || []), bioUpdate.entry];
-        cappedPl.recordedBioKeys = [...(cappedPl.recordedBioKeys || []), bioUpdate.key!];
+        plFinal = {
+          ...plFinal,
+          biography: [...(plFinal.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(plFinal.recordedBioKeys || []), bioUpdate.key!]
+        };
       }
       let savedEndings = [];
       try {
@@ -945,23 +962,26 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         }
       }
 
-      get().logEvent('SPECIAL_EVENT', {
-        type: 'ENDING_UNLOCKED',
-        title: ending.title,
-        legacyPoints: cappedPl.legacyPoints || 0
+      sideEvents.push({
+        type: 'SPECIAL_EVENT',
+        metadata: {
+          type: 'ENDING_UNLOCKED',
+          title: ending.title,
+          legacyPoints: plFinal.legacyPoints || 0
+        }
       });
 
       // Update best run
-      if (cappedPl.stats) {
-        if (!cappedPl.stats.bestRunBag || cappedPl.bag > cappedPl.stats.bestRunBag) {
-          cappedPl.stats.bestRunBag = cappedPl.bag;
-          cappedPl.stats.bestRunTier = cappedPl.currentTier;
-          cappedPl.stats.bestRunEnding = ending.title;
+      if (plFinal.stats) {
+        if (!plFinal.stats.bestRunBag || plFinal.bag > plFinal.stats.bestRunBag) {
+          plFinal.stats.bestRunBag = plFinal.bag;
+          plFinal.stats.bestRunTier = plFinal.currentTier;
+          plFinal.stats.bestRunEnding = ending.title;
         }
       }
     }
 
-    const eventToLog = {
+    const hustleCompletedEvent = {
       type: 'HUSTLE_COMPLETED' as const,
       metadata: {
         hustleId,
@@ -982,7 +1002,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     };
 
     // Update active challenges
-    let plAfterChallenges = cappedPl;
     if (result.success && state.pl.activeChallenges.length > 0) {
       const updatedChallenges = state.pl.activeChallenges.map(c => {
         if (c.tier === hustle.tier) {
@@ -992,15 +1011,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
             const bonus = Math.floor(state.pl.bag * 0.1);
             get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
 
-            const bioUpdate = Bio.recordRivalDefeat(plAfterChallenges, c.rivalName, c.tier);
-            plAfterChallenges = {
-              ...plAfterChallenges,
-              bag: plAfterChallenges.bag + bonus,
-              biography: bioUpdate ? [...(plAfterChallenges.biography || []), bioUpdate.entry] : plAfterChallenges.biography,
-              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(plAfterChallenges.recordedBioKeys || []), bioUpdate.key] : plAfterChallenges.recordedBioKeys,
-              crushedRivals: [...plAfterChallenges.crushedRivals, c.rivalId]
+            const bioUpdate = Bio.recordRivalDefeat(plFinal, c.rivalName, c.tier);
+            plFinal = {
+              ...plFinal,
+              bag: plFinal.bag + bonus,
+              biography: bioUpdate ? [...(plFinal.biography || []), bioUpdate.entry] : plFinal.biography,
+              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(plFinal.recordedBioKeys || []), bioUpdate.key] : plFinal.recordedBioKeys,
+              crushedRivals: [...plFinal.crushedRivals, c.rivalId]
             };
-            get().logEvent('RIVAL_DEFEATED', { rivalId: c.rivalId, rivalName: c.rivalName, bonus });
+            sideEvents.push({ type: 'RIVAL_DEFEATED', metadata: { rivalId: c.rivalId, rivalName: c.rivalName, bonus } });
             return null; // Remove challenge
           }
           return { ...c, hustlesCompleted: newCompleted };
@@ -1008,11 +1027,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         return c;
       }).filter(Boolean) as Challenge[];
 
-      plAfterChallenges = { ...plAfterChallenges, activeChallenges: updatedChallenges };
+      plFinal = { ...plFinal, activeChallenges: updatedChallenges };
     }
 
     set({
-      pl: plAfterChallenges,
+      pl: plFinal,
       currentMarket: newMarket,
       news: finalNews,
       ph: finalPh,
@@ -1020,7 +1039,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       fatalCause: finalFatalCause,
     });
 
-    get().logEvent(eventToLog.type, eventToLog.metadata);
+    sideEvents.forEach(e => get().logEvent(e.type, e.metadata));
+    get().logEvent(hustleCompletedEvent.type, hustleCompletedEvent.metadata);
+
+    const { updateChallengeProgress } = get();
+    updateChallengeProgress('hustle_count', 1);
+    updateChallengeProgress('earn_cash', result.yieldCash);
+    updateChallengeProgress('clout_gain', result.yieldClout);
+    updateChallengeProgress('aura_gain', result.yieldAura);
 
     if (result.success) {
       if (result.isRare) {

@@ -18,6 +18,7 @@ describe('Edge Case Tests', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.9);
     const pl = getInitialStats(3);
     pl.mentalHealth = 0;
+    pl.isTutorialSkipped = true;
 
     const res = advanceMonth(pl, 'NORMAL');
     expect(res.shouldDie).toBe(true);
