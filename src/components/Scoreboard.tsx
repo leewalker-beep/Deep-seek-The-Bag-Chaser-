@@ -9,7 +9,7 @@ import { ACHIEVEMENTS } from '../config/achievements';
 import { ProgressBar } from './ui/ProgressBar';
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { pl, achievements } = useGameStore();
+  const { pl, achievements, isTutorialSkipped, tutorialStep } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'history' | 'biography' | 'badges' | 'achievements' | 'endings' | 'deaths'>('career');
 
   const { setPh } = useGameStore();
@@ -25,8 +25,10 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
+  const showTutorial = !isTutorialSkipped && tutorialStep < 6;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
+    <div className={`fixed inset-0 ${showTutorial ? 'z-[200]' : 'z-50'} flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl`}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -400,19 +402,27 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="space-y-3"
+                className="space-y-4"
               >
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Life Path</div>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Life Story</h3>
+                  <span className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter italic">Living Biography</span>
+                </div>
+
                 {!pl.biography || pl.biography.length === 0 ? (
-                  <div className="text-center py-12 text-slate-600 text-sm italic border-2 border-dashed border-slate-800 rounded-2xl font-bold uppercase tracking-tighter">
-                    Your story is still being written.
+                  <div className="text-center py-12 bg-slate-950/30 border-2 border-dashed border-slate-800 rounded-3xl italic text-slate-700 text-xs">
+                    Your story is still being written. Every major move you make will be recorded here.
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-slate-800">
                     {pl.biography.map((entry, idx) => (
-                      <div key={idx} className="bg-slate-950 border border-slate-800/50 p-4 rounded-2xl flex gap-4 items-start">
-                        <span className="text-yellow-500 font-black text-sm italic">#{(idx + 1).toString().padStart(2, '0')}</span>
-                        <p className="text-[11px] text-slate-300 leading-relaxed font-medium uppercase tracking-tight">{entry}</p>
+                      <div key={idx} className="relative pl-12">
+                        <div className="absolute left-0 top-1 w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center z-10">
+                          <span className="text-yellow-500 font-black text-[10px] italic">{(idx + 1).toString().padStart(2, '0')}</span>
+                        </div>
+                        <div className="bg-slate-950 border border-slate-800/50 p-4 rounded-2xl hover:border-emerald-500/30 transition-all">
+                          <p className="text-[11px] text-slate-300 leading-relaxed font-medium uppercase tracking-tight">{entry}</p>
+                        </div>
                       </div>
                     ))}
                   </div>

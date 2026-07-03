@@ -102,14 +102,18 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
 
         {pl.biography && pl.biography.length > 0 && (
           <div className="mb-8">
-            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 text-center">Life Path & Milestones</div>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 text-center">The Life Story of {pl.name}</div>
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-slate-800">
               {pl.biography.map((entry, idx) => (
-                <div key={idx} className="bg-slate-950/30 border border-slate-800/50 p-3 rounded-xl">
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    <span className="text-yellow-500/50 mr-2">◈</span>
-                    {entry}
-                  </p>
+                <div key={idx} className="relative pl-10">
+                  <div className="absolute left-0 top-1 w-8 h-8 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center z-10">
+                    <span className="text-yellow-500 font-black text-[8px] italic">{(idx + 1).toString().padStart(2, '0')}</span>
+                  </div>
+                  <div className="bg-slate-950/50 border border-slate-800/50 p-3 rounded-2xl">
+                    <p className="text-[11px] text-slate-400 leading-relaxed font-medium uppercase tracking-tight">
+                      {entry}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

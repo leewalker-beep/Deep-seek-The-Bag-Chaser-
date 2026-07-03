@@ -489,6 +489,7 @@ export interface HallOfFameEntry {
   lastHustle?: string;
   date: string;
   month: number;
+  biography: string[];
 }
 
 export interface OriginBonus {
@@ -622,12 +623,14 @@ export interface PlayerStats {
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
   biography: string[];
+  recordedBioKeys: string[];
   narrativeFlags: Record<string, string | number | boolean>;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
   collectedDeathBadges: string[];
   deathCount: number;
+  arrestCount: number;
   tierBadges: string[];
   pendingFlexOffer: number | null;
   seenFlexThresholds: number[];

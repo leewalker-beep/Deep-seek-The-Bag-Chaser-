@@ -192,6 +192,18 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
                         <div className="text-slate-500 uppercase font-bold">Badge:</div>
                         <div className="text-slate-300 text-right">{run.deathBadge || 'N/A'}</div>
                       </div>
+
+                      {run.biography && run.biography.length > 0 && (
+                        <div className="mb-4 space-y-1.5 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                           <div className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mb-2">Life Story</div>
+                           {run.biography.map((line, idx) => (
+                             <div key={idx} className="text-[9px] text-slate-400 bg-slate-900/50 p-2 rounded-lg border border-slate-800/50">
+                               {line}
+                             </div>
+                           ))}
+                        </div>
+                      )}
+
                       <BaseButton
                         variant="secondary"
                         size="sm"

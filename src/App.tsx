@@ -254,6 +254,7 @@ function App() {
           lastHustle: pl.lastExecutedHustleId,
           date: new Date().toISOString(),
           month: pl.month,
+          biography: pl.biography || [],
         });
         sessionStorage.setItem(saveKey, 'true');
       }
