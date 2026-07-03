@@ -1760,8 +1760,46 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!nextPl.completedNarrativeEvents) nextPl.completedNarrativeEvents = [];
     nextPl.completedNarrativeEvents = [...nextPl.completedNarrativeEvents, eventId];
 
+    const cappedPl = enforceStatCaps(nextPl);
+    const { shouldDie, deathCause, fatalStat, fatalStatValue } = checkDeathConditions(cappedPl);
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (shouldDie) {
+      const deathInfo = DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = deathCause;
+
+      cappedPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(cappedPl.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: event!.title,
+        heatAtDeath: Math.floor(cappedPl.heat),
+        monthsPlayed: cappedPl.month,
+        tier: cappedPl.currentTier,
+        fatalStat,
+        fatalStatValue,
+      };
+
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(cappedPl) || 0) });
+      cappedPl.deathCount = (cappedPl.deathCount || 0) + 1;
+
+      const finalStat = getDominantStat(cappedPl);
+      const ending = getEnding(cappedPl.legacyPoints || 0, finalStat);
+      const bioUpdate = Bio.recordDeath(cappedPl, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        cappedPl.biography = [...(cappedPl.biography || []), bioUpdate.entry];
+        cappedPl.recordedBioKeys = [...(cappedPl.recordedBioKeys || []), bioUpdate.key!];
+      }
+    }
+
     set({
-      pl: enforceStatCaps(nextPl),
+      pl: cappedPl,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
       news: [{ text: `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 

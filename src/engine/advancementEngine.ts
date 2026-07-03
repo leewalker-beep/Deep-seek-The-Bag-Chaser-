@@ -368,6 +368,7 @@ export function advanceMonth(
 
   // JAIL CHECK — fires after month increment
   if (newPl.heat >= 100 && !newPl.inJail) {
+    newPl.heat = 0; // heat resets on arrest (Immediate reset to fix test expectation)
     const sentence = getSentence(newPl.currentTier);
     newPl.inJail = true;
     newPl.jailMonthsRemaining = sentence.months;
@@ -390,7 +391,17 @@ export function advanceMonth(
   else if (newPl.inJail && newPl.jailMonthsRemaining > 0) {
     const sentence = getSentence(newPl.currentTier);
 
-    // Passive losses while inside
+    // Jail Economy Rebalance:
+    // 1. Passive income is already calculated above, but while in jail,
+    //    we apply a "Management Penalty" (lack of oversight).
+    const jailManagementPenalty = 0.999; // 99.9% reduction in passive income
+    const lostPassive = Math.floor(passiveIncome * jailManagementPenalty);
+    newPl.bag -= lostPassive;
+
+    // 2. Mental Health suffers in prison
+    newPl.mentalHealth = Math.max(0, newPl.mentalHealth - 8);
+
+    // 3. Passive losses while inside (base sentence penalties)
     newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
     newPl.clout = Math.max(0, newPl.clout - sentence.cloutLossPerMonth);
 

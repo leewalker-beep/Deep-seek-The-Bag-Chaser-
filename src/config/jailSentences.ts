@@ -53,7 +53,7 @@ export const TIER_SENTENCES: Record<string, JailSentence> = {
     months: 120,
     charge: 'Crimes Against the Financial System',
     flavour: 'They finally got you. Ten years. At your level they always do eventually.',
-    bagLossPerMonth: 10000000,
+    bagLossPerMonth: 500000000,
     cloutLossPerMonth: 50,
   },
 };
