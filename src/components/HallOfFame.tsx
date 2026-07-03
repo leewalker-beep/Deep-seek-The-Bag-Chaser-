@@ -304,30 +304,30 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
         )}
       </div>
 
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col min-h-[90vh]">
+      <div className="w-full max-w-lg bg-slate-900 border-2 border-purple-500/30 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col min-h-[90vh]">
         {/* Header */}
-        <div className="p-6 pb-2 text-center border-b border-slate-800/50">
-          <h2 className="text-3xl font-black tracking-tighter uppercase italic text-white">Hall of Fame</h2>
-          <div className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Legendary Status</div>
+        <div className="p-8 pb-4 text-center border-b border-slate-800/50">
+          <div className="text-[10px] text-purple-500 font-black uppercase tracking-[0.4em] mb-1">RECORD OF LEGACY</div>
+          <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white">Hall of Fame</h2>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-800">
+        <div className="flex border-b border-slate-800 bg-slate-950/30">
           {(['BEST', 'ALL', 'ENDINGS'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-4 text-[10px] font-black tracking-widest uppercase transition-colors relative ${
+              className={`flex-1 py-5 text-[10px] font-black tracking-[0.2em] uppercase transition-colors relative ${
                 activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-400'
               }`}
             >
               {tab === 'BEST' && '🏆 Best'}
-              {tab === 'ALL' && '📜 All Runs'}
+              {tab === 'ALL' && '📜 History'}
               {tab === 'ENDINGS' && '🎭 Endings'}
               {activeTab === tab && (
                 <motion.div
                   layoutId="activeTabHall"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"
                 />
               )}
             </button>
@@ -335,14 +335,14 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               {activeTab === 'BEST' && renderBestRun()}
               {activeTab === 'ALL' && renderAllRuns()}
@@ -352,13 +352,14 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-slate-900/50 border-t border-slate-800">
-          <BaseButton variant="primary" onClick={() => {
-            // Instead of onNewRun which reloads the page, we go to LEGACY_SHOP
-            useGameStore.setState({ ph: 'LEGACY_SHOP' });
-          }} className="w-full py-4 text-xl">
-            NEW RUN
-          </BaseButton>
+        <div className="p-8 bg-slate-950/50 border-t border-slate-800/50 text-center">
+          <button
+            onClick={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
+            className="w-full py-5 bg-purple-600 text-white font-black text-lg rounded-2xl uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:bg-purple-500 transition-all active:scale-95 mb-4"
+          >
+            START NEW RUN
+          </button>
+          <p className="text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">Bag Chaser Eternal Records</p>
         </div>
       </div>
     </div>

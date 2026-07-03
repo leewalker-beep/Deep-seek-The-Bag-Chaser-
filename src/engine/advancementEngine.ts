@@ -373,7 +373,6 @@ export function advanceMonth(
     newPl.jailMonthsRemaining = sentence.months;
     newPl.jailSentenceTotal = sentence.months;
     newPl.jailCharge = sentence.charge;
-    newPl.heat = 0; // heat resets on arrest
     newPl.arrestCount = (newPl.arrestCount || 0) + 1;
     const bioUpdate = Bio.recordScandal(newPl, 'ARREST');
     if (bioUpdate) {
@@ -409,16 +408,20 @@ export function advanceMonth(
     newPl.pendingAnnualStatement = true;
   }
 
-  // Decay heat (cool down over time)
-  let heatDecay = 10;
-  const jetCount = newPl.flexAssets['jet'] || 0;
-  if (jetCount > 0) {
-    let jetBonus = (FLEX_ASSETS.find(a => a.id === 'jet')?.heatDecayBonus || 0) * jetCount;
-    // Boost bonus by Tech Conglomerate
-    jetBonus *= flexBonusMultiplier;
-    heatDecay = heatDecay * Math.max(0, (1 - (jetBonus / 100)));
+  // Decay heat (cool down over time) - Skip if in jail (just arrested or already serving)
+  if (newPl.inJail) {
+    newPl.heat = 0; // Ensure heat is 0 while in jail
+  } else {
+    let heatDecay = 10;
+    const jetCount = newPl.flexAssets['jet'] || 0;
+    if (jetCount > 0) {
+      let jetBonus = (FLEX_ASSETS.find(a => a.id === 'jet')?.heatDecayBonus || 0) * jetCount;
+      // Boost bonus by Tech Conglomerate
+      jetBonus *= flexBonusMultiplier;
+      heatDecay = heatDecay * Math.max(0, (1 - (jetBonus / 100)));
+    }
+    newPl.heat = Math.max(0, newPl.heat - heatDecay);
   }
-  newPl.heat = Math.max(0, newPl.heat - heatDecay);
 
   // Rival AI Updates
   if (newPl.rivals) {

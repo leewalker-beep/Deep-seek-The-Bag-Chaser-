@@ -18,36 +18,37 @@ export const LegacyShop: React.FC<{ onProceed: () => void }> = ({ onProceed }) =
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-2">
+    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center overflow-y-auto custom-scrollbar">
+      <div className="w-full max-w-md space-y-8 pt-8">
+        <div className="text-center space-y-1">
+          <div className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.4em] mb-1">META PROGRESSION</div>
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-black tracking-tighter"
+            className="text-5xl font-black tracking-tighter italic uppercase italic"
           >
-            LEGACY SHOP
+            Legacy Shop
           </motion.h1>
-          <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">
-            Spend points earned from past runs
+          <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold">
+            Expand your potential for future runs
           </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex justify-between items-center">
-          <div className="text-xs font-black text-slate-500 uppercase tracking-widest">Available Points</div>
-          <div className="text-2xl font-black text-emerald-400 font-mono">
+        <div className="bg-slate-900/50 border border-emerald-500/20 rounded-[2rem] p-6 flex justify-between items-center shadow-[0_0_30px_rgba(16,185,129,0.05)]">
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">BANKED LEGACY</div>
+          <div className="text-3xl font-black text-emerald-400 font-mono leading-none">
             {bankedLegacyPoints.toLocaleString()}
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-10">
           {categories.map(cat => {
             const upgrades = LEGACY_UPGRADES.filter(u => u.category === cat);
             if (upgrades.length === 0) return null;
 
             return (
               <div key={cat} className="space-y-3">
-                <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">
+                <h2 className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.4em] ml-1 border-b border-emerald-500/10 pb-2">
                   {cat.replace('_', ' ')}
                 </h2>
                 <div className="space-y-2">
@@ -110,15 +111,15 @@ export const LegacyShop: React.FC<{ onProceed: () => void }> = ({ onProceed }) =
           })}
         </div>
 
-        <div className="pt-8 pb-12">
+        <div className="pt-12 pb-16">
           <button
             onClick={onProceed}
-            className="w-full py-5 bg-emerald-500 text-black font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-emerald-500/20 hover:scale-[1.02] transition-all"
+            className="w-full py-6 bg-emerald-500 text-black font-black text-lg uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.2)] hover:bg-emerald-400 active:scale-[0.98] transition-all mb-4"
           >
-            Start New Run →
+            INITIALIZE RUN →
           </button>
-          <p className="text-center text-[9px] text-slate-600 mt-4 uppercase font-bold tracking-tighter">
-            Unlocks are permanent across all future runs
+          <p className="text-center text-[9px] text-slate-600 uppercase font-black tracking-widest opacity-50">
+            BAG CHASER SYSTEM V1.0 // PERMANENT PROTOCOLS
           </p>
         </div>
       </div>
