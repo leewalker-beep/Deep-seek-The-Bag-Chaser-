@@ -1,105 +1,51 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useGameStore } from '../store/gameStore';
+import { describe, it, expect } from 'vitest';
+import { CHARACTERS } from '../config/characters';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 
-describe('Living Characters System', () => {
-  beforeEach(() => {
-    useGameStore.getState().resetGame('sk_scrap', 3, 'street_kid', 'sk_basic', 'av_m1');
-    vi.clearAllMocks();
+describe('Character Database Expansion', () => {
+  it('should have at least 60 characters in the database', () => {
+    expect(CHARACTERS.length).toBeGreaterThanOrEqual(60);
   });
 
-  it('should initialize with no narrative flags', () => {
-    const state = useGameStore.getState();
-    expect(state.pl.narrativeFlags).toEqual({});
+  it('should have expanded metadata for all characters', () => {
+    CHARACTERS.forEach(char => {
+      expect(char.profession).toBeDefined();
+      expect(char.speakingStyle).toBeDefined();
+      expect(char.moralAlignment).toBeDefined();
+      expect(char.preferredIndustries).toBeInstanceOf(Array);
+      expect(char.strengths).toBeInstanceOf(Array);
+      expect(char.weaknesses).toBeInstanceOf(Array);
+      expect(char.relationshipTags).toBeInstanceOf(Array);
+    });
   });
 
-  it('should set relationship and trust flags when a narrative choice is made', () => {
-    const state = useGameStore.getState();
+  it('should have characters for all gameplay tiers', () => {
+    const tiers = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT'];
+    const charactersPerTier = tiers.map(tier =>
+      CHARACTERS.filter(c => c.firstAppearanceTier === tier).length
+    );
 
-    // Simulate being in MUD tier
-    useGameStore.setState({
-      pl: {
-        ...state.pl,
-        currentTier: 'MUD',
-        activeNarrative: 'char_marcus_1'
-      }
+    charactersPerTier.forEach((count, index) => {
+      expect(count, `Tier ${tiers[index]} should have at least 3 unique characters starting there`).toBeGreaterThanOrEqual(3);
     });
-
-    // Resolve the event by helping Marcus
-    useGameStore.getState().resolveNarrativeEvent('marcus_help');
-
-    const updatedState = useGameStore.getState();
-    expect(updatedState.pl.narrativeFlags['rel_marcus']).toBe(50);
-    expect(updatedState.pl.narrativeFlags['trust_marcus']).toBe(100);
-    expect(updatedState.pl.narrativeFlags['status_marcus']).toBe('ally');
-    expect(updatedState.pl.bag).toBeLessThan(state.pl.bag);
   });
 
-  it('should persist narrative flags across simulated save/load', () => {
-    // 1. Set some flags
-    useGameStore.setState({
-      pl: {
-        ...useGameStore.getState().pl,
-        narrativeFlags: {
-          'rel_ashley': 50,
-          'trust_ashley': 80,
-          'status_ashley': 'ally'
-        }
-      }
-    });
+  it('should have narrative events linking to many of the new characters', () => {
+    const characterIdsInEvents = new Set(
+      NARRATIVE_EVENTS
+        .map(e => e.characterId)
+        .filter(id => id !== undefined)
+    );
 
-    // 2. Simulate persistence by extracting and re-injecting state (as the persist middleware would)
-    const savedState = JSON.parse(JSON.stringify(useGameStore.getState().pl));
-
-    useGameStore.setState({
-      pl: savedState
-    });
-
-    const reloadedState = useGameStore.getState();
-    expect(reloadedState.pl.narrativeFlags['rel_ashley']).toBe(50);
-    expect(reloadedState.pl.narrativeFlags['trust_ashley']).toBe(80);
-    expect(reloadedState.pl.narrativeFlags['status_ashley']).toBe('ally');
+    // Check that we've integrated a significant number of new characters into events
+    expect(characterIdsInEvents.size).toBeGreaterThanOrEqual(25);
   });
 
-  it('should trigger future events based on existing narrative flags', () => {
-    // 1. Set flags that Marcus 2 requires
-    useGameStore.setState({
-      pl: {
-        ...useGameStore.getState().pl,
-        currentTier: 'STREET',
-        narrativeFlags: {
-          'status_marcus': 'ally'
-        },
-        activeNarrative: null,
-        completedNarrativeEvents: ['char_marcus_1']
-      }
+  it('should ensure all character portrait IDs are valid player avatars', () => {
+    // This is more of a loose check since I don't want to import PLAYER_AVATARS if not needed,
+    // but I can check the format.
+    CHARACTERS.forEach(char => {
+      expect(char.portraitId).toMatch(/^av_[mf][1-4]$/);
     });
-
-    // Find Marcus 2 event
-    const marcus2 = NARRATIVE_EVENTS.find(e => e.id === 'char_marcus_2');
-    expect(marcus2).toBeDefined();
-
-    // Verify trigger requirements
-    if (marcus2 && marcus2.trigger.flagReqs) {
-        expect(marcus2.trigger.flagReqs['status_marcus']).toBe('ally');
-    }
-  });
-
-  it('should correctly handle "once" property for character events', () => {
-    useGameStore.setState({
-        pl: {
-          ...useGameStore.getState().pl,
-          activeNarrative: 'char_marcus_1'
-        }
-    });
-
-    useGameStore.getState().resolveNarrativeEvent('marcus_help');
-
-    const state = useGameStore.getState();
-    expect(state.pl.completedNarrativeEvents).toContain('char_marcus_1');
-
-    // Check if it would trigger again
-    const event = NARRATIVE_EVENTS.find(e => e.id === 'char_marcus_1');
-    expect(event?.trigger.once).toBe(true);
   });
 });

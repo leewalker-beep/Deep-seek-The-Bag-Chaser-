@@ -294,9 +294,17 @@ export type CharacterStatus = 'alive' | 'disappeared' | 'rival' | 'ally' | 'dece
 export interface Character {
   id: string;
   name: string;
+  nickname?: string;
   portraitId: string;
   background: string;
   personality: string;
+  profession: string;
+  speakingStyle: string;
+  moralAlignment: string;
+  preferredIndustries: string[];
+  strengths: string[];
+  weaknesses: string[];
+  relationshipTags: string[];
   firstAppearanceTier: Tier;
   futureAppearanceTiers: Tier[];
   initialStatus: CharacterStatus;
