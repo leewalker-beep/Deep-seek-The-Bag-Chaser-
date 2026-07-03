@@ -56,8 +56,8 @@ export function calculateHustleMath(
 
   const cost = levelData.cost * levelMult * costMult;
   let yieldCash = Math.floor(levelData.yieldCash * levelMult * yieldMult);
-  let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult);
-  let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
+  let yieldClout = Math.floor(levelData.yieldClout * levelMult * yieldMult);
+  let yieldAura = Math.floor(levelData.yieldAura * levelMult * yieldMult);
   // Cap minigame impact on mental health to prevent extreme hits or weird gains from negative multipliers
   const mentalMinigameMult = Math.max(0.5, Math.min(2.0, Math.abs(minigameMult)));
   let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? mentalMinigameMult : 1);

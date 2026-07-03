@@ -159,6 +159,13 @@ const dataAnalyticsStrategy: HustleStrategy = (_hustleId, state, marketType, lev
     yieldCash = 1000000;
     yieldClout = Math.floor(levelData.yieldClout * 1.0);
     yieldAura = Math.floor(levelData.yieldAura * 1.0);
+    // Note: dataAnalyticsStrategy doesn't currently use minigameMultiplier
+    // for stats inside choice logic. Let's fix that.
+    const mult = _minigameMultiplier || 1.0;
+    yieldCash = Math.floor(yieldCash * mult);
+    yieldClout = Math.floor(yieldClout * mult);
+    yieldAura = Math.floor(yieldAura * mult);
+
     heatHit = 30;
     if (Math.random() < 0.10) {
       heatHit += 50; yieldClout -= 100;
@@ -213,8 +220,9 @@ const cryptoMiningStrategy: HustleStrategy = (_hustleId, state, marketType, leve
   };
 };
 
-const vaAgencyStrategy: HustleStrategy = (_hustleId, state, marketType, levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
+const vaAgencyStrategy: HustleStrategy = (_hustleId, state, marketType, levelData, _currentLevel, minigameMultiplier, forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
+  const mult = minigameMultiplier || 1.0;
   const staff = state.vaStaff || 5;
   const training = state.vaTraining || 'none';
   const client = state.vaClient || 'small';
@@ -231,9 +239,9 @@ const vaAgencyStrategy: HustleStrategy = (_hustleId, state, marketType, levelDat
   const successChance = Math.min(0.95, (staff / 20) * trainingMultiplier);
   const isSuccess = forceSuccess !== undefined ? forceSuccess : Math.random() < successChance;
 
-  let yieldCash = Math.floor(baseYield * market.yieldMultiplier);
-  let yieldClout = Math.floor(levelData.yieldClout * trainingMultiplier);
-  let yieldAura = Math.floor(levelData.yieldAura * trainingMultiplier);
+  let yieldCash = Math.floor(baseYield * market.yieldMultiplier * mult);
+  let yieldClout = Math.floor(levelData.yieldClout * trainingMultiplier * mult);
+  let yieldAura = Math.floor(levelData.yieldAura * trainingMultiplier * mult);
   const tickerMessages = [];
 
   if (!isSuccess) {
@@ -280,9 +288,10 @@ const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, _level
   };
 };
 
-const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
+const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelData, _currentLevel, minigameMultiplier, forceSuccess) => {
   const isSuccess = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.5;
   const cost = levelData.cost;
+  const mult = minigameMultiplier || 1.0;
 
   let yieldCash = 0;
   let yieldClout = 0;
@@ -290,14 +299,14 @@ const disasterStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelD
   let message = "";
 
   if (isSuccess) {
-    yieldCash = Math.floor(cost * 1.3);
-    yieldClout = levelData.yieldClout;
-    yieldAura = levelData.yieldAura;
+    yieldCash = Math.floor(cost * 1.3 * mult);
+    yieldClout = Math.floor(levelData.yieldClout * mult);
+    yieldAura = Math.floor(levelData.yieldAura * mult);
     message = "Crisis averted! Profitable recovery.";
   } else {
-    yieldCash = Math.floor(cost * 0.7);
-    yieldClout = Math.floor(levelData.yieldClout * 0.3);
-    yieldAura = Math.floor(levelData.yieldAura * 0.3);
+    yieldCash = Math.floor(cost * 0.7 * mult);
+    yieldClout = Math.floor(levelData.yieldClout * 0.3 * mult);
+    yieldAura = Math.floor(levelData.yieldAura * 0.3 * mult);
     message = "Crisis mismanaged. Loss incurred but survived.";
   }
 
@@ -443,8 +452,8 @@ const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, _level
     message: perfMult >= 0.5 ? '' : 'Box office flop',
     cost,
     yieldCash,
-    yieldClout: 200 * (perfMult > 1 ? perfMult : 1),
-    yieldAura: 100 * (perfMult > 1 ? perfMult : 1),
+    yieldClout: Math.floor(200 * perfMult),
+    yieldAura: Math.floor(100 * perfMult),
     mentalHit: -15,
     heatHit: 10
   };
@@ -464,8 +473,8 @@ const fightPromoterStrategy: HustleStrategy = (_hustleId, _state, marketType, le
     message: mult >= 0.5 ? '' : 'Event failed',
     cost,
     yieldCash,
-    yieldClout: 300 * (mult > 1 ? mult : 1),
-    yieldAura: 150 * (mult > 1 ? mult : 1),
+    yieldClout: Math.floor(300 * mult),
+    yieldAura: Math.floor(150 * mult),
     mentalHit: -10,
     heatHit: 15
   };
@@ -485,8 +494,8 @@ const spaceInvestmentStrategy: HustleStrategy = (_hustleId, _state, marketType, 
     message: mult >= 0.5 ? '' : 'Mission failure',
     cost,
     yieldCash,
-    yieldClout: 400 * (mult > 1 ? mult : 1),
-    yieldAura: 300 * (mult > 1 ? mult : 1),
+    yieldClout: Math.floor(400 * mult),
+    yieldAura: Math.floor(300 * mult),
     mentalHit: -20,
     heatHit: 20
   };
