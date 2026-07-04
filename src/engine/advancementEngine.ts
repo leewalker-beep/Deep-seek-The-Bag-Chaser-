@@ -388,7 +388,9 @@ export function advanceMonth(
     jetBonus *= flexBonusMultiplier;
     heatDecay = heatDecay * Math.max(0, (1 - (jetBonus / 100)));
   }
-  newPl.heat = Math.max(0, newPl.heat - heatDecay);
+  if (!newPl.inJail || newPl.jailMonthsRemaining === newPl.jailSentenceTotal) {
+    newPl.heat = Math.max(0, newPl.heat - heatDecay);
+  }
 
   // Rival AI Updates
   if (newPl.rivals) {
