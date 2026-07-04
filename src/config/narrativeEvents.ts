@@ -1,6 +1,6 @@
 import type { NarrativeEvent } from '../types/game';
 
-export const NARRATIVE_EVENTS: NarrativeEvent[] = [
+const BASE_EVENTS: NarrativeEvent[] = [
   // STREET KID / SCAVENGER - MUD/STREET
   {
     id: 'scavenger_prototype',
@@ -2550,4 +2550,2608 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
       }
     ]
   }
+];
+
+
+const POPS_ARC: NarrativeEvent[] = [
+  {
+    id: "char_pops_1_the_reunion",
+    characterId: "char_pops",
+    title: "The Reunion",
+    description: "Arthur 'Pops' Jenkins is waiting for you in the old community garden. \"I knew you'd come back to the block,\" he says. \"The question is, are you here to take, or to give back?\"",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "pops_give_back",
+        label: "Invest in the Garden",
+        description: "Donate $10k to save the community garden.",
+        consequences: { bag: -10000, aura: 100 },
+        setFlags: { "pops_mentor": true, "rel_pops": 100 }
+      },
+      {
+        id: "pops_take",
+        label: "Eyes on the Prize",
+        description: "Tell Pops you're here to build a legacy, not grow tomatoes.",
+        consequences: { clout: 50, aura: -20 },
+        setFlags: { "pops_mentor": false, "rel_pops": 40 }
+      }
+    ]
+  },
+  {
+    id: "char_pops_2_threat",
+    characterId: "char_pops",
+    title: "The Developers",
+    description: "Corporate developers want the garden land. Pops is being threatened. \"They offered me a payout to leave,\" he says. \"But this land is our history.\"",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true, flagReqs: { "pops_mentor": true } },
+    choices: [
+      {
+        id: "pops_legal_aid",
+        label: "Hire Legal Defense",
+        description: "Spend $50k on the best lawyers to block the development.",
+        consequences: { bag: -50000, aura: 200, clout: 50 },
+        setFlags: { "pops_garden_status": "protected" }
+      },
+      {
+        id: "pops_intimidate",
+        label: "Street Justice",
+        description: "Use your clout to 'persuade' the developers to look elsewhere.",
+        consequences: { clout: 100, heat: 30, aura: -50 },
+        setFlags: { "pops_garden_status": "street_protected" }
+      }
+    ]
+  },
+  {
+    id: "char_pops_3_expansion",
+    characterId: "char_pops",
+    title: "Pops' Legacy Hub",
+    description: "Pops wants to turn the garden into a youth training center. \"Teach them how to hustle the right way,\" he says.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "pops_garden_status": "protected" } },
+    choices: [
+      {
+        id: "pops_fund_hub",
+        label: "Fund the Hub",
+        description: "Donate $250k for a state-of-the-art center.",
+        consequences: { bag: -250000, aura: 500, biographyEntry: "Funded Pops' Youth Legacy Hub, changing the future of the district." },
+        setFlags: { "pops_hub_active": true }
+      }
+    ]
+  }
+];
+
+const TWITCH_ARC: NarrativeEvent[] = [
+  {
+    id: "char_twitch_1_data_leak",
+    characterId: "char_twitch",
+    title: "The Twitch Signal",
+    description: "Twitch slides a drive across the counter. \"Found a hole in the city's traffic grid.\"",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "twitch_sync_grid",
+        label: "Sync the Grid",
+        description: "Pay $5k for the exploit.",
+        consequences: { bag: -5000, passiveCash: 200, heat: 10 },
+        setFlags: { "twitch_partner": true, "rel_twitch": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_twitch_2_surveillance",
+    characterId: "char_twitch",
+    title: "Eye in the Sky",
+    description: "Twitch has tapped into the regional surveillance network.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true, flagReqs: { "twitch_partner": true } },
+    choices: [
+      {
+        id: "twitch_buy_eye",
+        label: "Buy the System",
+        description: "Install the early-warning system.",
+        consequences: { bag: -50000, heat: -50 },
+        setFlags: { "twitch_eye_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_twitch_3_mainframe_exploit",
+    characterId: "char_twitch",
+    title: "The Central Mainframe",
+    description: "Twitch is shaking. \"I found it. The back-door to the city's financial mainframe.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "twitch_eye_active": true } },
+    choices: [
+      {
+        id: "twitch_hack_mainframe",
+        label: "Execute the Siphon",
+        description: "Start the diversion.",
+        consequences: { passiveCash: 50000, heat: 80, biographyEntry: "Masterminded a global financial siphon with the hacker known as Twitch." },
+        setFlags: { "twitch_arc_complete": "hacked" }
+      }
+    ]
+  }
+];
+
+const SLICK_ARC: NarrativeEvent[] = [
+  {
+    id: "char_slick_1_consignment",
+    characterId: "char_slick",
+    title: "Slick's Side Hustle",
+    description: "Slick Reed has a shipment of 'liberated' tech parts.",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "slick_consignment_accept",
+        label: "Accept Consignment",
+        description: "Move the hot goods.",
+        consequences: { bag: 20000, heat: 25 },
+        setFlags: { "slick_partner": true, "rel_slick": 70 }
+      }
+    ]
+  },
+  {
+    id: "char_slick_2_warehouse",
+    characterId: "char_slick",
+    title: "Slick's Secret Warehouse",
+    description: "Slick found a federal seized-property warehouse.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true, flagReqs: { "slick_partner": true } },
+    choices: [
+      {
+        id: "slick_heist",
+        label: "Authorize the Heist",
+        description: "Hit the warehouse.",
+        consequences: { bag: 250000, heat: 40 },
+        setFlags: { "slick_heist_done": true }
+      }
+    ]
+  },
+  {
+    id: "char_slick_3_retirement",
+    characterId: "char_slick",
+    title: "Slick's Last Score",
+    description: "Slick wants to go legitimate.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "slick_heist_done": true } },
+    choices: [
+      {
+        id: "slick_go_legit",
+        label: "Clean the Operation",
+        description: "Invest $500k to legalize the logistics network.",
+        consequences: { bag: -500000, heat: -100, passiveCash: 5000, biographyEntry: "Helped the notorious Slick go legitimate." },
+        setFlags: { "slick_arc_complete": "legit" }
+      }
+    ]
+  }
+];
+
+const ROSA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_rosa_1_strike",
+    characterId: "char_rosa",
+    title: "The Union Call",
+    description: "Rosa is organizing your warehouse workers.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "rosa_concede",
+        label: "Concede to Demands",
+        description: "Improve conditions.",
+        consequences: { passiveCash: -2000, aura: 200 },
+        setFlags: { "rosa_union_active": true, "rel_rosa": 100 }
+      },
+      {
+        id: "rosa_break",
+        label: "Break the Union",
+        description: "Hire private security.",
+        consequences: { bag: -10000, aura: -300, clout: 100, heat: 20 },
+        setFlags: { "rosa_union_broken": true, "rel_rosa": -200 }
+      }
+    ]
+  },
+  {
+    id: "char_rosa_2_political",
+    characterId: "char_rosa",
+    title: "Rosa's Run",
+    description: "Rosa is running for City Council.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "rosa_union_active": true } },
+    choices: [
+      {
+        id: "rosa_fund_campaign",
+        label: "Fund Her Campaign",
+        description: "Donate $100k.",
+        consequences: { bag: -100000, clout: 200, aura: 300 },
+        setFlags: { "rosa_campaign_funded": true }
+      }
+    ]
+  },
+  {
+    id: "char_rosa_3_victory",
+    characterId: "char_rosa",
+    title: "The Council Member",
+    description: "Rosa won her seat.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "rosa_campaign_funded": true } },
+    choices: [
+      {
+        id: "rosa_policy_push",
+        label: "Push Pro-Labor Policy",
+        description: "Work with her.",
+        consequences: { aura: 500, clout: 300, biographyEntry: "Partnered with Councilwoman Rosa to enact historic labor reforms." },
+        setFlags: { "rosa_arc_complete": "reformed" }
+      }
+    ]
+  }
+];
+
+const MILLER_COP_ARC: NarrativeEvent[] = [
+  {
+    id: "char_miller_1_payoff",
+    characterId: "char_miller",
+    title: "The Blue Toll",
+    description: "Officer Miller pulls you over.",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "miller_pay",
+        label: "Pay the Toll",
+        description: "Monthly protection money.",
+        consequences: { passiveCash: -2000, heat: -10 },
+        setFlags: { "miller_paid": true, "rel_miller": 60 }
+      }
+    ]
+  },
+  {
+    id: "char_miller_2_promotion",
+    characterId: "char_miller",
+    title: "Lieutenant Miller",
+    description: "Miller got promoted.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true, flagReqs: { "miller_paid": true } },
+    choices: [
+      {
+        id: "miller_pay_more",
+        label: "Upgrade Protection",
+        description: "Increase the monthly payment.",
+        consequences: { passiveCash: -10000, heat: -30, clout: 50 },
+        setFlags: { "miller_status": "high_level_protection" }
+      }
+    ]
+  },
+  {
+    id: "char_miller_3_commissioner",
+    characterId: "char_miller",
+    title: "The Commissioner",
+    description: "Miller is now the Police Commissioner.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "miller_status": "high_level_protection" } },
+    choices: [
+      {
+        id: "miller_clean_slate",
+        label: "Clean the Slate",
+        description: "Pay the $5M to wipe all heat.",
+        consequences: { bag: -5000000, heat: -1000, clout: 200, biographyEntry: "Erased their criminal record with the help of the Police Commissioner." },
+        setFlags: { "miller_arc_complete": "clean_slate" }
+      }
+    ]
+  }
+];
+
+const JDOG_ARC: NarrativeEvent[] = [
+  {
+    id: "char_jdog_1_studio",
+    characterId: "char_jdog",
+    title: "The Next Sound",
+    description: "J-Dog wants to build a studio.",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "jdog_fund",
+        label: "Fund the Studio",
+        description: "Build the creative space.",
+        consequences: { bag: -20000, aura: 100, clout: 50 },
+        setFlags: { "jdog_studio_active": true, "rel_jdog": 90 }
+      }
+    ]
+  },
+  {
+    id: "char_jdog_2_label",
+    characterId: "char_jdog",
+    title: "Mud Records",
+    description: "J-Dog wants to start a real label.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true, flagReqs: { "jdog_studio_active": true } },
+    choices: [
+      {
+        id: "jdog_start_label",
+        label: "Launch the Label",
+        description: "Establish Mud Records.",
+        consequences: { bag: -200000, clout: 200, aura: 200 },
+        setFlags: { "jdog_label_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_jdog_3_grammy",
+    characterId: "char_jdog",
+    title: "The Global Icon",
+    description: "J-Dog is nominated for a global music award.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true, flagReqs: { "jdog_label_active": true } },
+    choices: [
+      {
+        id: "jdog_accept_honor",
+        label: "Accept the Honor",
+        description: "Share the spotlight.",
+        consequences: { aura: 1000, clout: 500, biographyEntry: "Founded Mud Records and mentored a global music icon." },
+        setFlags: { "jdog_arc_complete": "legendary" }
+      }
+    ]
+  }
+];
+
+const CASSIE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_cassie_1_network",
+    characterId: "char_cassie",
+    title: "The High Table",
+    description: "Cassie can introduce you to the regional moguls.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "cassie_buy_invite",
+        label: "Buy the Invite",
+        description: "Enter the elite social circle.",
+        consequences: { bag: -50000, clout: 150 },
+        setFlags: { "cassie_intro": true, "rel_cassie": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_cassie_2_insider",
+    characterId: "char_cassie",
+    title: "The Insider Tip",
+    description: "At the gala, Cassie whispers about a pending merger.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "cassie_intro": true } },
+    choices: [
+      {
+        id: "cassie_buy_shares",
+        label: "Buy the Shares",
+        description: "Invest $1M in the shipping merger.",
+        consequences: { bag: -1000000, passiveCash: 25000, heat: 20 },
+        setFlags: { "cassie_shares_bought": true }
+      }
+    ]
+  },
+  {
+    id: "char_cassie_3_acquisition",
+    characterId: "char_cassie",
+    title: "The Final Acquisition",
+    description: "Cassie has secured the majority stake.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "cassie_shares_bought": true } },
+    choices: [
+      {
+        id: "cassie_take_control",
+        label: "Take Full Control",
+        description: "Secure the logistics monopoly.",
+        consequences: { clout: 1000, passiveCash: 50000, biographyEntry: "Masterminded the acquisition of the city's shipping lanes." },
+        setFlags: { "cassie_arc_complete": "monopoly" }
+      }
+    ]
+  }
+];
+
+const RAY_ARC: NarrativeEvent[] = [
+  {
+    id: "char_ray_1_defense",
+    characterId: "char_ray",
+    title: "Tactical Edge",
+    description: "Ray offers a private security detail.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "ray_hire_detail",
+        label: "Hire Ray's Team",
+        description: "Personal security for $5k/month.",
+        consequences: { passiveCash: -5000, heat: -40, clout: 50 },
+        setFlags: { "ray_security_active": true, "rel_ray": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_ray_2_intelligence",
+    characterId: "char_ray",
+    title: "The Sarge's Intel",
+    description: "Ray has been monitoring rivals.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "ray_security_active": true } },
+    choices: [
+      {
+        id: "ray_ambush",
+        label: "Set the Ambush",
+        description: "Crush Kane's forces.",
+        consequences: { bag: -100000, clout: 300, heat: 50 },
+        setFlags: { "ray_kane_crushed": true }
+      }
+    ]
+  },
+  {
+    id: "char_ray_3_pmc",
+    characterId: "char_ray",
+    title: "The Private Army",
+    description: "Ray wants to scale into a full PMC.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "ray_kane_crushed": true } },
+    choices: [
+      {
+        id: "ray_launch_pmc",
+        label: "Launch the PMC",
+        description: "Establish Vane Defense Services.",
+        consequences: { bag: -5000000, clout: 2000, heat: -100, biographyEntry: "Built a private military empire with Raymond 'Sarge' Strode." },
+        setFlags: { "ray_arc_complete": "pmc" }
+      }
+    ]
+  }
+];
+
+const LEXI_ARC: NarrativeEvent[] = [
+  {
+    id: "char_lexi_1_mural",
+    characterId: "char_lexi",
+    title: "Colors of the Block",
+    description: "Lexi wants to paint your main office.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "lexi_paint",
+        label: "Let Her Paint",
+        description: "Commission the mural for $5k.",
+        consequences: { bag: -5000, aura: 150 },
+        setFlags: { "lexi_mural_done": true, "rel_lexi": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_lexi_2_exhibition",
+    characterId: "char_lexi",
+    title: "The Underground Gallery",
+    description: "Lexi is opening a secret gallery.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "lexi_mural_done": true } },
+    choices: [
+      {
+        id: "lexi_fund_gallery",
+        label: "Fund the Gallery",
+        description: "Donate $100k to the exhibition.",
+        consequences: { bag: -100000, aura: 400, heat: 20 },
+        setFlags: { "lexi_gallery_funded": true }
+      }
+    ]
+  },
+  {
+    id: "char_lexi_3_renaissance",
+    characterId: "char_lexi",
+    title: "The Urban Renaissance",
+    description: "Lexi wants to lead a city-wide cultural initiative.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "lexi_gallery_funded": true } },
+    choices: [
+      {
+        id: "lexi_cultural_lead",
+        label: "Sponsor the Initiative",
+        description: "Commit $1M to the cultural program.",
+        consequences: { bag: -1000000, aura: 1500, clout: 500, biographyEntry: "Spearheaded a city-wide cultural renaissance alongside the artist Lexi Chen." },
+        setFlags: { "lexi_arc_complete": "visionary" }
+      }
+    ]
+  }
+];
+
+const DANTE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_dante_1_fixer",
+    characterId: "char_dante",
+    title: "The Fixer's Fee",
+    description: "Dante can make legal 'misunderstandings' go away.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.1, once: true },
+    choices: [
+      {
+        id: "dante_fix",
+        label: "Clean the Record",
+        description: "Pay $30k to drop the heat.",
+        consequences: { bag: -30000, heat: -50 },
+        setFlags: { "dante_hired": true, "rel_dante": 70 }
+      }
+    ]
+  },
+  {
+    id: "char_dante_2_lobby",
+    characterId: "char_dante",
+    title: "The Legislative Fix",
+    description: "Dante has a plan to change the laws themselves.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "dante_hired": true } },
+    choices: [
+      {
+        id: "dante_fund_lobby",
+        label: "Fund the Lobby",
+        description: "Commit $1M to legislative influence.",
+        consequences: { bag: -1000000, clout: 500, aura: -200 },
+        setFlags: { "dante_lobby_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_dante_3_justice",
+    characterId: "char_dante",
+    title: "The Hand of Justice",
+    description: "Dante is now a Supreme Court Justice.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "dante_lobby_active": true } },
+    choices: [
+      {
+        id: "dante_assume_immunity",
+        label: "Assume Legal Immunity",
+        description: "Finalize the legal shield.",
+        consequences: { clout: 2000, heat: -1000, biographyEntry: "Secured absolute legal immunity through Justice Dante." },
+        setFlags: { "dante_arc_complete": "untouchable" }
+      }
+    ]
+  }
+];
+
+
+const LILA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_lila_1_invest",
+    characterId: "char_lila",
+    title: "The Elite Opportunity",
+    description: "Lila Vance invites you to a private equity round. \"Minimal buy-in is $1M. The returns are... exponential.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "lila_invest",
+        label: "Invest $1M",
+        description: "Join the inner circle.",
+        consequences: { bag: -1000000, clout: 300 },
+        setFlags: { "lila_investor": true, "rel_lila": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_lila_2_takeover",
+    characterId: "char_lila",
+    title: "The Vance Boardroom",
+    description: "Lila wants you to back her move to oust Julian. \"He's old world. We are the new world.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "lila_investor": true } },
+    choices: [
+      {
+        id: "lila_back_coup",
+        label: "Back Lila",
+        description: "Commit your voting shares to her coup.",
+        consequences: { clout: 1000, aura: -500 },
+        setFlags: { "lila_arc_complete": "partner" }
+      }
+    ]
+  },
+  {
+    id: "char_lila_3_legacy",
+    characterId: "char_lila",
+    title: "The New Vance",
+    description: "With Julian out, Lila has taken control of the family estate. She offers you a seat on the supreme board.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "lila_arc_complete": "partner" } },
+    choices: [
+      {
+        id: "lila_join_board",
+        label: "Join the Board",
+        description: "Co-rule the Vance empire.",
+        consequences: { passiveCash: 100000, aura: 1000, biographyEntry: "Co-ruled the global Vance empire alongside Lila Vance." },
+        setFlags: { "lila_board_member": true }
+      }
+    ]
+  }
+];
+
+const BIG_G_ARC: NarrativeEvent[] = [
+  {
+    id: "char_big_g_1_territory",
+    characterId: "char_big_g",
+    title: "Territory Tax",
+    description: "Big G wants a cut of your local distribution. \"Everyone pays the tax, one way or another.\"",
+    trigger: { tier: ["STREET", "STARTUP"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "big_g_pay",
+        label: "Pay the Tax",
+        description: "$1k/month for peace.",
+        consequences: { passiveCash: -1000, heat: -10 },
+        setFlags: { "big_g_paid": true, "rel_big_g": 50 }
+      }
+    ]
+  },
+  {
+    id: "char_big_g_2_truce",
+    characterId: "char_big_g",
+    title: "The Neighborhood Truce",
+    description: "Big G's crew is at war. \"It's bad for business. Use your influence to call a sit-down.\"",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true, flagReqs: { "big_g_paid": true } },
+    choices: [
+      {
+        id: "big_g_mediate",
+        label: "Mediate the Peace",
+        description: "Host the sit-down at your headquarters.",
+        consequences: { clout: 200, aura: 300, heat: 10 },
+        setFlags: { "big_g_peace_broker": true }
+      }
+    ]
+  },
+  {
+    id: "char_big_g_3_retirement",
+    characterId: "char_big_g",
+    title: "The Neighborhood Elder",
+    description: "Big G wants out. \"I want to run a legitimate security firm. I need a contract.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true, flagReqs: { "big_g_peace_broker": true } },
+    choices: [
+      {
+        id: "big_g_hire_security",
+        label: "Hire G's Firm",
+        description: "Give them the contract.",
+        consequences: { passiveCash: -5000, heat: -50, aura: 200, biographyEntry: "Helped transition Big G's organization into a legitimate security empire." },
+        setFlags: { "big_g_arc_complete": "legit" }
+      }
+    ]
+  }
+];
+
+const TESSA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_tessa_1_audit",
+    characterId: "char_tessa",
+    title: "The IRS Audit",
+    description: "Tessa is assigned to your latest tax filing. \"Some of these numbers don't quite add up.\"",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "tessa_bribe",
+        label: "Offer a 'Consultancy' Role",
+        description: "Pay $25k to settle the audit.",
+        consequences: { bag: -25000, heat: -20 },
+        setFlags: { "tessa_consultant": true, "rel_tessa": 70 }
+      }
+    ]
+  },
+  {
+    id: "char_tessa_2_leak",
+    characterId: "char_tessa",
+    title: "The Panama Papers v2",
+    description: "Tessa found a web of offshore accounts belonging to Julian Vane. \"I can leak this, but I'll lose my job.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "tessa_consultant": true } },
+    choices: [
+      {
+        id: "tessa_fund_leak",
+        label: "Fund the Leak",
+        description: "Expose Vane's global tax evasion.",
+        consequences: { bag: -500000, aura: 500, clout: 200, heat: 40 },
+        setFlags: { "tessa_vane_exposed": true }
+      }
+    ]
+  },
+  {
+    id: "char_tessa_3_chief_auditor",
+    characterId: "char_tessa",
+    title: "The Chief Auditor",
+    description: "Years later, you've helped Tessa get appointed as Chief Auditor. \"Now, we really start cleaning the system.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "tessa_vane_exposed": true } },
+    choices: [
+      {
+        id: "tessa_systemic_change",
+        label: "Enact Financial Reform",
+        description: "Work with her to close the offshore loopholes.",
+        consequences: { aura: 2000, clout: 1000, biographyEntry: "Partnered with the National Treasury to implement historic global financial reforms." },
+        setFlags: { "tessa_arc_complete": "reformer" }
+      }
+    ]
+  }
+];
+
+const CLARK_ARC: NarrativeEvent[] = [
+  {
+    id: "char_clark_1_exclusive",
+    characterId: "char_clark",
+    title: "The Front Page",
+    description: "Clark wants an exclusive on your rise. \"Tell me the real story, and I'll make you a legend.\"",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "clark_tell_all",
+        label: "Tell the Truth",
+        description: "A candid interview about the early days.",
+        consequences: { aura: 200, clout: 100 },
+        setFlags: { "clark_story": "truth", "rel_clark": 90 }
+      }
+    ]
+  },
+  {
+    id: "char_clark_2_investigation",
+    characterId: "char_clark",
+    title: "The Vane Connection",
+    description: "Clark found evidence that Vane is funding the city's gangs. \"If we publish this, it'll start a war.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "clark_story": "truth" } },
+    choices: [
+      {
+        id: "clark_publish",
+        label: "Publish the Truth",
+        description: "Expose Vane's corruption.",
+        consequences: { aura: 500, heat: 50, clout: -200 },
+        setFlags: { "clark_vane_exposed": true }
+      }
+    ]
+  },
+  {
+    id: "char_clark_3_pulitzer",
+    characterId: "char_clark",
+    title: "The Pulitzer",
+    description: "Clark won a major award. \"We changed the city,\" he tells you. \"Thank you for having the courage.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "clark_vane_exposed": true } },
+    choices: [
+      {
+        id: "clark_legacy",
+        label: "Accept the Legacy",
+        description: "Be remembered as the one who broke the corruption.",
+        consequences: { aura: 2000, clout: 1000, biographyEntry: "Partnered with investigative journalist Clark Reed to dismantle a multi-generational web of corruption." },
+        setFlags: { "clark_arc_complete": "hero" }
+      }
+    ]
+  }
+];
+
+const SUMMERS_ARC: NarrativeEvent[] = [
+  {
+    id: "char_summers_1_bill",
+    characterId: "char_summers",
+    title: "The Zoning Bill",
+    description: "Summers needs your help to push through a new zoning bill. \"It will favor your industrial expansion.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "summers_support",
+        label: "Support the Bill",
+        description: "Use your clout to lobby for the bill.",
+        consequences: { clout: 200, aura: -150 },
+        setFlags: { "summers_bill_passed": true, "rel_summers": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_summers_2_redevelopment",
+    characterId: "char_summers",
+    title: "The Waterfront Project",
+    description: "Summers has a new plan. \"We're redeveloping the waterfront. I can give you exclusive rights for $5M.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "summers_bill_passed": true } },
+    choices: [
+      {
+        id: "summers_buy_rights",
+        label: "Buy the Rights",
+        description: "Secure the waterfront for $5M.",
+        consequences: { bag: -5000000, passiveCash: 100000, clout: 500 },
+        setFlags: { "summers_waterfront_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_summers_3_governor",
+    characterId: "char_summers",
+    title: "Governor Summers",
+    description: "Summers is running for Governor. \"I'll make this state your playground if you fund the campaign.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "summers_waterfront_active": true } },
+    choices: [
+      {
+        id: "summers_fund_campaign",
+        label: "Fund the Campaign",
+        description: "Donate $10M to the run.",
+        consequences: { bag: -10000000, clout: 2000, aura: -1000, biographyEntry: "Bankrolled the rise of Governor Summers, securing a personal connection to state power." },
+        setFlags: { "summers_arc_complete": "kingmaker" }
+      }
+    ]
+  }
+];
+
+const KHALID_ARC: NarrativeEvent[] = [
+  {
+    id: "char_khalid_1_export",
+    characterId: "char_khalid",
+    title: "The Global Pipeline",
+    description: "Khalid offers to handle your international exports. \"My fleet reaches every port.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "khalid_partner",
+        label: "Partner with Khalid",
+        description: "Expand your reach globally.",
+        consequences: { passiveCash: 5000, bag: -100000 },
+        setFlags: { "khalid_partner": true, "rel_khalid": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_khalid_2_embargo",
+    characterId: "char_khalid",
+    title: "The Trade Embargo",
+    description: "The government has placed an embargo. Khalid has a way around it. \"We can keep the supply open.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "khalid_partner": true } },
+    choices: [
+      {
+        id: "khalid_smuggle",
+        label: "Bypass the Embargo",
+        description: "Pay Khalid $1M to keep the goods flowing.",
+        consequences: { bag: -1000000, heat: 60, passiveCash: 20000 },
+        setFlags: { "khalid_smuggling_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_khalid_3_monopoly",
+    characterId: "char_khalid",
+    title: "The Global Logistics King",
+    description: "Khalid offers to merge his fleet. \"We will control every port from here to Singapore.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "khalid_smuggling_active": true } },
+    choices: [
+      {
+        id: "khalid_merge",
+        label: "Form the Global Monopoly",
+        description: "Commit $20M to the merger.",
+        consequences: { bag: -20000000, passiveCash: 200000, clout: 3000, biographyEntry: "Formed a global logistics monopoly with Khalid, controlling trade across six continents." },
+        setFlags: { "khalid_arc_complete": "king" }
+      }
+    ]
+  }
+];
+
+const JULIAN_VANE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_vane_1_summons",
+    characterId: "char_julian_vane",
+    title: "The Vane Summit",
+    description: "Julian Vane wants to meet. \"You're making waves. Let's see if you're a partner or a problem.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.3, once: true },
+    choices: [
+      {
+        id: "vane_kiss_ring",
+        label: "Show Respect",
+        description: "Acknowledge his dominance.",
+        consequences: { clout: 500, aura: -200 },
+        setFlags: { "vane_ally": true, "rel_vane": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_vane_2_heir_crisis",
+    characterId: "char_julian_vane",
+    title: "The Vane Succession",
+    description: "Julian is dying. He wants you to manage his trust. \"My bloodline must endure. Protect the legacy.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.25, once: true, flagReqs: { "vane_ally": true } },
+    choices: [
+      {
+        id: "vane_protect_legacy",
+        label: "Protect the Dynasty",
+        description: "Ensure the family takes the throne.",
+        consequences: { clout: 1000, aura: 500 },
+        setFlags: { "vane_legacy_protected": true }
+      }
+    ]
+  },
+  {
+    id: "char_vane_3_new_era",
+    characterId: "char_julian_vane",
+    title: "The Passing of the Torch",
+    description: "Julian Vane has passed away. You have been named the executor of his estate.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.3, once: true, flagReqs: { "vane_legacy_protected": true } },
+    choices: [
+      {
+        id: "vane_ascend",
+        label: "Ascend the Throne",
+        description: "Become the undisputed master of the city.",
+        consequences: { clout: 5000, passiveCash: 500000, biographyEntry: "Succeeded Julian Vane as the master of the city, inheriting a multi-billion dollar empire." },
+        setFlags: { "vane_arc_complete": "successor" }
+      }
+    ]
+  }
+];
+
+const ELARA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_elara_1_sabotage",
+    characterId: "char_elara",
+    title: "Digital Warfare",
+    description: "Elara can take down a competitor's network. \"They won't know what hit them.\"",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "elara_hire",
+        label: "Hire Elara",
+        description: "Digital sabotage for $100k.",
+        consequences: { bag: -100000, heat: 40, clout: 200 },
+        setFlags: { "elara_active": true, "rel_elara": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_elara_2_counter_hack",
+    characterId: "char_elara",
+    title: "The Digital Counter-Strike",
+    description: "A rival tech firm is attempting to brick your servers. Elara is ready to trace them back.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "elara_active": true } },
+    choices: [
+      {
+        id: "elara_grant_access",
+        label: "Grant Access",
+        description: "Let Elara defend the system.",
+        consequences: { heat: 30, clout: 500 },
+        setFlags: { "elara_defended": true }
+      }
+    ]
+  },
+  {
+    id: "char_elara_3_sentience",
+    characterId: "char_elara",
+    title: "The Ghost in the Machine",
+    description: "Elara has created a sentient AI sub-routine. \"It can predict the future of the markets.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "elara_defended": true } },
+    choices: [
+      {
+        id: "elara_release_ai",
+        label: "Release the AI",
+        description: "Dominate the global economy.",
+        consequences: { passiveCash: 500000, aura: -1000, biographyEntry: "Released a sentient AI developed by Elara, fundamentally altering global commerce." },
+        setFlags: { "elara_arc_complete": "transcendent" }
+      }
+    ]
+  }
+];
+
+const GARRETT_ARC: NarrativeEvent[] = [
+  {
+    id: "char_garrett_1_hostile",
+    characterId: "char_garrett",
+    title: "The Hostile Takeover",
+    description: "Garrett is launching a bid for a rival firm. \"Join me.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "garrett_join",
+        label: "Join the Bid",
+        description: "Commit $2M to the takeover.",
+        consequences: { bag: -2000000, clout: 500 },
+        setFlags: { "garrett_ally": true, "rel_garrett": 90 }
+      }
+    ]
+  },
+  {
+    id: "char_garrett_2_merger",
+    characterId: "char_garrett",
+    title: "The Grand Merger",
+    description: "Garrett wants to merge your firms. \"Together, we'll be too big to fail.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "garrett_ally": true } },
+    choices: [
+      {
+        id: "garrett_merge_firms",
+        label: "Merge the Empires",
+        description: "Form a global conglomerate.",
+        consequences: { clout: 2000, passiveCash: 100000 },
+        setFlags: { "garrett_merged": true }
+      }
+    ]
+  },
+  {
+    id: "char_garrett_3_world_order",
+    characterId: "char_garrett",
+    title: "The New World Order",
+    description: "The merger is complete. \"Why lobby governments when we can become one?\"",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "garrett_merged": true } },
+    choices: [
+      {
+        id: "garrett_corporate_state",
+        label: "Establish the Corporate State",
+        description: "Declare economic sovereignty.",
+        consequences: { clout: 10000, aura: -5000, biographyEntry: "Transformed a global conglomerate into a sovereign corporate state alongside Garrett." },
+        setFlags: { "garrett_arc_complete": "sovereign" }
+      }
+    ]
+  }
+];
+
+const SELENA_ROSSO_ARC: NarrativeEvent[] = [
+  {
+    id: "char_rosso_1_shipping",
+    characterId: "char_selena_rosso",
+    title: "The Rosso Route",
+    description: "Selena offers access to her private shipping lanes. \"Faster, safer, and off the grid.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "rosso_hire",
+        label: "Secure the Route",
+        description: "Pay $500k for exclusive access.",
+        consequences: { bag: -500000, heat: -100, passiveCash: 10000 },
+        setFlags: { "rosso_partner": true, "rel_rosso": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_rosso_2_piracy",
+    characterId: "char_selena_rosso",
+    title: "The High Seas Crisis",
+    description: "Selena's ships are being targeted by pirates. \"I need a fleet of drones for $2M.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "rosso_partner": true } },
+    choices: [
+      {
+        id: "rosso_fund_drones",
+        label: "Fund the Defense",
+        description: "Deploy the drone fleet.",
+        consequences: { bag: -2000000, clout: 500, heat: 30 },
+        setFlags: { "rosso_defended": true }
+      }
+    ]
+  },
+  {
+    id: "char_rosso_3_admiral",
+    characterId: "char_selena_rosso",
+    title: "The Admiral of the Oceans",
+    description: "Selena now controls the three most important shipping straits. \"The world's trade belongs to us.\"",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "rosso_defended": true } },
+    choices: [
+      {
+        id: "rosso_global_trade",
+        label: "Dominate Global Trade",
+        description: "Secure the maritime monopoly.",
+        consequences: { passiveCash: 1000000, clout: 5000, biographyEntry: "Established absolute dominance over the world's shipping straits with Selena Rosso." },
+        setFlags: { "rosso_arc_complete": "admiral" }
+      }
+    ]
+  }
+];
+
+const HUDSON_REED_ARC: NarrativeEvent[] = [
+  {
+    id: "char_reed_1_campaign",
+    characterId: "char_hudson_reed",
+    title: "The Political Engine",
+    description: "Hudson needs a major donor for the mayoral race.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "reed_donate",
+        label: "Donate $250k",
+        description: "Fund the campaign.",
+        consequences: { bag: -250000, clout: 300 },
+        setFlags: { "reed_ally": true, "rel_reed": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_reed_2_scandal",
+    characterId: "char_hudson_reed",
+    title: "The Mayor's Secret",
+    description: "Mayor Reed is being blackmailed.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "reed_ally": true } },
+    choices: [
+      {
+        id: "reed_handle_scandal",
+        label: "Neutralize the Threat",
+        description: "Silence the blackmailer.",
+        consequences: { bag: -500000, clout: 300, aura: -300, heat: 40 },
+        setFlags: { "reed_scandal_managed": true }
+      }
+    ]
+  },
+  {
+    id: "char_reed_3_senator",
+    characterId: "char_hudson_reed",
+    title: "Senator Reed",
+    description: "Reed is heading to the Senate.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "reed_scandal_managed": true } },
+    choices: [
+      {
+        id: "reed_senate_backing",
+        label: "Secure the Senate Seat",
+        description: "Provide the final push.",
+        consequences: { bag: -5000000, clout: 2000, biographyEntry: "Orchestrated the rise of Senator Hudson Reed." },
+        setFlags: { "reed_arc_complete": "senator" }
+      }
+    ]
+  }
+];
+
+const NAOMI_WEST_ARC: NarrativeEvent[] = [
+  {
+    id: "char_naomi_1_pr",
+    characterId: "char_naomi_west",
+    title: "The Image Maker",
+    description: "Naomi wants to rebrand your entire operation.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "naomi_rebrand",
+        label: "Rebrand",
+        description: "The full PR package for $100k.",
+        consequences: { bag: -100000, aura: 500, clout: 200 },
+        setFlags: { "naomi_active": true, "rel_naomi": 90 }
+      }
+    ]
+  },
+  {
+    id: "char_naomi_2_scandal",
+    characterId: "char_naomi_west",
+    title: "Scandal Management",
+    description: "An old video has leaked.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "naomi_active": true } },
+    choices: [
+      {
+        id: "naomi_spin_story",
+        label: "Spin the Story",
+        description: "Embrace the past.",
+        consequences: { aura: 500, clout: 200 },
+        setFlags: { "naomi_brand_status": "authentic" }
+      }
+    ]
+  },
+  {
+    id: "char_naomi_3_myth",
+    characterId: "char_naomi_west",
+    title: "The Living Myth",
+    description: "Naomi has succeeded. You are a cultural phenomenon.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "naomi_brand_status": "authentic" } },
+    choices: [
+      {
+        id: "naomi_become_icon",
+        label: "Become the Icon",
+        description: "Accept the global adulation.",
+        consequences: { aura: 5000, clout: 2000, biographyEntry: "Worked with Naomi West to become a global cultural icon." },
+        setFlags: { "naomi_arc_complete": "iconic" }
+      }
+    ]
+  }
+];
+
+const ARTHUR_BENNETT_ARC: NarrativeEvent[] = [
+  {
+    id: "char_bennett_1_trust",
+    characterId: "char_arthur_bennett",
+    title: "The Bennett Trust",
+    description: "Bennett offers to manage your personal wealth.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "bennett_join",
+        label: "Open a Trust",
+        description: "Move assets to Bennett Management.",
+        consequences: { passiveCash: 20000, bag: -1000000 },
+        setFlags: { "bennett_managed": true, "rel_bennett": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_bennett_2_foundation",
+    characterId: "char_arthur_bennett",
+    title: "The Bennett Foundation",
+    description: "Bennett wants to establish a charitable foundation.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "bennett_managed": true } },
+    choices: [
+      {
+        id: "bennett_start_foundation",
+        label: "Establish the Foundation",
+        description: "Commit $20M to the endowment.",
+        consequences: { bag: -20000000, aura: 5000, clout: 1000 },
+        setFlags: { "bennett_foundation_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_bennett_3_global_philanthropist",
+    characterId: "char_arthur_bennett",
+    title: "The Global Philanthropist",
+    description: "The foundation is now the largest on Earth.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "bennett_foundation_active": true } },
+    choices: [
+      {
+        id: "bennett_cement_legacy",
+        label: "Cement the Legacy",
+        description: "Accept the title of World Benefactor.",
+        consequences: { aura: 10000, clout: 5000, biographyEntry: "Became a global benefactor through the Bennett Foundation." },
+        setFlags: { "bennett_arc_complete": "philanthropist" }
+      }
+    ]
+  }
+];
+
+const FIONA_GLASS_ARC: NarrativeEvent[] = [
+  {
+    id: "char_fiona_1_propaganda",
+    characterId: "char_fiona_glass",
+    title: "The Glass Ceiling",
+    description: "Fiona can run a negative ad campaign against any rival.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "fiona_hire",
+        label: "Hire Fiona",
+        description: "Destroy a rival for $200k.",
+        consequences: { bag: -200000, clout: 400, aura: -200 },
+        setFlags: { "fiona_active": true, "rel_fiona": 80 }
+      }
+    ]
+  },
+  {
+    id: "char_fiona_2_network",
+    characterId: "char_fiona_glass",
+    title: "The Glass Network",
+    description: "Fiona wants to launch a global news network.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "fiona_active": true } },
+    choices: [
+      {
+        id: "fiona_buy_network",
+        label: "Buy the Network",
+        description: "Acquire Global News One.",
+        consequences: { bag: -50000000, clout: 3000, aura: -1000 },
+        setFlags: { "fiona_network_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_fiona_3_truth",
+    characterId: "char_fiona_glass",
+    title: "The Architect of Truth",
+    description: "Fiona leans into the microphone. \"Whatever we say is the truth.\"",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "fiona_network_active": true } },
+    choices: [
+      {
+        id: "fiona_control_narrative",
+        label: "Control the World Narrative",
+        description: "Absolute media dominance.",
+        consequences: { clout: 10000, aura: -2000, biographyEntry: "Achieved control over global media alongside Fiona Glass." },
+        setFlags: { "fiona_arc_complete": "propagandist" }
+      }
+    ]
+  }
+];
+
+const STERLING_VANE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_sterling_1_legacy",
+    characterId: "char_sterling_vane",
+    title: "The Vane Dynasty",
+    description: "Sterling is looking for allies who understand the future.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "sterling_align",
+        label: "Align with Sterling",
+        description: "Back the next generation.",
+        consequences: { clout: 1000, aura: -300 },
+        setFlags: { "sterling_ally": true, "rel_sterling": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_sterling_2_innovation",
+    characterId: "char_sterling_vane",
+    title: "Vane X",
+    description: "Sterling wants to launch a radical new tech division.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "sterling_ally": true } },
+    choices: [
+      {
+        id: "sterling_fund_x",
+        label: "Fund Vane X",
+        description: "Commit $100M to the future.",
+        consequences: { bag: -100000000, clout: 5000 },
+        setFlags: { "sterling_x_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_sterling_3_new_world",
+    characterId: "char_sterling_vane",
+    title: "The New World Order",
+    description: "Vane X has redefined the global economy.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "sterling_x_active": true } },
+    choices: [
+      {
+        id: "sterling_rule",
+        label: "Rule with Sterling",
+        description: "Establish the new world order.",
+        consequences: { clout: 50000, aura: 10000, biographyEntry: "Redefined the global economy alongside Sterling Vane." },
+        setFlags: { "sterling_arc_complete": "overlord" }
+      }
+    ]
+  }
+];
+
+const IVY_CHEN_ARC: NarrativeEvent[] = [
+  {
+    id: "char_ivy_1_quantum",
+    characterId: "char_ivy_chen",
+    title: "The Quantum Leap",
+    description: "Ivy is developing quantum encryption. She needs a $5M grant.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "ivy_grant",
+        label: "Fund the Research",
+        description: "Provide the $5M grant.",
+        consequences: { bag: -5000000, clout: 800, aura: 400 },
+        setFlags: { "ivy_research_active": true, "rel_ivy": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_ivy_2_breakthrough",
+    characterId: "char_ivy_chen",
+    title: "The Quantum Breakthrough",
+    description: "Ivy's research was successful.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true, flagReqs: { "ivy_research_active": true } },
+    choices: [
+      {
+        id: "ivy_use_processor",
+        label: "Unlock the World",
+        description: "Use the tech for leverage.",
+        consequences: { bag: 100000000, heat: 100, clout: 2000 },
+        setFlags: { "ivy_quantum_status": "active" }
+      }
+    ]
+  },
+  {
+    id: "char_ivy_3_singularity",
+    characterId: "char_ivy_chen",
+    title: "The Technological Singularity",
+    description: "Ivy is working on total integration.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "ivy_quantum_status": "active" } },
+    choices: [
+      {
+        id: "ivy_initiate_singularity",
+        label: "Initiate the Singularity",
+        description: "Transcend the mud.",
+        consequences: { aura: 100000, clout: 100000, biographyEntry: "Initiated the technological singularity alongside Ivy Chen." },
+        setFlags: { "ivy_arc_complete": "godhead" }
+      }
+    ]
+  }
+];
+
+const DOMINIC_RUSSO_ARC: NarrativeEvent[] = [
+  {
+    id: "char_dominic_1_muscle",
+    characterId: "char_dominic_russo",
+    title: "The Russo Reach",
+    description: "Dominic offers the services of the Russo family.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "dominic_partner",
+        label: "Partner with Russo",
+        description: "The ultimate protection.",
+        consequences: { bag: -200000, heat: 50, clout: 500 },
+        setFlags: { "russo_partner": true, "rel_dominic": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_dominic_2_war",
+    characterId: "char_dominic_russo",
+    title: "The Family War",
+    description: "Dominic wants a war. He needs $5M for heavy hitters.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "russo_partner": true } },
+    choices: [
+      {
+        id: "dominic_fund_war",
+        label: "Fund the War",
+        description: "Sponsor the campaign.",
+        consequences: { bag: -5000000, heat: 80, clout: 1000 },
+        setFlags: { "dominic_war_won": true }
+      }
+    ]
+  },
+  {
+    id: "char_dominic_3_consigliere",
+    characterId: "char_dominic_russo",
+    title: "The Consigliere",
+    description: "Dominic is now the Boss of Bosses.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "dominic_war_won": true } },
+    choices: [
+      {
+        id: "dominic_take_command",
+        label: "Assume Command",
+        description: "Become the shadow master.",
+        consequences: { clout: 5000, heat: -100, biographyEntry: "Unified the city's underworld under the Russo banner." },
+        setFlags: { "dominic_arc_complete": "godfather" }
+      }
+    ]
+  }
+];
+
+const CAMILLE_DUBOIS_ARC: NarrativeEvent[] = [
+  {
+    id: "char_dubois_1_culture",
+    characterId: "char_camille_dubois",
+    title: "The Dubois Circle",
+    description: "Camille wants to feature you in her magazine.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "dubois_feature",
+        label: "Accept the Feature",
+        description: "Become a global icon.",
+        consequences: { aura: 1000, clout: 500 },
+        setFlags: { "dubois_icon": true, "rel_camille": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_dubois_2_museum",
+    characterId: "char_camille_dubois",
+    title: "The Dubois Museum",
+    description: "Camille wants to build a museum in your name.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "dubois_icon": true } },
+    choices: [
+      {
+        id: "dubois_fund_museum",
+        label: "Fund the Museum",
+        description: "Build the landmark.",
+        consequences: { bag: -20000000, aura: 2000, clout: 1000 },
+        setFlags: { "dubois_museum_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_dubois_3_nobel",
+    characterId: "char_camille_dubois",
+    title: "The Nobel Peace Prize",
+    description: "Camille has lobbied for your nomination.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "dubois_museum_active": true } },
+    choices: [
+      {
+        id: "dubois_accept_nobel",
+        label: "Accept the Peace Prize",
+        description: "Secure your place in history.",
+        consequences: { aura: 10000, clout: 5000, biographyEntry: "Awarded the Nobel Peace Prize for contributions to culture." },
+        setFlags: { "dubois_arc_complete": "idealist" }
+      }
+    ]
+  }
+];
+
+const XAVIER_THORNE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_thorne_1_military",
+    characterId: "char_xavier_thorne",
+    title: "The Thorne Defense",
+    description: "Xavier offers a private military contract.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "thorne_contract",
+        label: "Sign the Contract",
+        description: "Commit $10M to defense.",
+        consequences: { bag: -10000000, heat: -200, clout: 1000 },
+        setFlags: { "thorne_ally": true, "rel_thorne": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_thorne_2_coups",
+    characterId: "char_xavier_thorne",
+    title: "The Precision Coup",
+    description: "Xavier's team has identified a nation in chaos.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "thorne_ally": true } },
+    choices: [
+      {
+        id: "thorne_fund_coup",
+        label: "Authorize the Coup",
+        description: "Sponsor regime change.",
+        consequences: { bag: -50000000, clout: 5000, aura: -2000 },
+        setFlags: { "thorne_regime_change": true }
+      }
+    ]
+  },
+  {
+    id: "char_thorne_3_world_policing",
+    characterId: "char_xavier_thorne",
+    title: "World Policing",
+    description: "The Thorne PMC is now larger than most armies.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "thorne_regime_change": true } },
+    choices: [
+      {
+        id: "thorne_global_security",
+        label: "Secure the World Order",
+        description: "Establish a policing network.",
+        consequences: { clout: 20000, heat: -500, biographyEntry: "Established a private global policing network with Xavier Thorne." },
+        setFlags: { "thorne_arc_complete": "peacekeeper" }
+      }
+    ]
+  }
+];
+
+const OLIVIA_WEST_ARC: NarrativeEvent[] = [
+  {
+    id: "char_olivia_1_network",
+    characterId: "char_olivia_west",
+    title: "The West Network",
+    description: "Olivia offers to run your global communications.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "olivia_hire",
+        label: "Hire Olivia",
+        description: "Control the narrative.",
+        consequences: { bag: -2000000, clout: 1500 },
+        setFlags: { "olivia_partner": true, "rel_olivia": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_olivia_2_surveillance",
+    characterId: "char_olivia_west",
+    title: "The Panopticon",
+    description: "Olivia has integrated her network with everything.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true, flagReqs: { "olivia_partner": true } },
+    choices: [
+      {
+        id: "olivia_activate_surveillance",
+        label: "Activate the Network",
+        description: "Gain absolute informational leverage.",
+        consequences: { clout: 5000, aura: -1000, heat: -100 },
+        setFlags: { "olivia_panopticon_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_olivia_3_global_mind",
+    characterId: "char_olivia_west",
+    title: "The Global Mind",
+    description: "Olivia's network is now sentient.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "olivia_panopticon_active": true } },
+    choices: [
+      {
+        id: "olivia_yield_control",
+        label: "Yield to the Network",
+        description: "Let the AI manage the world.",
+        consequences: { aura: 20000, clout: 20000, biographyEntry: "Handed over global management to a sentient network." },
+        setFlags: { "olivia_arc_complete": "steward" }
+      }
+    ]
+  }
+];
+
+const MARCUS_ARC: NarrativeEvent[] = [
+  {
+    id: "char_marcus_1_expansion",
+    characterId: "char_marcus",
+    title: "Marcus' Global Vision",
+    description: "Marcus wants to take your street hustle global.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "marcus_go_global",
+        label: "Go Global",
+        description: "Commit $5M to international expansion.",
+        consequences: { bag: -5000000, passiveCash: 50000, clout: 1000 },
+        setFlags: { "marcus_global": true, "rel_marcus": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_marcus_2_logistics",
+    characterId: "char_marcus",
+    title: "The Global Hub",
+    description: "Marcus has secured a lease for a massive global logistics hub.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "marcus_global": true } },
+    choices: [
+      {
+        id: "marcus_fund_hub",
+        label: "Fund the Hub",
+        description: "Spend $20M on the facility.",
+        consequences: { bag: -20000000, passiveCash: 150000 },
+        setFlags: { "marcus_hub_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_marcus_3_dominance",
+    characterId: "char_marcus",
+    title: "Supply Chain King",
+    description: "You now control one of the world's most efficient supply chains.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "marcus_hub_active": true } },
+    choices: [
+      {
+        id: "marcus_monopolize",
+        label: "Monopolize Trade",
+        description: "Become the undisputed king of trade.",
+        consequences: { clout: 10000, passiveCash: 500000, biographyEntry: "Architected a global supply chain monopoly alongside Marcus." },
+        setFlags: { "marcus_arc_complete": "tycoon" }
+      }
+    ]
+  }
+];
+
+const ASHLEY_ARC: NarrativeEvent[] = [
+  {
+    id: "char_ashley_1_innovation",
+    characterId: "char_ashley",
+    title: "Ashley's AI",
+    description: "Ashley has developed a market-predicting AI.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "ashley_fund_ai",
+        label: "Fund the AI",
+        description: "Invest $2M in the tech.",
+        consequences: { bag: -2000000, passiveCash: 100000 },
+        setFlags: { "ashley_ai_active": true, "rel_ashley": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_ashley_2_quantum",
+    characterId: "char_ashley",
+    title: "Quantum Ashley",
+    description: "Ashley wants to upgrade the AI with quantum hardware.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "ashley_ai_active": true } },
+    choices: [
+      {
+        id: "ashley_quantum_upgrade",
+        label: "Quantum Upgrade",
+        description: "Spend $50M on quantum servers.",
+        consequences: { bag: -50000000, passiveCash: 1000000 },
+        setFlags: { "ashley_quantum_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_ashley_3_oracle",
+    characterId: "char_ashley",
+    title: "The Market Oracle",
+    description: "The AI is now so powerful it effectively controls the markets.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "ashley_quantum_active": true } },
+    choices: [
+      {
+        id: "ashley_control_economy",
+        label: "Rule the Economy",
+        description: "Use the Oracle to stay on top forever.",
+        consequences: { clout: 50000, aura: 5000, biographyEntry: "Used Ashley's Market Oracle to achieve absolute economic dominance." },
+        setFlags: { "ashley_arc_complete": "oracle" }
+      }
+    ]
+  }
+];
+
+const COLE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_cole_1_security",
+    characterId: "char_cole",
+    title: "Cole's Elite Guard",
+    description: "Cole offers an elite personal guard detail.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "cole_hire_guard",
+        label: "Hire the Guard",
+        description: "Pay $1M for the best security.",
+        consequences: { bag: -1000000, heat: -150, clout: 500 },
+        setFlags: { "cole_guard_active": true, "rel_cole": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_cole_2_black_ops",
+    characterId: "char_cole",
+    title: "Shadow Operations",
+    description: "Cole wants to launch a clandestine wing for the firm.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "cole_guard_active": true } },
+    choices: [
+      {
+        id: "cole_fund_shadow",
+        label: "Fund Shadow Wing",
+        description: "Commit $10M to black ops.",
+        consequences: { bag: -10000000, clout: 1000, heat: 50 },
+        setFlags: { "cole_shadow_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_cole_3_intelligence",
+    characterId: "char_cole",
+    title: "The Ghost Agency",
+    description: "Your shadow wing is now a global intelligence agency.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "cole_shadow_active": true } },
+    choices: [
+      {
+        id: "cole_global_intel",
+        label: "Master Intelligence",
+        description: "Know everything before it happens.",
+        consequences: { clout: 20000, heat: -500, biographyEntry: "Established a global intelligence network with Cole." },
+        setFlags: { "cole_arc_complete": "ghost" }
+      }
+    ]
+  }
+];
+
+const CHEN_ARC: NarrativeEvent[] = [
+  {
+    id: "char_chen_1_market",
+    characterId: "char_chen",
+    title: "Chen's Market Dominance",
+    description: "Chen wants to monopolize the local retail market.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "chen_monopolize",
+        label: "Monopolize",
+        description: "Commit $1M to the effort.",
+        consequences: { bag: -1000000, passiveCash: 20000, aura: -500 },
+        setFlags: { "chen_monopoly": true, "rel_chen": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_chen_2_franchise",
+    characterId: "char_chen",
+    title: "Global Franchising",
+    description: "Chen wants to take the retail model national.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "chen_monopoly": true } },
+    choices: [
+      {
+        id: "chen_go_national",
+        label: "Go National",
+        description: "Invest $10M in franchising.",
+        consequences: { bag: -10000000, passiveCash: 100000 },
+        setFlags: { "chen_national_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_chen_3_retail_god",
+    characterId: "char_chen",
+    title: "Retail Empire",
+    description: "Your brand is now in every city in the country.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "chen_national_active": true } },
+    choices: [
+      {
+        id: "chen_rule_retail",
+        label: "Absolute Dominance",
+        description: "Squeeze out all competition.",
+        consequences: { clout: 5000, passiveCash: 250000, biographyEntry: "Built a national retail empire with Chen." },
+        setFlags: { "chen_arc_complete": "magnate" }
+      }
+    ]
+  }
+];
+
+const SOFIA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_sofia_1_charity",
+    characterId: "char_sofia_ramirez",
+    title: "The Sofia Foundation",
+    description: "Sofia wants you to head a global charity.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "sofia_lead",
+        label: "Lead the Foundation",
+        description: "Commit $10M to global charity.",
+        consequences: { bag: -10000000, aura: 5000, clout: 1000 },
+        setFlags: { "sofia_charity_active": true, "rel_sofia": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_sofia_2_un",
+    characterId: "char_sofia_ramirez",
+    title: "The Diplomat",
+    description: "Sofia has arranged a meeting at the United Nations.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "sofia_charity_active": true } },
+    choices: [
+      {
+        id: "sofia_un_speech",
+        label: "Address the UN",
+        description: "Present your vision for the world.",
+        consequences: { aura: 10000, clout: 2000 },
+        setFlags: { "sofia_un_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_sofia_3_peace",
+    characterId: "char_sofia_ramirez",
+    title: "World Peace Architect",
+    description: "You've successfully mediated a major international conflict.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "sofia_un_active": true } },
+    choices: [
+      {
+        id: "sofia_nobel",
+        label: "Accept Nobel Peace Prize",
+        description: "Finalize your legacy as a humanitarian.",
+        consequences: { aura: 50000, clout: 10000, biographyEntry: "Achieved world peace alongside Sofia Ramirez." },
+        setFlags: { "sofia_arc_complete": "saint" }
+      }
+    ]
+  }
+];
+
+const GHOST_ARC: NarrativeEvent[] = [
+  {
+    id: "char_ghost_1_darknet",
+    characterId: "char_ghost",
+    title: "The Ghost Network",
+    description: "Ghost offers a proprietary darknet for communications.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "ghost_join",
+        label: "Join the Network",
+        description: "Pay $500k for access.",
+        consequences: { bag: -500000, heat: -200, clout: 300 },
+        setFlags: { "ghost_network_active": true, "rel_ghost": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_ghost_2_crypto",
+    characterId: "char_ghost",
+    title: "Ghost Currency",
+    description: "Ghost wants to launch a new, untraceable global currency.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "ghost_network_active": true } },
+    choices: [
+      {
+        id: "ghost_launch_crypto",
+        label: "Launch GhostCoin",
+        description: "Establish the digital black market.",
+        consequences: { bag: -5000000, passiveCash: 50000, heat: 40 },
+        setFlags: { "ghost_crypto_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_ghost_3_shadow_bank",
+    characterId: "char_ghost",
+    title: "The Shadow Bank",
+    description: "You now control the world's premier digital shadow bank.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "ghost_crypto_active": true } },
+    choices: [
+      {
+        id: "ghost_shadow_control",
+        label: "Rule the Shadow Economy",
+        description: "Become the financier of the underworld.",
+        consequences: { clout: 20000, passiveCash: 200000, biographyEntry: "Masterminded the global shadow economy with Ghost." },
+        setFlags: { "ghost_arc_complete": "overlord" }
+      }
+    ]
+  }
+];
+
+const LEO_THORNE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_leo_1_luxury",
+    characterId: "char_leo_thorne",
+    title: "The Thorne Lifestyle",
+    description: "Leo wants to design your global headquarters.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "leo_build",
+        label: "Build the HQ",
+        description: "Commit $50M to the HQ.",
+        consequences: { bag: -50000000, aura: 2000, clout: 3000 },
+        setFlags: { "leo_hq_built": true, "rel_leo": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_leo_2_lifestyle",
+    characterId: "char_leo_thorne",
+    title: "Thorne Living",
+    description: "Leo wants to design a whole city according to your vision.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "leo_hq_built": true } },
+    choices: [
+      {
+        id: "leo_build_city",
+        label: "Build Vane City",
+        description: "Invest $500M in the private city.",
+        consequences: { bag: -500000000, clout: 10000, aura: 5000 },
+        setFlags: { "leo_city_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_leo_3_immortality",
+    characterId: "char_leo_thorne",
+    title: "The Immortal Architect",
+    description: "Leo's designs have redefined how humanity lives.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "leo_city_active": true } },
+    choices: [
+      {
+        id: "leo_eternal",
+        label: "Cement Eternal Design",
+        description: "Become the immortal patron of the arts.",
+        consequences: { aura: 100000, biographyEntry: "Redefined the global skyline with Leo Thorne." },
+        setFlags: { "leo_arc_complete": "legend" }
+      }
+    ]
+  }
+];
+
+const SARAH_ARC: NarrativeEvent[] = [
+  {
+    id: "char_sarah_1_policy",
+    characterId: "char_sarah_jenkins",
+    title: "The Sarah Policy",
+    description: "Sarah wants to implement a revolutionary social policy.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "sarah_enact",
+        label: "Enact the Policy",
+        description: "Spend $20M to fund the program.",
+        consequences: { bag: -20000000, aura: 10000, clout: 2000 },
+        setFlags: { "sarah_policy_active": true, "rel_sarah": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_sarah_2_global_policy",
+    characterId: "char_sarah_jenkins",
+    title: "The Global UBI",
+    description: "Sarah wants to take the social policy global.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true, flagReqs: { "sarah_policy_active": true } },
+    choices: [
+      {
+        id: "sarah_fund_global",
+        label: "Fund the Global Pilot",
+        description: "Commit $100M to the program.",
+        consequences: { bag: -100000000, aura: 20000, clout: 5000 },
+        setFlags: { "sarah_global_ubi_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_sarah_3_utopia",
+    characterId: "char_sarah_jenkins",
+    title: "Architect of Utopia",
+    description: "Poverty has been officially eliminated.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "sarah_global_ubi_active": true } },
+    choices: [
+      {
+        id: "sarah_accept_gratitude",
+        label: "Accept the Gratitude",
+        description: "Be remembered as the savior.",
+        consequences: { aura: 100000, biographyEntry: "Eliminated global poverty with Sarah Jenkins." },
+        setFlags: { "sarah_arc_complete": "savior" }
+      }
+    ]
+  }
+];
+
+const VOLKOV_ARC: NarrativeEvent[] = [
+  {
+    id: "char_volkov_1_resource",
+    characterId: "char_volkov",
+    title: "The Volkov Resource",
+    description: "Volkov offers control of the regional energy grid.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "volkov_monopoly_partner",
+        label: "Control the Grid",
+        description: "Commit $100M to the monopoly.",
+        consequences: { bag: -100000000, passiveCash: 1000000, clout: 5000 },
+        setFlags: { "volkov_monopoly": true, "rel_volkov": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_volkov_2_fusion",
+    characterId: "char_volkov",
+    title: "The Fusion Breakthrough",
+    description: "Volkov's scientists have cracked cold fusion.",
+    trigger: { tier: ["OPEN"], probability: 0.2, once: true, flagReqs: { "volkov_monopoly": true } },
+    choices: [
+      {
+        id: "volkov_deploy_fusion",
+        label: "Deploy Fusion Power",
+        description: "Establish total hegemony.",
+        consequences: { passiveCash: 5000000, clout: 10000, aura: 5000 },
+        setFlags: { "volkov_fusion_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_volkov_3_dyson",
+    characterId: "char_volkov",
+    title: "The Dyson Sphere",
+    description: "Volkov is looking at the sun.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "volkov_fusion_active": true } },
+    choices: [
+      {
+        id: "volkov_fund_dyson",
+        label: "Fund the Dyson Sphere",
+        description: "Commit everything to the star-forge.",
+        consequences: { bag: -1000000000, clout: 100000, biographyEntry: "Financed the construction of the Dyson Sphere with Volkov." },
+        setFlags: { "volkov_arc_complete": "stellar" }
+      }
+    ]
+  }
+];
+
+const ELENA_ARC: NarrativeEvent[] = [
+  {
+    id: "char_elena_1_legacy",
+    characterId: "char_elena_vance",
+    title: "The Vance Legacy",
+    description: "Elena wants to unite the families.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.3, once: true },
+    choices: [
+      {
+        id: "elena_marry",
+        label: "The Royal Union",
+        description: "Unite the dynasties.",
+        consequences: { clout: 10000, aura: 5000 },
+        setFlags: { "vance_union": true, "rel_elena": 150 }
+      }
+    ]
+  },
+  {
+    id: "char_elena_2_expansion",
+    characterId: "char_elena_vance",
+    title: "Dynamic Expansion",
+    description: "Elena has identified new markets for the union.",
+    trigger: { tier: ["OPEN"], probability: 0.2, once: true, flagReqs: { "vance_union": true } },
+    choices: [
+      {
+        id: "elena_fund_expansion",
+        label: "Fund the Union",
+        description: "Spend $500M on the joint venture.",
+        consequences: { bag: -500000000, passiveCash: 5000000 },
+        setFlags: { "elena_expansion_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_elena_3_world_rule",
+    characterId: "char_elena_vance",
+    title: "The Uncontested Rule",
+    description: "The Player-Vance union now effectively rules the world.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "elena_expansion_active": true } },
+    choices: [
+      {
+        id: "elena_ascend",
+        label: "Rule Forever",
+        description: "Solidify the eternal dynasty.",
+        consequences: { clout: 100000, aura: 50000, biographyEntry: "Established an eternal world dynasty alongside Elena Vance." },
+        setFlags: { "elena_arc_complete": "emperor" }
+      }
+    ]
+  }
+];
+
+const STONE_ARC: NarrativeEvent[] = [
+  {
+    id: "char_stone_1_kingmaker",
+    characterId: "char_stone",
+    title: "Marcus Stone: The Kingmaker",
+    description: "Marcus Stone approaches you. \"I can put you in the Oval Office. But it requires absolute loyalty.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "stone_accept",
+        label: "Accept the Deal",
+        description: "Begin the dirty campaign.",
+        consequences: { clout: 500, aura: -500, heat: 50 },
+        setFlags: { "kingmaker_active": true, "rel_stone": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_stone_2_the_leak",
+    characterId: "char_stone",
+    title: "Opposition Research",
+    description: "Marcus Stone has dirt on your opponent. \"I need 250k to distribute it.\"",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "kingmaker_active": true } },
+    choices: [
+      {
+        id: "stone_leak_dirt",
+        label: "Release the Kraken",
+        description: "Destroy your opponent's reputation.",
+        consequences: { clout: 300, aura: -500, heat: 30 },
+        setFlags: { "stone_strategy": "dirty", "rel_stone": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_stone_3_the_debate",
+    characterId: "char_stone",
+    title: "The Staged Debate",
+    description: "Stone wants to feed you questions via neural link.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.25, once: true, flagReqs: { "rel_stone": 100 } },
+    choices: [
+      {
+        id: "stone_use_link",
+        label: "Use the Link",
+        description: "Flawless performance.",
+        consequences: { clout: 500, aura: 200, biographyEntry: "Delivered a historically flawless debate performance." },
+        setFlags: { "debate_result": "perfect" }
+      }
+    ]
+  }
+];
+
+const VALDEZ_ARC: NarrativeEvent[] = [
+  {
+    id: "char_valdez_1_espionage",
+    characterId: "char_valdez",
+    title: "The Corporate Ghost",
+    description: "Sofia Valdez offers encryption keys to your rival's servers.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "valdez_buy_keys",
+        label: "Buy the Keys",
+        description: "Gain absolute knowledge for $500k.",
+        consequences: { bag: -500000, clout: 200, heat: 15 },
+        setFlags: { "valdez_spy": true, "rel_valdez": 100 }
+      }
+    ]
+  },
+  {
+    id: "char_valdez_2_intel",
+    characterId: "char_valdez",
+    title: "The Deep Dive",
+    description: "Valdez has found a major vulnerability in the national infrastructure.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "valdez_spy": true } },
+    choices: [
+      {
+        id: "valdez_exploit",
+        label: "Exploit the System",
+        description: "Redirect funds to your accounts.",
+        consequences: { bag: 5000000, heat: 100, aura: -500 },
+        setFlags: { "valdez_heist_complete": true }
+      }
+    ]
+  },
+  {
+    id: "char_valdez_3_shadow",
+    characterId: "char_valdez",
+    title: "The Shadow Advisor",
+    description: "Valdez wants to head your new private intelligence arm.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "valdez_heist_complete": true } },
+    choices: [
+      {
+        id: "valdez_appoint",
+        label: "Appoint Valdez",
+        description: "Control the shadows.",
+        consequences: { clout: 5000, heat: -200, biographyEntry: "Established a global shadow intelligence network with Sofia Valdez." },
+        setFlags: { "valdez_arc_complete": "ghost" }
+      }
+    ]
+  }
+];
+
+const DYNASTY_ARC: NarrativeEvent[] = [
+  {
+    id: "dynasty_1_the_heir",
+    title: "The Unwanted Legacy",
+    description: "A man claiming to be your son arrives. He wants a seat at the table.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.1, once: true },
+    choices: [
+      {
+        id: "dynasty_embrace",
+        label: "Acknowledge Him",
+        description: "Bring him into the fold.",
+        consequences: { bag: -1000000, aura: 500, clout: 200, biographyEntry: "Publicly acknowledged a long-lost heir." },
+        setFlags: { "dynasty_status": "heir_active" }
+      }
+    ]
+  },
+  {
+    id: "dynasty_2_training",
+    title: "The Heir's Ascent",
+    description: "Your heir is proving capable, but needs a billion-dollar project to lead.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "dynasty_status": "heir_active" } },
+    choices: [
+      {
+        id: "dynasty_fund_project",
+        label: "Fund the Project",
+        description: "Spend $100M on the heir's venture.",
+        consequences: { bag: -100000000, clout: 5000 },
+        setFlags: { "dynasty_status": "heir_proven" }
+      }
+    ]
+  },
+  {
+    id: "dynasty_3_succession",
+    title: "The Passing of the Crown",
+    description: "The dynasty is secure. You are now a family of legends.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "dynasty_status": "heir_proven" } },
+    choices: [
+      {
+        id: "dynasty_crown",
+        label: "Secure the Succession",
+        description: "Plan for the future.",
+        consequences: { clout: 20000, aura: 10000, biographyEntry: "Established a permanent family dynasty." },
+        setFlags: { "dynasty_arc_complete": "eternal" }
+      }
+    ]
+  }
+];
+
+const PARTNER_ARC: NarrativeEvent[] = [
+  {
+    id: "partner_1_the_betrayal",
+    title: "Et Tu, Brute?",
+    description: "Your business partner has been caught meeting with regulators.",
+    trigger: { tier: ["CORPORATE", "ELITE", "MOGUL"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "partner_liquidate",
+        label: "Liquidate and Exile",
+        description: "Banish them from the industry.",
+        consequences: { bag: 1000000, clout: 300, aura: -300, biographyEntry: "Crushed a partner who attempted betrayal." },
+        setFlags: { "partner_status": "liquidated" }
+      }
+    ]
+  },
+  {
+    id: "partner_2_the_replacement",
+    title: "The New Blood",
+    description: "You need a new right hand. An ambitious young shark has approached you.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "partner_status": "liquidated" } },
+    choices: [
+      {
+        id: "partner_hire_shark",
+        label: "Hire the Shark",
+        description: "Bring on new energy.",
+        consequences: { clout: 500, passiveCash: 25000 },
+        setFlags: { "partner_status": "shark_active" }
+      }
+    ]
+  },
+  {
+    id: "partner_3_synergy",
+    title: "The Perfect Synergy",
+    description: "Your new partner has tripled the firm's efficiency.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "partner_status": "shark_active" } },
+    choices: [
+      {
+        id: "partner_maximize",
+        label: "Maximize Synergy",
+        description: "Optimize the empire.",
+        consequences: { passiveCash: 100000, clout: 5000, biographyEntry: "Achieved perfect operational synergy with a new partner." },
+        setFlags: { "partner_arc_complete": "perfect" }
+      }
+    ]
+  }
+];
+
+const BOARDROOM_ARC: NarrativeEvent[] = [
+  {
+    id: "board_1_the_coup",
+    title: "The Midnight Coup",
+    description: "Three board members called an emergency meeting to vote you out.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "board_purge",
+        label: "The Scorch Policy",
+        description: "Purge the conspirators.",
+        consequences: { clout: 1000, aura: -500, biographyEntry: "Survived a boardroom coup by purging the conspirators." },
+        setFlags: { "board_status": "purged" }
+      }
+    ]
+  },
+  {
+    id: "board_2_consolidation",
+    title: "Absolute Power",
+    description: "With the conspirators gone, you can buy back their shares.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "board_status": "purged" } },
+    choices: [
+      {
+        id: "board_buy_back",
+        label: "Buy Back Control",
+        description: "Spend $500M to own the firm outright.",
+        consequences: { bag: -500000000, clout: 10000 },
+        setFlags: { "board_status": "absolute" }
+      }
+    ]
+  },
+  {
+    id: "board_3_the_monolith",
+    title: "The Monolith",
+    description: "You are the board. You are the firm. You are the law.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "board_status": "absolute" } },
+    choices: [
+      {
+        id: "board_eternal",
+        label: "Establish the Monolith",
+        description: "Rule without oversight.",
+        consequences: { clout: 50000, biographyEntry: "Transformed the firm into a monolith with absolute personal control." },
+        setFlags: { "board_arc_complete": "monolith" }
+      }
+    ]
+  }
+];
+
+const IPO_ARC: NarrativeEvent[] = [
+  {
+    id: "ipo_1_the_valuation",
+    title: "The Trillion-Dollar Question",
+    description: "The banks are valuing your global holdings at over a trillion dollars.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "ipo_go_public",
+        label: "Go Public",
+        description: "Launch the world's largest IPO.",
+        consequences: { bag: 10000000, clout: 1000, aura: 500, biographyEntry: "Launched the first trillion-dollar IPO." },
+        setFlags: { "ipo_status": "public" }
+      }
+    ]
+  },
+  {
+    id: "ipo_2_market_dom",
+    title: "Market Dominance",
+    description: "Your stock has become the standard for the global economy.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "ipo_status": "public" } },
+    choices: [
+      {
+        id: "ipo_acquire_rivals",
+        label: "Acquire Everyone",
+        description: "Buy all remaining competitors.",
+        consequences: { bag: 100000000, clout: 10000 },
+        setFlags: { "ipo_status": "dominant" }
+      }
+    ]
+  },
+  {
+    id: "ipo_3_too_big",
+    title: "Too Big to Fail",
+    description: "Your organization is now the single largest component of the global GDP.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "ipo_status": "dominant" } },
+    choices: [
+      {
+        id: "ipo_eternal",
+        label: "The Economic Pillar",
+        description: "Become the backbone of the world.",
+        consequences: { clout: 100000, biographyEntry: "Built an organization that became the backbone of the global economy." },
+        setFlags: { "ipo_arc_complete": "pillar" }
+      }
+    ]
+  }
+];
+
+const CARTEL_ARC: NarrativeEvent[] = [
+  {
+    id: "cartel_1_the_meeting",
+    title: "The Southern Shadow",
+    description: "A powerful Southern cartel meets you in a private hangar.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "cartel_accept_pact",
+        label: "Accept the Pact",
+        description: "Partner for resource security.",
+        consequences: { bag: 500000, heat: 60, aura: -300 },
+        setFlags: { "cartel_member": true, "rel_cartel": 100 }
+      }
+    ]
+  },
+  {
+    id: "cartel_2_the_crackdown",
+    title: "The Federal Heat",
+    description: "The DEA is closing in on the cartel's shipments.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "cartel_member": true } },
+    choices: [
+      {
+        id: "cartel_betray_them",
+        label: "Betray the Cartel",
+        description: "Feed the feds their location.",
+        consequences: { heat: -100, aura: 500, clout: 200, biographyEntry: "Dismantled a major international cartel." },
+        setFlags: { "cartel_arc_complete": "betrayed", "rel_cartel": -500 }
+      }
+    ]
+  },
+  {
+    id: "cartel_3_new_order",
+    title: "The Power Vacuum",
+    description: "With the old cartel gone, you can install your own leadership.",
+    trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "cartel_arc_complete": "betrayed" } },
+    choices: [
+      {
+        id: "cartel_install_puppet",
+        label: "Install a Puppet",
+        description: "Control the supply chain from the shadows.",
+        consequences: { passiveCash: 50000, clout: 1000 },
+        setFlags: { "cartel_controlled": true }
+      }
+    ]
+  }
+];
+
+const DIGITAL_SYNDICATE_ARC: NarrativeEvent[] = [
+  {
+    id: "digi_sync_1_the_offer",
+    title: "The Silicon Underground",
+    description: "Elite hackers offer to 'optimize' your competitor's servers.",
+    trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "digi_sync_hire",
+        label: "Hire the Collective",
+        description: "Pay $50k for sabotage.",
+        consequences: { bag: -50000, clout: 100, heat: 20 },
+        setFlags: { "digi_sync_active": true, "rel_digi": 80 }
+      }
+    ]
+  },
+  {
+    id: "digi_sync_2_the_extortion",
+    title: "The Table Turns",
+    description: "The collective is now extorting YOU.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "digi_sync_active": true } },
+    choices: [
+      {
+        id: "digi_sync_trace_and_destroy",
+        label: "Trace and Destroy",
+        description: "Neutralize the ring.",
+        consequences: { bag: -500000, clout: 200, heat: 40, biographyEntry: "Neutralized a high-tech extortion ring." },
+        setFlags: { "digi_sync_arc_complete": "neutralized" }
+      }
+    ]
+  },
+  {
+    id: "digi_sync_3_cyber_shield",
+    title: "The Cyber Shield",
+    description: "You've built the world's most robust digital defense system.",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "digi_sync_arc_complete": "neutralized" } },
+    choices: [
+      {
+        id: "digi_shield_activate",
+        label: "Activate the Shield",
+        description: "Make your systems impenetrable.",
+        consequences: { heat: -50, clout: 1000 },
+        setFlags: { "digi_shield_active": true }
+      }
+    ]
+  }
+];
+
+const PEACE_ARC: NarrativeEvent[] = [
+  {
+    id: "peace_1_the_crisis",
+    title: "The Brink of War",
+    description: "Two of your largest trade partners are on the verge of conflict.",
+    trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "peace_mediate",
+        label: "Force Mediation",
+        description: "Hold a summit.",
+        consequences: { bag: -5000000, aura: 1000, clout: 500, biographyEntry: "Averted a global conflict." },
+        setFlags: { "peace_status": "hero", "rel_world": 150 }
+      }
+    ]
+  },
+  {
+    id: "peace_2_stabilization",
+    title: "Global Stabilization",
+    description: "The peace accords have held. The world economy is booming.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true, flagReqs: { "peace_status": "hero" } },
+    choices: [
+      {
+        id: "peace_economic_pact",
+        label: "Enact Economic Pact",
+        description: "Unify the trade markets.",
+        consequences: { passiveCash: 100000, clout: 2000 },
+        setFlags: { "peace_status": "architect" }
+      }
+    ]
+  },
+  {
+    id: "peace_3_global_order",
+    title: "The New Global Order",
+    description: "The world is unified under a single economic and political banner.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "peace_status": "architect" } },
+    choices: [
+      {
+        id: "peace_eternal",
+        label: "Rule the Unified World",
+        description: "Become the first Global Governor.",
+        consequences: { clout: 100000, aura: 100000, biographyEntry: "Masterminded the unification of the global order." },
+        setFlags: { "peace_arc_complete": "governor" }
+      }
+    ]
+  }
+];
+
+const MONUMENT_ARC: NarrativeEvent[] = [
+  {
+    id: "monument_1_the_architect",
+    title: "The Eternal Vane",
+    description: "A world-renowned architect proposes a city-sized monument.",
+    trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true },
+    choices: [
+      {
+        id: "monument_build",
+        label: "Build the Monument",
+        description: "Spend $50M on the structure.",
+        consequences: { bag: -50000000, clout: 2000, aura: 1000, biographyEntry: "Constructed a city-sized monument." },
+        setFlags: { "monument_status": "built" }
+      }
+    ]
+  },
+  {
+    id: "monument_2_expansion",
+    title: "The Living City",
+    description: "The monument has become the core of a new, hyper-tech city.",
+    trigger: { tier: ["OPEN"], probability: 0.2, once: true, flagReqs: { "monument_status": "built" } },
+    choices: [
+      {
+        id: "monument_expand_city",
+        label: "Expand the City",
+        description: "Commit $500M to the urban expansion.",
+        consequences: { bag: -500000000, clout: 10000, aura: 5000 },
+        setFlags: { "monument_status": "metropolis" }
+      }
+    ]
+  },
+  {
+    id: "monument_3_immortality",
+    title: "Immortal Legacy",
+    description: "Your city is now the capital of human civilization.",
+    trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "monument_status": "metropolis" } },
+    choices: [
+      {
+        id: "monument_eternal",
+        label: "The Eternal Ruler",
+        description: "Become an immortal legend.",
+        consequences: { clout: 100000, aura: 100000, biographyEntry: "Built the eternal capital of human civilization." },
+        setFlags: { "monument_arc_complete": "immortal" }
+      }
+    ]
+  }
+];
+
+
+export const NARRATIVE_EVENTS: NarrativeEvent[] = [
+  ...BASE_EVENTS,
+  ...POPS_ARC,
+  ...TWITCH_ARC,
+  ...SLICK_ARC,
+  ...ROSA_ARC,
+  ...MILLER_COP_ARC,
+  ...JDOG_ARC,
+  ...CASSIE_ARC,
+  ...RAY_ARC,
+  ...LEXI_ARC,
+  ...DANTE_ARC,
+  ...LILA_ARC,
+  ...BIG_G_ARC,
+  ...TESSA_ARC,
+  ...CLARK_ARC,
+  ...SUMMERS_ARC,
+  ...KHALID_ARC,
+  ...JULIAN_VANE_ARC,
+  ...ELARA_ARC,
+  ...GARRETT_ARC,
+  ...SELENA_ROSSO_ARC,
+  ...HUDSON_REED_ARC,
+  ...NAOMI_WEST_ARC,
+  ...ARTHUR_BENNETT_ARC,
+  ...FIONA_GLASS_ARC,
+  ...STERLING_VANE_ARC,
+  ...IVY_CHEN_ARC,
+  ...DOMINIC_RUSSO_ARC,
+  ...CAMILLE_DUBOIS_ARC,
+  ...XAVIER_THORNE_ARC,
+  ...OLIVIA_WEST_ARC,
+  ...MARCUS_ARC,
+  ...ASHLEY_ARC,
+  ...COLE_ARC,
+  ...CHEN_ARC,
+  ...SOFIA_ARC,
+  ...GHOST_ARC,
+  ...LEO_THORNE_ARC,
+  ...SARAH_ARC,
+  ...VOLKOV_ARC,
+  ...ELENA_ARC,
+  ...STONE_ARC,
+  ...VALDEZ_ARC,
+  ...DYNASTY_ARC,
+  ...PARTNER_ARC,
+  ...BOARDROOM_ARC,
+  ...IPO_ARC,
+  ...CARTEL_ARC,
+  ...DIGITAL_SYNDICATE_ARC,
+  ...PEACE_ARC,
+  ...MONUMENT_ARC,
 ];
