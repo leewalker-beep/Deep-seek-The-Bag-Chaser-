@@ -1,16 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { CABINET_ROLES, EXECUTIVE_ORDERS } from '../engine/presidentEngine';
+import { CABINET_ROLES, EXECUTIVE_ORDERS, generateCandidatePool } from '../engine/presidentEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PresidentialNewsTicker } from './PresidentialNewsTicker';
 import { ConfirmationModal } from './ui/ConfirmationModal';
-import type { ExecutiveOrder, PresidentCrisis } from '../types/game';
+import type { CabinetMember, ExecutiveOrder, PresidentCrisis } from '../types/game';
 import { StateOfTheUnion } from './presidency/StateOfTheUnion';
 import { DebatePrep } from './presidency/DebatePrep';
 import { NegotiateTreaty } from './presidency/NegotiateTreaty';
 import { CrisisRiskAssessment } from './presidency/CrisisRiskAssessment';
 import { GOTV } from './presidency/GOTV';
 import { LegislativeAgenda } from './presidency/LegislativeAgenda';
+import { CabinetAppointmentModal } from './presidency/CabinetAppointmentModal';
 
 const PAGE_TITLES = [
   'THE OVAL',
@@ -77,6 +78,7 @@ export const PresidentDashboard: React.FC = () => {
   const [pendingOrder, setPendingOrder] = useState<ExecutiveOrder | null>(null);
   const [pendingCrisis, setPendingCrisis] = useState<PresidentCrisis | null>(null);
   const [activeMinigame, setActiveMinigame] = useState<string | null>(null);
+  const [pendingAppointment, setPendingAppointment] = useState<{ roleId: string; candidates: CabinetMember[] } | null>(null);
 
   const approvalColor = pl.approvalRating > 60 ? 'text-emerald-400' : pl.approvalRating > 40 ? 'text-yellow-400' : 'text-red-400';
 
@@ -337,7 +339,8 @@ export const PresidentDashboard: React.FC = () => {
                     {appointee ? (
                       <div>
                         <div className="text-sm font-bold text-white mb-1">{appointee.name}</div>
-                        <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-3">+{appointee.bonus.value}% {appointee.bonus.type}</div>
+                        <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">+{appointee.bonus.value}% {appointee.bonus.type}</div>
+                        <div className="text-[7px] text-slate-500 uppercase font-black mb-2">{appointee.previousCareer}</div>
 
                         <div className="space-y-1">
                           <div className="flex justify-between text-[7px] font-black uppercase">
@@ -356,12 +359,9 @@ export const PresidentDashboard: React.FC = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={() => appointCabinetMember({
-                          id: role.id,
-                          name: 'Advisor ' + Math.floor(Math.random() * 100),
-                          role: role.role,
-                          loyalty: 70,
-                          bonus: { type: role.bonusType, value: 10 }
+                        onClick={() => setPendingAppointment({
+                          roleId: role.id,
+                          candidates: generateCandidatePool(role.id, pl)
                         })}
                         className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest py-2"
                       >
@@ -661,6 +661,17 @@ export const PresidentDashboard: React.FC = () => {
         onConfirm={confirmOrder}
         onCancel={() => setPendingOrder(null)}
         confirmLabel="Authorize Order"
+      />
+
+      <CabinetAppointmentModal
+        isOpen={!!pendingAppointment}
+        onClose={() => setPendingAppointment(null)}
+        roleName={CABINET_ROLES.find(r => r.id === pendingAppointment?.roleId)?.role || ''}
+        candidates={pendingAppointment?.candidates || []}
+        onSelect={(member) => {
+          appointCabinetMember({ ...member, id: pendingAppointment!.roleId });
+          setPendingAppointment(null);
+        }}
       />
 
       <ConfirmationModal

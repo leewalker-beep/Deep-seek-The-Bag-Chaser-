@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
-import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails, RIVAL_CABINET_MAP } from '../../engine/presidentEngine';
+import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
@@ -200,25 +200,21 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
   },
 
   appointCabinetMember: (member) => {
-    set((state) => {
-      // If the role was previously occupied (even if currently empty in cabinet),
-      // check if it's a replacement. Since we delete on fire, we can check diary.
-      // Requirements: "fire cabinet member (costs 10 Clout, resets loyalty to 60%)"
-      const previouslyOccupied = state.pl.presidentialDiary.some(d => d.event === 'CABINET SHAKEUP' && d.outcome.includes(member.role));
-      let initialLoyalty = previouslyOccupied ? 60 : 70;
+    const state = get();
+    const bioUpdate = Bio.recordCabinetAppointment(state.pl, member.name, member.role);
 
-      // Cabinet Loyalty: Influenced by past rival relationships
-      const alliedRivalId = Object.keys(RIVAL_CABINET_MAP).find(rivalId => RIVAL_CABINET_MAP[rivalId] === member.id);
-      if (alliedRivalId && state.pl.crushedRivals.includes(alliedRivalId)) {
-        initialLoyalty += 20;
+    set((state) => {
+      const newPl = {
+        ...state.pl,
+        cabinet: { ...state.pl.cabinet, [member.id]: member }
+      };
+
+      if (bioUpdate) {
+        newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+        newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
       }
 
-      return {
-        pl: enforceStatCaps({
-          ...state.pl,
-          cabinet: { ...state.pl.cabinet, [member.id]: { ...member, loyalty: Math.min(100, initialLoyalty) } }
-        })
-      };
+      return { pl: enforceStatCaps(newPl) };
     });
     get().addTickerMessage(`Cabinet Appointed: ${member.name} as ${member.role}`, 'text-emerald-400');
     get().logEvent('CABINET_APPOINTED', { memberId: member.id, name: member.name, role: member.role });
@@ -248,26 +244,32 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const member = state.pl.cabinet[roleId];
     if (!member) return;
 
+    const bioUpdate = Bio.recordCabinetDismissal(state.pl, member.name, member.role);
     const newCabinet = { ...state.pl.cabinet };
     delete newCabinet[roleId];
 
-    set({
-      pl: enforceStatCaps({
-        ...state.pl,
-        clout: state.pl.clout - 10,
-        cabinet: newCabinet,
-        presidentialDiary: [
-          {
-            id: Math.random().toString(36).substring(7),
-            month: state.pl.presidentMonth,
-            event: 'CABINET SHAKEUP',
-            outcome: `President fired ${member.name} (${member.role}).`,
-            type: 'ORDER' as const
-          },
-          ...state.pl.presidentialDiary
-        ]
-      })
-    });
+    const newPl = {
+      ...state.pl,
+      clout: state.pl.clout - 10,
+      cabinet: newCabinet,
+      presidentialDiary: [
+        {
+          id: Math.random().toString(36).substring(7),
+          month: state.pl.presidentMonth,
+          event: 'CABINET SHAKEUP',
+          outcome: `President fired ${member.name} (${member.role}).`,
+          type: 'ORDER' as const
+        },
+        ...state.pl.presidentialDiary
+      ]
+    };
+
+    if (bioUpdate) {
+      newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+      newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+    }
+
+    set({ pl: enforceStatCaps(newPl) });
     state.addTickerMessage(`NEWS: President fires ${member.role} ${member.name}!`, 'text-orange-500 font-bold');
   },
 
@@ -429,22 +431,72 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       state.addTickerMessage("PUBLIC UNREST: High inflation is hurting your approval!", "text-red-400 animate-pulse");
     }
 
-    // 1.5 Cabinet Scandals
-    Object.values(pl.cabinet).forEach(member => {
-      if (member.loyalty < 40 && Math.random() < 0.2) {
-        const appPenalty = 10 + Math.floor(Math.random() * 11);
+    // 1.5 Cabinet Consequences
+    const newCabinet = { ...pl.cabinet };
+    const cabinetMembers = Object.keys(newCabinet);
+
+    cabinetMembers.forEach(roleId => {
+      const member = { ...newCabinet[roleId] };
+      let resigned = false;
+
+      // Fallback for legacy saves
+      const corruptionRisk = member.corruptionRisk ?? 20;
+      const integrity = member.integrity ?? 70;
+      const ambition = member.ambition ?? 50;
+
+      // Scandal Chance based on Corruption Risk and Integrity
+      const scandalRisk = (corruptionRisk / 100) * (1 - integrity / 100);
+      if (Math.random() < scandalRisk * 0.1) {
+        const appPenalty = 15 + Math.floor(Math.random() * 16);
         approvalHit -= appPenalty;
-        state.addTickerMessage(`SCANDAL: ${member.name} (${member.role}) leaked damaging info! Approval -${appPenalty}%`, 'text-red-600 font-black');
+        state.addTickerMessage(`SCANDAL: ${member.name} (${member.role}) caught in corruption scandal! Approval -${appPenalty}%`, 'text-red-600 font-black');
         newDiaryEntries.unshift({
           id: Math.random().toString(36).substring(7),
           month: currentMonth,
-          event: "CABINET SCANDAL",
-          outcome: `${member.name} leaked damaging info to the press. Approval plummeted.`,
+          event: "CABINET CORRUPTION",
+          outcome: `${member.name} was implicated in a major corruption scandal.`,
           type: 'CRISIS' as const
         });
-        state.logEvent('SCANDAL_TRIGGERED', { type: 'CABINET_LEAK', memberName: member.name });
+        state.logEvent('SCANDAL_TRIGGERED', { type: 'CABINET_CORRUPTION', memberName: member.name });
+      }
+
+      // Loyalty shifts based on ambition and player approval
+      if (pl.approvalRating < 40 && ambition > 70) {
+        member.loyalty = Math.max(0, member.loyalty - 5);
+        if (member.loyalty < 20 && Math.random() < 0.3) {
+          // Resignation
+          state.addTickerMessage(`RESIGNATION: ${member.name} has resigned as ${member.role}!`, 'text-orange-500 font-bold');
+          delete newCabinet[roleId];
+          resigned = true;
+          newDiaryEntries.unshift({
+            id: Math.random().toString(36).substring(7),
+            month: currentMonth,
+            event: "CABINET RESIGNATION",
+            outcome: `${member.name} resigned, citing "differences in direction".`,
+            type: 'ORDER' as const
+          });
+        }
+      }
+
+      if (!resigned) {
+        // Rivalries between ambitious members
+        cabinetMembers.forEach(otherRoleId => {
+          if (roleId !== otherRoleId && newCabinet[otherRoleId]) {
+            const other = newCabinet[otherRoleId];
+            const otherAmbition = other.ambition ?? 50;
+            if (ambition > 80 && otherAmbition > 80 && Math.random() < 0.05) {
+              member.loyalty = Math.max(0, member.loyalty - 2);
+              // Note: other will be updated when its roleId is processed in the outer loop
+              // or we can update it here if it's already processed... but better to keep it simple.
+              state.addTickerMessage(`IN-FIGHTING: Rivalry heating up between ${member.name} and ${other.name}.`, 'text-slate-400 italic');
+            }
+          }
+        });
+        newCabinet[roleId] = member;
       }
     });
+
+    updatedPl.cabinet = newCabinet;
 
     // 1.6 State of the Union History
     const newSotuHistory = [...(pl.sotuHistory || [])];

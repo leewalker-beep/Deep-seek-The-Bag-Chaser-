@@ -5101,6 +5101,59 @@ const MONUMENT_ARC: NarrativeEvent[] = [
   }
 ];
 
+const CABINET_ARC: NarrativeEvent[] = [
+  {
+    id: 'cab_disagreement_1',
+    title: 'Cabinet Friction',
+    description: 'Internal reports suggest significant disagreements between your cabinet members. Tensions are leaking to the press.',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.15,
+      minMonth: 12
+    },
+    choices: [
+      {
+        id: 'cab_friction_unify',
+        label: 'Force a Consensus',
+        description: 'Demand they get in line or get out.',
+        consequences: { aura: 20, mentalHealth: -10, biographyEntry: 'Enforced a strict "one voice" policy in the cabinet.' },
+        setFlags: { cab_consensus: 1 }
+      },
+      {
+        id: 'cab_friction_rivalry',
+        label: 'Encourage Competition',
+        description: 'Let them battle it out. The best ideas will rise.',
+        consequences: { clout: 30, heat: 10, biographyEntry: 'Allowed internal rivalries to sharpen the administration\'s edge.' },
+        setFlags: { cab_rivalry: 1 }
+      }
+    ]
+  },
+  {
+    id: 'cab_scandal_1',
+    title: 'Media Praise',
+    description: 'A major news outlet has published a glowing profile of your cabinet\'s competence, calling it the "most efficient in a generation."',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.1,
+      minMonth: 6
+    },
+    choices: [
+      {
+        id: 'cab_praise_humble',
+        label: 'Share the Credit',
+        description: 'The success belongs to the team.',
+        consequences: { aura: 15, biographyEntry: 'Humbly shared the success of the administration with the entire cabinet.' },
+        setFlags: { cab_loyal_boost: 1 }
+      },
+      {
+        id: 'cab_praise_self',
+        label: 'Take the Lead',
+        description: 'I chose them. I lead them.',
+        consequences: { clout: 20, aura: -5, biographyEntry: 'Asserted personal leadership as the key driver of cabinet success.' }
+      }
+    ]
+  }
+];
 
 export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...BASE_EVENTS,
@@ -5154,4 +5207,5 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...DIGITAL_SYNDICATE_ARC,
   ...PEACE_ARC,
   ...MONUMENT_ARC,
+  ...CABINET_ARC,
 ];

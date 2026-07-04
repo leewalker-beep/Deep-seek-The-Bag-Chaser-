@@ -102,6 +102,14 @@ export const recordPresidencyAchievement = (pl: PlayerStats, orderName: string):
   return recordEvent(pl, `As President, successfully implemented the ${orderName} initiative.`, `presidency_${orderName.replace(/\s+/g, '_').toLowerCase()}`);
 };
 
+export const recordCabinetAppointment = (pl: PlayerStats, name: string, role: string): BiographyUpdate | null => {
+  return recordEvent(pl, `Appointed ${name} as ${role}, a key move in shaping the administration.`, `appoint_${name.replace(/\s+/g, '_').toLowerCase()}`);
+};
+
+export const recordCabinetDismissal = (pl: PlayerStats, name: string, role: string): BiographyUpdate | null => {
+  return recordEvent(pl, `Dismissed ${name} from the role of ${role} following a cabinet shakeup.`, `dismiss_${name.replace(/\s+/g, '_').toLowerCase()}`);
+};
+
 export const recordSpecialization = (pl: PlayerStats, specializationName: string): BiographyUpdate | null => {
   const templates = [
     `Doubled down on the path of the ${specializationName}.`,
