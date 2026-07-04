@@ -1,5 +1,6 @@
 import type { CabinetMember, PresidentCrisis, ExecutiveOrder, PlayerStats } from '../types/game';
 import { MASTERY_TO_HUSTLE_ID, MASTERY_DISPLAY_NAMES, MASTERY_ORDER_BONUSES } from '../config/masteryOrderMapping';
+import { CABINET_CANDIDATES } from '../config/cabinetCandidates';
 
 export type { CabinetMember, PresidentCrisis, ExecutiveOrder };
 
@@ -43,6 +44,63 @@ export const CABINET_ROLES = [
   { id: 'defense', role: 'Secretary of Defense', bonusType: 'aura' as const },
   { id: 'press', role: 'Press Secretary', bonusType: 'approval' as const },
 ];
+
+export function generateCandidatePool(roleId: string, player: PlayerStats): CabinetMember[] {
+  const roleConfig = CABINET_ROLES.find(r => r.id === roleId);
+  if (!roleConfig) return [];
+
+  // 1. Filter candidates for the role
+  let eligible = CABINET_CANDIDATES.filter(c => c.preferredRoles.includes(roleId));
+
+  // If not enough specific ones, add others
+  if (eligible.length < 3) {
+    const others = CABINET_CANDIDATES.filter(c => !c.preferredRoles.includes(roleId));
+    eligible = [...eligible, ...others.slice(0, 3 - eligible.length)];
+  }
+
+  // 2. Score candidates based on player history
+  const scoredCandidates = eligible.map(cand => {
+    let score = Math.random() * 100;
+
+    // Prioritize if player has interacted with this character
+    if (cand.characterId) {
+      if (player.crushedRivals?.includes(cand.characterId)) score += 1000;
+      if (player.completedNarrativeEvents?.some(e => e.includes(cand.characterId!))) score += 500;
+      // Check narrative flags for relationship
+      const relFlag = player.narrativeFlags?.[`rel_${cand.characterId}`];
+      if (relFlag) score += Number(relFlag) * 50;
+    }
+
+    return { cand, score };
+  });
+
+  // 3. Sort and pick top 3
+  const selection = scoredCandidates
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(({ cand }) => {
+      // Calculate initial loyalty
+      let initialLoyalty = 70;
+      if (cand.characterId && player.crushedRivals?.includes(cand.characterId)) {
+        initialLoyalty += 15; // Respect/Fear
+      }
+
+      // Integrity affects initial loyalty (more integrity = harder to buy)
+      initialLoyalty -= ((cand.integrity ?? 50) - 50) / 5;
+
+      return {
+        ...cand,
+        role: roleConfig.role,
+        loyalty: Math.max(30, Math.min(100, initialLoyalty)),
+        bonus: {
+          type: roleConfig.bonusType,
+          value: cand.baseBonusValue
+        }
+      } as CabinetMember;
+    });
+
+  return selection;
+}
 
 export const EXECUTIVE_ORDERS: ExecutiveOrder[] = [
   {

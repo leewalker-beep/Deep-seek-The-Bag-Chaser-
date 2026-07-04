@@ -388,9 +388,19 @@ export interface Badge {
 }
 
 export interface CabinetMember {
-  id: string;
+  id: string; // Role ID (e.g., 'treasury')
   name: string;
-  role: string;
+  role: string; // Display name of role
+  avatarId?: string;
+  characterId?: string;
+  previousCareer?: string;
+  competence?: number;
+  integrity?: number;
+  popularity?: number;
+  corruptionRisk?: number;
+  ambition?: number;
+  personalityTraits?: string[];
+  bio?: string;
   loyalty: number;
   bonus: {
     type: 'approval' | 'cash' | 'clout' | 'aura';
