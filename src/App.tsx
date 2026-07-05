@@ -9,7 +9,6 @@ import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
-import { EndingModal } from './components/EndingModal';
 import { AnimatePresence } from 'framer-motion';
 import { CinematicTransition } from './components/effects/CinematicTransition';
 import { HERO_ARTWORK } from './config/heroArtwork';
@@ -135,7 +134,6 @@ function App() {
 
   const [showMinigame, setShowMinigame] = useState(false);
   const [showScoreboard, setShowScoreboard] = useState(false);
-  const [showEnding, setShowEnding] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
@@ -303,15 +301,8 @@ function App() {
           />
         ) : showSummary ? (
           <EndgameSummary
-            onRestart={() => setShowHallOfFame(true)}
-          />
-        ) : showEnding ? (
-          <EndingModal
-            onClose={() => setShowEnding(false)}
-            onNewGamePlus={() => {
-              setShowEnding(false);
-              setShowSummary(true);
-            }}
+            onRestart={() => resetGame()}
+            onViewHallOfFame={() => setShowHallOfFame(true)}
           />
         ) : (
           <DeathScreen
@@ -319,7 +310,9 @@ function App() {
             fatalCause={fatalCause}
             lastHustleId={pl?.lastExecutedHustleId}
             deathContext={pl?.deathContext}
-            onReset={() => setShowSummary(true)}
+            onReset={() => resetGame()}
+            onViewSummary={() => setShowSummary(true)}
+            onLegacyShop={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
           />
         )}
       </>
