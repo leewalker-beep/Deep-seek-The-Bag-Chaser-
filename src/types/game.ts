@@ -330,6 +330,7 @@ export interface NarrativeChoice {
     mentalHealth?: number;
     heat?: number;
     passiveCash?: number;
+    minimumYield?: number;
     specializationLock?: string;
     biographyEntry?: string;
   };

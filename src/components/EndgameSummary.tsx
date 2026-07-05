@@ -7,9 +7,10 @@ import { HUSTLES } from '../config/hustles/base';
 
 interface EndgameSummaryProps {
   onRestart: () => void;
+  onViewHallOfFame: () => void;
 }
 
-export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => {
+export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onViewHallOfFame }) => {
   const { pl } = useGameStore();
   const [copied, setCopied] = useState(false);
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
@@ -121,15 +122,21 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
         )}
 
         <div className="space-y-4">
-          <div className="flex gap-3">
-            <BaseButton variant="primary" onClick={onRestart} className="flex-[2] py-4 text-lg">
+          <div className="flex flex-col gap-3">
+            <BaseButton variant="primary" onClick={onRestart} className="w-full py-5 text-xl font-black">
               RUN IT BACK
             </BaseButton>
-            <BaseButton
-              variant="secondary"
-              onClick={handleShare}
-              className="flex-1 py-4 text-lg relative overflow-hidden"
-            >
+
+            <div className="flex gap-3">
+              <BaseButton variant="secondary" onClick={onViewHallOfFame} className="flex-1 py-4 text-lg">
+                HALL OF FAME
+              </BaseButton>
+
+              <BaseButton
+                variant="secondary"
+                onClick={handleShare}
+                className="flex-1 py-4 text-lg relative overflow-hidden"
+              >
               <AnimatePresence mode="wait">
                 {copied ? (
                   <motion.span
@@ -155,6 +162,7 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart }) => 
               </AnimatePresence>
             </BaseButton>
           </div>
+        </div>
           <p className="text-[10px] text-slate-600 text-center uppercase font-bold tracking-widest">
             Your progress has been etched into history.
           </p>

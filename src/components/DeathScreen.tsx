@@ -1,6 +1,5 @@
 import React from 'react';
 import { DEATH_MESSAGES } from '../config/deathMessages';
-import { useGameStore } from '../store/gameStore';
 import { CinematicModal } from './ui/CinematicModal';
 import { PortraitCard } from './ui/PortraitCard';
 
@@ -19,9 +18,19 @@ interface DeathScreenProps {
     fatalStatValue?: number;
   };
   onReset: () => void;
+  onViewSummary: () => void;
+  onLegacyShop: () => void;
 }
 
-export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause, lastHustleId, deathContext, onReset }) => {
+export const DeathScreen: React.FC<DeathScreenProps> = ({
+  deathBadge,
+  fatalCause,
+  lastHustleId,
+  deathContext,
+  onReset,
+  onViewSummary,
+  onLegacyShop
+}) => {
   const deathInfo = (lastHustleId && DEATH_MESSAGES[lastHustleId]) || DEATH_MESSAGES['DEFAULT'];
   const displayBadge = deathBadge || deathInfo.badge;
 
@@ -78,19 +87,26 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({ deathBadge, fatalCause
               </div>
             )}
 
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-4 text-center">
               <button
                 onClick={onReset}
-                className="w-full py-5 bg-red-600 text-white font-black text-sm rounded-xl uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:bg-red-500 transition-all active:scale-95"
+                className="w-full py-6 bg-red-600 text-white font-black text-base rounded-xl uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:bg-red-500 transition-all active:scale-95"
               >
                 RUN IT BACK
               </button>
 
               <button
-                onClick={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
-                className="w-full py-4 bg-slate-900 text-slate-400 border border-slate-800 font-bold text-[10px] uppercase tracking-[0.2em] rounded-xl hover:text-white transition-all"
+                onClick={onViewSummary}
+                className="w-full py-4 bg-slate-800 text-slate-200 border border-slate-700 font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-slate-700 transition-all active:scale-95"
               >
-                Enter Legacy Shop
+                SEE THE LEDGER
+              </button>
+
+              <button
+                onClick={onLegacyShop}
+                className="text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase tracking-[0.2em] transition-colors"
+              >
+                LEGACY SHOP
               </button>
             </div>
           </div>
