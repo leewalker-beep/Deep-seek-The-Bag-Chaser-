@@ -54,12 +54,11 @@ export function checkDeathConditions(pl: PlayerStats): {
   fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
   fatalStatValue?: number;
 } {
-  // Never die during tutorial
-  if (!pl.isTutorialSkipped && pl.tutorialStep < 6) {
-    return { shouldDie: false, deathCause: null };
-  }
+  // Only protect clout/aura death during tutorial
+  // Mental health and bag death always apply
+  const inTutorial = !pl.isTutorialSkipped && pl.tutorialStep < 6;
 
-  if (pl.clout <= 0) {
+  if (pl.clout <= 0 && !inTutorial) {
     return {
       shouldDie: true,
       deathCause: 'Irrelevant: The world has moved on without you.',
@@ -67,7 +66,7 @@ export function checkDeathConditions(pl: PlayerStats): {
       fatalStatValue: pl.clout,
     };
   }
-  if (pl.aura <= 0) {
+  if (pl.aura <= 0 && !inTutorial) {
     return {
       shouldDie: true,
       deathCause: 'Canceled: Your reputation is destroyed.',
@@ -754,16 +753,11 @@ export function advanceMonth(
   let fatalStat: any = undefined;
   let fatalStatValue: number | undefined = undefined;
 
-  // Skip passive death if in tutorial
-  if (!newPl.isTutorialSkipped && newPl.tutorialStep < 6) {
-    // skip death checks this month
-  } else {
-    const deathResult = checkDeathConditions(newPl);
-    shouldDie = deathResult.shouldDie;
-    deathCause = deathResult.deathCause;
-    fatalStat = deathResult.fatalStat;
-    fatalStatValue = deathResult.fatalStatValue;
-  }
+  const deathResult = checkDeathConditions(newPl);
+  shouldDie = deathResult.shouldDie;
+  deathCause = deathResult.deathCause;
+  fatalStat = deathResult.fatalStat;
+  fatalStatValue = deathResult.fatalStatValue;
 
   if (shouldDie) {
     newPl.deathContext = {
