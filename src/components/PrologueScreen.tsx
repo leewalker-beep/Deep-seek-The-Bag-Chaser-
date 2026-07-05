@@ -63,8 +63,10 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
   const [phaseTimer, setPhaseTimer] = useState(2);
   const [gameState, setGameState] = useState<'waiting' | 'ready' | 'clicked' | 'too-soon'>('waiting');
   const [reactions, setReactions] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(8);
   const finishedRef = useRef(false);
+  const [lastReactionMs, setLastReactionMs] = useState<number | null>(null);
+  const readyTimestamp = useRef<number>(0);
 
   useEffect(() => {
     if (phase === 'instruction') {
@@ -115,10 +117,11 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
   }, [phase]);
 
   useEffect(() => {
-    if (phase === 'playing' && gameState === 'waiting' && timeLeft > 0) {
+    if (phase === 'playing' && gameState === 'waiting') {
       const waitTime = 500 + Math.random() * 1000;
       const timeout = setTimeout(() => {
         setGameState('ready');
+        readyTimestamp.current = Date.now();
       }, waitTime);
       return () => clearTimeout(timeout);
     }
@@ -130,6 +133,8 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
       setGameState('too-soon');
       setTimeout(() => setGameState('waiting'), 300);
     } else if (gameState === 'ready') {
+      const reactionMs = Date.now() - readyTimestamp.current;
+      setLastReactionMs(reactionMs);
       setReactions(prev => prev + 1);
       setGameState('clicked');
       setTimeout(() => setGameState('waiting'), 300);
@@ -168,6 +173,25 @@ const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onC
               <div className="text-xl font-black uppercase tracking-widest">
                 {gameState === 'ready' ? 'TAP NOW!' : 'WAIT...'}
               </div>
+
+              {reactions > 0 && (
+                <div className="mt-4 text-center">
+                  <div className="text-emerald-400 font-black text-2xl tabular-nums">
+                    {reactions} taps
+                  </div>
+                  {lastReactionMs && (
+                    <div className="text-slate-400 text-sm mt-1">
+                      Last: {lastReactionMs}ms
+                      {lastReactionMs < 300
+                        ? ' ⚡ FAST'
+                        : lastReactionMs < 500
+                        ? ' ✓ GOOD'
+                        : ' SLOW'}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-8 text-4xl font-mono font-black">{timeLeft.toFixed(1)}s</div>
             </>
           )}
@@ -184,6 +208,12 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
   const [timeLeft, setTimeLeft] = useState(15);
   const nextId = useRef(0);
   const finishedRef = useRef(false);
+  const [feedback, setFeedback] = useState<{
+    id: number;
+    x: number;
+    y: number;
+    good: boolean;
+  } | null>(null);
 
   const onCompleteRef = useRef(onComplete);
   const scoreRef = useRef(score);
@@ -261,17 +291,27 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
     return () => clearInterval(moveTimer);
   }, [phase]);
 
-  const handleTap = (id: number, isGood: boolean) => {
+  const handleTap = (
+    id: number,
+    isGood: boolean,
+    x: number,
+    y: number
+  ) => {
     if (isGood) setScore(s => s + 1);
     else setScore(s => Math.max(0, s - 2));
     setWords(prev => prev.filter(w => w.id !== id));
+    setFeedback({
+      id: Date.now(), x, y, good: isGood
+    });
+    setTimeout(() => setFeedback(null), 500);
   };
 
   if (phase === 'instruction') {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none">
+      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none text-center">
         <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
-          Tap only the money words
+          TAP THE GREEN WORDS 💚<br />
+          <span className="text-sm opacity-70">Avoid the red ones — every mistake costs you 2 points</span>
         </div>
       </div>
     );
@@ -296,7 +336,26 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
 
   return (
     <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-blue-400/30 relative overflow-hidden">
+      <div className="absolute top-4 left-4 text-white font-mono font-black text-xl">{score} pts</div>
       <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
+
+      {feedback && (
+        <motion.div
+          key={feedback.id}
+          initial={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.5 }}
+          className={`absolute font-black text-xl pointer-events-none z-20 ${feedback.good ? 'text-emerald-400' : 'text-red-400'}`}
+          style={{
+            left: `${feedback.x}%`,
+            top: `${feedback.y}%`,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          {feedback.good ? '+1' : '-2'}
+        </motion.div>
+      )}
+
       <AnimatePresence>
         {words.map(w => (
           <motion.button
@@ -304,7 +363,7 @@ const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onCom
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
-            onPointerDown={() => handleTap(w.id, w.isGood)}
+            onPointerDown={() => handleTap(w.id, w.isGood, w.x, w.y)}
             className={`absolute px-5 py-3 min-w-[100px] min-h-[44px] rounded-xl text-lg font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
             style={{ left: `${w.x}%`, top: `${w.y}%`, transform: 'translateX(-50%)' }}
           >
@@ -325,6 +384,9 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
   const [timeLeft, setTimeLeft] = useState(15);
   const [rounds, setRounds] = useState(0);
   const finishedRef = useRef(false);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
 
   const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -380,7 +442,19 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
 
   const handleGuess = (higher: boolean) => {
     const correct = (higher && next >= current) || (!higher && next <= current);
-    if (correct) setScore(s => s + 1);
+
+    if (correct) {
+      setScore(s => s + 1);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > bestStreak) setBestStreak(newStreak);
+    } else {
+      setStreak(0);
+    }
+
+    setLastCorrect(correct);
+    setTimeout(() => setLastCorrect(null), 400);
+
     setCurrent(next);
     setNext(Math.floor(Math.random() * 13));
     setRounds(r => r + 1);
@@ -390,7 +464,8 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
     return (
       <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 text-center pointer-events-none">
         <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
-          Will the next number be higher or lower?
+          HIGHER or LOWER than the card?<br />
+          <span className="text-sm opacity-70">Hit 3 in a row for a streak 🔥<br />Score = total correct in 15 seconds</span>
         </div>
       </div>
     );
@@ -416,6 +491,26 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
   return (
     <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-yellow-600 flex flex-col items-center justify-center p-6 space-y-8 relative">
       <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
+
+      <div className="flex justify-between w-full px-2 mb-3">
+        <div className="text-center">
+          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Correct</div>
+          <div className="text-2xl font-black text-white tabular-nums">{score}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Streak</div>
+          <div className={`text-2xl font-black tabular-nums transition-colors ${streak >= 3 ? 'text-amber-400' : 'text-white'}`}>
+            {streak >= 3 ? `${streak}🔥` : streak}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Round</div>
+          <div className="text-2xl font-black text-slate-400 tabular-nums">
+            {rounds}/12
+          </div>
+        </div>
+      </div>
+
       <div className="text-center">
         <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">CURRENT DATA</div>
         <div className="text-6xl font-black text-white bg-white/5 w-24 h-32 flex items-center justify-center rounded-2xl border-2 border-white/10">
@@ -423,10 +518,19 @@ const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ on
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 w-full">
-        <button onPointerDown={() => handleGuess(true)} className="bg-emerald-600 py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px]">Higher</button>
-        <button onPointerDown={() => handleGuess(false)} className="bg-red-600 py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px]">Lower</button>
+        <button
+          onPointerDown={() => handleGuess(true)}
+          className={`py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px] transition-colors duration-200 ${lastCorrect === true ? 'bg-emerald-400' : lastCorrect === false ? 'bg-red-700' : 'bg-emerald-600'}`}
+        >
+          Higher
+        </button>
+        <button
+          onPointerDown={() => handleGuess(false)}
+          className={`py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px] transition-colors duration-200 ${lastCorrect === false ? 'bg-red-400' : 'bg-red-600'}`}
+        >
+          Lower
+        </button>
       </div>
-      <div className="text-[10px] text-slate-500 font-black uppercase">Round {rounds}/12</div>
     </div>
   );
 };
