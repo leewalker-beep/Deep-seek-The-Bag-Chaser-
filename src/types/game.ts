@@ -662,6 +662,8 @@ export interface PlayerStats {
   completedDailyChallengesCount: number;
   totalChallengesCompleted: number;
   totalHustlesCompleted: number;
+  lastMajorEvents: { text: string; color?: string; type?: 'positive' | 'negative' | 'neutral' }[];
+  turningPoint: string | null;
   inJail: boolean;
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
@@ -669,6 +671,13 @@ export interface PlayerStats {
   tutorialStep: number;
   isTutorialSkipped: boolean;
   deathContext?: {
+    cause: string;
+    narrative: string;
+    statReachedZero: string;
+    statValueAtDeath: number;
+    timeline: { label: string; value: string | number; color?: string }[];
+    technicalMath?: { label: string; multiplier: number }[];
+    recommendations: string[];
     mentalHealthAtDeath: number;
     lastHustleMentalHit: number;
     lastHustleName: string;

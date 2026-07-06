@@ -2,12 +2,13 @@ import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
 import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
 import { enforceStatCaps } from '../../engine/statEngine';
-import { advanceMonth } from '../../engine/advancementEngine';
+import { advanceMonth, checkDeathConditions } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
 import { getDominantStat } from '../../utils/endingUtils';
 import { getEnding } from '../../config/endings';
 import * as Bio from '../../engine/biographyEngine';
+import { getDeathContext } from '../../utils/deathUtils';
 
 export interface PresidentSlice {
   issueExecutiveOrder: (orderId: string) => void;
@@ -614,14 +615,13 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     if (isGameOver) {
       state.addTickerMessage(gameOverCause, "text-red-500 font-black");
 
-      updatedPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(updatedPl.mentalHealth),
-        lastHustleMentalHit: 0,
-        lastHustleName: updatedPl.lastExecutedHustleId || 'Presidency',
-        heatAtDeath: Math.floor(updatedPl.heat),
-        monthsPlayed: updatedPl.month,
-        tier: updatedPl.currentTier,
-      };
+      updatedPl.deathContext = getDeathContext(updatedPl, 'clout', 0, {
+        name: updatedPl.lastExecutedHustleId || 'Presidency',
+        mentalHit: 0
+      });
+      // Override specific fields for political collapse
+      updatedPl.deathContext!.cause = updatedPl.presidentMonth === 96 ? 'Legacy Cemented' : 'Political Collapse';
+      updatedPl.deathContext!.narrative = gameOverCause;
 
       // Manually trigger death/endgame logic
       const lastHustleId = updatedPl.lastExecutedHustleId || 'president_campaign';
@@ -702,14 +702,11 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     );
 
     if (shouldDie) {
-      advancedPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(advancedPl.mentalHealth),
-        lastHustleMentalHit: 0,
-        lastHustleName: 'Presidential Duties',
-        heatAtDeath: Math.floor(advancedPl.heat),
-        monthsPlayed: advancedPl.month,
-        tier: advancedPl.currentTier,
-      };
+      const { fatalStat, fatalStatValue } = checkDeathConditions(advancedPl);
+      advancedPl.deathContext = getDeathContext(advancedPl, fatalStat!, fatalStatValue!, {
+        name: 'Presidential Duties',
+        mentalHit: 0
+      });
 
       const dominantStat = getDominantStat(advancedPl);
       const ending = getEnding(advancedPl.legacyPoints || 0, dominantStat);

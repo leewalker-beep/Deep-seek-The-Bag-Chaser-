@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ConfirmationModalProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;

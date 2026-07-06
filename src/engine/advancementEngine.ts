@@ -12,6 +12,7 @@ import { HUSTLE_SECTORS } from '../config/sectors';
 import { getSentence } from '../config/jailSentences';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
+import { getDeathContext } from '../utils/deathUtils';
 const rentByTier: Record<Tier, number> = {
   MUD: 200,
   STREET: 1000,
@@ -364,6 +365,18 @@ export function advanceMonth(
   }
 
   newPl.month += 1;
+
+  const isSignificant = totalRent > 10000 || passiveIncome > 100000;
+  if (isSignificant) {
+    const netChange = passiveIncome - totalRent;
+    newPl.lastMajorEvents = [
+      {
+        text: `Month ${newPl.month}: ${netChange >= 0 ? 'Profit' : 'Loss'} $${Math.abs(Math.round(netChange)).toLocaleString()}`,
+        type: netChange >= 0 ? 'positive' : 'negative'
+      },
+      ...(newPl.lastMajorEvents || [])
+    ].slice(0, 5);
+  }
 
   // JAIL CHECK — fires after month increment
   if (newPl.heat >= 100 && !newPl.inJail) {
@@ -760,16 +773,11 @@ export function advanceMonth(
   fatalStatValue = deathResult.fatalStatValue;
 
   if (shouldDie) {
-    newPl.deathContext = {
-      mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
-      lastHustleMentalHit: 0,
-      lastHustleName: 'Monthly Expenses',
-      heatAtDeath: Math.floor(newPl.heat),
-      monthsPlayed: newPl.month,
-      tier: newPl.currentTier,
-      fatalStat,
-      fatalStatValue,
-    };
+    newPl.deathContext = getDeathContext(newPl, fatalStat!, fatalStatValue!, {
+      name: 'Monthly Expenses',
+      mentalHit: 0, // already applied in advanceMonth if there were any
+      bagHit: totalRent - passiveIncome
+    });
   }
 
   // Convert all news to TickerMessage objects and stamp current tier

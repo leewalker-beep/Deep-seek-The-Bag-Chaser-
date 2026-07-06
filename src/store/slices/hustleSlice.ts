@@ -22,6 +22,7 @@ import { GAME_CONSTANTS } from '../../config/gameConstants';
 import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 import * as Bio from '../../engine/biographyEngine';
 import { BACKGROUNDS } from '../../config/backgrounds';
+import { getDeathContext } from '../../utils/deathUtils';
 
 
 
@@ -133,9 +134,54 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         metadata,
       };
 
+      const isSignificant = type === 'PROMOTION_EARNED' ||
+                            type === 'BUSINESS_PURCHASED' ||
+                            type === 'RIVAL_DEFEATED' ||
+                            type === 'ELECTION_WON' ||
+                            type === 'SCANDAL_TRIGGERED' ||
+                            (type === 'HUSTLE_COMPLETED' && ((metadata as any).profit > 100000 || (metadata as any).profit < -50000)) ||
+                            (type === 'HUSTLE_COMPLETED' && !(metadata as any).success);
+
+      let newMajorEvents = [...(state.pl.lastMajorEvents || [])];
+      let newTurningPoint = state.pl.turningPoint;
+
+      if (isSignificant) {
+        let eventText = '';
+        let eventType: 'positive' | 'negative' | 'neutral' = 'neutral';
+
+        if (type === 'PROMOTION_EARNED') {
+          eventText = `Advanced to ${metadata.to} as ${metadata.specialization}`;
+          eventType = 'positive';
+        } else if (type === 'BUSINESS_PURCHASED') {
+          eventText = `Acquired ${metadata.assetId}`;
+          eventType = 'positive';
+        } else if (type === 'RIVAL_DEFEATED') {
+          eventText = `Defeated rival ${metadata.rivalName}`;
+          eventType = 'positive';
+        } else if (type === 'SCANDAL_TRIGGERED') {
+          eventText = `Scandal: ${metadata.type.replace(/_/g, ' ')}`;
+          eventType = 'negative';
+          if (!newTurningPoint) newTurningPoint = eventText;
+        } else if (type === 'HUSTLE_COMPLETED') {
+          const m = metadata as any;
+          eventText = m.success ? `Success: ${m.hustleName}` : `Failed: ${m.hustleName}`;
+          eventType = m.success ? 'positive' : 'negative';
+
+          if (!m.success && !newTurningPoint) {
+            newTurningPoint = `Failed ${m.hustleName} at level ${m.level}`;
+          }
+        }
+
+        if (eventText) {
+          newMajorEvents = [{ text: eventText, type: eventType }, ...newMajorEvents].slice(0, 5);
+        }
+      }
+
       const updatedPl = enforceStatCaps({
         ...state.pl,
         events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
+        lastMajorEvents: newMajorEvents,
+        turningPoint: newTurningPoint,
       });
       updatedPl.legacyScore = calculateLegacyScore(updatedPl);
 
@@ -453,16 +499,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      nextPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(nextPl.mentalHealth),
-        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
-        lastHustleName: branch.name || hustle.name,
-        heatAtDeath: Math.floor(nextPl.heat),
-        monthsPlayed: nextPl.month,
-        tier: nextPl.currentTier,
-        fatalStat,
-        fatalStatValue,
-      };
+      nextPl.deathContext = getDeathContext(nextPl, fatalStat!, fatalStatValue!, {
+        name: branch.name || hustle.name,
+        mentalHit: result.mentalHit,
+        technicalMath: result.technicalMath,
+        bagHit: result.cost,
+        cloutHit: result.yieldClout,
+        auraHit: result.yieldAura
+      });
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
 
@@ -910,16 +954,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      plFinal.deathContext = {
-        mentalHealthAtDeath: Math.floor(plFinal.mentalHealth),
-        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
-        lastHustleName: levelData.name || hustle.name,
-        heatAtDeath: Math.floor(plFinal.heat),
-        monthsPlayed: plFinal.month,
-        tier: plFinal.currentTier,
-        fatalStat,
-        fatalStatValue,
-      };
+      plFinal.deathContext = getDeathContext(plFinal, fatalStat!, fatalStatValue!, {
+        name: levelData.name || hustle.name,
+        mentalHit: result.mentalHit,
+        technicalMath: result.technicalMath,
+        bagHit: result.cost - result.yieldCash,
+        cloutHit: result.yieldClout,
+        auraHit: result.yieldAura
+      });
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plFinal.legacyScore || 0) });
 
@@ -1244,16 +1286,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      newPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
-        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
-        lastHustleName: targetNodeData.name || hustle.name,
-        heatAtDeath: Math.floor(newPl.heat),
-        monthsPlayed: newPl.month,
-        tier: newPl.currentTier,
-        fatalStat,
-        fatalStatValue,
-      };
+      newPl.deathContext = getDeathContext(newPl, fatalStat!, fatalStatValue!, {
+        name: targetNodeData.name || hustle.name,
+        mentalHit: result.mentalHit,
+        technicalMath: result.technicalMath,
+        bagHit: result.cost,
+        cloutHit: result.yieldClout,
+        auraHit: result.yieldAura
+      });
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
 
@@ -1423,16 +1463,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      plAfterPurchase.deathContext = {
-        mentalHealthAtDeath: Math.floor(plAfterPurchase.mentalHealth),
-        lastHustleMentalHit: 0,
-        lastHustleName: asset.name,
-        heatAtDeath: Math.floor(plAfterPurchase.heat),
-        monthsPlayed: plAfterPurchase.month,
-        tier: plAfterPurchase.currentTier,
-        fatalStat,
-        fatalStatValue,
-      };
+      plAfterPurchase.deathContext = getDeathContext(plAfterPurchase, fatalStat!, fatalStatValue!, {
+        name: asset.name,
+        mentalHit: 0,
+        bagHit: asset.cost
+      });
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plAfterPurchase.legacyScore || 0) });
 
@@ -1523,16 +1558,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       finalDeathBadge = deathInfo.badge;
       finalFatalCause = deathCause;
 
-      newPl.deathContext = {
-        mentalHealthAtDeath: Math.floor(newPl.mentalHealth),
-        lastHustleMentalHit: 0,
-        lastHustleName: 'Prison',
-        heatAtDeath: Math.floor(newPl.heat),
-        monthsPlayed: newPl.month,
-        tier: newPl.currentTier,
-        fatalStat,
-        fatalStatValue,
-      };
+      newPl.deathContext = getDeathContext(newPl, fatalStat!, fatalStatValue!, {
+        name: 'Prison',
+        mentalHit: 0 // advanceMonth already applied penalties
+      });
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(newPl) || 0) });
       newPl.deathCount = (newPl.deathCount || 0) + 1;
