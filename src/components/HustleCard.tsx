@@ -7,6 +7,7 @@ import { ConfirmationModal } from './ui/ConfirmationModal';
 import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { useGameStore } from '../store/gameStore';
+import { assessHustleRisk, type RiskAssessment } from '../utils/riskEngine';
 
 const EXECUTE_LABEL: Record<string, string> = {
   MUD: 'GET TO WORK',
@@ -38,6 +39,7 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     type: 'EXECUTE' | 'UPGRADE' | 'REPEAT';
     branchId?: string;
     cost: number;
+    risk?: RiskAssessment;
   } | null>(null);
 
   const currentMarket = useGameStore(state => state.currentMarket);
@@ -93,8 +95,11 @@ export const HustleCard: React.FC<HustleCardProps> = ({
   const badge = HUSTLE_BADGES[hustle.id];
 
   const handleAction = (type: 'EXECUTE' | 'UPGRADE' | 'REPEAT', cost: number, branchId?: string) => {
-    if (cost > player.bag * 0.1) {
-      setPendingAction({ type, cost, branchId });
+    const risk = assessHustleRisk(player, hustle.id, levelData!, currentLevel, currentMarket);
+    const largeSpend = cost > player.bag * 0.1;
+
+    if (largeSpend || risk.level === 'HIGH' || risk.level === 'EXTREME') {
+      setPendingAction({ type, cost, branchId, risk });
     } else {
       if (type === 'EXECUTE') onExecute();
       else if (type === 'UPGRADE' || type === 'REPEAT') onUpgrade(branchId);
@@ -115,12 +120,36 @@ export const HustleCard: React.FC<HustleCardProps> = ({
     >
       <ConfirmationModal
         isOpen={!!pendingAction}
-        title="Confirm Large Spend"
-        message={`This action costs $${pendingAction?.cost.toLocaleString()}, which is over 10% of your current bag. Are you sure?`}
-        confirmLabel="Yes, Spend It"
+        title={pendingAction?.risk?.level === 'EXTREME' ? "⚠️ EXTREME RISK" : pendingAction?.risk?.level === 'HIGH' ? "🟠 HIGH RISK WARNING" : "Confirm Large Spend"}
+        message={
+          pendingAction?.risk && (pendingAction.risk.level === 'HIGH' || pendingAction.risk.level === 'EXTREME') ? (
+            <div className="space-y-3">
+              <p className="font-bold text-red-400">
+                {pendingAction.risk.level === 'EXTREME'
+                  ? "This action could end your run immediately."
+                  : "This action is significantly dangerous."}
+              </p>
+              <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800">
+                <p className="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest text-center">Danger Analysis</p>
+                <ul className="space-y-1.5">
+                  {pendingAction.risk.reasons.map((reason, i) => (
+                    <li key={i} className="text-xs text-slate-300 flex gap-2">
+                      <span className="text-red-500">•</span>
+                      {reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-[10px] text-slate-500 italic">Do you wish to proceed with the operation?</p>
+            </div>
+          ) : (
+            `This action costs $${pendingAction?.cost.toLocaleString()}, which is over 10% of your current bag. Are you sure?`
+          )
+        }
+        confirmLabel={pendingAction?.risk?.level === 'EXTREME' ? "I Accept the Risk" : "Yes, Proceed"}
         onConfirm={confirmAction}
         onCancel={() => setPendingAction(null)}
-        isHighStakes={true}
+        isHighStakes={pendingAction?.risk?.level === 'EXTREME' || pendingAction?.risk?.level === 'HIGH'}
       />
       {isMastered && badge && (
         <div className="absolute top-0 right-0 p-2 bg-emerald-500/20 rounded-bl-xl border-l border-b border-emerald-500/30 group">

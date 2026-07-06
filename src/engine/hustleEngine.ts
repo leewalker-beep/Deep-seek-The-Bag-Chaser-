@@ -21,6 +21,7 @@ export interface HustleExecutionResult {
   bigWinMessage?: string;
   tickerMessages?: TickerMessage[];
   approvalBonus?: number;
+  technicalMath?: { label: string; multiplier: number }[];
 }
 
 export type HustleStrategy = (
@@ -626,6 +627,7 @@ export const executeHustleAction = (
     shieldTurns: effective.shieldTurns,
     approvalBonus: effective.approvalBonus,
     isRare: effective.isBigWin,
-    bigWinMessage: effective.bigWinMessage
+    bigWinMessage: effective.bigWinMessage,
+    technicalMath: effective.technicalMath
   };
 };

@@ -154,6 +154,8 @@ export const getInitialStats = (
     completedDailyChallengesCount: 0,
     totalChallengesCompleted: 0,
     totalHustlesCompleted: 0,
+    lastMajorEvents: [],
+    turningPoint: null,
     inJail: false,
     jailMonthsRemaining: 0,
     jailSentenceTotal: 0,

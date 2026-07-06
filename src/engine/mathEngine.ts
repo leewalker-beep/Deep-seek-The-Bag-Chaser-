@@ -22,6 +22,7 @@ export interface MathResult {
   isBigWin?: boolean;
   bigWinMessage?: string;
   approvalBonus?: number;
+  technicalMath?: { label: string; multiplier: number }[];
 }
 
 export const LEVEL_MULTIPLIERS: Record<number, number> = {
@@ -29,6 +30,13 @@ export const LEVEL_MULTIPLIERS: Record<number, number> = {
   2: 2.0,
   3: 3.5,
   4: 5.0,
+};
+
+export const MENTAL_LEVEL_MULTIPLIERS: Record<number, number> = {
+  1: 1,
+  2: 1.3,
+  3: 1.6,
+  4: 2.0,
 };
 
 export function calculateHustleMath(
@@ -44,6 +52,7 @@ export function calculateHustleMath(
   rivalThreat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL'
 ): MathResult {
   const levelMult = LEVEL_MULTIPLIERS[currentLevel] || 1;
+  const mentalLevelMult = MENTAL_LEVEL_MULTIPLIERS[currentLevel] || 1;
 
   let costMult = marketExpenseMult;
   let yieldMult = marketYieldMult * minigameMult;
@@ -110,6 +119,17 @@ export function calculateHustleMath(
     yieldCash = Math.max(yieldCash, 5000);
   }
 
+  const technicalMath = [
+    { label: 'Base Hit', multiplier: levelData.mentalHit },
+    { label: 'Hustle Level', multiplier: mentalLevelMult },
+  ];
+  if (levelData.mentalHit < 0 && mentalMinigameMult !== 1) {
+    technicalMath.push({ label: 'Performance', multiplier: mentalMinigameMult });
+  }
+  if (!isSuccess) {
+    technicalMath.push({ label: 'Failure', multiplier: 2.0 });
+  }
+
 
   return {
     cost,
@@ -121,7 +141,8 @@ export function calculateHustleMath(
     shieldTurns: levelData.shieldTurns || 0,
     passiveAdded: levelData.passiveYield,
     isBigWin,
-    bigWinMessage
+    bigWinMessage,
+    technicalMath
   };
 }
 
@@ -175,7 +196,7 @@ export function getEffectiveHustleStats(
   _currentLevel: number,
   result: MathResult // Result from calculateHustleMath or strategy
 ): MathResult {
-  const effectiveResult = { ...result };
+  const effectiveResult = { ...result, technicalMath: result.technicalMath ? [...result.technicalMath] : [] };
 
   // 1. Apply Sentiment Multiplier
   let sentimentMult = 1.0;
@@ -213,7 +234,10 @@ export function getEffectiveHustleStats(
     if (badge.buff.type === 'yield') finalYieldMult *= badge.buff.value;
     if (badge.buff.type === 'clout') finalCloutMult *= badge.buff.value;
     if (badge.buff.type === 'aura') finalAuraMult *= badge.buff.value;
-    if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
+    if (badge.buff.type === 'mental') {
+      finalMentalMult *= badge.buff.value;
+      effectiveResult.technicalMath?.push({ label: badge.name + ' Mastery', multiplier: badge.buff.value });
+    }
     if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
   });
 
@@ -240,6 +264,7 @@ export function getEffectiveHustleStats(
 
   if (player.currentTier === 'MUD') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.5);
+    effectiveResult.technicalMath?.push({ label: 'MUD Tier Factor', multiplier: 1.5 });
   } else if (player.currentTier === 'STREET') {
     const streakBonus = Math.min(2.0, 1 + (player.streak || 0) * 0.1);
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * streakBonus);
@@ -248,13 +273,16 @@ export function getEffectiveHustleStats(
     // but for effective stats we show the base expected value.
   } else if (player.currentTier === 'ELITE') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.9);
+    effectiveResult.technicalMath?.push({ label: 'ELITE Efficiency', multiplier: 0.9 });
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * 1.2);
   } else if (player.currentTier === 'MOGUL') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
+    effectiveResult.technicalMath?.push({ label: 'MOGUL Resilience', multiplier: 0.7 });
     effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 0.9);
     effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.5);
   } else if (player.currentTier === 'PRESIDENT') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
+    effectiveResult.technicalMath?.push({ label: 'PRESIDENT Authority', multiplier: 0.7 });
     const auraBonus = 1 + (player.aura / 5000);
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * auraBonus);
 
@@ -292,6 +320,7 @@ export function getEffectiveHustleStats(
         if (spec.mentalHitMult) {
             if (effectiveResult.mentalHit < 0) {
                 effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * spec.mentalHitMult);
+                effectiveResult.technicalMath?.push({ label: spec.name + ' Specialization', multiplier: spec.mentalHitMult });
             } else {
                 // For mental recovery, we might want a different logic or just skip it
                 effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (2 - spec.mentalHitMult));
