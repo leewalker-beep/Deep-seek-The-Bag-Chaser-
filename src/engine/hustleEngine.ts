@@ -52,12 +52,17 @@ const defaultStrategy: HustleStrategy = (hustleId, state, marketType, levelData,
     rivalThreat
   );
 
+  let yieldCash = result.yieldCash;
+  if (levelData.minimumYield && yieldCash < levelData.minimumYield) {
+    yieldCash = levelData.minimumYield;
+  }
+
   return {
     success,
-    netChange: result.yieldCash - result.cost,
+    netChange: yieldCash - result.cost,
     message: success ? '' : 'Failed!',
     cost: result.cost,
-    yieldCash: result.yieldCash,
+    yieldCash: yieldCash,
     yieldClout: result.yieldClout,
     yieldAura: result.yieldAura,
     mentalHit: result.mentalHit,

@@ -66,6 +66,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
     newPl.avatarId = avatarId || 'av_m1';
 
+    newPl.backgroundId = backgroundId || newPl.backgroundId;
+    newPl.categoryId = categoryId || newPl.categoryId;
+    newPl.variationId = variationId || newPl.variationId;
+
     const background = BACKGROUNDS.find(b => b.id === backgroundId);
     if (background) {
       const bioUpdate = Bio.recordOrigin(newPl, background.name, newPl.currentTier);
