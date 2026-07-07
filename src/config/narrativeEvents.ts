@@ -5,6 +5,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'scavenger_prototype',
     title: 'The Prototype',
+    pacingCategory: 'MAJOR',
     description: 'While scouting the industrial waste zones, you found a discarded prototype for a high-end neural processor. It\'s labeled "Property of Global Dynamics". It still works.',
     trigger: {
       background: ['sk_scrap'],
@@ -40,6 +41,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'mining_labor_dispute',
     title: 'The Ghost of the Mines',
+    pacingCategory: 'MAJOR',
     description: 'A investigative journalist has uncovered old records of labor violations at your family\'s legacy mines. They are offering you a "private screening" of the evidence before it goes live.',
     trigger: {
       background: ['bn_mining'],
@@ -76,6 +78,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'tech_black_project',
     title: 'Project Obsidian',
+    pacingCategory: 'MAJOR',
     description: 'An encrypted message arrives from an unknown sender. They want you to design a "backdoor" into a regional banking network. The pay is astronomical, but the risks are absolute.',
     trigger: {
       background: ['dr_tech'],
@@ -111,6 +114,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'shadow_blackmail',
     title: 'Leverage Opportunity',
+    pacingCategory: 'MAJOR',
     description: 'Your informants have caught a local politician in a compromising position. As "The Shadow", you can leverage this for power or for silence.',
     trigger: {
       specialization: ['shadow'],
@@ -148,6 +152,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_1',
     title: 'A Risky Proposal',
+    pacingCategory: 'MAJOR',
     description: 'A shadowy venture capitalist, "The Architect", offers you a massive injection of capital. "No questions asked," they say. "But I\'ll come for a favor later."',
     trigger: {
       tier: ['STARTUP', 'CORPORATE'],
@@ -179,6 +184,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_2',
     title: 'The Architect Returns',
+    pacingCategory: 'MAJOR',
     description: 'The favor has been called in. "The Architect" wants you to use your influence to push through a controversial zoning law that favors their holdings.',
     trigger: {
       tier: ['CORPORATE', 'ELITE', 'MOGUL'],
@@ -213,6 +219,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_3',
     title: 'Architect\'s Retribution',
+    pacingCategory: 'MAJOR',
     description: '"The Architect" is liquidating their positions in your companies, attempting a hostile takeover to strip your assets.',
     trigger: {
       tier: ['ELITE', 'MOGUL', 'PRESIDENT'],
@@ -250,6 +257,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_4',
     title: 'Kane\'s Intervention',
+    pacingCategory: 'MAJOR',
     description: 'Victor Kane reaches out. "I see you\'re having trouble with the Architect," he says. "I have no love for them. I can provide the leverage to bury them once and for all, but I want your loyalty in the coming trade wars."',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
@@ -285,6 +293,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_5',
     title: 'Hostile Negotiations',
+    pacingCategory: 'MAJOR',
     description: 'The market is reeling from your recent moves. Victor Kane is aggressively moving against your holdings, attempting to force you into a merger.',
     trigger: {
       tier: ['MOGUL', 'PRESIDENT'],
@@ -322,6 +331,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'investor_chain_6',
     title: 'The Titan\'s Ascent',
+    pacingCategory: 'MAJOR',
     description: 'Your empire is now at its peak. The world recognizes you as a true Titan of industry. How do you choose to solidify your legacy?',
     trigger: {
       tier: ['PRESIDENT', 'OPEN'],
@@ -375,6 +385,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_1',
     title: 'The Whispering Hand',
+    pacingCategory: 'MAJOR',
     description: 'You\'ve been approached by a representative of "The Whispering Hand", a global syndicate that operates in the gaps between laws. They want to use your logistics network for "special cargo."',
     trigger: {
       tier: ['CORPORATE', 'ELITE'],
@@ -408,6 +419,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_2',
     title: 'Syndicate Escalation',
+    pacingCategory: 'MAJOR',
     description: 'The Whispering Hand is being squeezed by a federal crackdown. They need you to "clean" a massive amount of capital through your ventures immediately.',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
@@ -444,6 +456,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_3',
     title: 'Cole\'s Pursuit',
+    pacingCategory: 'MAJOR',
     description: 'Detective Silas Cole has been tracking the syndicate\'s shipments, and the trail is leading straight to your warehouses. He offers you a chance to be a confidential informant.',
     trigger: {
       tier: ['CORPORATE', 'ELITE'],
@@ -480,6 +493,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_4',
     title: 'The High-Stakes Heist',
+    pacingCategory: 'MAJOR',
     description: 'The Whispering Hand is planning a massive heist of a federal reserve transport. They need you to provide the specialized logistics and "clean" the take.',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
@@ -516,6 +530,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_5',
     title: 'Internal Affairs',
+    pacingCategory: 'MAJOR',
     description: 'The syndicate is being torn apart by internal paranoia. They suspect a mole. As a high-ranking member, you are tasked with "handling" the suspicion.',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
@@ -553,6 +568,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'syndicate_chain_6',
     title: 'Judgment Day',
+    pacingCategory: 'MAJOR',
     description: 'The final showdown. The feds are moving in for a total sweep. Do you stand with the syndicate, or do you make your final move for freedom?',
     trigger: {
       tier: ['MOGUL', 'PRESIDENT', 'OPEN'],
@@ -596,6 +612,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'origin_sk_debt',
     title: 'Old Neighborhood Debt',
+    pacingCategory: 'MAJOR',
     description: 'A figure from your past has surfaced. They claim you owe them for "protection" back in the day. Now that you\'re rich, they want a payout.',
     trigger: {
       category: ['street_kid'],
@@ -630,6 +647,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'origin_dr_rival',
     title: 'The Academic Rival',
+    pacingCategory: 'MAJOR',
     description: 'One of your former professors is publicly critiquing your business model in the media, calling it "unstructured" and "destined for collapse."',
     trigger: {
       category: ['dropout'],
@@ -662,6 +680,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'origin_bn_audit',
     title: 'The Legacy Audit',
+    pacingCategory: 'MAJOR',
     description: 'Internal auditors have found "discrepancies" in the trust fund that launched your career. Regulatory scrutiny is imminent.',
     trigger: {
       category: ['benefactor'],
@@ -700,6 +719,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'spec_influencer_viral',
     title: 'The Viral Crisis',
+    pacingCategory: 'MAJOR',
     description: 'A video of you has gone viral, but it\'s being taken out of context. Your brand is at a tipping point.',
     trigger: {
       specialization: ['influencer'],
@@ -734,6 +754,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'spec_shadow_heist',
     title: 'The Invisible Heist',
+    pacingCategory: 'MAJOR',
     description: 'Your connections in the underworld have planned a high-stakes digital heist. As "The Shadow", they want you to provide the encryption keys for the target\'s vault.',
     trigger: {
       specialization: ['shadow'],
@@ -768,6 +789,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'spec_inst_merger',
     title: 'The Strategic Merger',
+    pacingCategory: 'MAJOR',
     description: 'A mid-sized competitor is struggling. As an "Institutionalist", you can absorb them to solidify your market share.',
     trigger: {
       specialization: ['institutional'],
@@ -806,6 +828,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'rival_memory_grudge',
     title: 'Rivalry Escalation',
+    pacingCategory: 'RIVAL',
     description: 'One of your rivals is taking your success personally. They\'ve started a smear campaign to tarnish your reputation.',
     trigger: {
       tier: ['CORPORATE', 'ELITE', 'MOGUL'],
@@ -841,6 +864,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'rival_crushed_tribute',
     title: 'A Fallen Giant',
+    pacingCategory: 'RIVAL',
     description: 'A rival you recently crushed is offering to sell you their remaining secrets for a chance to retire in peace.',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
@@ -876,6 +900,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'pres_scandal_leak',
     title: 'The Oval Office Leak',
+    pacingCategory: 'PRESIDENCY',
     description: 'Classified documents regarding your pre-presidency business dealings have leaked. The media is calling for an impeachment inquiry.',
     trigger: {
       tier: ['PRESIDENT'],
@@ -908,6 +933,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'pres_intl_crisis',
     title: 'Global Tensions',
+    pacingCategory: 'PRESIDENCY',
     description: 'An international trade dispute is threatening to boil over into a kinetic conflict. Your response will define your legacy.',
     trigger: {
       tier: ['PRESIDENT'],
@@ -940,6 +966,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'pres_cabinet_revolt',
     title: 'Cabinet Conflict',
+    pacingCategory: 'PRESIDENCY',
     description: 'Your Secretary of State and Secretary of Treasury are at each other\'s throats. The discord is leaking into the press.',
     trigger: {
       tier: ['PRESIDENT'],
@@ -975,6 +1002,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_marcus_1',
     characterId: 'char_marcus',
+    pacingCategory: 'CHARACTER',
     title: 'A Favor for a Friend',
     description: 'Marcus "Mook" Miller cornered you near your old block. "Listen, I got into some trouble with the wrong people," he says, looking around nervously. "I need 5k to clear my name. You\'re doing well, right?"',
     trigger: {
@@ -1008,6 +1036,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_marcus_2',
     characterId: 'char_marcus',
+    pacingCategory: 'CHARACTER',
     title: 'Marcus\'s Opportunity',
     description: 'Marcus reaches out again. He\'s found a lead on some "high-end electronics" that fell off a truck. He wants you to provide the storage space.',
     trigger: {
@@ -1045,6 +1074,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_ashley_1',
     characterId: 'char_ashley',
+    pacingCategory: 'CHARACTER',
     title: 'The Journalist\'s Inquiry',
     description: 'Ashley Weaver from the Metro Gazette is writing a piece on the "rising stars" of the city. She wants an exclusive interview.',
     trigger: {
@@ -1079,6 +1109,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_ashley_2',
     characterId: 'char_ashley',
+    pacingCategory: 'CHARACTER',
     title: 'The Leak',
     description: 'Ashley has found some dirt on Victor Kane, but her editor is blocking the story. She needs an anonymous source to "verify" the documents.',
     trigger: {
@@ -1116,6 +1147,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_cole_1',
     characterId: 'char_cole',
+    pacingCategory: 'CHARACTER',
     title: 'Cole\'s Warning',
     description: 'Detective Silas Cole pays you a visit. "I\'ve seen guys like you come and go," he says. "Keep your nose clean, or I\'ll be the one who shuts you down."',
     trigger: {
@@ -1155,6 +1187,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_chen_1',
     characterId: 'char_chen',
+    pacingCategory: 'CHARACTER',
     title: 'Chen\'s Entrance',
     description: 'Lawrence Chen has noticed your growth. "You have potential," he says, leaning back in his leather chair. "But potential is just another word for someone who hasn\'t made it yet. I can provide 500k, but I want a seat on your board."',
     trigger: {
@@ -1204,6 +1237,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_1',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'A Sister\'s Concern',
     description: 'Your sister Maya visits. She\'s worried that your success is coming at too high a cost. "The neighborhood is changing," she says. "And not for the better. We need a community center, not more luxury condos."',
     trigger: {
@@ -1239,6 +1273,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_2',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'Zoning Wars',
     description: 'Maya\'s community center project is being blocked by a local development firm, "Chadwick Holdings". They want to build a luxury high-rise on that lot. They\'ve offered you a "finder\'s fee" to convince Maya to drop the project.',
     trigger: {
@@ -1277,6 +1312,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_3',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'Community Outreach',
     description: 'The community center is thriving, but it needs more funding to expand its programs. Maya suggests a high-profile fundraiser.',
     trigger: {
@@ -1314,6 +1350,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_4',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'Legacy Conflict',
     description: 'Maya visits you in your new office, looking at the city view. "I remember when we just wanted enough for Mama Rosa\'s groceries," she says quietly. "Now you own the block, and the people on it. Is this really the legacy you want to leave?"',
     trigger: {
@@ -1350,6 +1387,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_5',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'The Vane Foundation',
     description: 'Your final decision on the future of the Vane family legacy. Will you use your power to lift others, or to secure your own throne?',
     trigger: {
@@ -1392,6 +1430,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_maya_opposition',
     characterId: 'char_maya',
+    pacingCategory: 'CHARACTER',
     title: 'The Senator\'s Wrath',
     description: 'Senator Maya Vane has launched a public investigation into your conglomerate\'s labor practices. "I told you I wouldn\'t let you destroy this city," she tells the cameras, her eyes cold. She isn\'t your little sister anymore; she\'s your most dangerous political enemy.',
     trigger: {
@@ -1431,6 +1470,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_victor_1',
     characterId: 'char_victor',
+    pacingCategory: 'RIVAL',
     title: 'Kane\'s Ultimatum',
     description: 'Victor Kane invites you to his penthouse. "You\'re becoming a nuisance," he says, pouring a drink without looking at you. "I remember when you were just another body in the Mud. Now you\'re a distraction. Sell me your core business now for 2M, or I will dismantle everything you\'ve built."',
     trigger: {
@@ -1467,6 +1507,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_sofia_1',
     characterId: 'char_sofia',
+    pacingCategory: 'CHARACTER',
     title: 'Political Alliance',
     description: 'Sofia Ramirez is running for office. She needs a high-profile endorsement and a campaign contribution.',
     trigger: {
@@ -1502,6 +1543,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_ghost_1',
     characterId: 'char_ghost',
+    pacingCategory: 'CHARACTER',
     title: 'The Digital Handshake',
     description: 'A message appears on your screen: "I see what you\'re doing. I can make your digital footprint disappear, for a price. Or I can make it very, very loud."',
     trigger: {
@@ -1539,6 +1581,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_leo_1',
     characterId: 'char_leo',
+    pacingCategory: 'CHARACTER',
     title: 'The Viral Partnership',
     description: 'Leo Thorne wants to do a collab video. "Your brand is elite, but it\'s a bit... stiff," he says. "Let\'s show the world you know how to live."',
     trigger: {
@@ -1576,6 +1619,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_sarah_1',
     characterId: 'char_sarah',
+    pacingCategory: 'CHARACTER',
     title: 'Union Demands',
     description: 'Sarah Jenkins and the United Workers Union are threatening a strike unless you improve working conditions and pay across your industries.',
     trigger: {
@@ -1613,6 +1657,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_volkov_1',
     characterId: 'char_volkov',
+    pacingCategory: 'CHARACTER',
     title: 'The Foreign Asset',
     description: 'President Mikhail Volkov offers a "strategic partnership" between your conglomerate and his state-owned industries. "The world is changing," he says. "Isolation is for the weak."',
     trigger: {
@@ -1650,6 +1695,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_elena_1',
     characterId: 'char_elena',
+    pacingCategory: 'CHARACTER',
     title: 'The Fixer\'s Proposal',
     description: 'Elena Vance can make your legal problems "disappear" permanently. "I have connections the public doesn\'t even know exist," she whispers.',
     trigger: {
@@ -1689,6 +1735,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'heat_crackdown',
     title: 'The Investigation',
+    pacingCategory: 'MAJOR',
     description: 'The heat is getting too high. Federal agents have been spotted outside your main office. You need to act before they serve a warrant.',
     trigger: {
       minMonth: 12,
@@ -1728,6 +1775,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_pops_garden',
     characterId: 'char_pops',
+    pacingCategory: 'CHARACTER',
     title: 'Pops\' Wisdom',
     description: 'Arthur "Pops" Jenkins calls you over to the community garden. "You\'re moving fast, kid," he says, handing you a fresh tomato. "But remember, a plant that grows too fast without deep roots will fall in the first storm. What are you building for the future?"',
     trigger: {
@@ -1762,6 +1810,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_slick_tip',
     characterId: 'char_slick',
+    pacingCategory: 'CHARACTER',
     title: 'Slick\'s "Sure Thing"',
     description: 'Slick Reed leans against a lamp post as you pass. "Hey, hey! Just the person I wanted to see. I got a tip on a shipment of... let\'s call them \'premium electronics\'... arriving at the docks tonight. No security. Five large and we split the take. You in?"',
     trigger: {
@@ -1794,6 +1843,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_rosa_request',
     characterId: 'char_rosa',
+    pacingCategory: 'CHARACTER',
     title: 'Mama Rosa\'s Kitchen',
     description: 'Rosa Mendez finds you on the block. "The city is cutting funding for the youth program again," she says, her eyes flashing. "We need 2k for supplies, or these kids will be out on the street with nothing to do. You can help, right?"',
     trigger: {
@@ -1829,6 +1879,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_miller_cop_warning',
     characterId: 'char_miller_cop',
+    pacingCategory: 'CHARACTER',
     title: 'Officer Miller\'s Patrol',
     description: 'Officer Frank Miller pulls his cruiser alongside you. "I\'m seeing your name in places it shouldn\'t be," he says quietly. "The higher-ups are starting to notice your activities. Clean it up, or I won\'t be able to look the other way much longer."',
     trigger: {
@@ -1866,6 +1917,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_jdog_promo',
     characterId: 'char_jdog',
+    pacingCategory: 'CHARACTER',
     title: 'The J-Dog Experience',
     description: 'J-Dog cornered you with a pair of headphones. "Yo, you gotta hear this new track! It\'s fire! I just need a little push to get it on the local radio. A few thousand for some... \'promotion\'... and we both go viral. What you think?"',
     trigger: {
@@ -1899,6 +1951,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_clark_intro',
     characterId: 'char_clark',
+    pacingCategory: 'CHARACTER',
     title: 'Legal Scrutiny',
     description: 'Alistair Clark, "The Closer", has sent a formal inquiry regarding your recent business acquisitions. He represents a group of "concerned competitors" and is hinting at a massive antitrust lawsuit unless you "realign" your interests.',
     trigger: {
@@ -1937,6 +1990,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_summers_collab',
     characterId: 'char_summers',
+    pacingCategory: 'CHARACTER',
     title: 'The Viral VC',
     description: 'Brooke Summers has noticed your growth and wants to feature your latest venture on her stream. "Your brand is so \'now\'," she says. "Let\'s do a collab. I invest, you get the clout, and we both win."',
     trigger: {
@@ -1972,6 +2026,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_julian_intro',
     characterId: 'char_julian',
+    pacingCategory: 'CHARACTER',
     title: 'The Architect\'s Vision',
     description: 'Julian Vane, "The Architect", presents a plan for a new "Elite District" that would require clearing out parts of your old neighborhood. He wants your backing to secure the necessary zoning changes.',
     trigger: {
@@ -2008,6 +2063,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_selena_endorse',
     characterId: 'char_selena',
+    pacingCategory: 'CHARACTER',
     title: 'The Pop Star\'s Plea',
     description: 'Selena Rosso reaches out. She\'s launching a global initiative for "Digital Freedom" and wants you to be the primary corporate sponsor. "You have the resources to make this real," she tells you.',
     trigger: {
@@ -2044,6 +2100,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_whitaker_brief',
     characterId: 'char_whitaker',
+    pacingCategory: 'PRESIDENCY',
     title: 'National Security Briefing',
     description: 'General Silas Whitaker requests a private meeting. "The situation in the East is deteriorating," he says. "We need your manufacturing base to pivot to defense production immediately. It\'s a matter of national survival."',
     trigger: {
@@ -2080,6 +2137,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_holloway_ruling',
     characterId: 'char_holloway',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Supreme Challenge',
     description: 'Judge Margaret Holloway is presiding over a case that could dismantle your primary executive order. Her ruling depends on your ability to provide "unassailable legal justification".',
     trigger: {
@@ -2114,6 +2172,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_blackwood_secrets',
     characterId: 'char_blackwood',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Spymaster\'s Offer',
     description: 'Director Elias Blackwood places a folder on your desk. "Your political rival is... vulnerable," he says. "I can make this information go public, or I can bury it. Depending on your next budget allocation for my department."',
     trigger: {
@@ -2150,6 +2209,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_stone_strategy',
     characterId: 'char_stone',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Kingmaker\'s Plan',
     description: 'Marcus Stone has a plan to guarantee your election. "We don\'t need to win hearts," he says, grinning. "We just need to make them hate the other guy more. I need $50M for a \'saturated media campaign\'."',
     trigger: {
@@ -2185,6 +2245,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_valdez_deal',
     characterId: 'char_valdez',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Grand Bargain',
     description: 'Secretary Elena Valdez has negotiated a historic trade deal with the Eastern Bloc. "It will stabilize the global economy for a decade," she says. "But it requires significant domestic concessions that will anger your base."',
     trigger: {
@@ -2221,6 +2282,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_thornton_narrative',
     characterId: 'char_thornton',
+    pacingCategory: 'PRESIDENCY',
     title: 'Media Monopoly',
     description: 'William Thornton is offering to make his networks "extremely favorable" to your administration. "I can make you a saint or a sinner," he laughs. "All I want is the repeal of the new media ownership laws."',
     trigger: {
@@ -2257,6 +2319,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_ross_audit',
     characterId: 'char_ross',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Hammer Falls',
     description: 'Diana Ross has arrived at your headquarters with a federal warrant. "There are... irregularities... in your offshore accounts," she says, her voice like ice. "I can spend the next year digging, or we can reach a settlement now."',
     trigger: {
@@ -2295,6 +2358,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_adler_model',
     characterId: 'char_adler',
+    pacingCategory: 'PRESIDENCY',
     title: 'Economic Equilibrium',
     description: 'Dr. Hans Adler has developed a new economic model that could eliminate inflation entirely. "It requires a complete overhaul of the tax system," he explains. "The wealthy will pay more, but the system will be unbreakable."',
     trigger: {
@@ -2330,6 +2394,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_singh_space',
     characterId: 'char_singh',
+    pacingCategory: 'PRESIDENCY',
     title: 'The Final Frontier',
     description: 'Anya Singh wants to partner with your administration to establish the first permanent lunar colony. "History won\'t remember your trade deals," she says. "It will remember this."',
     trigger: {
@@ -2366,6 +2431,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_morozov_threat',
     characterId: 'char_morozov',
+    pacingCategory: 'RIVAL',
     title: 'Oligarch\'s Gambit',
     description: 'Ivan Morozov has started aggressively shorting your companies while launching cyberattacks on your infrastructure. "I watched you break Victor Kane," he sends in a simple, encrypted text. "But Kane was a pet. The world isn\'t big enough for two real titans."',
     trigger: {
@@ -2403,6 +2469,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_lane_protest',
     characterId: 'char_lane',
+    pacingCategory: 'PRESIDENCY',
     title: 'Voice of the People',
     description: 'Sarah Lane has organized a massive, peaceful protest outside your gates. "You forgot where you came from!" she shouts to the crowd. She is demanding an audience to discuss your impact on the working class.',
     trigger: {
@@ -2439,6 +2506,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_cassie_intel',
     characterId: 'char_cassie',
+    pacingCategory: 'CHARACTER',
     title: 'Cassie\'s Information Exchange',
     description: 'Cassie Thorne reaches out. "I\'ve heard some interesting rumors about your newest competitor," she says, leaning over the counter. "For a small fee, I can tell you exactly where they\'re vulnerable."',
     trigger: {
@@ -2472,6 +2540,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_vinnie_collection',
     characterId: 'char_vinnie',
+    pacingCategory: 'CHARACTER',
     title: 'Vinnie\'s Visit',
     description: 'Vincent "Vinnie" Moretti finds you. "My boss says your recent... activities... are cutting into our business," he says, sounding almost apologetic. "He wants a 10% \'neighborhood tax\' on your next haul. Just to keep things friendly."',
     trigger: {
@@ -2507,6 +2576,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_beatrice_clinic',
     characterId: 'char_beatrice',
+    pacingCategory: 'CHARACTER',
     title: 'Clinic Crisis',
     description: 'Beatrice Vance meets you outside the clinic. "We\'re out of basic antibiotics," she says, her voice trembling with exhaustion. "The distributor won\'t ship until we pay the back-bill. It\'s 5k. Please."',
     trigger: {
@@ -2540,6 +2610,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_ray_security',
     characterId: 'char_ray',
+    pacingCategory: 'CHARACTER',
     title: 'Sarge\'s Solution',
     description: 'Raymond "Sarge" Strode offers to upgrade your physical security. "Your current setup is amateur hour," he grunts. "One professional team could wipe you out in five minutes. Let me handle it. I need 20k for equipment and training."',
     trigger: {
@@ -2574,6 +2645,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
   {
     id: 'char_lexi_mural',
     characterId: 'char_lexi',
+    pacingCategory: 'CHARACTER',
     title: 'The Muralist\'s Mark',
     description: 'Lexi Chen wants to paint a massive mural on the side of your main building. "It will tell the story of the block," she says. "But I need you to promise you won\'t let the city paint over it."',
     trigger: {
@@ -4820,6 +4892,7 @@ const DYNASTY_ARC: NarrativeEvent[] = [
   {
     id: "dynasty_1_the_heir",
     title: "The Unwanted Legacy",
+    pacingCategory: 'MAJOR',
     description: "A man claiming to be your son arrives. He wants a seat at the table.",
     trigger: { tier: ["ELITE", "MOGUL"], probability: 0.1, once: true },
     choices: [
@@ -4835,6 +4908,7 @@ const DYNASTY_ARC: NarrativeEvent[] = [
   {
     id: "dynasty_2_training",
     title: "The Heir's Ascent",
+    pacingCategory: 'MAJOR',
     description: "Your heir is proving capable, but needs a billion-dollar project to lead.",
     trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true, flagReqs: { "dynasty_status": "heir_active" } },
     choices: [
@@ -4850,6 +4924,7 @@ const DYNASTY_ARC: NarrativeEvent[] = [
   {
     id: "dynasty_3_succession",
     title: "The Passing of the Crown",
+    pacingCategory: 'MAJOR',
     description: "The dynasty is secure. You are now a family of legends.",
     trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.15, once: true, flagReqs: { "dynasty_status": "heir_proven" } },
     choices: [
@@ -4868,6 +4943,7 @@ const PARTNER_ARC: NarrativeEvent[] = [
   {
     id: "partner_1_the_betrayal",
     title: "Et Tu, Brute?",
+    pacingCategory: 'MAJOR',
     description: "Your business partner has been caught meeting with regulators.",
     trigger: { tier: ["CORPORATE", "ELITE", "MOGUL"], probability: 0.15, once: true },
     choices: [
@@ -4883,6 +4959,7 @@ const PARTNER_ARC: NarrativeEvent[] = [
   {
     id: "partner_2_the_replacement",
     title: "The New Blood",
+    pacingCategory: 'MAJOR',
     description: "You need a new right hand. An ambitious young shark has approached you.",
     trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "partner_status": "liquidated" } },
     choices: [
@@ -4898,6 +4975,7 @@ const PARTNER_ARC: NarrativeEvent[] = [
   {
     id: "partner_3_synergy",
     title: "The Perfect Synergy",
+    pacingCategory: 'MAJOR',
     description: "Your new partner has tripled the firm's efficiency.",
     trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "partner_status": "shark_active" } },
     choices: [
@@ -4916,6 +4994,7 @@ const BOARDROOM_ARC: NarrativeEvent[] = [
   {
     id: "board_1_the_coup",
     title: "The Midnight Coup",
+    pacingCategory: 'MAJOR',
     description: "Three board members called an emergency meeting to vote you out.",
     trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
     choices: [
@@ -4931,6 +5010,7 @@ const BOARDROOM_ARC: NarrativeEvent[] = [
   {
     id: "board_2_consolidation",
     title: "Absolute Power",
+    pacingCategory: 'MAJOR',
     description: "With the conspirators gone, you can buy back their shares.",
     trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "board_status": "purged" } },
     choices: [
@@ -4946,6 +5026,7 @@ const BOARDROOM_ARC: NarrativeEvent[] = [
   {
     id: "board_3_the_monolith",
     title: "The Monolith",
+    pacingCategory: 'MAJOR',
     description: "You are the board. You are the firm. You are the law.",
     trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "board_status": "absolute" } },
     choices: [
@@ -4964,6 +5045,7 @@ const IPO_ARC: NarrativeEvent[] = [
   {
     id: "ipo_1_the_valuation",
     title: "The Trillion-Dollar Question",
+    pacingCategory: 'MAJOR',
     description: "The banks are valuing your global holdings at over a trillion dollars.",
     trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.2, once: true },
     choices: [
@@ -4979,6 +5061,7 @@ const IPO_ARC: NarrativeEvent[] = [
   {
     id: "ipo_2_market_dom",
     title: "Market Dominance",
+    pacingCategory: 'MAJOR',
     description: "Your stock has become the standard for the global economy.",
     trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true, flagReqs: { "ipo_status": "public" } },
     choices: [
@@ -4994,6 +5077,7 @@ const IPO_ARC: NarrativeEvent[] = [
   {
     id: "ipo_3_too_big",
     title: "Too Big to Fail",
+    pacingCategory: 'MAJOR',
     description: "Your organization is now the single largest component of the global GDP.",
     trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "ipo_status": "dominant" } },
     choices: [
@@ -5012,6 +5096,7 @@ const CARTEL_ARC: NarrativeEvent[] = [
   {
     id: "cartel_1_the_meeting",
     title: "The Southern Shadow",
+    pacingCategory: 'MAJOR',
     description: "A powerful Southern cartel meets you in a private hangar.",
     trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
     choices: [
@@ -5027,6 +5112,7 @@ const CARTEL_ARC: NarrativeEvent[] = [
   {
     id: "cartel_2_the_crackdown",
     title: "The Federal Heat",
+    pacingCategory: 'MAJOR',
     description: "The DEA is closing in on the cartel's shipments.",
     trigger: { tier: ["ELITE", "MOGUL"], probability: 0.2, once: true, flagReqs: { "cartel_member": true } },
     choices: [
@@ -5042,6 +5128,7 @@ const CARTEL_ARC: NarrativeEvent[] = [
   {
     id: "cartel_3_new_order",
     title: "The Power Vacuum",
+    pacingCategory: 'MAJOR',
     description: "With the old cartel gone, you can install your own leadership.",
     trigger: { tier: ["MOGUL", "PRESIDENT"], probability: 0.15, once: true, flagReqs: { "cartel_arc_complete": "betrayed" } },
     choices: [
@@ -5060,6 +5147,7 @@ const DIGITAL_SYNDICATE_ARC: NarrativeEvent[] = [
   {
     id: "digi_sync_1_the_offer",
     title: "The Silicon Underground",
+    pacingCategory: 'MAJOR',
     description: "Elite hackers offer to 'optimize' your competitor's servers.",
     trigger: { tier: ["STARTUP", "CORPORATE"], probability: 0.2, once: true },
     choices: [
@@ -5075,6 +5163,7 @@ const DIGITAL_SYNDICATE_ARC: NarrativeEvent[] = [
   {
     id: "digi_sync_2_the_extortion",
     title: "The Table Turns",
+    pacingCategory: 'MAJOR',
     description: "The collective is now extorting YOU.",
     trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.2, once: true, flagReqs: { "digi_sync_active": true } },
     choices: [
@@ -5090,6 +5179,7 @@ const DIGITAL_SYNDICATE_ARC: NarrativeEvent[] = [
   {
     id: "digi_sync_3_cyber_shield",
     title: "The Cyber Shield",
+    pacingCategory: 'MAJOR',
     description: "You've built the world's most robust digital defense system.",
     trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "digi_sync_arc_complete": "neutralized" } },
     choices: [
@@ -5108,6 +5198,7 @@ const PEACE_ARC: NarrativeEvent[] = [
   {
     id: "peace_1_the_crisis",
     title: "The Brink of War",
+    pacingCategory: 'MAJOR',
     description: "Two of your largest trade partners are on the verge of conflict.",
     trigger: { tier: ["PRESIDENT"], probability: 0.2, once: true },
     choices: [
@@ -5123,6 +5214,7 @@ const PEACE_ARC: NarrativeEvent[] = [
   {
     id: "peace_2_stabilization",
     title: "Global Stabilization",
+    pacingCategory: 'MAJOR',
     description: "The peace accords have held. The world economy is booming.",
     trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true, flagReqs: { "peace_status": "hero" } },
     choices: [
@@ -5138,6 +5230,7 @@ const PEACE_ARC: NarrativeEvent[] = [
   {
     id: "peace_3_global_order",
     title: "The New Global Order",
+    pacingCategory: 'MAJOR',
     description: "The world is unified under a single economic and political banner.",
     trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "peace_status": "architect" } },
     choices: [
@@ -5156,6 +5249,7 @@ const MONUMENT_ARC: NarrativeEvent[] = [
   {
     id: "monument_1_the_architect",
     title: "The Eternal Vane",
+    pacingCategory: 'MAJOR',
     description: "A world-renowned architect proposes a city-sized monument.",
     trigger: { tier: ["PRESIDENT", "OPEN"], probability: 0.2, once: true },
     choices: [
@@ -5171,6 +5265,7 @@ const MONUMENT_ARC: NarrativeEvent[] = [
   {
     id: "monument_2_expansion",
     title: "The Living City",
+    pacingCategory: 'MAJOR',
     description: "The monument has become the core of a new, hyper-tech city.",
     trigger: { tier: ["OPEN"], probability: 0.2, once: true, flagReqs: { "monument_status": "built" } },
     choices: [
@@ -5186,6 +5281,7 @@ const MONUMENT_ARC: NarrativeEvent[] = [
   {
     id: "monument_3_immortality",
     title: "Immortal Legacy",
+    pacingCategory: 'MAJOR',
     description: "Your city is now the capital of human civilization.",
     trigger: { tier: ["OPEN"], probability: 0.15, once: true, flagReqs: { "monument_status": "metropolis" } },
     choices: [
@@ -5204,6 +5300,7 @@ const CABINET_ARC: NarrativeEvent[] = [
   {
     id: 'cab_disagreement_1',
     title: 'Cabinet Friction',
+    pacingCategory: 'PRESIDENCY',
     description: 'Internal reports suggest significant disagreements between your cabinet members. Tensions are leaking to the press.',
     trigger: {
       tier: ['PRESIDENT'],
@@ -5230,6 +5327,7 @@ const CABINET_ARC: NarrativeEvent[] = [
   {
     id: 'cab_scandal_1',
     title: 'Media Praise',
+    pacingCategory: 'PRESIDENCY',
     description: 'A major news outlet has published a glowing profile of your cabinet\'s competence, calling it the "most efficient in a generation."',
     trigger: {
       tier: ['PRESIDENT'],
