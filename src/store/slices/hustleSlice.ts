@@ -472,7 +472,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       const finalStat = getDominantStat(nextPl);
-      const ending = getEnding(nextPl.legacyPoints || 0, finalStat);
+      const ending = getEnding(nextPl.legacyScore || 0, finalStat);
       const arrestSummary = Bio.recordArrestSummary(nextPl);
       if (arrestSummary) {
         nextPl.biography = [...(nextPl.biography || []), arrestSummary.entry];
@@ -501,7 +501,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().logEvent('SPECIAL_EVENT', {
         type: 'ENDING_UNLOCKED',
         title: ending.title,
-        legacyPoints: nextPl.legacyPoints || 0
+        legacyPoints: nextPl.legacyScore || 0
       });
 
       if (nextPl.stats) {
@@ -930,7 +930,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       const dominantStat = getDominantStat(plFinal);
-      const ending = getEnding(plFinal.legacyPoints || 0, dominantStat);
+      const ending = getEnding(plFinal.legacyScore || 0, dominantStat);
       const arrestSummary = Bio.recordArrestSummary(plFinal);
       if (arrestSummary) {
         plFinal = {
@@ -967,7 +967,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         metadata: {
           type: 'ENDING_UNLOCKED',
           title: ending.title,
-          legacyPoints: plFinal.legacyPoints || 0
+          legacyPoints: plFinal.legacyScore || 0
         }
       });
 
@@ -1263,7 +1263,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       const finalStat = getDominantStat(newPl);
-      const ending = getEnding(newPl.legacyPoints || 0, finalStat);
+      const ending = getEnding(newPl.legacyScore || 0, finalStat);
       const arrestSummary = Bio.recordArrestSummary(newPl);
       if (arrestSummary) {
         newPl.biography = [...(newPl.biography || []), arrestSummary.entry];
@@ -1292,7 +1292,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().logEvent('SPECIAL_EVENT', {
         type: 'ENDING_UNLOCKED',
         title: ending.title,
-        legacyPoints: newPl.legacyPoints || 0
+        legacyPoints: newPl.legacyScore || 0
       });
 
       if (newPl.stats) {
@@ -1442,7 +1442,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       const finalStat = getDominantStat(plAfterPurchase);
-      const ending = getEnding(plAfterPurchase.legacyPoints || 0, finalStat);
+      const ending = getEnding(plAfterPurchase.legacyScore || 0, finalStat);
       const arrestSummary = Bio.recordArrestSummary(plAfterPurchase);
       if (arrestSummary) {
         plAfterPurchase.biography = [...(plAfterPurchase.biography || []), arrestSummary.entry];
@@ -1471,7 +1471,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().logEvent('SPECIAL_EVENT', {
         type: 'ENDING_UNLOCKED',
         title: ending.title,
-        legacyPoints: plAfterPurchase.legacyPoints || 0
+        legacyPoints: plAfterPurchase.legacyScore || 0
       });
 
       if (plAfterPurchase.stats) {

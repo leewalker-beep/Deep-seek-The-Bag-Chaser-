@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import type { PlayerStats } from '../../types/game';
 
@@ -40,6 +40,7 @@ describe('legacyEngine', () => {
     collectedDeathBadges: ['BADGE1'],
     completedDailyChallengesCount: 0,
     loginStreak: 5,
+    legacyPoints: 100, // Mid-run points
     stats: {
       lifetimeEarnings: 500000,
       successfulHustles: 20,
@@ -48,40 +49,55 @@ describe('legacyEngine', () => {
   };
 
   it('calculates score correctly for MUD tier', () => {
-    // profitPoints: 500,000
-    // hustlePoints: 25 * 10 = 250 (total hustles)
-    // achievementPoints: 2 * 100 = 200
-    // endingPoints: 0 (no window/localStorage in test)
-    // deathBadgePoints: 1 * 50 = 50
-    // timePoints: 12 * 10 = 120
-    // baseScore = 500,000 + 250 + 200 + 50 + 120 = 500,620
-    // streakBonus = 5 * 100 = 500
+    // profitPoints: 500,000 / 1000 = 500
+    // hustlePoints: 25 * 2 = 50
+    // achievementPoints: 2 * 75 = 150
+    // endingPoints: 0
+    // deathBadgePoints: 1 * 20 = 20
+    // timePoints: 12 * 5 = 60
+    // midRunPoints: 100
+    // baseScore = 500 + 50 + 150 + 20 + 60 + 100 = 880
+    // streakBonus = 5 * 50 = 250
     // multiplier = 1
-    // Total = 501,120
+    // Total = 1130
 
     const score = calculateLegacyScore(baseStats);
-    expect(score).toBe(501120);
+    expect(score).toBe(1130);
   });
 
   it('applies tier multipliers', () => {
     const eliteStats = { ...baseStats, currentTier: 'ELITE' as const };
-    // multiplier = 5
-    // (500,620 + 500) * 5 = 2,505,600
+    // multiplier = 4
+    // (880 + 250) * 4 = 4520
     const score = calculateLegacyScore(eliteStats);
-    expect(score).toBe(2505600);
+    expect(score).toBe(4520);
   });
 
-  it('caps profit points at 1M', () => {
+  it('handles bracketed profit points', () => {
     const richStats = {
       ...baseStats,
       stats: { ...baseStats.stats!, lifetimeEarnings: 2000000 }
     };
-    // profitPoints: 1,000,000 (capped)
-    // others: 250 + 200 + 50 + 120 = 620
-    // baseScore = 1,000,620
-    // streakBonus = 500
-    // Total = 1,001,120
+    // profitPoints: 1000 + (2,000,000 - 1,000,000) / 10000 = 1000 + 100 = 1100
+    // others: 50 + 150 + 20 + 60 + 100 = 380
+    // baseScore = 1480
+    // streakBonus = 250
+    // Total = 1730
     const score = calculateLegacyScore(richStats);
-    expect(score).toBe(1001120);
+    expect(score).toBe(1730);
+  });
+
+  it('handles extremely high profit points', () => {
+    const ultraRichStats = {
+      ...baseStats,
+      stats: { ...baseStats.stats!, lifetimeEarnings: 150000000 }
+    };
+    // profitPoints: 1000 + 9900 + (150,000,000 - 100,000,000) / 1000000 = 10900 + 50 = 10950
+    // others: 380
+    // baseScore = 11330
+    // streakBonus = 250
+    // Total = 11580
+    const score = calculateLegacyScore(ultraRichStats);
+    expect(score).toBe(11580);
   });
 });

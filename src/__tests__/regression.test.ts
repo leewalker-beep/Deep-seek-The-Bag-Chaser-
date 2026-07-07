@@ -37,7 +37,7 @@ describe('Regression Tests', () => {
   });
 
   it('ensures ending system consistently returns correct title', () => {
-    // Forgotten Clout: Legacy 0, Clout dominant
+    // Forgotten Clout: Legacy < 2500, Clout dominant
     const pl = getInitialStats(3);
     pl.legacyPoints = 500;
     pl.clout = 1000;
@@ -51,8 +51,8 @@ describe('Regression Tests', () => {
     expect(ending.title).toBe('The Forgotten');
     expect(ending.id).toBe('forgotten_clout');
 
-    // The Kingmaker: Legacy 2000, Clout dominant
-    pl.legacyPoints = 2000;
+    // The Kingmaker: Legacy 5000, Clout dominant
+    pl.legacyPoints = 5000;
     const ending2 = getEnding(pl.legacyPoints, dominant);
     expect(ending2.title).toBe('The Kingmaker');
 

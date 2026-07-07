@@ -37,6 +37,8 @@ const PROGRESSION_STRINGS: Record<string, { name: string; description: string }>
   OPEN: { name: "God Mode", description: "There are no more rules." },
 };
 
+const PROG_LEGACY_REWARDS = [50, 100, 200, 300, 500, 750, 1000, 2000];
+
 export const ACHIEVEMENTS: AchievementConfig[] = [
   // PROGRESSION (8)
   ...TIER_ORDER.map((tier, index) => ({
@@ -53,7 +55,8 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     },
     reward: {
       clout: 10 * (index + 1),
-      aura: 5 * (index + 1)
+      aura: 5 * (index + 1),
+      legacyPoints: PROG_LEGACY_REWARDS[index]
     }
   })),
 
@@ -67,7 +70,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.length >= 1,
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.length, target: 1 })
     },
-    reward: { cash: 1000, clout: 20 }
+    reward: { cash: 1000, clout: 20, legacyPoints: 50 }
   },
   {
     id: 'MASTERY_ANY_5',
@@ -78,7 +81,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.length >= 5,
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.length, target: 5 })
     },
-    reward: { cash: 10000, clout: 100 }
+    reward: { cash: 10000, clout: 100, legacyPoints: 250 }
   },
   {
     id: 'MASTERY_ANY_10',
@@ -89,7 +92,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.length >= 10,
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.length, target: 10 })
     },
-    reward: { cash: 100000, clout: 500 }
+    reward: { cash: 100000, clout: 500, legacyPoints: 1000 }
   },
   {
     id: 'MASTERY_ANY_20',
@@ -100,7 +103,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.length >= 20,
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.length, target: 20 })
     },
-    reward: { cash: 1000000, clout: 2000, aura: 1000 }
+    reward: { cash: 1000000, clout: 2000, aura: 1000, legacyPoints: 5000 }
   },
   {
     id: 'MASTERY_TECH_FLIPPING',
@@ -111,7 +114,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('techFlip'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('techFlip') ? 1 : 0, target: 1 })
     },
-    reward: { cash: 5000 }
+    reward: { cash: 5000, legacyPoints: 100 }
   },
   {
     id: 'MASTERY_DROPSHIPPING',
@@ -122,7 +125,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('drop'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('drop') ? 1 : 0, target: 1 })
     },
-    reward: { cash: 5000 }
+    reward: { cash: 5000, legacyPoints: 100 }
   },
   {
     id: 'MASTERY_STREET_EATS',
@@ -133,7 +136,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('street_eats'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('street_eats') ? 1 : 0, target: 1 })
     },
-    reward: { aura: 50 }
+    reward: { aura: 50, legacyPoints: 100 }
   },
   {
     id: 'MASTERY_VENDING',
@@ -144,7 +147,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('r_vending'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('r_vending') ? 1 : 0, target: 1 })
     },
-    reward: { cash: 2000 }
+    reward: { cash: 2000, legacyPoints: 50 }
   },
   {
     id: 'MASTERY_CRYPTO',
@@ -155,7 +158,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('crypto_mining'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('crypto_mining') ? 1 : 0, target: 1 })
     },
-    reward: { aura: 200 }
+    reward: { aura: 200, legacyPoints: 200 }
   },
   {
     id: 'MASTERY_REAL_ESTATE',
@@ -166,7 +169,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('real_estate_empire'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('real_estate_empire') ? 1 : 0, target: 1 })
     },
-    reward: { clout: 500 }
+    reward: { clout: 500, legacyPoints: 500 }
   },
   {
     id: 'MASTERY_LOBBYING',
@@ -177,7 +180,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('lobbying'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('lobbying') ? 1 : 0, target: 1 })
     },
-    reward: { aura: 1000 }
+    reward: { aura: 1000, legacyPoints: 1000 }
   },
   {
     id: 'MASTERY_PRIVATE_EQUITY',
@@ -188,7 +191,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('privateequity'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('privateequity') ? 1 : 0, target: 1 })
     },
-    reward: { cash: 1000000 }
+    reward: { cash: 1000000, legacyPoints: 1000 }
   },
 
   // EARNINGS (7)
@@ -201,7 +204,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 1000000 })
     },
-    reward: { aura: 100 }
+    reward: { aura: 100, legacyPoints: 100 }
   },
   {
     id: 'ARC_BUSINESS_COMPLETE',
@@ -212,7 +215,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => !!state.pl.narrativeFlags['business_arc_complete'],
       progress: (state: GameState) => ({ current: state.pl.narrativeFlags['business_arc_complete'] ? 1 : 0, target: 1 })
     },
-    reward: { clout: 1000, aura: 500 }
+    reward: { clout: 1000, aura: 500, legacyPoints: 1000 }
   },
   {
     id: 'ARC_FAMILY_COMPLETE',
@@ -223,7 +226,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => !!state.pl.narrativeFlags['family_arc_complete'],
       progress: (state: GameState) => ({ current: state.pl.narrativeFlags['family_arc_complete'] ? 1 : 0, target: 1 })
     },
-    reward: { aura: 1000, clout: 200 }
+    reward: { aura: 1000, clout: 200, legacyPoints: 1000 }
   },
   {
     id: 'ARC_CRIME_COMPLETE',
@@ -234,7 +237,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => !!state.pl.narrativeFlags['crime_arc_complete'],
       progress: (state: GameState) => ({ current: state.pl.narrativeFlags['crime_arc_complete'] ? 1 : 0, target: 1 })
     },
-    reward: { clout: 2000, heat: -50 }
+    reward: { clout: 2000, heat: -50, legacyPoints: 1000 }
   },
   {
     id: 'EARN_10M',
@@ -245,7 +248,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 10000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 10000000 })
     },
-    reward: { clout: 200 }
+    reward: { clout: 200, legacyPoints: 250 }
   },
   {
     id: 'EARN_100M',
@@ -256,7 +259,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 100000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 100000000 })
     },
-    reward: { clout: 500, aura: 500 }
+    reward: { clout: 500, aura: 500, legacyPoints: 500 }
   },
   {
     id: 'EARN_1B',
@@ -267,7 +270,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 1000000000 })
     },
-    reward: { clout: 1000, aura: 1000 }
+    reward: { clout: 1000, aura: 1000, legacyPoints: 1000 }
   },
   {
     id: 'EARN_10B',
@@ -278,7 +281,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 10000000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 10000000000 })
     },
-    reward: { clout: 5000, aura: 5000 }
+    reward: { clout: 5000, aura: 5000, legacyPoints: 2500 }
   },
   {
     id: 'EARN_100B',
@@ -289,7 +292,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 100000000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 100000000000 })
     },
-    reward: { clout: 10000, aura: 10000 }
+    reward: { clout: 10000, aura: 10000, legacyPoints: 5000 }
   },
   {
     id: 'EARN_1T',
@@ -300,7 +303,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.stats?.lifetimeEarnings || 0) >= 1000000000000,
       progress: (state: GameState) => ({ current: state.pl.stats?.lifetimeEarnings || 0, target: 1000000000000 })
     },
-    reward: { clout: 50000, aura: 50000 }
+    reward: { clout: 50000, aura: 50000, legacyPoints: 10000 }
   },
 
   // MINIGAME SKILL (8)
@@ -317,7 +320,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_REACTION',
@@ -332,7 +335,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_SWIPE',
@@ -347,7 +350,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_TAP',
@@ -362,7 +365,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_SEQUENCE',
@@ -377,7 +380,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_PATTERN',
@@ -392,7 +395,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_BALANCE',
@@ -407,7 +410,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
   {
     id: 'SKILL_GRID',
@@ -422,7 +425,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 1000 }
+    reward: { cash: 1000, legacyPoints: 50 }
   },
 
   // COLLECTION (7)
@@ -435,7 +438,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => Object.keys(state.pl.flexAssets).length >= 10,
       progress: (state: GameState) => ({ current: Object.keys(state.pl.flexAssets).length, target: 10 })
     },
-    reward: { aura: 1000 }
+    reward: { aura: 1000, legacyPoints: 1000 }
   },
   {
     id: 'COLL_DEATH_5',
@@ -446,7 +449,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.collectedDeathBadges.length >= 5,
       progress: (state: GameState) => ({ current: state.pl.collectedDeathBadges.length, target: 5 })
     },
-    reward: { aura: 500 }
+    reward: { aura: 500, legacyPoints: 500 }
   },
   {
     id: 'COLL_DEATH_10',
@@ -457,7 +460,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.collectedDeathBadges.length >= 10,
       progress: (state: GameState) => ({ current: state.pl.collectedDeathBadges.length, target: 10 })
     },
-    reward: { aura: 2000 }
+    reward: { aura: 2000, legacyPoints: 2000 }
   },
   {
     id: 'COLL_END_1',
@@ -474,7 +477,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
           return { current: savedEndings.length, target: 1 };
       }
     },
-    reward: { cash: 10000 }
+    reward: { cash: 10000, legacyPoints: 250 }
   },
   {
     id: 'COLL_END_6',
@@ -491,7 +494,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
           return { current: savedEndings.length, target: 6 };
       }
     },
-    reward: { cash: 100000 }
+    reward: { cash: 100000, legacyPoints: 1500 }
   },
   {
     id: 'COLL_END_12',
@@ -508,7 +511,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
           return { current: savedEndings.length, target: 12 };
       }
     },
-    reward: { cash: 1000000 }
+    reward: { cash: 1000000, legacyPoints: 5000 }
   },
   {
     id: 'PLATINUM',
@@ -522,7 +525,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
           target: state.achievements.length - 1
       })
     },
-    reward: { cash: 100000000, clout: 10000, aura: 10000 }
+    reward: { cash: 100000000, clout: 10000, aura: 10000, legacyPoints: 10000 }
   },
 
   // STREAKS (3)
@@ -535,7 +538,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 7,
       progress: (state: GameState) => ({ current: state.pl.loginStreak || 0, target: 7 })
     },
-    reward: { cash: 7000 }
+    reward: { cash: 7000, legacyPoints: 100 }
   },
   {
     id: 'STREAK_30',
@@ -546,7 +549,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 30,
       progress: (state: GameState) => ({ current: state.pl.loginStreak || 0, target: 30 })
     },
-    reward: { cash: 30000 }
+    reward: { cash: 30000, legacyPoints: 500 }
   },
   {
     id: 'STREAK_100',
@@ -557,7 +560,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.loginStreak || 0) >= 100,
       progress: (state: GameState) => ({ current: state.pl.loginStreak || 0, target: 100 })
     },
-    reward: { cash: 1000000 }
+    reward: { cash: 1000000, legacyPoints: 2000 }
   },
 
   // DAILY CHALLENGES (3)
@@ -570,7 +573,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.completedDailyChallengesCount || 0) >= 7,
       progress: (state: GameState) => ({ current: state.pl.completedDailyChallengesCount || 0, target: 7 })
     },
-    reward: { cash: 5000 }
+    reward: { cash: 5000, legacyPoints: 50 }
   },
   {
     id: 'DAILY_30',
@@ -581,7 +584,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.completedDailyChallengesCount || 0) >= 30,
       progress: (state: GameState) => ({ current: state.pl.completedDailyChallengesCount || 0, target: 30 })
     },
-    reward: { cash: 25000 }
+    reward: { cash: 25000, legacyPoints: 250 }
   },
   {
     id: 'DAILY_100',
@@ -592,7 +595,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.completedDailyChallengesCount || 0) >= 100,
       progress: (state: GameState) => ({ current: state.pl.completedDailyChallengesCount || 0, target: 100 })
     },
-    reward: { cash: 500000 }
+    reward: { cash: 500000, legacyPoints: 1000 }
   },
 
   // LEGACY (4)
@@ -605,7 +608,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.legacyPoints || 0) >= 1000,
       progress: (state: GameState) => ({ current: state.pl.legacyPoints || 0, target: 1000 })
     },
-    reward: { aura: 1000 }
+    reward: { aura: 1000, legacyPoints: 100 }
   },
   {
     id: 'LEGACY_5K',
@@ -616,7 +619,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.legacyPoints || 0) >= 5000,
       progress: (state: GameState) => ({ current: state.pl.legacyPoints || 0, target: 5000 })
     },
-    reward: { aura: 5000 }
+    reward: { aura: 5000, legacyPoints: 500 }
   },
   {
     id: 'LEGACY_10K',
@@ -627,7 +630,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.legacyPoints || 0) >= 10000,
       progress: (state: GameState) => ({ current: state.pl.legacyPoints || 0, target: 10000 })
     },
-    reward: { aura: 10000 }
+    reward: { aura: 10000, legacyPoints: 1000 }
   },
   {
     id: 'LEGACY_50K',
@@ -638,7 +641,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.legacyPoints || 0) >= 50000,
       progress: (state: GameState) => ({ current: state.pl.legacyPoints || 0, target: 50000 })
     },
-    reward: { aura: 50000 }
+    reward: { aura: 50000, legacyPoints: 5000 }
   },
 
   // ENDINGS (4)
@@ -652,11 +655,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
         if (event?.type !== 'SPECIAL_EVENT') return false;
         const m = event.metadata as SpecialEventMetadata;
         if (m.type !== 'ENDING_UNLOCKED') return false;
-        return m.legacyPoints < 100;
+        return m.legacyPoints < 2500;
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 5000 }
+    reward: { cash: 5000, legacyPoints: 50 }
   },
   {
     id: 'END_MED',
@@ -668,11 +671,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
         if (event?.type !== 'SPECIAL_EVENT') return false;
         const m = event.metadata as SpecialEventMetadata;
         if (m.type !== 'ENDING_UNLOCKED') return false;
-        return m.legacyPoints >= 100 && m.legacyPoints < 1000;
+        return m.legacyPoints >= 2500 && m.legacyPoints < 15000;
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 50000 }
+    reward: { cash: 50000, legacyPoints: 250 }
   },
   {
     id: 'END_HIGH',
@@ -684,11 +687,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
         if (event?.type !== 'SPECIAL_EVENT') return false;
         const m = event.metadata as SpecialEventMetadata;
         if (m.type !== 'ENDING_UNLOCKED') return false;
-        return m.legacyPoints >= 1000 && m.legacyPoints < 5000;
+        return m.legacyPoints >= 15000 && m.legacyPoints < 50000;
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 500000 }
+    reward: { cash: 500000, legacyPoints: 1000 }
   },
   {
     id: 'END_LEGEND',
@@ -700,11 +703,11 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
         if (event?.type !== 'SPECIAL_EVENT') return false;
         const m = event.metadata as SpecialEventMetadata;
         if (m.type !== 'ENDING_UNLOCKED') return false;
-        return m.legacyPoints >= 5000;
+        return m.legacyPoints >= 50000;
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 5000000 }
+    reward: { cash: 5000000, legacyPoints: 5000 }
   },
 
   // RIVALS
@@ -720,7 +723,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
         return { current: defeatEvents, target: 1 };
       }
     },
-    reward: { aura: 100 }
+    reward: { aura: 100, legacyPoints: 100 }
   },
 
   // FAMILY DELI SPECIFIC
@@ -737,7 +740,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       },
       progress: (_state: GameState) => ({ current: 0, target: 1 })
     },
-    reward: { cash: 500 }
+    reward: { cash: 500, legacyPoints: 20 }
   },
   {
     id: 'DELI_COMMUNITY_FAVE',
@@ -748,7 +751,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => (state.pl.hustleLevels['unique_hustle_deli'] || 0) >= 2,
       progress: (state: GameState) => ({ current: state.pl.hustleLevels['unique_hustle_deli'] || 0, target: 2 })
     },
-    reward: { aura: 50 }
+    reward: { aura: 50, legacyPoints: 50 }
   },
   {
     id: 'DELI_LOCAL_LEGEND',
@@ -759,6 +762,6 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       check: (state: GameState) => state.pl.masteredHustles.includes('unique_hustle_deli'),
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('unique_hustle_deli') ? 1 : 0, target: 1 })
     },
-    reward: { clout: 100, aura: 100 }
+    reward: { clout: 100, aura: 100, legacyPoints: 200 }
   }
 ];

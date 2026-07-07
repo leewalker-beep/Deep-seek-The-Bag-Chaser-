@@ -1,10 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useGameStore } from '../store/gameStore';
 import { getInitialStats } from '../store/initialState';
 import { LEGACY_UPGRADES } from '../config/legacyUpgrades';
-
-// Mocking useGameStore.getState() is tricky with Zustand,
-// but we can just use the store directly and reset it.
 
 describe('Legacy Evolution System', () => {
   beforeEach(() => {
@@ -45,15 +42,15 @@ describe('Legacy Evolution System', () => {
   });
 
   it('allows purchasing upgrades from the shop', () => {
-    useGameStore.setState({ bankedLegacyPoints: 10000 });
+    useGameStore.setState({ bankedLegacyPoints: 20000 });
 
     const { unlockLegacyUpgrade } = useGameStore.getState();
-    const upgrade = LEGACY_UPGRADES[0]; // Silver Spoon, 2500 points
+    const upgrade = LEGACY_UPGRADES[0]; // Street Cred, 5000 points
 
     unlockLegacyUpgrade(upgrade.id);
 
     expect(useGameStore.getState().unlockedLegacyUpgradeIds).toContain(upgrade.id);
-    expect(useGameStore.getState().bankedLegacyPoints).toBe(7500);
+    expect(useGameStore.getState().bankedLegacyPoints).toBe(15000);
   });
 
   it('applies purchased upgrades to new runs', () => {
@@ -79,7 +76,7 @@ describe('Legacy Evolution System', () => {
     useGameStore.setState({ bankedLegacyPoints: 100 });
 
     const { unlockLegacyUpgrade } = useGameStore.getState();
-    const upgrade = LEGACY_UPGRADES[0]; // 2500 points
+    const upgrade = LEGACY_UPGRADES[0]; // 5000 points
 
     unlockLegacyUpgrade(upgrade.id);
 

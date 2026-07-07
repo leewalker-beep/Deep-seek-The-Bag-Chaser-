@@ -628,7 +628,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const deathInfo = DEATH_MESSAGES[lastHustleId] || DEATH_MESSAGES['DEFAULT'];
 
       const dominantStat = getDominantStat(updatedPl);
-      const ending = getEnding(updatedPl.legacyPoints || 0, dominantStat);
+      const ending = getEnding(updatedPl.legacyScore || 0, dominantStat);
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -647,7 +647,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       state.logEvent('SPECIAL_EVENT', {
         type: 'ENDING_UNLOCKED',
         title: ending.title,
-        legacyPoints: updatedPl.legacyPoints || 0
+        legacyPoints: updatedPl.legacyScore || 0
       });
 
       if (deathInfo.badge && !updatedPl.collectedDeathBadges.includes(deathInfo.badge)) {
@@ -712,7 +712,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       };
 
       const dominantStat = getDominantStat(advancedPl);
-      const ending = getEnding(advancedPl.legacyPoints || 0, dominantStat);
+      const ending = getEnding(advancedPl.legacyScore || 0, dominantStat);
       let savedEndings = [];
       try {
         savedEndings = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]') : [];
@@ -731,7 +731,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       state.logEvent('SPECIAL_EVENT', {
         type: 'ENDING_UNLOCKED',
         title: ending.title,
-        legacyPoints: advancedPl.legacyPoints || 0
+        legacyPoints: advancedPl.legacyScore || 0
       });
 
       if (!advancedPl.collectedDeathBadges.includes('CORRUPTION')) {

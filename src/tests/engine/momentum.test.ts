@@ -49,36 +49,47 @@ describe('Legacy Momentum', () => {
   };
 
   it('calculates score with 0 momentum boost', () => {
-    // profitPoints: 100,000
-    // hustlePoints: 10 * 10 = 100
-    // timePoints: 12 * 10 = 120
-    // baseScore = 100,220
+    // profitPoints: 100,000 / 1000 = 100
+    // hustlePoints: 10 * 2 = 20
+    // timePoints: 12 * 5 = 60
+    // baseScore = 180
     // streakBonus = 0
     // multiplier = 1
     // momentumBoost = 0
-    // Total = 100,220
+    // Total = 180
     const score = calculateLegacyScore({ ...baseStats, totalChallengesCompleted: 5 });
-    expect(score).toBe(100220);
+    expect(score).toBe(180);
   });
 
   it('applies 0.1% boost for 10 challenges', () => {
-    // baseScore = 100,220
+    // baseScore = 180
     // momentumBoost = 10 / 10 * 0.001 = 0.001
-    // Total = 100,220 * 1.001 = 100,320.22 -> 100,320
+    // Total = 180 * 1.001 = 180.18 -> 180
     const score = calculateLegacyScore({ ...baseStats, totalChallengesCompleted: 10 });
-    expect(score).toBe(100320);
+    expect(score).toBe(180);
   });
 
   it('applies 0.2% boost for 20 challenges', () => {
-    // baseScore = 100,220
+    // baseScore = 180
     // momentumBoost = 20 / 10 * 0.001 = 0.002
-    // Total = 100,220 * 1.002 = 100,420.44 -> 100,420
+    // Total = 180 * 1.002 = 180.36 -> 180
     const score = calculateLegacyScore({ ...baseStats, totalChallengesCompleted: 20 });
-    expect(score).toBe(100420);
+    expect(score).toBe(180);
   });
 
-  it('handles 25 challenges (still 0.2% boost)', () => {
-    const score = calculateLegacyScore({ ...baseStats, totalChallengesCompleted: 25 });
-    expect(score).toBe(100420);
+  it('applies visible boost with higher base score', () => {
+    const highStats = {
+        ...baseStats,
+        stats: { ...baseStats.stats!, lifetimeEarnings: 10000000 }, // 1000 + 900 = 1900 pts
+        totalChallengesCompleted: 1000 // 10% boost
+    };
+    // profit: 1900
+    // hustle: 20
+    // time: 60
+    // base: 1980
+    // boost: 1000/10 * 0.001 = 0.1
+    // Total: 1980 * 1.1 = 2178
+    const score = calculateLegacyScore(highStats);
+    expect(score).toBe(2178);
   });
 });
