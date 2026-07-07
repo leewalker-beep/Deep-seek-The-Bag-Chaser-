@@ -1156,13 +1156,26 @@ const BASE_EVENTS: NarrativeEvent[] = [
     id: 'char_chen_1',
     characterId: 'char_chen',
     title: 'Chen\'s Entrance',
-    description: 'Lawrence Chen has noticed your growth. "You have potential," he says. "But potential is just another word for someone who hasn\'t made it yet. I can provide 500k, but I want a seat on your board."',
+    description: 'Lawrence Chen has noticed your growth. "You have potential," he says, leaning back in his leather chair. "But potential is just another word for someone who hasn\'t made it yet. I can provide 500k, but I want a seat on your board."',
     trigger: {
       tier: ['STARTUP', 'CORPORATE'],
       probability: 0.2,
       once: true
     },
     choices: [
+      {
+        id: 'chen_accept_sk',
+        label: 'Accept Chen (Origins)',
+        description: 'Acknowledge your street roots and take the deal.',
+        requirement: { background: ['sk_scrap', 'sk_delivery'] },
+        consequences: {
+          bag: 500000,
+          clout: 120,
+          aura: -10,
+          biographyEntry: 'Lawrence Chen took a chance on a kid from the Mud, seeing the raw hunger beneath the suit.'
+        },
+        setFlags: { 'rel_chen': 60, 'trust_chen': 40, 'chen_on_board': true }
+      },
       {
         id: 'chen_accept',
         label: 'Accept Chen',
@@ -1302,7 +1315,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
     id: 'char_maya_4',
     characterId: 'char_maya',
     title: 'Legacy Conflict',
-    description: 'Maya visits you in your new office. She\'s concerned about the ruthless tactics you\'ve used to reach the top. "Is this really the legacy you want to leave?" she asks.',
+    description: 'Maya visits you in your new office, looking at the city view. "I remember when we just wanted enough for Mama Rosa\'s groceries," she says quietly. "Now you own the block, and the people on it. Is this really the legacy you want to leave?"',
     trigger: {
       tier: ['ELITE', 'MOGUL'],
       probability: 0.2,
@@ -1330,7 +1343,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
           aura: -100,
           biographyEntry: 'Chose the path of the pragmatist, dismissing family concerns in favor of absolute power.'
         },
-        setFlags: { 'maya_dismissed': true, 'rel_maya': 10 }
+        setFlags: { 'maya_dismissed': true, 'rel_maya': 10, 'maya_betrayed': true }
       }
     ]
   },
@@ -1343,7 +1356,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
       tier: ['MOGUL', 'PRESIDENT', 'OPEN'],
       probability: 0.3,
       once: true,
-      flagReqs: { 'rel_maya': 10 }
+      flagReqs: { 'rel_maya': 10, 'maya_betrayed': false }
     },
     choices: [
       {
@@ -1377,10 +1390,49 @@ const BASE_EVENTS: NarrativeEvent[] = [
 
   // Victor Kane Chain
   {
+    id: 'char_maya_opposition',
+    characterId: 'char_maya',
+    title: 'The Senator\'s Wrath',
+    description: 'Senator Maya Vane has launched a public investigation into your conglomerate\'s labor practices. "I told you I wouldn\'t let you destroy this city," she tells the cameras, her eyes cold. She isn\'t your little sister anymore; she\'s your most dangerous political enemy.',
+    trigger: {
+      tier: ['ELITE', 'MOGUL'],
+      probability: 0.25,
+      once: true,
+      flagReqs: { 'maya_betrayed': true }
+    },
+    choices: [
+      {
+        id: 'maya_bribe_senate',
+        label: 'Lobby the Senate',
+        description: 'Spend $5M to bury the investigation through her colleagues.',
+        consequences: {
+          bag: -5000000,
+          clout: 100,
+          aura: -500,
+          heat: 50,
+          biographyEntry: 'Ruthlessly suppressed a Senate investigation led by their own sister.'
+        },
+        setFlags: { 'maya_silenced': true }
+      },
+      {
+        id: 'maya_public_concession',
+        label: 'Public Concession',
+        description: 'Accept her terms and reform your labor practices.',
+        consequences: {
+          passiveCash: -50000,
+          aura: 1000,
+          clout: -200,
+          biographyEntry: 'Was forced into a humiliating public retreat by Senator Maya Vane.'
+        },
+        setFlags: { 'maya_victory': true }
+      }
+    ]
+  },
+  {
     id: 'char_victor_1',
     characterId: 'char_victor',
     title: 'Kane\'s Ultimatum',
-    description: 'Victor Kane invites you to his penthouse. "You\'re becoming a nuisance," he says calmly. "Sell me your core business now for 2M, or I will dismantle everything you\'ve built."',
+    description: 'Victor Kane invites you to his penthouse. "You\'re becoming a nuisance," he says, pouring a drink without looking at you. "I remember when you were just another body in the Mud. Now you\'re a distraction. Sell me your core business now for 2M, or I will dismantle everything you\'ve built."',
     trigger: {
       tier: ['CORPORATE', 'ELITE'],
       probability: 0.2,
@@ -2315,11 +2367,12 @@ const BASE_EVENTS: NarrativeEvent[] = [
     id: 'char_morozov_threat',
     characterId: 'char_morozov',
     title: 'Oligarch\'s Gambit',
-    description: 'Ivan Morozov has started aggressively shorting your companies while launching cyberattacks on your infrastructure. "The world isn\'t big enough for two titans," he sends in a simple, encrypted text.',
+    description: 'Ivan Morozov has started aggressively shorting your companies while launching cyberattacks on your infrastructure. "I watched you break Victor Kane," he sends in a simple, encrypted text. "But Kane was a pet. The world isn\'t big enough for two real titans."',
     trigger: {
       tier: ['MOGUL', 'PRESIDENT'],
       probability: 0.15,
-      once: true
+      once: true,
+      flagReqs: { 'kane_defeated': true }
     },
     choices: [
       {
@@ -2613,6 +2666,29 @@ const POPS_ARC: NarrativeEvent[] = [
         description: "Donate $250k for a state-of-the-art center.",
         consequences: { bag: -250000, aura: 500, biographyEntry: "Funded Pops' Youth Legacy Hub, changing the future of the district." },
         setFlags: { "pops_hub_active": true }
+      }
+    ]
+  },
+  {
+    id: "char_pops_mogul_reflection",
+    characterId: "char_pops",
+    title: "The Old Man's Visit",
+    description: "Pops arrives at your skyscraper, looking out of place in his gardening overalls. He looks at your view of the city. \"I remember when you were just a kid with a bike and a dream, chasing bags in the Mud. You've built a mountain of gold, kid. I just hope you can still see the ground from up here.\"",
+    trigger: { tier: ["ELITE", "MOGUL"], probability: 0.15, once: true, flagReqs: { "pops_mentor": true } },
+    choices: [
+      {
+        id: "pops_reflect_roots",
+        label: "Remember the Roots",
+        description: "Spend the evening talking about the old block.",
+        consequences: { aura: 100, mentalHealth: 30, biographyEntry: "Pops visited the peak of the empire, reminding you that no matter how high you rise, you are still a kid from the blocks." },
+        setFlags: { "pops_legacy_sealed": true }
+      },
+      {
+        id: "pops_reflect_power",
+        label: "The View is Better Here",
+        description: "Explain that the Mud is the past. Power is the future.",
+        consequences: { clout: 100, aura: -50, biographyEntry: "Pops left the corporate office with a heavy heart, seeing that the kid he knew had been replaced by a titan." },
+        setFlags: { "pops_alienated": true }
       }
     ]
   }
@@ -4304,6 +4380,29 @@ const CHEN_ARC: NarrativeEvent[] = [
         description: "Squeeze out all competition.",
         consequences: { clout: 5000, passiveCash: 250000, biographyEntry: "Built a national retail empire with Chen." },
         setFlags: { "chen_arc_complete": "magnate" }
+      }
+    ]
+  },
+  {
+    id: "char_chen_summers_summit",
+    characterId: "char_chen",
+    title: "The Valuation Clash",
+    description: "Lawrence Chen and Brooke Summers are having a heated discussion in your waiting room. Chen values your liquid stability, while Summers is pushing for more viral expansion. \"He's a portfolio asset, Brooke, not a streaming star,\" Chen snaps.",
+    trigger: { tier: ["CORPORATE", "ELITE"], probability: 0.15, once: true },
+    choices: [
+      {
+        id: "side_with_chen",
+        label: "Side with Chen",
+        description: "Prioritize institutional stability over hype.",
+        consequences: { passiveCash: 10000, clout: 200, aura: -100, biographyEntry: "Sided with Lawrence Chen in a major strategy dispute, choosing stability over viral growth." },
+        setFlags: { "strategy_focus": "institutional", "rel_chen": 80, "rel_summers": 20 }
+      },
+      {
+        id: "side_with_summers",
+        label: "Side with Summers",
+        description: "Lean into the digital era and public image.",
+        consequences: { aura: 500, clout: 300, bag: -100000, biographyEntry: "Chose Brooke Summers' viral-first strategy, betting the empire on public perception." },
+        setFlags: { "strategy_focus": "viral", "rel_summers": 80, "rel_chen": 20 }
       }
     ]
   }
