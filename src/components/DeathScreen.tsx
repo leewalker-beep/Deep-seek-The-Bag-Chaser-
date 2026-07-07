@@ -19,6 +19,7 @@ interface DeathScreenProps {
     fatalStatValue?: number;
   };
   onReset: () => void;
+  onQuickStart: () => void;
   onViewSummary: () => void;
   onLegacyShop: () => void;
 }
@@ -29,6 +30,7 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
   lastHustleId,
   deathContext,
   onReset,
+  onQuickStart,
   onViewSummary,
   onLegacyShop
 }) => {
@@ -153,12 +155,25 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
                 SEE THE LEDGER
               </button>
 
-              <button
-                onClick={onLegacyShop}
-                className="text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase tracking-[0.2em] transition-colors"
-              >
-                LEGACY SHOP
-              </button>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={onLegacyShop}
+                  className="text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase tracking-[0.2em] transition-colors"
+                >
+                  LEGACY SHOP
+                </button>
+
+                {(pl.deathCount || 0) > 0 && (
+                  <button
+                    onClick={onQuickStart}
+                    className="text-[9px] text-slate-600
+                      hover:text-slate-400 font-bold uppercase
+                      tracking-[0.2em] transition-colors"
+                  >
+                    Quick Start — Keep Origin
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

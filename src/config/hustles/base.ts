@@ -16,6 +16,7 @@ export interface HustleLevel {
   isRepeatable?: boolean;
   maxRepeat?: number;
   miniGame?: string;
+  minimumYield?: number;
 }
 
 export interface Hustle {
@@ -121,7 +122,7 @@ HUSTLES.r_scrap = {
   miniGame: 'MagneticSweep',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Scavenger', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'] },
+    l1: { level: 1, id: 'l1', name: 'Scavenger', cost: 0, yieldCash: 400, yieldClout: 0, yieldAura: 0, mentalHit: -6, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], minimumYield: 300 },
     l2: { level: 2, id: 'l2', name: 'Yard Owner', cost: 3000, yieldCash: 4500, yieldClout: 5, yieldAura: 0, mentalHit: -10, cloutReq: 20, auraReq: 0, nextBranches: ['l3'] },
     l3: { level: 3, id: 'l3', name: 'Recycling Plant', cost: 15000, yieldCash: 22000, yieldClout: 15, yieldAura: 5, mentalHit: -15, cloutReq: 50, auraReq: 20, nextBranches: ['l4'] },
     l4: { level: 4, id: 'l4', name: 'Industrial Network', cost: 50000, yieldCash: 75000, yieldClout: 40, yieldAura: 15, mentalHit: -20, cloutReq: 100, auraReq: 50 }
