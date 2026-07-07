@@ -652,6 +652,7 @@ export interface PlayerStats {
   arrestCount: number;
   tierBadges: string[];
   pendingFlexOffer: number | null;
+  flexOfferCooldown: number;
   seenFlexThresholds: number[];
   pendingAnnualStatement: boolean;
   annualCashEarned: number;

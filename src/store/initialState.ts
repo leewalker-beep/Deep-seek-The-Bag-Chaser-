@@ -144,6 +144,7 @@ export const getInitialStats = (
     arrestCount: 0,
     tierBadges: [],
     pendingFlexOffer: null,
+    flexOfferCooldown: 0,
     seenFlexThresholds: [],
     pendingAnnualStatement: false,
     annualCashEarned: 0,
