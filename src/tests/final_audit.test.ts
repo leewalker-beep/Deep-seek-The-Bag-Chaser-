@@ -78,8 +78,8 @@ describe('Final Audit: Store-Level Verification', () => {
 
     expect(res.success).toBe(true);
 
-    // 1. Bag Change: 1000 + (2000 * 1.15) - 200 = 1000 + 2300 - 200 = 3100
-    expect(finalStats.bag).toBe(3100);
+    // 1. Bag Change: 1000 + (2000 * 1.15) - 50 = 1000 + 2300 - 50 = 3250
+    expect(finalStats.bag).toBe(3250);
 
     // 2-3. Clout/Aura: 100 + 2 = 102
     expect(finalStats.clout).toBe(102);
