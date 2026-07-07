@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { FLEX_ASSETS } from '../config/flexAssets';
+import { getFlexCelebration } from '../engine/flexEngine';
 import { CinematicModal } from './ui/CinematicModal';
 import { PortraitCard } from './ui/PortraitCard';
 
@@ -20,7 +21,7 @@ const FLEX_THRESHOLDS: Record<number, string> = {
 };
 
 export const FlexOpportunityModal: React.FC<Props> = ({ threshold, onDismiss }) => {
-  const { pl, purchaseFlexAsset } = useGameStore();
+  const { pl, purchaseFlexAsset, updatePl } = useGameStore();
 
   const assetId = FLEX_THRESHOLDS[threshold];
   const asset = FLEX_ASSETS.find(a => a.id === assetId);
@@ -52,7 +53,7 @@ export const FlexOpportunityModal: React.FC<Props> = ({ threshold, onDismiss }) 
              ${asset.cost.toLocaleString()}
            </div>
            <p className="text-slate-400 text-sm mt-2 font-medium italic">
-             "Success isn't just about making money. It's about what you do with it."
+             "{getFlexCelebration()}"
            </p>
         </div>
 
@@ -114,10 +115,15 @@ export const FlexOpportunityModal: React.FC<Props> = ({ threshold, onDismiss }) 
           </button>
 
           <button
-            onClick={onDismiss}
+            onClick={() => {
+              // Apply a random 6-12 month cooldown on decline
+              const cooldown = 6 + Math.floor(Math.random() * 7);
+              updatePl({ flexOfferCooldown: cooldown });
+              onDismiss();
+            }}
             className="w-full text-slate-500 text-[10px] text-center font-bold uppercase tracking-[0.2em] hover:text-slate-300 transition-colors"
           >
-            Return to Hustle
+            Not right now
           </button>
         </div>
       </div>

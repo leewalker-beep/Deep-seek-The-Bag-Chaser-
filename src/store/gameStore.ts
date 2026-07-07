@@ -29,6 +29,7 @@ export const useGameStore = create<GameState>()(
           actionLog: state.pl.actionLog?.slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE),
           seenFlexThresholds: state.pl.seenFlexThresholds,
           pendingFlexOffer: state.pl.pendingFlexOffer,
+          flexOfferCooldown: state.pl.flexOfferCooldown,
           avatarId: state.pl.avatarId,
           deathContext: state.pl.deathContext,
           inJail: state.pl.inJail,

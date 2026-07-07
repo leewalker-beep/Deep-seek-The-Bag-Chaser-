@@ -10,6 +10,7 @@ import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
 import { WORLD_EVENTS } from '../config/worldEvents';
 import { HUSTLE_SECTORS } from '../config/sectors';
 import { getSentence } from '../config/jailSentences';
+import * as FlexEngine from './flexEngine';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
 const rentByTier: Record<Tier, number> = {
@@ -351,10 +352,15 @@ export function advanceMonth(
     100000000:   'franchise',
   };
 
+  // Monthly cooldown decrement
+  if (newPl.flexOfferCooldown > 0) {
+    newPl.flexOfferCooldown--;
+  }
+
   for (const threshold of Object.keys(FLEX_THRESHOLDS)) {
     const t = Number(threshold);
-    if (newPl.bag >= t &&
-        !(newPl.seenFlexThresholds || []).includes(t)) {
+    if (!(newPl.seenFlexThresholds || []).includes(t) &&
+        FlexEngine.shouldOfferFlex(newPl, t, passiveIncome, totalRent)) {
       newPl.pendingFlexOffer = t;
       newPl.seenFlexThresholds = [
         ...(newPl.seenFlexThresholds || []), t
