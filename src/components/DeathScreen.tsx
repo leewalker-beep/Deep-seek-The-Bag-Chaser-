@@ -35,6 +35,17 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
   const [showDetail, setShowDetail] = useState(false);
   const { pl } = useGameStore();
 
+  const deathTitle = (() => {
+    const stat = deathContext?.fatalStat;
+    if (stat === 'clout') return 'IRRELEVANT';
+    if (stat === 'aura') return 'CANCELLED';
+    if (stat === 'bag') return 'BROKE';
+    if (stat === 'mental') return 'BURNED OUT';
+    if (fatalCause?.includes('jail'))
+      return 'LOCKED UP';
+    return 'GAME OVER';
+  })();
+
   const deathInfo = (lastHustleId && DEATH_MESSAGES[lastHustleId]) || DEATH_MESSAGES['DEFAULT'];
   const displayBadge = deathBadge || deathInfo.badge;
 
@@ -52,7 +63,7 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
       <CinematicModal
         isOpen={true}
-        title="BURNED OUT"
+        title={deathTitle}
         subtitle="POST MORTEM"
         accentColor="red"
       >

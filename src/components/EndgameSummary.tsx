@@ -13,6 +13,28 @@ interface EndgameSummaryProps {
 export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onViewHallOfFame }) => {
   const { pl } = useGameStore();
   const [copied, setCopied] = useState(false);
+  const [displayScore, setDisplayScore] =
+    useState(0);
+  const targetScore = pl.legacyScore || 0;
+
+  useEffect(() => {
+    if (targetScore === 0) return;
+    const duration = 1500;
+    const steps = 60;
+    const increment = targetScore / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= targetScore) {
+        setDisplayScore(targetScore);
+        clearInterval(timer);
+      } else {
+        setDisplayScore(Math.floor(current));
+      }
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [targetScore]);
+
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
     ? Math.floor((stats.successfulHustles / stats.totalHustles) * 100)
@@ -87,7 +109,7 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
           <div className="col-span-2 p-6 bg-slate-950 border border-yellow-500/30 rounded-2xl text-center">
             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Final Legacy Score</div>
             <div className="text-5xl font-black text-yellow-400 tabular-nums">
-              {(pl.legacyScore || 0).toLocaleString()}
+              {displayScore.toLocaleString()}
             </div>
           </div>
 

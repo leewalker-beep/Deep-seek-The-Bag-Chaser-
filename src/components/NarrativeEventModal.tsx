@@ -31,7 +31,7 @@ export const NarrativeEventModal: React.FC = () => {
             <PortraitCard
               avatarId={character.portraitId}
               name={character.name}
-              role={character.background}
+              role={character.profession}
               flavorText={character.personality}
               variant="npc"
               size="lg"
