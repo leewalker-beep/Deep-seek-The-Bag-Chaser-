@@ -11,6 +11,7 @@ import { ProgressBar } from './ui/ProgressBar';
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, achievements, isTutorialSkipped, tutorialStep } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'history' | 'biography' | 'badges' | 'achievements' | 'endings' | 'deaths'>('career');
+  const [confirmingEnd, setConfirmingEnd] = useState(false);
 
   const { setPh } = useGameStore();
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
@@ -19,10 +20,8 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     : 0;
 
   const handleEndRun = () => {
-    if (confirm('Are you sure you want to end this run? You will see your final score and start fresh.')) {
-      setPh('POST_MORTEM');
-      onClose();
-    }
+    setPh('POST_MORTEM');
+    onClose();
   };
 
   const showTutorial = !isTutorialSkipped && tutorialStep < 6;
@@ -432,15 +431,43 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </AnimatePresence>
         </div>
 
-        <div className="p-4 bg-slate-950/50 border-t border-slate-800 flex gap-2">
-          <BaseButton variant="secondary" onClick={onClose} className="flex-1">Close</BaseButton>
-          <BaseButton
-            variant="danger"
-            onClick={handleEndRun}
-            className="flex-1 bg-red-900/20 text-red-500 border border-red-500/20 hover:bg-red-900/40"
-          >
-            End Run
-          </BaseButton>
+        <div className="p-4 bg-slate-950/50 border-t border-slate-800 flex flex-col gap-2">
+          <BaseButton variant="secondary" onClick={onClose} className="w-full">Close</BaseButton>
+
+          {!confirmingEnd ? (
+            <button
+              onClick={() => setConfirmingEnd(true)}
+              className="w-full py-3 border border-red-900/40 text-red-800 text-xs font-black uppercase tracking-widest rounded-xl mt-8 hover:border-red-700 hover:text-red-500 transition-all"
+            >
+              End Run
+            </button>
+          ) : (
+            <div className="mt-8 p-4 border border-red-500/30 rounded-xl bg-red-950/20 space-y-3">
+              <div className="text-xs text-red-400 font-black uppercase tracking-widest text-center">
+                This ends your run permanently.
+              </div>
+              <div className="text-[10px] text-slate-500 text-center">
+                Your legacy score will be saved.
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setConfirmingEnd(false)}
+                  className="py-3 border border-slate-700 text-slate-400 text-xs font-black uppercase rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setConfirmingEnd(false);
+                    handleEndRun();
+                  }}
+                  className="py-3 bg-red-900/60 border border-red-700 text-red-300 text-xs font-black uppercase rounded-xl"
+                >
+                  End Run
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

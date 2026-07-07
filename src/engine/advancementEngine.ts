@@ -14,7 +14,7 @@ import * as FlexEngine from './flexEngine';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
 const rentByTier: Record<Tier, number> = {
-  MUD: 200,
+  MUD: 50,
   STREET: 1000,
   STARTUP: 5000,
   CORPORATE: 20000,
