@@ -371,6 +371,11 @@ export function advanceMonth(
 
   newPl.month += 1;
 
+  // Narrative Cooldown decrement
+  if (newPl.narrativeCooldown > 0) {
+    newPl.narrativeCooldown--;
+  }
+
   // JAIL CHECK — fires after month increment
   if (pl.heat >= 100 && !newPl.inJail) {
     const sentence = getSentence(newPl.currentTier);
@@ -698,6 +703,13 @@ export function advanceMonth(
   // Narrative Event Triggering Logic
   if (!newPl.activeNarrative) {
     const validEvents = NARRATIVE_EVENTS.filter(event => {
+      // 0. Pacing/Category Filters
+      const explicitCategory = event.pacingCategory;
+      const inferredCategory = explicitCategory || (event.characterId ? 'CHARACTER' : 'MAJOR');
+
+      // MAJOR events are gated by narrativeCooldown
+      if (inferredCategory === 'MAJOR' && newPl.narrativeCooldown > 0) return false;
+
       // 1. Basic Filters
       if (event.trigger.once && newPl.completedNarrativeEvents?.includes(event.id)) return false;
       if (event.trigger.minMonth && newPl.month < event.trigger.minMonth) return false;
@@ -729,6 +741,14 @@ export function advanceMonth(
     for (const event of validEvents) {
       if (Math.random() < event.trigger.probability) {
         newPl.activeNarrative = event.id;
+
+        // Set cooldown for MAJOR events
+        const explicitCategory = event.pacingCategory;
+        const inferredCategory = explicitCategory || (event.characterId ? 'CHARACTER' : 'MAJOR');
+        if (inferredCategory === 'MAJOR') {
+          newPl.narrativeCooldown = 4;
+        }
+
         news.push({ text: `⚡ NEW EVENT: ${event.title}`, colorClass: 'text-yellow-400 font-black animate-pulse' });
         break; // Only one event at a time
       }

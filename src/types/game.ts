@@ -342,12 +342,15 @@ export interface NarrativeChoice {
   };
 }
 
+export type NarrativePacingCategory = 'MAJOR' | 'CHARACTER' | 'RIVAL' | 'PRESIDENCY';
+
 export interface NarrativeEvent {
   id: string;
   title: string;
   description: string;
   image?: string;
   characterId?: string;
+  pacingCategory?: NarrativePacingCategory;
   trigger: {
     tier?: Tier[];
     background?: string[];
@@ -639,6 +642,7 @@ export interface PlayerStats {
   activeWorldEvent: WorldEventInstance | null;
   worldEventCooldown: number;
   activeNarrative: string | null;
+  narrativeCooldown: number;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
   biography: string[];

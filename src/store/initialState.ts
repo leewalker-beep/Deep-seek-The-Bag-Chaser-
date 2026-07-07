@@ -134,6 +134,7 @@ export const getInitialStats = (
     biography: [],
     recordedBioKeys: [],
     activeNarrative: null,
+    narrativeCooldown: 0,
     narrativeFlags: {},
     originBonus: null,
     actionLog: [],
