@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
 import type { GameState } from '../types/game';
 import { GAME_CONSTANTS } from '../config/gameConstants';
 import { createUISlice } from './slices/uiSlice';
@@ -11,7 +11,7 @@ import { createChallengeSlice } from './slices/challengeSlice';
 import { createPresidentSlice } from './slices/presidentSlice';
 
 export const useGameStore = create<GameState>()(
-  persist(
+  subscribeWithSelector(persist(
     (...a) => ({
       ...createUISlice(...a),
       ...createMarketSlice(...a),
@@ -55,7 +55,7 @@ export const useGameStore = create<GameState>()(
         unlockedLegacyUpgradeIds: state.unlockedLegacyUpgradeIds,
       }),
     }
-  )
+  ))
 );
 
 if (typeof window !== 'undefined' && import.meta.env.DEV) {

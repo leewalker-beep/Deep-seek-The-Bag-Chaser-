@@ -9,7 +9,7 @@ interface NavTabsProps {
   onTabChange: (tab: AppTab) => void;
 }
 
-export const NavTabs: React.FC<NavTabsProps> = ({
+export const NavTabs: React.FC<NavTabsProps> = React.memo(({
   activeTab,
   currentTier,
   onTabChange,
@@ -53,4 +53,4 @@ export const NavTabs: React.FC<NavTabsProps> = ({
       })}
     </div>
   );
-};
+});

@@ -16,7 +16,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({
+export const StatCard: React.FC<StatCardProps> = React.memo(({
   label,
   value,
   icon,
@@ -54,4 +54,4 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});
