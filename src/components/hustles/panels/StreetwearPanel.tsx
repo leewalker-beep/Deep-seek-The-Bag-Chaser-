@@ -1,5 +1,5 @@
-import React from 'react';
-import { StreetwearMatch } from '../../minigames/StreetwearMatch';
+import React, { lazy, Suspense } from 'react';
+const StreetwearMatch = lazy(() => import('../../minigames/StreetwearMatch').then(m => ({ default: m.StreetwearMatch })));
 import { useGameStore } from '../../../store/gameStore';
 import type { Hustle } from '../../../config/hustles/base';
 
@@ -38,10 +38,12 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
           </p>
         </div>
 
-        <StreetwearMatch
-          level={useGameStore.getState().pl.hustleLevels[hustle.id] || 1}
-          onComplete={handleComplete}
-        />
+        <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest text-[10px] animate-pulse">Initializing Design Studio...</div>}>
+          <StreetwearMatch
+            level={useGameStore.getState().pl.hustleLevels[hustle.id] || 1}
+            onComplete={handleComplete}
+          />
+        </Suspense>
       </div>
 
       <button

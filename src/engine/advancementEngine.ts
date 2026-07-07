@@ -703,6 +703,11 @@ export function advanceMonth(
   // Narrative Event Triggering Logic
   if (!newPl.activeNarrative) {
     const validEvents = NARRATIVE_EVENTS.filter(event => {
+      // 1. Quick Filters (Static/State-based)
+      if (event.trigger.tier && !event.trigger.tier.includes(newPl.currentTier)) return false;
+      if (event.trigger.minMonth && newPl.month < event.trigger.minMonth) return false;
+      if (event.trigger.once && newPl.completedNarrativeEvents?.includes(event.id)) return false;
+
       // 0. Pacing/Category Filters
       const explicitCategory = event.pacingCategory;
       const inferredCategory = explicitCategory || (event.characterId ? 'CHARACTER' : 'MAJOR');
@@ -710,10 +715,7 @@ export function advanceMonth(
       // MAJOR events are gated by narrativeCooldown
       if (inferredCategory === 'MAJOR' && newPl.narrativeCooldown > 0) return false;
 
-      // 1. Basic Filters
-      if (event.trigger.once && newPl.completedNarrativeEvents?.includes(event.id)) return false;
-      if (event.trigger.minMonth && newPl.month < event.trigger.minMonth) return false;
-      if (event.trigger.tier && !event.trigger.tier.includes(newPl.currentTier)) return false;
+      // 2. Remaining Filters
       if (event.trigger.background && !event.trigger.background.includes(newPl.chosenBackground!)) return false;
       if (event.trigger.category && !event.trigger.category.includes(newPl.chosenBackgroundCategory!)) return false;
       if (event.trigger.specialization && !event.trigger.specialization.includes(newPl.activeSpecializationId!)) return false;

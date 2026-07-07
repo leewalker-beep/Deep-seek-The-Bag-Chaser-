@@ -50,7 +50,7 @@ export const PortraitCard: React.FC<PortraitCardProps> = ({
         className={`relative rounded-2xl border-2 overflow-hidden bg-slate-800 ${sizeClasses[size]} ${variantStyles[variant]} mb-4 flex items-center justify-center`}
       >
         {avatarId ? (
-          <Avatar avatarId={avatarId} />
+          <Avatar avatarId={avatarId} size={size === 'sm' ? 64 : size === 'md' ? 96 : size === 'lg' ? 128 : 192} />
         ) : (
           <div className="text-4xl">{image || '👤'}</div>
         )}

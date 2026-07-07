@@ -27,7 +27,7 @@ interface HustleCardProps {
   currentBranchId?: string;
 }
 
-export const HustleCard: React.FC<HustleCardProps> = ({
+export const HustleCard: React.FC<HustleCardProps> = React.memo(({
   hustle,
   player,
   onExecute,
@@ -252,4 +252,4 @@ export const HustleCard: React.FC<HustleCardProps> = ({
       </div>
     </div>
   );
-};
+});

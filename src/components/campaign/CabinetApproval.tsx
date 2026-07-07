@@ -1,5 +1,5 @@
-import React from 'react';
-import { SwipeOrder } from '../minigames/SwipeOrder';
+import React, { lazy, Suspense } from 'react';
+const SwipeOrder = lazy(() => import('../minigames/SwipeOrder').then(m => ({ default: m.SwipeOrder })));
 import type { SwipeItem } from '../minigames/SwipeOrder';
 
 interface CabinetApprovalProps {
@@ -26,14 +26,16 @@ const CABINET_NOMINEES: SwipeItem[] = [
 
 export const CabinetApproval: React.FC<CabinetApprovalProps> = ({ onComplete }) => {
   return (
-    <SwipeOrder
-      title="CABINET APPROVAL"
-      instruction="VET NOMINEES"
-      leftLabel="REJECT"
-      rightLabel="CONFIRM"
-      icon="⚖️"
-      items={CABINET_NOMINEES}
-      onComplete={onComplete}
-    />
+    <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest text-[10px] animate-pulse">Vetting Nominees...</div>}>
+      <SwipeOrder
+        title="CABINET APPROVAL"
+        instruction="VET NOMINEES"
+        leftLabel="REJECT"
+        rightLabel="CONFIRM"
+        icon="⚖️"
+        items={CABINET_NOMINEES}
+        onComplete={onComplete}
+      />
+    </Suspense>
   );
 };

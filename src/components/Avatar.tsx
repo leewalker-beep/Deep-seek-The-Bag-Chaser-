@@ -185,13 +185,18 @@ const Avatar: React.FC<AvatarProps> = ({
   return (
     <div
       className={`rounded-full overflow-hidden
-        shrink-0 bg-slate-800
+        shrink-0 bg-slate-800 relative
         ${ring ? `ring-2 ${ring}` : ''}
         ${className}`}
       style={{ width: size, height: size,
-               minWidth: size }}
+               minWidth: size, minHeight: size }}
     >
-      <AvatarSVG def={def} size={size} />
+      {/* Background/Placeholder */}
+      <div className="absolute inset-0 bg-slate-900 animate-pulse opacity-50" />
+
+      <div className="relative z-10 w-full h-full">
+        <AvatarSVG def={def} size={size} />
+      </div>
     </div>
   );
 };

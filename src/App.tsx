@@ -1,4 +1,5 @@
-import { useEffect, useState, useReducer, useMemo, useRef } from 'react';
+import { useEffect, useState, useReducer, useMemo, useRef, lazy, Suspense } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from './store/gameStore';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
@@ -15,63 +16,71 @@ import { HERO_ARTWORK } from './config/heroArtwork';
 import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
-import { SwipeOrder } from './components/minigames/SwipeOrder';
-import { ContentCreation } from './components/minigames/ContentCreation';
-import { SwipeAuthentic } from './components/minigames/SwipeAuthentic';
-import { BeatSequence } from './components/minigames/BeatSequence';
-import { TechRepairDrag } from './components/minigames/TechRepairDrag';
-import { WordTap } from './components/minigames/WordTap';
-import { PinchToInspect } from './components/minigames/PinchToInspect';
-import { TapRhythm } from './components/minigames/TapRhythm';
-import { DragScale } from './components/minigames/DragScale';
-import { TapAssign } from './components/minigames/TapAssign';
-import { HoldHype } from './components/minigames/HoldHype';
-import { MagneticSweep } from './components/minigames/MagneticSweep';
-import { ShakeToInfluence } from './components/minigames/ShakeToInfluence';
-import { PinchToZoom } from './components/minigames/PinchToZoom';
-import { RotateToScale } from './components/minigames/RotateToScale';
-import { MarketPredictor } from './components/minigames/MarketPredictor';
-import { BoardroomBattle } from './components/minigames/BoardroomBattle';
 import Avatar from './components/Avatar';
-import { SlotMachine } from './components/minigames/SlotMachine';
-import { HigherLower } from './components/minigames/HigherLower';
-import { Blackjack } from './components/minigames/Blackjack';
-import { Roulette } from './components/minigames/Roulette';
-import { DiceCraps } from './components/minigames/DiceCraps';
-import { QuickReaction } from './components/minigames/QuickReaction';
-import { StruggleMash } from './components/minigames/StruggleMash';
-import { LaborBuild } from './components/minigames/LaborBuild';
-import { TrafficDodge } from './components/minigames/TrafficDodge';
-import { PlasmaDonation } from './components/minigames/PlasmaDonation';
-import { GhostMode } from './components/minigames/GhostMode';
-import { StreetEats } from './components/minigames/StreetEats';
-import { FamilyDeli } from './components/minigames/FamilyDeli';
-import { ScoopThePoop } from './components/minigames/ScoopThePoop';
-import { StreetwearMatch } from './components/minigames/StreetwearMatch';
-import { HashtagTap } from './components/minigames/HashtagTap';
-import { RunnerRoute } from './components/minigames/RunnerRoute';
-import { MemeCoinPump } from './components/minigames/MemeCoinPump';
-import { EcomCatch } from './components/minigames/EcomCatch';
-import { TapApprove } from './components/minigames/TapApprove';
-import { DragMerge } from './components/minigames/DragMerge';
-import { PatternMemory } from './components/minigames/PatternMemory';
-import { BalanceScale } from './components/minigames/BalanceScale';
-import { ReactionGrid } from './components/minigames/ReactionGrid';
-import { RiskMeter } from './components/minigames/RiskMeter';
-import { SequenceRecall } from './components/minigames/SequenceRecall';
+
+// Lazy Loaded Minigames
+const SwipeOrder = lazy(() => import('./components/minigames/SwipeOrder').then(m => ({ default: m.SwipeOrder })));
+const ContentCreation = lazy(() => import('./components/minigames/ContentCreation').then(m => ({ default: m.ContentCreation })));
+const SwipeAuthentic = lazy(() => import('./components/minigames/SwipeAuthentic').then(m => ({ default: m.SwipeAuthentic })));
+const BeatSequence = lazy(() => import('./components/minigames/BeatSequence').then(m => ({ default: m.BeatSequence })));
+const TechRepairDrag = lazy(() => import('./components/minigames/TechRepairDrag').then(m => ({ default: m.TechRepairDrag })));
+const WordTap = lazy(() => import('./components/minigames/WordTap').then(m => ({ default: m.WordTap })));
+const PinchToInspect = lazy(() => import('./components/minigames/PinchToInspect').then(m => ({ default: m.PinchToInspect })));
+const TapRhythm = lazy(() => import('./components/minigames/TapRhythm').then(m => ({ default: m.TapRhythm })));
+const DragScale = lazy(() => import('./components/minigames/DragScale').then(m => ({ default: m.DragScale })));
+const TapAssign = lazy(() => import('./components/minigames/TapAssign').then(m => ({ default: m.TapAssign })));
+const HoldHype = lazy(() => import('./components/minigames/HoldHype').then(m => ({ default: m.HoldHype })));
+const MagneticSweep = lazy(() => import('./components/minigames/MagneticSweep').then(m => ({ default: m.MagneticSweep })));
+const ShakeToInfluence = lazy(() => import('./components/minigames/ShakeToInfluence').then(m => ({ default: m.ShakeToInfluence })));
+const PinchToZoom = lazy(() => import('./components/minigames/PinchToZoom').then(m => ({ default: m.PinchToZoom })));
+const RotateToScale = lazy(() => import('./components/minigames/RotateToScale').then(m => ({ default: m.RotateToScale })));
+const MarketPredictor = lazy(() => import('./components/minigames/MarketPredictor').then(m => ({ default: m.MarketPredictor })));
+const BoardroomBattle = lazy(() => import('./components/minigames/BoardroomBattle').then(m => ({ default: m.BoardroomBattle })));
+const SlotMachine = lazy(() => import('./components/minigames/SlotMachine').then(m => ({ default: m.SlotMachine })));
+const HigherLower = lazy(() => import('./components/minigames/HigherLower').then(m => ({ default: m.HigherLower })));
+const Blackjack = lazy(() => import('./components/minigames/Blackjack').then(m => ({ default: m.Blackjack })));
+const Roulette = lazy(() => import('./components/minigames/Roulette').then(m => ({ default: m.Roulette })));
+const DiceCraps = lazy(() => import('./components/minigames/DiceCraps').then(m => ({ default: m.DiceCraps })));
+const QuickReaction = lazy(() => import('./components/minigames/QuickReaction').then(m => ({ default: m.QuickReaction })));
+const StruggleMash = lazy(() => import('./components/minigames/StruggleMash').then(m => ({ default: m.StruggleMash })));
+const LaborBuild = lazy(() => import('./components/minigames/LaborBuild').then(m => ({ default: m.LaborBuild })));
+const TrafficDodge = lazy(() => import('./components/minigames/TrafficDodge').then(m => ({ default: m.TrafficDodge })));
+const PlasmaDonation = lazy(() => import('./components/minigames/PlasmaDonation').then(m => ({ default: m.PlasmaDonation })));
+const GhostMode = lazy(() => import('./components/minigames/GhostMode').then(m => ({ default: m.GhostMode })));
+const StreetEats = lazy(() => import('./components/minigames/StreetEats').then(m => ({ default: m.StreetEats })));
+const FamilyDeli = lazy(() => import('./components/minigames/FamilyDeli').then(m => ({ default: m.FamilyDeli })));
+const ScoopThePoop = lazy(() => import('./components/minigames/ScoopThePoop').then(m => ({ default: m.ScoopThePoop })));
+const StreetwearMatch = lazy(() => import('./components/minigames/StreetwearMatch').then(m => ({ default: m.StreetwearMatch })));
+const HashtagTap = lazy(() => import('./components/minigames/HashtagTap').then(m => ({ default: m.HashtagTap })));
+const RunnerRoute = lazy(() => import('./components/minigames/RunnerRoute').then(m => ({ default: m.RunnerRoute })));
+const MemeCoinPump = lazy(() => import('./components/minigames/MemeCoinPump').then(m => ({ default: m.MemeCoinPump })));
+const EcomCatch = lazy(() => import('./components/minigames/EcomCatch').then(m => ({ default: m.EcomCatch })));
+const TapApprove = lazy(() => import('./components/minigames/TapApprove').then(m => ({ default: m.TapApprove })));
+const DragMerge = lazy(() => import('./components/minigames/DragMerge').then(m => ({ default: m.DragMerge })));
+const PatternMemory = lazy(() => import('./components/minigames/PatternMemory').then(m => ({ default: m.PatternMemory })));
+const BalanceScale = lazy(() => import('./components/minigames/BalanceScale').then(m => ({ default: m.BalanceScale })));
+const ReactionGrid = lazy(() => import('./components/minigames/ReactionGrid').then(m => ({ default: m.ReactionGrid })));
+const RiskMeter = lazy(() => import('./components/minigames/RiskMeter').then(m => ({ default: m.RiskMeter })));
+const SequenceRecall = lazy(() => import('./components/minigames/SequenceRecall').then(m => ({ default: m.SequenceRecall })));
+const PresidentialCampaign = lazy(() => import('./components/minigames/PresidentialCampaign').then(m => ({ default: m.PresidentialCampaign })));
+const SimpleFallback = lazy(() => import('./components/minigames/SimpleFallback').then(m => ({ default: m.SimpleFallback })));
+
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
 import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { EndgameSummary } from './components/EndgameSummary';
-import { HallOfFame } from './components/HallOfFame';
+
+// Heavy Screens
+const HallOfFame = lazy(() => import('./components/HallOfFame').then(m => ({ default: m.HallOfFame })));
+const LegacyShop = lazy(() => import('./components/LegacyShop').then(m => ({ default: m.LegacyShop })));
+const PresidentDashboard = lazy(() => import('./components/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
+
 import { DailyChallenges } from './components/DailyChallenges';
-import { LegacyShop } from './components/LegacyShop';
 import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { FlexOpportunityModal } from './components/FlexOpportunityModal';
 import { AnnualStatement } from './components/AnnualStatement';
-import { SimpleFallback } from './components/minigames/SimpleFallback';
 import { JailOverlay } from './components/JailOverlay';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
@@ -88,8 +97,8 @@ import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
-import { PresidentDashboard } from './components/PresidentDashboard';
-import { PresidentialCampaign } from './components/minigames/PresidentialCampaign';
+import { MinigameLoader } from './components/ui/MinigameLoader';
+import { PremiumLoader } from './components/ui/PremiumLoader';
 import { saveHallOfFameEntry } from './utils/hallOfFame';
 import { getEnding } from './config/endings';
 import { getDominantStat } from './utils/endingUtils';
@@ -133,6 +142,19 @@ function App() {
   }, [handleResize]);
 
   const [showMinigame, setShowMinigame] = useState(false);
+
+  // Strategic Preloading
+  useEffect(() => {
+    if (showMinigame) {
+      // Small delay to prioritize the current minigame load
+      const timer = setTimeout(() => {
+        import('./components/DeathScreen');
+        import('./components/EndgameSummary');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showMinigame]);
+
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
@@ -149,6 +171,22 @@ function App() {
     deathBadge,
     fatalCause,
     isTutorialSkipped,
+    activeTransition,
+  } = useGameStore(useShallow(state => ({
+    pl: state.pl,
+    ph: state.ph,
+    currentMarket: state.currentMarket,
+    news: state.news,
+    activeTab: state.activeTab,
+    activeHustleView: state.activeHustleView,
+    activeTierBadge: state.activeTierBadge,
+    deathBadge: state.deathBadge,
+    fatalCause: state.fatalCause,
+    isTutorialSkipped: state.isTutorialSkipped,
+    activeTransition: state.activeTransition,
+  })));
+
+  const {
     executeHustle,
     executeBranch,
     upgradeHustle,
@@ -160,7 +198,6 @@ function App() {
     resetGame,
     addTickerMessage,
     processLogin,
-    activeTransition,
     triggerTransition,
     clearTransition,
   } = useGameStore();
@@ -266,13 +303,15 @@ function App() {
   // Legacy Shop screen
   if (ph === 'LEGACY_SHOP') {
     return (
-      <LegacyShop
-        onProceed={() => {
-           // We can't use setPh directly as it's not exported in the same way
-           // and resetGame will handle it usually, but here we want to go to PROLOGUE
-           useGameStore.setState({ ph: 'PROLOGUE' });
-        }}
-      />
+      <Suspense fallback={<PremiumLoader message="Opening the Vault..." subtitle="Your legacy awaits" />}>
+        <LegacyShop
+          onProceed={() => {
+             // We can't use setPh directly as it's not exported in the same way
+             // and resetGame will handle it usually, but here we want to go to PROLOGUE
+             useGameStore.setState({ ph: 'PROLOGUE' });
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -293,12 +332,14 @@ function App() {
     return (
       <>
         {showHallOfFame ? (
-          <HallOfFame
-            onNewRun={() => {
-              resetGame();
-              window.location.reload();
-            }}
-          />
+          <Suspense fallback={<PremiumLoader message="Reading the History Books..." subtitle="Retrieving Legends" />}>
+            <HallOfFame
+              onNewRun={() => {
+                resetGame();
+                window.location.reload();
+              }}
+            />
+          </Suspense>
         ) : showSummary ? (
           <EndgameSummary
             onRestart={() => resetGame()}
@@ -487,7 +528,9 @@ function App() {
       {/* Main Content */}
       <div className="max-w-md mx-auto px-4 py-3 pb-24">
         {activeTab === 'PRESIDENCY' ? (
-          <PresidentDashboard />
+          <Suspense fallback={<PremiumLoader message="Preparing the Situation Room..." subtitle="Briefing the Cabinet" />}>
+            <PresidentDashboard />
+          </Suspense>
         ) : !activeHustleView ? (
           <>
             {/* Advance Tier Button */}
@@ -604,6 +647,7 @@ function App() {
                 };
 
                 const hustleLevel = pl.hustleLevels[hustle.id] || 1;
+                const renderMinigame = () => {
                 if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
@@ -745,6 +789,13 @@ function App() {
 
                 // Fallback for unknown minigames
                 return <SimpleFallback name={activeMiniGame} onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                };
+
+                return (
+                  <Suspense fallback={<MinigameLoader icon={hustle.icon} name={hustle.name} />}>
+                    {renderMinigame()}
+                  </Suspense>
+                );
               }
 
               if (hustle.hasPanel) {
