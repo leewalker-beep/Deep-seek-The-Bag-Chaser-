@@ -116,8 +116,9 @@ const festivalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelDa
 const philanthropyStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const donation = state.philanthropyDonation || 10000000;
-  const donationMult = (donation / 50000000) * (minigameMultiplier || 1);
-  const legacyGain = Math.floor(donationMult * 100) + Math.floor(donation / 500000);
+  const performanceMult = (minigameMultiplier || 1);
+  const baseLegacyGain = Math.floor(donation / 200000);
+  const legacyGain = baseLegacyGain + Math.floor(baseLegacyGain * performanceMult);
 
   return {
     success: true,
@@ -125,8 +126,8 @@ const philanthropyStrategy: HustleStrategy = (_hustleId, state, marketType, _lev
     message: '',
     cost: donation * market.expenseMultiplier,
     yieldCash: 0,
-    yieldClout: Math.floor(500 * donationMult),
-    yieldAura: Math.floor(1000 * donationMult),
+    yieldClout: Math.floor(500 * (donation / 50000000) * performanceMult),
+    yieldAura: Math.floor(1000 * (donation / 50000000) * performanceMult),
     legacyGain,
     mentalHit: 20,
     heatHit: 0,

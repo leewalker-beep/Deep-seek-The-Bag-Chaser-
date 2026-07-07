@@ -11,6 +11,8 @@ export const PhilanthropyPanel: React.FC<PhilanthropyPanelProps> = ({ hustle }) 
   const donation = pl.philanthropyDonation || 10000000;
 
   const handleDonate = () => {
+    // Donation amount still maps to a multiplier for the philanthropy hustle
+    // which yields Clout/Aura and triggers a successfulHustle for legacy points.
     const result = executeHustle(hustle.id, donation / 50000000);
     if (result.success) setActiveHustleView(null);
   };
@@ -32,13 +34,13 @@ export const PhilanthropyPanel: React.FC<PhilanthropyPanelProps> = ({ hustle }) 
 
       <div className="grid gap-3">
         <button onClick={() => setPhilanthropyDonation(10000000)} className={`py-3 rounded-lg border-2 ${donation === 10000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
-          DONATE $10M → +20 Legacy Points
+          DONATE $10M → +100 Legacy Points
         </button>
         <button onClick={() => setPhilanthropyDonation(50000000)} className={`py-3 rounded-lg border-2 ${donation === 50000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
-          DONATE $50M → +100 Legacy Points
+          DONATE $50M → +500 Legacy Points
         </button>
         <button onClick={() => setPhilanthropyDonation(100000000)} className={`py-3 rounded-lg border-2 ${donation === 100000000 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950'}`}>
-          DONATE $100M → +200 Legacy Points
+          DONATE $100M → +1,000 Legacy Points
         </button>
       </div>
 
