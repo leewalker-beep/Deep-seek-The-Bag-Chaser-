@@ -1,6 +1,6 @@
 import type { PlayerStats, MarketType, TickerMessage } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
-import { calculateHustleMath, getEffectiveHustleStats } from './mathEngine';
+import { calculateHustleMath, getEffectiveHustleStats, LEVEL_MULTIPLIERS } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
 
@@ -21,6 +21,12 @@ export interface HustleExecutionResult {
   bigWinMessage?: string;
   tickerMessages?: TickerMessage[];
   approvalBonus?: number;
+  // Technical breakdown for transparency
+  deathBreakdown?: {
+    baseDamage: number;
+    multipliers: Record<string, number>;
+    finalDamage: number;
+  };
 }
 
 export type HustleStrategy = (
@@ -632,6 +638,15 @@ export const executeHustleAction = (
     shieldTurns: effective.shieldTurns,
     approvalBonus: effective.approvalBonus,
     isRare: effective.isBigWin,
-    bigWinMessage: effective.bigWinMessage
+    bigWinMessage: effective.bigWinMessage,
+    deathBreakdown: {
+      baseDamage: levelData.mentalHit * (LEVEL_MULTIPLIERS[currentLevel] || 1),
+      multipliers: {
+        'Market': (MARKET_CONFIGS[market]?.heatMultiplier || 1), // Proxy for damage-relevant market mults
+        'Skill': minigameMultiplier,
+        'Legacy': 1 + ((state.legacyPoints || 0) * 0.001)
+      },
+      finalDamage: effective.mentalHit
+    }
   };
 };

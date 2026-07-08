@@ -110,11 +110,12 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     onComplete(multiplier);
   };
 
-  const handleTap = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleTap = (e: React.PointerEvent) => {
     if (isGameOver) return;
     e.stopPropagation();
+    e.preventDefault();
 
-    const targetRange = [10, 25]; // Target is between 10% and 25% from left
+    const targetRange = [8, 32]; // Target is between 8% and 32% from left
     const hitIndex = beats.findIndex(b => b.offset >= targetRange[0] && b.offset <= targetRange[1]);
 
     const newTotal = totalAttempts + 1;
@@ -141,8 +142,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
 
   return (
     <div
-      onMouseDown={handleTap}
-      onTouchStart={handleTap}
+      onPointerDown={handleTap}
       className={`transition-colors duration-200 bg-slate-900 p-8 rounded-3xl border-4 text-center select-none touch-none h-80 flex flex-col justify-center items-center relative overflow-hidden ${
         feedback === 'hit' ? 'border-emerald-500 bg-emerald-950/20' :
         feedback === 'miss' ? 'border-red-500 bg-red-950/20' :
@@ -158,7 +158,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
 
       <div className="w-full h-20 bg-slate-800 relative rounded-2xl border-2 border-slate-700 shadow-inner overflow-hidden flex items-center">
         {/* Target Zone */}
-        <div className="absolute left-[15%] top-0 bottom-0 w-[10%] bg-blue-500/20 border-x-4 border-blue-400/50 z-0">
+        <div className="absolute left-[8%] top-0 bottom-0 w-[24%] bg-blue-500/20 border-x-4 border-blue-400/50 z-0">
            <motion.div
              animate={{ opacity: [0.2, 0.5, 0.2] }}
              transition={{ repeat: Infinity, duration: 1 }}

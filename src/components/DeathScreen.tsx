@@ -17,6 +17,11 @@ interface DeathScreenProps {
     tier: string;
     fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
     fatalStatValue?: number;
+    preStatValue?: number;
+    baseDamage?: number;
+    multipliers?: Record<string, number>;
+    finalDamage?: number;
+    postStatValue?: number;
   };
   onReset: () => void;
   onQuickStart: () => void;
@@ -114,6 +119,70 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Final Impact</span>
                   <span className="text-red-500 font-black text-xs italic">"{deathContext.lastHustleName}"</span>
+                </div>
+
+                <div className="h-px bg-slate-800 my-4" />
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Stat Before</span>
+                    <span className="text-slate-300 font-black text-xs">
+                      {deathContext.preStatValue?.toLocaleString() || 'N/A'}
+                    </span>
+                  </div>
+
+                  {deathContext.baseDamage !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Base Damage</span>
+                      <span className="text-red-400 font-black text-xs">
+                        {deathContext.baseDamage.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+
+                  {deathContext.multipliers && Object.entries(deathContext.multipliers).map(([name, val]) => (
+                    <div key={name} className="flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">{name} Mult</span>
+                      <span className="text-orange-400 font-black text-xs">x{val.toFixed(2)}</span>
+                    </div>
+                  ))}
+
+                  {deathContext.finalDamage !== undefined && (
+                    <div className="flex justify-between items-center pt-1 border-t border-slate-800">
+                      <span className="text-slate-400 text-[10px] uppercase font-black tracking-wider">Final Damage</span>
+                      <span className="text-red-500 font-black text-xs">
+                        {deathContext.finalDamage.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-slate-400 text-[10px] uppercase font-black tracking-wider">Post-Action Stat</span>
+                    <span className="text-red-600 font-black text-xs">
+                      {deathContext.postStatValue?.toLocaleString() || '0'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-800 my-4" />
+
+                <div className="space-y-4">
+                   <div>
+                      <div className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">CLOSING CHAPTERS</div>
+                      <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                        Your journey ends at {deathContext.tier} tier after {deathContext.monthsPlayed} months.
+                        The legacy of {pl.name || 'the Chaser'} is etched in the {deathContext.lastHustleName} of history.
+                      </p>
+                   </div>
+                   <div>
+                      <div className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">LESSONS LEARNED</div>
+                      <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                        {deathContext.fatalStat === 'mental' ? "Burnout is the silent killer of empires. Balance the grind with recovery." :
+                         deathContext.fatalStat === 'bag' ? "Liquidity is life. Never over-leverage your future for a temporary gain." :
+                         deathContext.fatalStat === 'heat' ? "The law always catches up. Cool down before you blow up." :
+                         "Irrelevance is the only true death. Leave a mark next time."}
+                      </p>
+                   </div>
                 </div>
               </div>
             )}

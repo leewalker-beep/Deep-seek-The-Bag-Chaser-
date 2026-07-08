@@ -39,11 +39,13 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const [topicIndex, setTopicIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
+  const [streak, setStreak] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [offsetY, setOffsetY] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
-  const touchStart = useRef<number | null>(null);
+  const touchStart = useRef<{ x: number, y: number } | null>(null);
   const timerRef = useRef<number | null>(null);
 
   // Centralized Scaling
@@ -51,7 +53,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const timerFactor = getTimerFactor(level, tier);
 
   // Difficulty scaling: less time per topic, more topics
-  const timePerTopic = useMemo(() => Math.max(1.5, 2.5 * timerFactor), [timerFactor]);
+  const timePerTopic = useMemo(() => Math.max(0.8, (2.5 - (level * 0.2)) * timerFactor), [level, timerFactor]);
   const totalTopics = useMemo(() => Math.min(25, 3 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
   const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
 
@@ -79,15 +81,17 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
     else if (accuracy >= 0.5) baseMultiplier = 1.2;
     else baseMultiplier = 0.8;
 
-    // Apply scaling reward
-    const multiplier = baseMultiplier * (0.8 + scaling * 0.2);
+    // Apply scaling reward and streak bonus
+    const streakBonus = 1 + (Math.min(10, streak) * 0.05);
+    const multiplier = baseMultiplier * (0.8 + scaling * 0.2) * streakBonus;
 
     setTimeout(() => onComplete(multiplier), 800);
-  }, [score, total, onComplete, scaling]);
+  }, [score, total, onComplete, scaling, streak]);
 
   const handleTimeout = useCallback(() => {
     if (!gameActive || result !== null) return;
     setResult('wrong');
+    setStreak(0);
     if (navigator.vibrate) navigator.vibrate([30, 30]);
     setTotal(t => t + 1);
     setTimeout(() => setTopicIndex(i => i + 1), 300);
@@ -98,6 +102,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
       setCurrentTopic(shuffledTopics[topicIndex]);
       setResult(null);
       setOffsetY(0);
+      setOffsetX(0);
       setTimeLeft(timePerTopic);
 
       if (timerRef.current) clearInterval(timerRef.current);
@@ -127,10 +132,12 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
     if (isCorrect) {
       setScore(s => s + 1);
+      setStreak(prev => prev + 1);
       setResult('correct');
       if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setResult('wrong');
+      setStreak(0);
       if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
     setTotal(t => t + 1);
@@ -140,27 +147,31 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
     }, 300);
   };
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.targetTouches[0].clientY;
+  const onPointerDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    touchStart.current = { x: e.clientX, y: e.clientY };
   };
 
-  const onTouchMove = (e: React.TouchEvent) => {
+  const onPointerMove = (e: React.PointerEvent) => {
     if (touchStart.current !== null) {
-      const diff = e.targetTouches[0].clientY - touchStart.current;
-      setOffsetY(diff);
+      setOffsetY(e.clientY - touchStart.current.y);
+      setOffsetX(e.clientX - touchStart.current.x);
     }
   };
 
-  const onTouchEnd = (e: React.TouchEvent) => {
+  const onPointerUp = (e: React.PointerEvent) => {
     if (touchStart.current === null) return;
-    const diff = e.changedTouches[0].clientY - touchStart.current;
+    const diffY = e.clientY - touchStart.current.y;
+    const diffX = e.clientX - touchStart.current.x;
 
-    if (diff < -swipeThreshold) {
-      handleAction(true); // Swipe Up = Post
-    } else if (diff > swipeThreshold) {
-      handleAction(false); // Swipe Down = Decline
+    if (level >= 3 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > swipeThreshold) handleAction(true);
+      else if (diffX < -swipeThreshold) handleAction(false);
+      else { setOffsetY(0); setOffsetX(0); }
     } else {
-      setOffsetY(0);
+      if (diffY < -swipeThreshold) handleAction(true);
+      else if (diffY > swipeThreshold) handleAction(false);
+      else { setOffsetY(0); setOffsetX(0); }
     }
     touchStart.current = null;
   };
@@ -183,27 +194,31 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
           <motion.div
             key={topicIndex}
             initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, y: offsetY }}
-            exit={{ y: offsetY < -swipeThreshold ? -500 : offsetY > swipeThreshold ? 500 : 0, opacity: 0 }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            className={`w-full max-w-[240px] aspect-[3/4] bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-6 transition-all shadow-2xl relative ${
+            animate={{ scale: 1, opacity: 1, y: offsetY, x: offsetX }}
+            exit={{
+                y: Math.abs(offsetY) > swipeThreshold ? (offsetY < 0 ? -500 : 500) : 0,
+                x: Math.abs(offsetX) > swipeThreshold ? (offsetX < 0 ? -500 : 500) : 0,
+                opacity: 0
+            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            className={`w-full max-w-[220px] aspect-[3/4] bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-4 transition-all shadow-2xl relative ${
               result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
               result === 'wrong' ? 'border-red-500 bg-red-500/10' :
               'border-slate-700'
             }`}
           >
             {/* Feedback Overlays */}
-            {offsetY < -40 && (
+            {(offsetY < -40 || (level >= 3 && offsetX > 40)) && (
                 <div className="absolute top-4 font-black text-emerald-400 text-xl rotate-[-10deg]">POST IT!</div>
             )}
-            {offsetY > 40 && (
+            {(offsetY > 40 || (level >= 3 && offsetX < -40)) && (
                 <div className="absolute bottom-4 font-black text-red-400 text-xl rotate-[10deg]">DECLINE</div>
             )}
 
-            <div className="text-6xl mb-4">{currentTopic.isViral ? '🔥' : '📄'}</div>
-            <div className="text-lg font-black text-white leading-tight mb-4">{currentTopic.label}</div>
+            <div className="text-5xl mb-2">{currentTopic.isViral ? '🔥' : '📄'}</div>
+            <div className="text-base font-black text-white leading-tight mb-4 px-2">{currentTopic.label}</div>
 
             <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-700 mb-2">
                 <motion.div
@@ -223,11 +238,17 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
       <div className="absolute bottom-6 w-full flex justify-around px-6 opacity-30 pointer-events-none">
            <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl">⬆️</span>
+              <span className="text-2xl">{level >= 3 ? '⬆️/➡️' : '⬆️'}</span>
               <span className="text-[8px] font-black text-emerald-400 uppercase">POST VIRAL</span>
            </div>
+           {streak > 0 && (
+              <div className="flex flex-col items-center">
+                 <span className="text-xs font-black text-purple-400 animate-pulse">{streak} STREAK!</span>
+                 <span className="text-[8px] text-purple-500/50 uppercase font-bold">x{(1 + Math.min(10, streak) * 0.05).toFixed(2)}</span>
+              </div>
+           )}
            <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl">⬇️</span>
+              <span className="text-2xl">{level >= 3 ? '⬇️/⬅️' : '⬇️'}</span>
               <span className="text-[8px] font-black text-red-400 uppercase">DECLINE TRASH</span>
            </div>
       </div>

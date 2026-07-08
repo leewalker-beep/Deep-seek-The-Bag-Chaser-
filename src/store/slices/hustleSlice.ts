@@ -466,6 +466,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: nextPl.currentTier,
         fatalStat,
         fatalStatValue,
+        preStatValue: fatalStat === 'mental' ? state.pl.mentalHealth :
+                     fatalStat === 'bag' ? state.pl.bag :
+                     fatalStat === 'clout' ? state.pl.clout :
+                     fatalStat === 'aura' ? state.pl.aura : state.pl.heat,
+        baseDamage: result.mentalHit, // Branches are simpler
+        finalDamage: result.mentalHit,
+        postStatValue: fatalStatValue
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
@@ -923,6 +930,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: plFinal.currentTier,
         fatalStat,
         fatalStatValue,
+        preStatValue: fatalStat === 'mental' ? runningPl.mentalHealth :
+                     fatalStat === 'bag' ? runningPl.bag :
+                     fatalStat === 'clout' ? runningPl.clout :
+                     fatalStat === 'aura' ? runningPl.aura : runningPl.heat,
+        baseDamage: result.deathBreakdown?.baseDamage,
+        multipliers: result.deathBreakdown?.multipliers,
+        finalDamage: result.deathBreakdown?.finalDamage,
+        postStatValue: fatalStatValue
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plFinal.legacyScore || 0) });
@@ -1257,6 +1272,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: newPl.currentTier,
         fatalStat,
         fatalStatValue,
+        preStatValue: fatalStat === 'mental' ? state.pl.mentalHealth :
+                     fatalStat === 'bag' ? state.pl.bag :
+                     fatalStat === 'clout' ? state.pl.clout :
+                     fatalStat === 'aura' ? state.pl.aura : state.pl.heat,
+        baseDamage: result.mentalHit,
+        finalDamage: result.mentalHit,
+        postStatValue: fatalStatValue
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
@@ -1436,6 +1458,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: plAfterPurchase.currentTier,
         fatalStat,
         fatalStatValue,
+        preStatValue: fatalStat === 'mental' ? state.pl.mentalHealth :
+                     fatalStat === 'bag' ? state.pl.bag :
+                     fatalStat === 'clout' ? state.pl.clout :
+                     fatalStat === 'aura' ? state.pl.aura : state.pl.heat,
+        baseDamage: asset.cost, // If they died of being broke
+        finalDamage: asset.cost,
+        postStatValue: fatalStatValue
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (plAfterPurchase.legacyScore || 0) });
@@ -1536,6 +1565,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: newPl.currentTier,
         fatalStat,
         fatalStatValue,
+        preStatValue: fatalStat === 'mental' ? state.pl.mentalHealth :
+                     fatalStat === 'bag' ? state.pl.bag :
+                     fatalStat === 'clout' ? state.pl.clout :
+                     fatalStat === 'aura' ? state.pl.aura : state.pl.heat,
+        postStatValue: fatalStatValue
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(newPl) || 0) });
