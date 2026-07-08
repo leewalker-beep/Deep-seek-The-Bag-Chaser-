@@ -1863,21 +1863,21 @@
         },
         "reward": {
           "cost": 15000,
-          "yieldCash": 110000,
+          "yieldCash": 22000,
           "yieldClout": 3,
           "yieldAura": 10,
           "mentalHit": -40,
           "heatHit": 4,
-          "netChange": 95000
+          "netChange": 7000
         },
         "receipt": {
           "cost": 15000,
-          "yieldCash": 110000,
+          "yieldCash": 22000,
           "yieldClout": 3,
           "yieldAura": 10,
           "mentalHit": -40,
           "heatHit": 4,
-          "profit": 95000
+          "profit": 7000
         }
       },
       {
@@ -2269,21 +2269,21 @@
         },
         "reward": {
           "cost": 60000,
-          "yieldCash": 132515,
+          "yieldCash": 151428,
           "yieldClout": 500,
           "yieldAura": 250,
           "mentalHit": -20,
           "heatHit": 14,
-          "netChange": 72515
+          "netChange": 91428
         },
         "receipt": {
           "cost": 60000,
-          "yieldCash": 132515,
+          "yieldCash": 151428,
           "yieldClout": 500,
           "yieldAura": 250,
           "mentalHit": -20,
           "heatHit": 14,
-          "profit": 72515
+          "profit": 91428
         }
       }
     ]
@@ -2306,21 +2306,21 @@
         },
         "reward": {
           "cost": 500000,
-          "yieldCash": 757059,
+          "yieldCash": 912131,
           "yieldClout": 12,
           "yieldAura": 6,
           "mentalHit": -5,
           "heatHit": 4,
-          "netChange": 257059
+          "netChange": 412131
         },
         "receipt": {
           "cost": 500000,
-          "yieldCash": 757059,
+          "yieldCash": 912131,
           "yieldClout": 12,
           "yieldAura": 6,
           "mentalHit": -5,
           "heatHit": 4,
-          "profit": 257059
+          "profit": 412131
         }
       },
       {
@@ -2336,21 +2336,21 @@
         },
         "reward": {
           "cost": 3000000,
-          "yieldCash": 9563273,
+          "yieldCash": 4861073,
           "yieldClout": 30,
           "yieldAura": 15,
           "mentalHit": -5,
           "heatHit": 4,
-          "netChange": 6563273
+          "netChange": 1861073
         },
         "receipt": {
           "cost": 3000000,
-          "yieldCash": 9563273,
+          "yieldCash": 4861073,
           "yieldClout": 30,
           "yieldAura": 15,
           "mentalHit": -5,
           "heatHit": 4,
-          "profit": 6563273
+          "profit": 1861073
         }
       },
       {
@@ -2366,21 +2366,21 @@
         },
         "reward": {
           "cost": 12000000,
-          "yieldCash": 14533596,
+          "yieldCash": 26923475,
           "yieldClout": 70,
           "yieldAura": 40,
           "mentalHit": -5,
           "heatHit": 4,
-          "netChange": 2533596
+          "netChange": 14923475
         },
         "receipt": {
           "cost": 12000000,
-          "yieldCash": 14533596,
+          "yieldCash": 26923475,
           "yieldClout": 70,
           "yieldAura": 40,
           "mentalHit": -5,
           "heatHit": 4,
-          "profit": 2533596
+          "profit": 14923475
         }
       }
     ]
@@ -2403,21 +2403,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 140728,
+          "yieldCash": 62979,
           "yieldClout": 7,
           "yieldAura": 4,
           "mentalHit": -25,
           "heatHit": 4,
-          "netChange": 140728
+          "netChange": 62979
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 140728,
+          "yieldCash": 62979,
           "yieldClout": 7,
           "yieldAura": 4,
           "mentalHit": -25,
           "heatHit": 4,
-          "profit": 140728
+          "profit": 62979
         }
       },
       {
@@ -2433,21 +2433,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 71332,
+          "yieldCash": 106036,
           "yieldClout": 20,
           "yieldAura": 10,
           "mentalHit": -25,
           "heatHit": 4,
-          "netChange": 71332
+          "netChange": 106036
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 71332,
+          "yieldCash": 106036,
           "yieldClout": 20,
           "yieldAura": 10,
           "mentalHit": -25,
           "heatHit": 4,
-          "profit": 71332
+          "profit": 106036
         }
       },
       {
@@ -2463,21 +2463,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 110569,
+          "yieldCash": 61422,
           "yieldClout": 50,
           "yieldAura": 30,
           "mentalHit": -25,
           "heatHit": 4,
-          "netChange": 110569
+          "netChange": 61422
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 110569,
+          "yieldCash": 61422,
           "yieldClout": 50,
           "yieldAura": 30,
           "mentalHit": -25,
           "heatHit": 4,
-          "profit": 110569
+          "profit": 61422
         }
       }
     ]
@@ -2500,21 +2500,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 67951,
+          "yieldCash": 35128,
           "yieldClout": 20,
           "yieldAura": 50,
           "mentalHit": -10,
           "heatHit": 4,
-          "netChange": 67951
+          "netChange": 35128
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 67951,
+          "yieldCash": 35128,
           "yieldClout": 20,
           "yieldAura": 50,
           "mentalHit": -10,
           "heatHit": 4,
-          "profit": 67951
+          "profit": 35128
         }
       },
       {
@@ -2530,21 +2530,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 46162,
+          "yieldCash": 66664,
           "yieldClout": 40,
           "yieldAura": 100,
           "mentalHit": -10,
           "heatHit": 4,
-          "netChange": 46162
+          "netChange": 66664
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 46162,
+          "yieldCash": 66664,
           "yieldClout": 40,
           "yieldAura": 100,
           "mentalHit": -10,
           "heatHit": 4,
-          "profit": 46162
+          "profit": 66664
         }
       },
       {
@@ -2560,21 +2560,21 @@
         },
         "reward": {
           "cost": 0,
-          "yieldCash": 65267,
+          "yieldCash": 67654,
           "yieldClout": 120,
           "yieldAura": 250,
           "mentalHit": -10,
           "heatHit": 4,
-          "netChange": 65267
+          "netChange": 67654
         },
         "receipt": {
           "cost": 0,
-          "yieldCash": 65267,
+          "yieldCash": 67654,
           "yieldClout": 120,
           "yieldAura": 250,
           "mentalHit": -10,
           "heatHit": 4,
-          "profit": 65267
+          "profit": 67654
         }
       }
     ]
@@ -2597,21 +2597,21 @@
         },
         "reward": {
           "cost": 10000,
-          "yieldCash": 63780,
+          "yieldCash": 25071,
           "yieldClout": 15,
           "yieldAura": 10,
           "mentalHit": -18,
           "heatHit": 4,
-          "netChange": 53780
+          "netChange": 15071
         },
         "receipt": {
           "cost": 10000,
-          "yieldCash": 63780,
+          "yieldCash": 25071,
           "yieldClout": 15,
           "yieldAura": 10,
           "mentalHit": -18,
           "heatHit": 4,
-          "profit": 53780
+          "profit": 15071
         }
       }
     ]
@@ -2635,21 +2635,21 @@
         },
         "reward": {
           "cost": 5000000,
-          "yieldCash": 4159800,
+          "yieldCash": 3617532,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "netChange": -840200
+          "netChange": -1382468
         },
         "receipt": {
           "cost": 5000000,
-          "yieldCash": 4159800,
+          "yieldCash": 3617532,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "profit": -840200
+          "profit": -1382468
         }
       },
       {
@@ -2666,21 +2666,21 @@
         },
         "reward": {
           "cost": 5000000,
-          "yieldCash": 4235734,
+          "yieldCash": 5118894,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "netChange": -764266
+          "netChange": 118894
         },
         "receipt": {
           "cost": 5000000,
-          "yieldCash": 4235734,
+          "yieldCash": 5118894,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "profit": -764266
+          "profit": 118894
         }
       },
       {
@@ -2697,21 +2697,21 @@
         },
         "reward": {
           "cost": 5000000,
-          "yieldCash": 5603123,
+          "yieldCash": 4466619,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "netChange": 603123
+          "netChange": -533381
         },
         "receipt": {
           "cost": 5000000,
-          "yieldCash": 5603123,
+          "yieldCash": 4466619,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -5,
           "heatHit": 9,
-          "profit": 603123
+          "profit": -533381
         }
       }
     ]
@@ -2735,21 +2735,21 @@
         },
         "reward": {
           "cost": 5000000,
-          "yieldCash": 6809936,
+          "yieldCash": 7784995,
           "yieldClout": 50,
           "yieldAura": 25,
           "mentalHit": -10,
           "heatHit": 14,
-          "netChange": 1809936
+          "netChange": 2784995
         },
         "receipt": {
           "cost": 5000000,
-          "yieldCash": 6809936,
+          "yieldCash": 7784995,
           "yieldClout": 50,
           "yieldAura": 25,
           "mentalHit": -10,
           "heatHit": 14,
-          "profit": 1809936
+          "profit": 2784995
         }
       },
       {
@@ -2766,21 +2766,21 @@
         },
         "reward": {
           "cost": 10000000,
-          "yieldCash": 10765246,
+          "yieldCash": 13343295,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -10,
           "heatHit": 14,
-          "netChange": 765246
+          "netChange": 3343295
         },
         "receipt": {
           "cost": 10000000,
-          "yieldCash": 10765246,
+          "yieldCash": 13343295,
           "yieldClout": 100,
           "yieldAura": 50,
           "mentalHit": -10,
           "heatHit": 14,
-          "profit": 765246
+          "profit": 3343295
         }
       },
       {
@@ -2797,21 +2797,21 @@
         },
         "reward": {
           "cost": 20000000,
-          "yieldCash": 30437549,
+          "yieldCash": 21456485,
           "yieldClout": 200,
           "yieldAura": 100,
           "mentalHit": -10,
           "heatHit": 14,
-          "netChange": 10437549
+          "netChange": 1456485
         },
         "receipt": {
           "cost": 20000000,
-          "yieldCash": 30437549,
+          "yieldCash": 21456485,
           "yieldClout": 200,
           "yieldAura": 100,
           "mentalHit": -10,
           "heatHit": 14,
-          "profit": 10437549
+          "profit": 1456485
         }
       }
     ]
@@ -2949,21 +2949,21 @@
         },
         "reward": {
           "cost": 1000000,
-          "yieldCash": 10591750,
+          "yieldCash": 49406483,
           "yieldClout": 960,
           "yieldAura": 400,
           "mentalHit": -23,
           "heatHit": 4,
-          "netChange": 9591750
+          "netChange": 48406483
         },
         "receipt": {
           "cost": 1000000,
-          "yieldCash": 10591750,
+          "yieldCash": 49406483,
           "yieldClout": 960,
           "yieldAura": 400,
           "mentalHit": -23,
           "heatHit": 4,
-          "profit": 9591750
+          "profit": 48406483
         }
       }
     ]

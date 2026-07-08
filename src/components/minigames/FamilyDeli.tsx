@@ -68,7 +68,13 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
   const [total, setTotal] = useState(0);
   const [streak, setStreak] = useState(0);
   const [gameActive, setGameActive] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(45);
+  const initialTime = useMemo(() => {
+    if (level === 1) return 15;
+    if (level === 2) return 25;
+    return 35;
+  }, [level]);
+
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [showResults, setShowResults] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
@@ -446,7 +452,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                 {MENU.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleAssemble(item.id)}
+                    onPointerDown={(e) => {
+                      if (e.cancelable) e.preventDefault();
+                      handleAssemble(item.id);
+                    }}
                     disabled={selectedCustomerIndex === null || inventory[item.id] <= 0}
                     className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all active:scale-95 ${
                       selectedCustomerIndex !== null && inventory[item.id] > 0

@@ -102,19 +102,22 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     setIsGameOver(true);
 
     const accuracy = finalAttempts > 0 ? finalHits / finalAttempts : 0;
-    let multiplier = 0.5;
-    if (accuracy >= 0.9) multiplier = 4.0;
-    else if (accuracy >= 0.7) multiplier = 2.5;
-    else if (accuracy >= 0.5) multiplier = 1.2;
+    let base = 0.5;
+    if (accuracy >= 0.9) base = 4.0;
+    else if (accuracy >= 0.7) base = 2.5;
+    else if (accuracy >= 0.5) base = 1.2;
 
+    const multiplier = base * (0.8 + scaling * 0.2);
     onComplete(multiplier);
   };
 
-  const handleTap = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleTap = (e: React.PointerEvent) => {
     if (isGameOver) return;
+    if (e.cancelable) e.preventDefault();
     e.stopPropagation();
 
-    const targetRange = [10, 25]; // Target is between 10% and 25% from left
+    // Widen target range for better feel: 8% to 32% (center is 20%)
+    const targetRange = [8, 32];
     const hitIndex = beats.findIndex(b => b.offset >= targetRange[0] && b.offset <= targetRange[1]);
 
     const newTotal = totalAttempts + 1;
@@ -141,8 +144,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
 
   return (
     <div
-      onMouseDown={handleTap}
-      onTouchStart={handleTap}
+      onPointerDown={handleTap}
       className={`transition-colors duration-200 bg-slate-900 p-8 rounded-3xl border-4 text-center select-none touch-none h-80 flex flex-col justify-center items-center relative overflow-hidden ${
         feedback === 'hit' ? 'border-emerald-500 bg-emerald-950/20' :
         feedback === 'miss' ? 'border-red-500 bg-red-950/20' :
@@ -157,8 +159,8 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
       </div>
 
       <div className="w-full h-20 bg-slate-800 relative rounded-2xl border-2 border-slate-700 shadow-inner overflow-hidden flex items-center">
-        {/* Target Zone */}
-        <div className="absolute left-[15%] top-0 bottom-0 w-[10%] bg-blue-500/20 border-x-4 border-blue-400/50 z-0">
+        {/* Target Zone: Match the logic [8, 32] */}
+        <div className="absolute left-[8%] top-0 bottom-0 w-[24%] bg-blue-500/20 border-x-4 border-blue-400/50 z-0">
            <motion.div
              animate={{ opacity: [0.2, 0.5, 0.2] }}
              transition={{ repeat: Infinity, duration: 1 }}

@@ -38,12 +38,16 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicIndex, setTopicIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
   const [total, setTotal] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [offsetY, setOffsetY] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const touchStart = useRef<number | null>(null);
+  const touchStartH = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
   // Centralized Scaling
@@ -51,9 +55,9 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const timerFactor = getTimerFactor(level, tier);
 
   // Difficulty scaling: less time per topic, more topics
-  const timePerTopic = useMemo(() => Math.max(1.5, 2.5 * timerFactor), [timerFactor]);
+  const timePerTopic = useMemo(() => Math.max(1.0, 2.5 * timerFactor), [timerFactor]);
   const totalTopics = useMemo(() => Math.min(25, 3 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
-  const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
+  const swipeThreshold = useMemo(() => Math.max(30, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
 
   const [shuffledTopics] = useState(() => {
     const shuffled = [...TOPICS];
@@ -79,15 +83,17 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
     else if (accuracy >= 0.5) baseMultiplier = 1.2;
     else baseMultiplier = 0.8;
 
-    // Apply scaling reward
-    const multiplier = baseMultiplier * (0.8 + scaling * 0.2);
+    // Streak bonus: up to +50% for long streaks
+    const streakBonus = Math.min(0.5, (maxStreak / totalTopics) * 0.5);
+    const multiplier = baseMultiplier * (0.8 + scaling * 0.2) * (1 + streakBonus);
 
     setTimeout(() => onComplete(multiplier), 800);
-  }, [score, total, onComplete, scaling]);
+  }, [score, total, onComplete, scaling, maxStreak, totalTopics]);
 
   const handleTimeout = useCallback(() => {
     if (!gameActive || result !== null) return;
     setResult('wrong');
+    setStreak(0);
     if (navigator.vibrate) navigator.vibrate([30, 30]);
     setTotal(t => t + 1);
     setTimeout(() => setTopicIndex(i => i + 1), 300);
@@ -127,10 +133,16 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
     if (isCorrect) {
       setScore(s => s + 1);
+      setStreak(curr => {
+        const next = curr + 1;
+        if (next > maxStreak) setMaxStreak(next);
+        return next;
+      });
       setResult('correct');
       if (navigator.vibrate) navigator.vibrate(20);
     } else {
       setResult('wrong');
+      setStreak(0);
       if (navigator.vibrate) navigator.vibrate([30, 30]);
     }
     setTotal(t => t + 1);
@@ -142,27 +154,35 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = e.targetTouches[0].clientY;
+    touchStartH.current = e.targetTouches[0].clientX;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (touchStart.current !== null) {
-      const diff = e.targetTouches[0].clientY - touchStart.current;
-      setOffsetY(diff);
+      const diffY = e.targetTouches[0].clientY - touchStart.current;
+      setOffsetY(diffY);
+    }
+    if (touchStartH.current !== null && level >= 3) {
+      const diffX = e.targetTouches[0].clientX - touchStartH.current;
+      setOffsetX(diffX);
     }
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current === null) return;
-    const diff = e.changedTouches[0].clientY - touchStart.current;
+    const diffY = e.changedTouches[0].clientY - touchStart.current;
+    const diffX = level >= 3 && touchStartH.current !== null ? e.changedTouches[0].clientX - touchStartH.current : 0;
 
-    if (diff < -swipeThreshold) {
-      handleAction(true); // Swipe Up = Post
-    } else if (diff > swipeThreshold) {
-      handleAction(false); // Swipe Down = Decline
+    if (diffY < -swipeThreshold || (level >= 3 && diffX > swipeThreshold)) {
+      handleAction(true); // Swipe Up or Right = Post
+    } else if (diffY > swipeThreshold || (level >= 3 && diffX < -swipeThreshold)) {
+      handleAction(false); // Swipe Down or Left = Decline
     } else {
       setOffsetY(0);
+      setOffsetX(0);
     }
     touchStart.current = null;
+    touchStartH.current = null;
   };
 
   return (
@@ -183,27 +203,31 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
           <motion.div
             key={topicIndex}
             initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, y: offsetY }}
-            exit={{ y: offsetY < -swipeThreshold ? -500 : offsetY > swipeThreshold ? 500 : 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1, y: offsetY, x: offsetX }}
+            exit={{
+               y: offsetY < -swipeThreshold ? -500 : offsetY > swipeThreshold ? 500 : 0,
+               x: level >= 3 ? (offsetX > swipeThreshold ? 500 : offsetX < -swipeThreshold ? -500 : 0) : 0,
+               opacity: 0
+            }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            className={`w-full max-w-[240px] aspect-[3/4] bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-6 transition-all shadow-2xl relative ${
+            className={`w-full max-w-[200px] aspect-[3/4] bg-slate-800 rounded-2xl border-4 flex flex-col items-center justify-center p-4 transition-all shadow-2xl relative ${
               result === 'correct' ? 'border-emerald-500 bg-emerald-500/10' :
               result === 'wrong' ? 'border-red-500 bg-red-500/10' :
               'border-slate-700'
             }`}
           >
             {/* Feedback Overlays */}
-            {offsetY < -40 && (
+            {(offsetY < -40 || (level >= 3 && offsetX > 40)) && (
                 <div className="absolute top-4 font-black text-emerald-400 text-xl rotate-[-10deg]">POST IT!</div>
             )}
-            {offsetY > 40 && (
+            {(offsetY > 40 || (level >= 3 && offsetX < -40)) && (
                 <div className="absolute bottom-4 font-black text-red-400 text-xl rotate-[10deg]">DECLINE</div>
             )}
 
-            <div className="text-6xl mb-4">{currentTopic.isViral ? '🔥' : '📄'}</div>
-            <div className="text-lg font-black text-white leading-tight mb-4">{currentTopic.label}</div>
+            <div className="text-5xl mb-4">{currentTopic.isViral ? '🔥' : '📄'}</div>
+            <div className="text-base font-black text-white leading-tight mb-4">{currentTopic.label}</div>
 
             <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-700 mb-2">
                 <motion.div
@@ -223,11 +247,11 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
       <div className="absolute bottom-6 w-full flex justify-around px-6 opacity-30 pointer-events-none">
            <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl">⬆️</span>
+              <span className="text-2xl">{level >= 3 ? '⬆️➡️' : '⬆️'}</span>
               <span className="text-[8px] font-black text-emerald-400 uppercase">POST VIRAL</span>
            </div>
            <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl">⬇️</span>
+              <span className="text-2xl">{level >= 3 ? '⬇️⬅️' : '⬇️'}</span>
               <span className="text-[8px] font-black text-red-400 uppercase">DECLINE TRASH</span>
            </div>
       </div>

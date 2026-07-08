@@ -22,6 +22,10 @@ export interface MathResult {
   isBigWin?: boolean;
   bigWinMessage?: string;
   approvalBonus?: number;
+  breakdown?: {
+    baseDamage: number;
+    multipliers: { name: string; value: number }[];
+  };
 }
 
 export const LEVEL_MULTIPLIERS: Record<number, number> = {
@@ -110,9 +114,20 @@ export function calculateHustleMath(
     yieldCash = Math.max(yieldCash, 5000);
   }
 
+  // Damage Breakdown for Death Screen
+  const multipliers: { name: string; value: number }[] = [];
+  multipliers.push({ name: 'Level Multiplier', value: levelMult });
+  if (levelData.mentalHit < 0) {
+    multipliers.push({ name: 'Failure Multiplier', value: isSuccess ? 1 : 2 });
+    multipliers.push({ name: 'Performance Multiplier', value: mentalMinigameMult });
+  }
 
   return {
     cost,
+    breakdown: {
+      baseDamage: Math.abs(levelData.mentalHit),
+      multipliers
+    },
     yieldCash,
     yieldClout,
     yieldAura,
@@ -161,7 +176,11 @@ export const applyFlexBonuses = (result: MathResult, bonuses: ReturnType<typeof 
 
   if (result.mentalHit < 0) {
     // Reduce mental drain
-    result.mentalHit = Math.ceil(result.mentalHit * (1 - mentalBonus / 100));
+    const value = (1 - mentalBonus / 100);
+    result.mentalHit = Math.ceil(result.mentalHit * value);
+    if (result.breakdown && mentalBonus > 0) {
+      result.breakdown.multipliers.push({ name: 'Flex Bonus (Mental)', value });
+    }
   } else if (result.mentalHit > 0) {
     // Increase mental recovery
     result.mentalHit = Math.floor(result.mentalHit * (1 + mentalBonus / 100));
@@ -213,7 +232,12 @@ export function getEffectiveHustleStats(
     if (badge.buff.type === 'yield') finalYieldMult *= badge.buff.value;
     if (badge.buff.type === 'clout') finalCloutMult *= badge.buff.value;
     if (badge.buff.type === 'aura') finalAuraMult *= badge.buff.value;
-    if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
+    if (badge.buff.type === 'mental') {
+      finalMentalMult *= badge.buff.value;
+      if (effectiveResult.breakdown && effectiveResult.mentalHit < 0) {
+        effectiveResult.breakdown.multipliers.push({ name: `Badge: ${badge.name}`, value: badge.buff.value });
+      }
+    }
     if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
   });
 
@@ -240,6 +264,9 @@ export function getEffectiveHustleStats(
 
   if (player.currentTier === 'MUD') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.5);
+    if (effectiveResult.breakdown && effectiveResult.mentalHit < 0) {
+      effectiveResult.breakdown.multipliers.push({ name: 'Tier: MUD (Penalty)', value: 1.5 });
+    }
   } else if (player.currentTier === 'STREET') {
     const streakBonus = Math.min(2.0, 1 + (player.streak || 0) * 0.1);
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * streakBonus);
@@ -248,13 +275,22 @@ export function getEffectiveHustleStats(
     // but for effective stats we show the base expected value.
   } else if (player.currentTier === 'ELITE') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.9);
+    if (effectiveResult.breakdown && effectiveResult.mentalHit < 0) {
+      effectiveResult.breakdown.multipliers.push({ name: 'Tier: ELITE (Buff)', value: 0.9 });
+    }
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * 1.2);
   } else if (player.currentTier === 'MOGUL') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
+    if (effectiveResult.breakdown && effectiveResult.mentalHit < 0) {
+      effectiveResult.breakdown.multipliers.push({ name: 'Tier: MOGUL (Buff)', value: 0.7 });
+    }
     effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 0.9);
     effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.5);
   } else if (player.currentTier === 'PRESIDENT') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
+    if (effectiveResult.breakdown && effectiveResult.mentalHit < 0) {
+      effectiveResult.breakdown.multipliers.push({ name: 'Tier: PRESIDENT (Buff)', value: 0.7 });
+    }
     const auraBonus = 1 + (player.aura / 5000);
     effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * auraBonus);
 
@@ -292,6 +328,9 @@ export function getEffectiveHustleStats(
         if (spec.mentalHitMult) {
             if (effectiveResult.mentalHit < 0) {
                 effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * spec.mentalHitMult);
+                if (effectiveResult.breakdown) {
+                    effectiveResult.breakdown.multipliers.push({ name: `Spec: ${spec.name}`, value: spec.mentalHitMult });
+                }
             } else {
                 // For mental recovery, we might want a different logic or just skip it
                 effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (2 - spec.mentalHitMult));

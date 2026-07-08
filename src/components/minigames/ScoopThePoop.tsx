@@ -106,8 +106,11 @@ export const ScoopThePoop: React.FC<ScoopThePoopProps> = ({
         {Object.entries(tiles).map(([key, val]) => (
           <button
             key={key}
-            onClick={() => scoop(key)}
-            className={`aspect-square rounded-xl flex items-center justify-center text-3xl border transition-all active:scale-90 ${
+            onPointerDown={(e) => {
+              if (e.cancelable) e.preventDefault();
+              scoop(key);
+            }}
+            className={`aspect-square rounded-xl flex items-center justify-center text-3xl border transition-all active:scale-90 touch-none ${
               val === '💩' ? 'bg-slate-800 border-slate-700' :
               val === '✨' ? 'bg-amber-500/20 border-amber-500/50' :
               'bg-slate-900/50 border-slate-800'

@@ -91,28 +91,69 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
             </button>
 
             {showDetail && deathContext && (
-              <div className="bg-slate-950/50 border border-red-500/20 rounded-2xl p-6 mt-2 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Cause of Collapse</span>
-                  <span className="text-red-400 font-black text-xs uppercase">
-                    {deathContext.fatalStat || 'STRESS'}
-                  </span>
+              <div className="bg-slate-950/50 border border-red-500/20 rounded-2xl p-6 mt-2 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="text-center pb-2 border-b border-slate-800">
+                  <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Fatal Action</span>
+                  <span className="text-white font-black text-sm italic">"{deathContext.actionName || deathContext.lastHustleName}"</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Peak Tier</span>
-                  <span className="text-slate-300 font-black text-xs uppercase">{deathContext.tier}</span>
-                </div>
+                {deathContext.statBefore !== undefined && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
+                      <span className="text-slate-500">{deathContext.fatalStat === 'bag' ? 'Bag' : 'Stat'} before action</span>
+                      <span className="text-slate-300">{deathContext.fatalStat === 'bag' ? '$' : ''}{Math.round(deathContext.statBefore).toLocaleString()}{deathContext.fatalStat !== 'bag' ? '%' : ''}</span>
+                    </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Time Survived</span>
-                  <span className="text-slate-300 font-black text-xs uppercase">{deathContext.monthsPlayed} Months</span>
-                </div>
+                    {deathContext.baseDamage !== undefined && (
+                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
+                        <span className="text-slate-500">Base Damage</span>
+                        <span className="text-red-400">{deathContext.fatalStat === 'bag' ? '$' : ''}{Math.round(deathContext.baseDamage).toLocaleString()}</span>
+                      </div>
+                    )}
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Final Impact</span>
-                  <span className="text-red-500 font-black text-xs italic">"{deathContext.lastHustleName}"</span>
-                </div>
+                    {deathContext.multipliers && deathContext.multipliers.map((m, i) => (
+                      <div key={i} className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider pl-2 border-l border-slate-800">
+                        <span className="text-slate-600">{m.name}</span>
+                        <span className="text-orange-400">×{m.value.toFixed(2)}</span>
+                      </div>
+                    ))}
+
+                    <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Final Damage</span>
+                      <span className="text-red-500 font-black text-sm">
+                        {deathContext.fatalStat === 'bag' ? '$' : ''}{Math.round(deathContext.finalDamage || deathContext.lastHustleMentalHit).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-red-950/20 p-2 rounded-lg border border-red-900/30">
+                      <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Result</span>
+                      <span className="text-red-400 font-mono font-black text-xs">
+                        {deathContext.fatalStat === 'bag' ? '$' : ''}{Math.round(deathContext.statBefore).toLocaleString()} → {deathContext.fatalStat === 'bag' ? '$' : ''}{Math.round(deathContext.statBefore - (deathContext.finalDamage || deathContext.lastHustleMentalHit)).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {!deathContext.statBefore && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Cause of Collapse</span>
+                      <span className="text-red-400 font-black text-xs uppercase">
+                        {deathContext.fatalStat || 'STRESS'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Peak Tier</span>
+                      <span className="text-slate-300 font-black text-xs uppercase">{deathContext.tier}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Time Survived</span>
+                      <span className="text-slate-300 font-black text-xs uppercase">{deathContext.monthsPlayed} Months</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

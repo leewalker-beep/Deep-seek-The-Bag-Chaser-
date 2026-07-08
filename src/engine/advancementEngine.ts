@@ -44,6 +44,10 @@ export interface AdvancementResult {
   deathCause: string | null;
   fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
   fatalStatValue?: number;
+  breakdown?: {
+    baseDamage: number;
+    multipliers: { name: string; value: number }[];
+  };
   totalRent: number;
   passiveIncome: number;
   passiveBreakdown: PassiveBreakdown;
@@ -797,6 +801,10 @@ export function advanceMonth(
       tier: newPl.currentTier,
       fatalStat,
       fatalStatValue,
+      statBefore: pl.mentalHealth,
+      baseDamage: totalRent, // Rent is the damage here if bag < 0
+      finalDamage: totalRent,
+      actionName: 'Monthly Rent'
     };
   }
 
