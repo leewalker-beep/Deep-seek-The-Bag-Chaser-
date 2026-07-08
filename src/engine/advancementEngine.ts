@@ -801,7 +801,7 @@ export function advanceMonth(
       tier: newPl.currentTier,
       fatalStat,
       fatalStatValue,
-      statBefore: pl.mentalHealth,
+      statBefore: fatalStat === "bag" ? pl.bag : (fatalStat === "clout" ? pl.clout : (fatalStat === "aura" ? pl.aura : pl.mentalHealth)),
       baseDamage: totalRent, // Rent is the damage here if bag < 0
       finalDamage: totalRent,
       actionName: 'Monthly Rent'

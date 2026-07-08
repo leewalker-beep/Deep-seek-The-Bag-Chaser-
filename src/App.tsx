@@ -143,18 +143,6 @@ function App() {
 
   const [showMinigame, setShowMinigame] = useState(false);
 
-  // Strategic Preloading
-  useEffect(() => {
-    if (showMinigame) {
-      // Small delay to prioritize the current minigame load
-      const timer = setTimeout(() => {
-        import('./components/DeathScreen');
-        import('./components/EndgameSummary');
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showMinigame]);
-
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
@@ -201,6 +189,18 @@ function App() {
     triggerTransition,
     clearTransition,
   } = useGameStore();
+
+  const handleQuickStart = () => {
+    const bgId = pl?.backgroundId;
+    const catId = pl?.categoryId;
+    const varId = pl?.variationId;
+    const avId = pl?.avatarId;
+    if (bgId && catId && varId) {
+      resetGame(bgId, 3, catId, varId, avId || 'av_m1');
+    } else {
+      resetGame();
+    }
+  };
 
   useEffect(() => {
     processLogin();
@@ -352,6 +352,7 @@ function App() {
             lastHustleId={pl?.lastExecutedHustleId}
             deathContext={pl?.deathContext}
             onReset={() => resetGame()}
+            onQuickStart={handleQuickStart}
             onViewSummary={() => setShowSummary(true)}
             onLegacyShop={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
           />

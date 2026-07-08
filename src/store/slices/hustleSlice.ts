@@ -66,6 +66,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
     newPl.avatarId = avatarId || 'av_m1';
 
+    newPl.backgroundId = backgroundId || newPl.backgroundId;
+    newPl.categoryId = categoryId || newPl.categoryId;
+    newPl.variationId = variationId || newPl.variationId;
+
     const background = BACKGROUNDS.find(b => b.id === backgroundId);
     if (background) {
       const bioUpdate = Bio.recordOrigin(newPl, background.name, newPl.currentTier);
@@ -462,7 +466,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: nextPl.currentTier,
         fatalStat,
         fatalStatValue,
-        statBefore: state.pl.mentalHealth,
+        statBefore: fatalStat === "bag" ? state.pl.bag : (fatalStat === "clout" ? state.pl.clout : (fatalStat === "aura" ? state.pl.aura : state.pl.mentalHealth)),
         baseDamage: result.breakdown?.baseDamage,
         multipliers: result.breakdown?.multipliers,
         finalDamage: Math.abs(result.mentalHit),
@@ -924,7 +928,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: plFinal.currentTier,
         fatalStat,
         fatalStatValue,
-        statBefore: state.pl.mentalHealth,
+        statBefore: fatalStat === "bag" ? state.pl.bag : (fatalStat === "clout" ? state.pl.clout : (fatalStat === "aura" ? state.pl.aura : state.pl.mentalHealth)),
         baseDamage: result.breakdown?.baseDamage,
         multipliers: result.breakdown?.multipliers,
         finalDamage: Math.abs(result.mentalHit),
@@ -1263,7 +1267,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: newPl.currentTier,
         fatalStat,
         fatalStatValue,
-        statBefore: state.pl.mentalHealth,
+        statBefore: fatalStat === "bag" ? state.pl.bag : (fatalStat === "clout" ? state.pl.clout : (fatalStat === "aura" ? state.pl.aura : state.pl.mentalHealth)),
         baseDamage: result.breakdown?.baseDamage,
         multipliers: result.breakdown?.multipliers,
         finalDamage: Math.abs(result.mentalHit),
@@ -1548,7 +1552,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: newPl.currentTier,
         fatalStat,
         fatalStatValue,
-        statBefore: state.pl.mentalHealth,
+        statBefore: fatalStat === "bag" ? state.pl.bag : (fatalStat === "clout" ? state.pl.clout : (fatalStat === "aura" ? state.pl.aura : state.pl.mentalHealth)),
         baseDamage: breakdown?.baseDamage,
         multipliers: breakdown?.multipliers,
         finalDamage: breakdown?.baseDamage,

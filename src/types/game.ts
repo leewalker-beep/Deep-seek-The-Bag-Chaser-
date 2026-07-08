@@ -671,6 +671,9 @@ export interface PlayerStats {
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
   jailCharge: string;
+  backgroundId?: string;
+  categoryId?: string;
+  variationId?: string;
   tutorialStep: number;
   isTutorialSkipped: boolean;
   deathContext?: {
