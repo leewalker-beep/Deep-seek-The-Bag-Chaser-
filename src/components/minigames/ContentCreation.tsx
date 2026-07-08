@@ -194,7 +194,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
       <div className="absolute top-6 text-center z-20 w-full">
         <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter">CONTENT CREATOR <span className="text-white text-sm">L{level}</span></h2>
         <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-          VIRAL ACCURACY: {score}/{total}
+          VIRAL ACCURACY: {score}/{total} {streak > 1 && <span className="text-orange-400 ml-2">STREAK: {streak}</span>}
         </div>
       </div>
 

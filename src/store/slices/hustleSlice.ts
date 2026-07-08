@@ -462,6 +462,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         tier: nextPl.currentTier,
         fatalStat,
         fatalStatValue,
+        statBefore: state.pl.mentalHealth,
+        baseDamage: result.breakdown?.baseDamage,
+        multipliers: result.breakdown?.multipliers,
+        finalDamage: Math.abs(result.mentalHit),
+        actionName: branch.name || hustle.name
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (nextPl.legacyScore || 0) });
@@ -1262,7 +1267,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         baseDamage: result.breakdown?.baseDamage,
         multipliers: result.breakdown?.multipliers,
         finalDamage: Math.abs(result.mentalHit),
-        actionName: branch.name || hustle.name
+        actionName: targetNodeData.name || hustle.name
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (newPl.legacyScore || 0) });
@@ -1517,6 +1522,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       deathCause,
       fatalStat,
       fatalStatValue,
+      breakdown
     } = advanceMonth(
       state.pl,
       state.currentMarket,
@@ -1543,10 +1549,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         fatalStat,
         fatalStatValue,
         statBefore: state.pl.mentalHealth,
-        baseDamage: result.breakdown?.baseDamage,
-        multipliers: result.breakdown?.multipliers,
-        finalDamage: Math.abs(result.mentalHit),
-        actionName: targetNodeData.name || hustle.name
+        baseDamage: breakdown?.baseDamage,
+        multipliers: breakdown?.multipliers,
+        finalDamage: breakdown?.baseDamage,
+        actionName: 'Prison'
       };
 
       set({ bankedLegacyPoints: state.bankedLegacyPoints + (calculateLegacyScore(newPl) || 0) });

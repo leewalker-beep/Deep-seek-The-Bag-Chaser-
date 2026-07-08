@@ -17,6 +17,11 @@ interface DeathScreenProps {
     tier: string;
     fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
     fatalStatValue?: number;
+    statBefore?: number;
+    baseDamage?: number;
+    multipliers?: { name: string; value: number }[];
+    finalDamage?: number;
+    actionName?: string;
   };
   onReset: () => void;
   onViewSummary: () => void;
