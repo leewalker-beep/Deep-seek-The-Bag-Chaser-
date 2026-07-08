@@ -1055,7 +1055,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
           heat: 30,
           aura: -50
         },
-        setFlags: { 'rel_marcus': 70, 'trust_marcus': 120 }
+        setFlags: { 'rel_marcus': 70, 'trust_marcus': 120, 'marcus_2_done': true }
       },
       {
         id: 'marcus_decline_crime',
@@ -1065,7 +1065,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
           aura: 30,
           heat: -10
         },
-        setFlags: { 'rel_marcus': 40, 'trust_marcus': 80 }
+        setFlags: { 'rel_marcus': 40, 'trust_marcus': 80, 'marcus_2_done': true }
       }
     ]
   },
@@ -1128,7 +1128,7 @@ const BASE_EVENTS: NarrativeEvent[] = [
           aura: 50,
           heat: 15
         },
-        setFlags: { 'rel_ashley': 80, 'trust_ashley': 100, 'kane_weakened': true }
+        setFlags: { 'rel_ashley': 80, 'trust_ashley': 100, 'kane_weakened': true, 'ashley_2_done': true }
       },
       {
         id: 'ashley_leak_refuse',
@@ -1138,7 +1138,152 @@ const BASE_EVENTS: NarrativeEvent[] = [
           aura: 20,
           clout: -20
         },
-        setFlags: { 'rel_ashley': 10, 'trust_ashley': 30 }
+        setFlags: { 'rel_ashley': 10, 'trust_ashley': 30, 'ashley_2_done': true }
+      }
+    ]
+  },
+
+  {
+    id: 'char_marcus_3',
+    characterId: 'char_marcus',
+    pacingCategory: 'CHARACTER',
+    title: 'Mook\'s Moment',
+    description: 'Marcus finds you at your new office. He looks out of place here but his eyes are the same. "You made it," he says. "Question is — you still you?"',
+    trigger: {
+      tier: ['CORPORATE'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'marcus_2_done': true }
+    },
+    choices: [
+      {
+        id: 'keep_him_close',
+        label: 'Give him a role',
+        description: 'Marcus joins your operation. Loyalty costs nothing. Disloyalty costs everything.',
+        consequences: {
+          clout: -20,
+          aura: 40,
+          mentalHealth: 10
+        },
+        setFlags: { 'marcus_3_done': true }
+      },
+      {
+        id: 'cut_ties_marcus',
+        label: 'This world isn\'t for him',
+        description: 'You let him go with $5K and an excuse. He nods like he expected it.',
+        consequences: {
+          bag: -5000,
+          mentalHealth: -15
+        },
+        setFlags: { 'marcus_3_done': true }
+      }
+    ]
+  },
+  {
+    id: 'char_ashley_3',
+    characterId: 'char_ashley',
+    pacingCategory: 'MAJOR',
+    title: 'The Expose',
+    description: 'Ashley Weaver has been watching your rise. Now she\'s at your door with a recorder. "Off the record," she says. "How much of this was legal?"',
+    trigger: {
+      tier: ['ELITE'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'ashley_2_done': true }
+    },
+    choices: [
+      {
+        id: 'go_on_record',
+        label: 'Give her the interview',
+        description: 'The story runs. The spin is yours. Aura skyrockets but heat follows.',
+        consequences: {
+          aura: 100,
+          heat: 15,
+          clout: 50
+        },
+        setFlags: { 'ashley_3_done': true }
+      },
+      {
+        id: 'shut_it_down',
+        label: 'Buy the story',
+        description: 'It costs you $500K but the article never runs. Ashley looks at you differently now.',
+        consequences: {
+          bag: -500000,
+          heat: -10,
+          aura: -30
+        },
+        setFlags: { 'ashley_3_done': true }
+      }
+    ]
+  },
+  {
+    id: 'char_marcus_4',
+    characterId: 'char_marcus',
+    pacingCategory: 'MAJOR',
+    title: 'Old Debt',
+    description: 'Word gets back to you. Marcus is in trouble. Real trouble. The kind only money fixes. He hasn\'t asked — but you both know you owe him.',
+    trigger: {
+      tier: ['MOGUL'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'marcus_3_done': true }
+    },
+    choices: [
+      {
+        id: 'pay_the_debt',
+        label: 'Handle it — no questions',
+        description: 'You wire $2M and don\'t ask where it goes. Some debts you just pay.',
+        consequences: {
+          bag: -2000000,
+          aura: 80,
+          mentalHealth: 15
+        },
+        setFlags: { 'marcus_4_done': true }
+      },
+      {
+        id: 'look_away',
+        label: 'You can\'t get involved',
+        description: 'You tell yourself it\'s business. The nightmares disagree.',
+        consequences: {
+          mentalHealth: -30,
+          aura: -50
+        },
+        setFlags: { 'marcus_4_done': true }
+      }
+    ]
+  },
+  {
+    id: 'char_ashley_4',
+    characterId: 'char_ashley',
+    pacingCategory: 'CHARACTER',
+    title: 'Legacy on Record',
+    description: 'Ashley is writing a book. She wants a foreword from you. The working title is "How They Really Did It." Your name is chapter one.',
+    trigger: {
+      tier: ['PRESIDENT'],
+      probability: 0.2,
+      once: true,
+      flagReqs: { 'ashley_3_done': true }
+    },
+    choices: [
+      {
+        id: 'write_the_foreword',
+        label: 'Let history remember you',
+        description: 'The book becomes a bestseller. You\'re quoted in every business school.',
+        consequences: {
+          clout: 500,
+          aura: 200
+        },
+        setFlags: { 'ashley_4_done': true }
+      },
+      {
+        id: 'decline',
+        label: 'Stay in the shadows',
+        description: 'Power you can\'t see is the only power worth having.',
+        consequences: {
+          heat: -20,
+          aura: 100
+        },
+        setFlags: { 'ashley_4_done': true }
       }
     ]
   },
