@@ -61,12 +61,12 @@ HUSTLES.r_delivery = {
   tier: 'MUD',
   icon: '🛵',
   description: 'Fast cash, faster roads',
-  miniGame: 'TrafficDodge',
+  miniGame: 'DeliveryDash',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 1800, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'TrafficDodge' },
-    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 2000, yieldCash: 4500, yieldClout: 4, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'TrafficDodge' },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 10000, yieldCash: 18000, yieldClout: 12, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TrafficDodge' },
+    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 1800, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'DeliveryDash' },
+    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 2000, yieldCash: 4500, yieldClout: 4, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'DeliveryDash' },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 10000, yieldCash: 18000, yieldClout: 12, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'DeliveryDash' },
   }
 };
 
@@ -211,13 +211,13 @@ HUSTLES.pod = {
   tier: 'STREET',
   icon: '🎙️',
   description: 'Find your voice',
-  miniGame: 'TapRhythm',
+  miniGame: 'PodcastFlowState',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 3000, yieldCash: 12000, yieldClout: 3, yieldAura: 1, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 200, nextBranches: ['l2'], miniGame: 'TapRhythm' },
-    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 25000, yieldCash: 60000, yieldClout: 10, yieldAura: 5, mentalHit: -10, cloutReq: 80, auraReq: 40, passiveYield: 800, nextBranches: ['l3'], miniGame: 'TapRhythm' },
-    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 120000, yieldCash: 280000, yieldClout: 28, yieldAura: 15, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 3000, nextBranches: ['l4'], miniGame: 'TapRhythm' },
-    l4: { level: 4, id: 'l4', name: 'Global Network', cost: 500000, yieldCash: 1100000, yieldClout: 85, yieldAura: 45, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 15000, miniGame: 'TapRhythm' }
+    l1: { level: 1, id: 'l1', name: 'Record Episode', cost: 3000, yieldCash: 12000, yieldClout: 3, yieldAura: 1, mentalHit: -5, cloutReq: 0, auraReq: 0, passiveYield: 200, nextBranches: ['l2'], miniGame: 'PodcastFlowState' },
+    l2: { level: 2, id: 'l2', name: 'Guest Interview', cost: 25000, yieldCash: 60000, yieldClout: 10, yieldAura: 5, mentalHit: -10, cloutReq: 80, auraReq: 40, passiveYield: 800, nextBranches: ['l3'], miniGame: 'PodcastFlowState' },
+    l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 120000, yieldCash: 280000, yieldClout: 28, yieldAura: 15, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 3000, nextBranches: ['l4'], miniGame: 'PodcastFlowState' },
+    l4: { level: 4, id: 'l4', name: 'Global Network', cost: 500000, yieldCash: 1100000, yieldClout: 85, yieldAura: 45, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 15000, miniGame: 'PodcastFlowState' }
   },
 };
 
@@ -439,7 +439,7 @@ HUSTLES.festival = {
   tier: 'CORPORATE',
   icon: '🎸',
   description: 'Organize a massive event',
-  miniGame: 'SlotMachine',
+  miniGame: 'FestivalCrowdSurge',
   hasPanel: true,
   panelType: 'FESTIVAL',
   levels: [
@@ -484,7 +484,7 @@ HUSTLES.crypto_mining = {
   tier: 'CORPORATE',
   icon: '⛏️',
   description: 'Secure the network, secure the bag',
-  miniGame: 'DiceCraps',
+  miniGame: 'CryptoMineRush',
   hasPanel: true,
   panelType: 'CRYPTO_MINING',
   levels: [
@@ -585,7 +585,7 @@ HUSTLES.venture_capital = {
   tier: 'ELITE',
   icon: '💼',
   description: 'Invest in the next unicorn',
-  miniGame: 'BalanceScale',
+  miniGame: 'VCPitchRoom',
   hasPanel: true,
   panelType: 'VENTURE_CAPITAL',
   branches: {

@@ -5,10 +5,11 @@ import type { Hustle } from '../../../config/hustles/base';
 
 interface VCPanelProps {
   hustle: Hustle;
+  onExecute: () => void;
 }
 
-export const VCPanel: React.FC<VCPanelProps> = ({ hustle }) => {
-  const { pl, setVCChoices, executeHustle, setActiveHustleView } = useGameStore();
+export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
+  const { pl, setVCChoices } = useGameStore();
 
   const stage = pl.vcStage;
   const sector = pl.vcSector;
@@ -112,10 +113,7 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle }) => {
       </div>
 
       <button
-        onClick={() => {
-          const result = executeHustle(hustle.id);
-          if (result.success) setActiveHustleView(null);
-        }}
+        onClick={onExecute}
         disabled={pl.bag < investment * 1000000}
         className={`w-full py-4 font-black uppercase rounded-xl transition-all active:scale-95 italic ${
           pl.bag < investment * 1000000 ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'

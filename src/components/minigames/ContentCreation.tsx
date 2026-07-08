@@ -28,12 +28,22 @@ interface ContentCreationProps {
   onComplete: (multiplier: number) => void;
   level?: number;
   tier?: Tier;
+  title?: string;
+  instruction?: string;
+  icon?: string;
+  scoreLabel?: string;
+  accentColor?: string;
 }
 
 export const ContentCreation: React.FC<ContentCreationProps> = ({
     onComplete,
     level = 1,
-    tier = 'MUD'
+    tier = 'MUD',
+    title = "CONTENT CREATOR",
+    instruction = "VIRAL ACCURACY",
+    icon = "📱",
+    scoreLabel = "VIRAL ACCURACY",
+    accentColor = "purple"
 }) => {
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicIndex, setTopicIndex] = useState(0);
@@ -176,16 +186,28 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
     touchStart.current = null;
   };
 
+  const colorMap: Record<string, string> = {
+    purple: 'text-purple-400 border-purple-500/30 bg-purple-500 text-purple-400 text-purple-500/50',
+    blue: 'text-blue-400 border-blue-500/30 bg-blue-500 text-blue-400 text-blue-500/50',
+    amber: 'text-amber-400 border-amber-500/30 bg-amber-500 text-amber-400 text-amber-500/50',
+    emerald: 'text-emerald-400 border-emerald-500/30 bg-emerald-500 text-emerald-400 text-emerald-500/50',
+  };
+
+  const colors = colorMap[accentColor] || colorMap.purple;
+  const [cText, cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
+
   return (
     <div className={`bg-slate-950 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-96 flex flex-col justify-center items-center relative overflow-hidden ${
       result === 'correct' ? 'border-emerald-500 bg-emerald-950/20' :
       result === 'wrong' ? 'border-red-500 bg-red-950/20' :
-      'border-purple-500/30'
+      cBorder
     }`}>
       <div className="absolute top-6 text-center z-20 w-full">
-        <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter">CONTENT CREATOR <span className="text-white text-sm">L{level}</span></h2>
-        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-          VIRAL ACCURACY: {score}/{total}
+        <h2 className={`text-2xl font-black ${cText} italic tracking-tighter`}>{title} <span className="text-white text-sm">L{level}</span></h2>
+        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center justify-center gap-2">
+          <span>{icon}</span>
+          <span>{instruction}</span>
+          <span>{scoreLabel}: {score}/{total}</span>
         </div>
       </div>
 
@@ -222,7 +244,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
             <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-700 mb-2">
                 <motion.div
-                    className="h-full bg-purple-500"
+                    className={`h-full ${cBar}`}
                     initial={{ width: '100%' }}
                     animate={{ width: `${(timeLeft / timePerTopic) * 100}%` }}
                     transition={{ ease: "linear", duration: 0.1 }}
@@ -243,8 +265,8 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
            </div>
            {streak > 0 && (
               <div className="flex flex-col items-center">
-                 <span className="text-xs font-black text-purple-400 animate-pulse">{streak} STREAK!</span>
-                 <span className="text-[8px] text-purple-500/50 uppercase font-bold">x{(1 + Math.min(10, streak) * 0.05).toFixed(2)}</span>
+                 <span className={`text-xs font-black ${cStreak} animate-pulse`}>{streak} STREAK!</span>
+                 <span className={`text-[8px] ${cStreakSub} uppercase font-bold`}>x{(1 + Math.min(10, streak) * 0.05).toFixed(2)}</span>
               </div>
            )}
            <div className="flex flex-col items-center gap-1">
