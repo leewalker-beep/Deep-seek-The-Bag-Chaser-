@@ -104,6 +104,7 @@ import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
+import { PresidentialTermEnd } from './components/PresidentialTermEnd';
 import { MinigameLoader } from './components/ui/MinigameLoader';
 import { PremiumLoader } from './components/ui/PremiumLoader';
 import { saveHallOfFameEntry } from './utils/hallOfFame';
@@ -1038,6 +1039,17 @@ function App() {
           onDismiss={() =>
             useGameStore.getState().updatePl({
               pendingFlexOffer: null
+            })
+          }
+        />
+      )}
+
+      {pl.pendingTermEnd && (
+        <PresidentialTermEnd
+          onContinue={() =>
+            useGameStore.getState().updatePl({
+              pendingTermEnd: false,
+              currentTier: 'OPEN'
             })
           }
         />

@@ -671,6 +671,11 @@ export interface PlayerStats {
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
   jailCharge: string;
+  termComplete?: boolean;
+  pendingTermEnd?: boolean;
+  termVerdict?: string;
+  termVerdictEmoji?: string;
+  scandalCount?: number;
   backgroundId?: string;
   categoryId?: string;
   variationId?: string;

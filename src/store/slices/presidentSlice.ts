@@ -449,6 +449,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       if (Math.random() < scandalRisk * 0.1) {
         const appPenalty = 15 + Math.floor(Math.random() * 16);
         approvalHit -= appPenalty;
+        updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
         state.addTickerMessage(`SCANDAL: ${member.name} (${member.role}) caught in corruption scandal! Approval -${appPenalty}%`, 'text-red-600 font-black');
         newDiaryEntries.unshift({
           id: Math.random().toString(36).substring(7),
@@ -690,6 +691,9 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt, updatedPl.scandalRiskBonus || 0);
     if (newCrisis) {
       updatedPl.activeCrises = [...updatedPl.activeCrises, newCrisis];
+      if (newCrisis.id.includes('scandal')) {
+        updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
+      }
       state.addTickerMessage(`CRISIS ALERT: ${newCrisis.name}!`, "text-red-500 font-black");
       state.logEvent('SCANDAL_TRIGGERED', { type: 'PRESIDENTIAL_CRISIS', crisisId: newCrisis.id, name: newCrisis.name });
     }
