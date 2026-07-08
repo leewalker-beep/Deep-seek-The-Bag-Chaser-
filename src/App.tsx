@@ -65,6 +65,13 @@ const SequenceRecall = lazy(() => import('./components/minigames/SequenceRecall'
 const PresidentialCampaign = lazy(() => import('./components/minigames/PresidentialCampaign').then(m => ({ default: m.PresidentialCampaign })));
 const SimpleFallback = lazy(() => import('./components/minigames/SimpleFallback').then(m => ({ default: m.SimpleFallback })));
 
+// Thematic Wrappers
+const FestivalCrowdSurge = lazy(() => import('./components/hustles/panels/FestivalCrowdSurge').then(m => ({ default: m.FestivalCrowdSurge })));
+const CryptoMineRush = lazy(() => import('./components/hustles/panels/CryptoMineRush').then(m => ({ default: m.CryptoMineRush })));
+const DeliveryDash = lazy(() => import('./components/hustles/panels/DeliveryDash').then(m => ({ default: m.DeliveryDash })));
+const PodcastFlowState = lazy(() => import('./components/hustles/panels/PodcastFlowState').then(m => ({ default: m.PodcastFlowState })));
+const VCPitchRoom = lazy(() => import('./components/hustles/panels/VCPitchRoom').then(m => ({ default: m.VCPitchRoom })));
+
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
@@ -141,7 +148,7 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
-  const [showMinigame, setShowMinigame] = useState(false);
+  const showMinigame = useGameStore(state => state.showMinigame);
 
   // Strategic Preloading
   useEffect(() => {
@@ -194,6 +201,7 @@ function App() {
     setActiveTab,
     setActiveHustleView,
     setActiveTierBadge,
+    setShowMinigame,
     setPlayerName,
     resetGame,
     addTickerMessage,
@@ -662,6 +670,10 @@ function App() {
                 const hustleLevel = pl.hustleLevels[hustle.id] || 1;
                 const renderMinigame = () => {
                 if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'FestivalCrowdSurge') return <FestivalCrowdSurge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'CryptoMineRush') return <CryptoMineRush onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'DeliveryDash') return <DeliveryDash onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'PodcastFlowState') return <PodcastFlowState onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'BeatSequence') return <BeatSequence onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
@@ -731,6 +743,23 @@ function App() {
                       level={hustleLevel}
                       tier={pl.currentTier}
                       playerBid={levelData?.cost || 10000000}
+                      rivalBid={rival?.currentBid || 0}
+                      onOutbid={(amount) => {
+                        addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
+                      }}
+                    />
+                  );
+                }
+
+                if (activeMiniGame === 'VCPitchRoom') {
+                  const rival = pl.rivals?.find(r => r.currentBid > 0);
+                  const levelData = currentBranch || (hustle.levels?.find(l => l.level === (pl.hustleLevels[hustle.id] || 1)));
+                  return (
+                    <VCPitchRoom
+                      onComplete={onComplete}
+                      level={hustleLevel}
+                      tier={pl.currentTier}
+                      playerBid={levelData?.cost || 20000000}
                       rivalBid={rival?.currentBid || 0}
                       onOutbid={(amount) => {
                         addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
@@ -833,13 +862,13 @@ function App() {
                   );
                 }
                 if (hustle.panelType === 'FESTIVAL') {
-                  return <FestivalPanel hustle={hustle} />;
+                  return <FestivalPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;
                 }
                 if (hustle.panelType === 'DATA_ANALYTICS') {
                   return <DataAnalyticsPanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'CRYPTO_MINING') {
-                  return <CryptoMiningPanel hustle={hustle} />;
+                  return <CryptoMiningPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;
                 }
                 if (hustle.panelType === 'VA_AGENCY') {
                   return <VAAgencyPanel hustle={hustle} />;
@@ -848,7 +877,7 @@ function App() {
                   return <RealEstatePanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
-                  return <VCPanel hustle={hustle} />;
+                  return <VCPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;
                 }
                 if (hustle.panelType === 'FILM_STUDIO') {
                   return <FilmStudioPanel hustle={hustle} />;

@@ -7,9 +7,23 @@ interface MemeCoinPumpProps {
   onComplete: (multiplier: number) => void;
   level?: number;
   tier?: Tier;
+  title?: string;
+  instruction?: string;
+  icon?: string;
+  scoreLabel?: string;
+  accentColor?: string;
 }
 
-export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
+export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({
+  onComplete,
+  level = 1,
+  tier = 'MUD',
+  title = "MEME COIN PUMP",
+  instruction = "SHAKE PHONE TO PUMP HYPE!",
+  icon = "⛏️",
+  scoreLabel = "PRICE",
+  accentColor = "yellow"
+}) => {
   const [hype, setHype] = useState(10);
   const [price, setPrice] = useState(1.0);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -88,23 +102,34 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete, level = 
     setTimeout(() => onComplete(price), 1500);
   };
 
+  const colorMap: Record<string, string> = {
+    amber: 'text-amber-500 bg-amber-500 bg-amber-600',
+    purple: 'text-purple-500 bg-purple-500 bg-purple-600',
+    blue: 'text-blue-500 bg-blue-500 bg-blue-600',
+    emerald: 'text-emerald-500 bg-emerald-500 bg-emerald-600',
+    yellow: 'text-yellow-500 bg-yellow-500 bg-yellow-600',
+  };
+
+  const colors = colorMap[accentColor] || colorMap.yellow;
+  const [cText, cBg, cBtn] = colors.split(' ');
+
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-12 text-center w-full px-8">
-        <h2 className="text-4xl font-black text-yellow-500 italic tracking-tighter uppercase drop-shadow-lg">MEME COIN PUMP <span className="text-white text-sm">L{level}</span></h2>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">SHAKE PHONE TO PUMP HYPE!</p>
+        <h2 className={`text-4xl font-black ${cText} italic tracking-tighter uppercase drop-shadow-lg`}>{icon} {title} <span className="text-white text-sm">L{level}</span></h2>
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{instruction}</p>
       </div>
 
       <div className="w-full max-w-sm bg-slate-900 rounded-3xl p-8 border-4 border-slate-800 shadow-2xl relative overflow-hidden">
         <div className="flex justify-between items-end mb-8">
             <div className="flex flex-col">
-                <span className="text-[10px] text-slate-500 font-black uppercase">PRICE</span>
+                <span className="text-[10px] text-slate-500 font-black uppercase">{scoreLabel}</span>
                 <span className="text-5xl font-black text-emerald-400 font-mono tracking-tighter">${price.toFixed(2)}</span>
             </div>
             <div className="text-right">
                 <span className="text-[10px] text-slate-500 font-black uppercase">HYPE</span>
                 <div className="h-2 w-24 bg-slate-800 rounded-full overflow-hidden mt-1 border border-slate-700">
-                    <motion.div className="h-full bg-yellow-500" animate={{ width: `${hype}%` }} />
+                    <motion.div className={`h-full ${cBg}`} animate={{ width: `${hype}%` }} />
                 </div>
             </div>
         </div>
@@ -117,7 +142,7 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete, level = 
         </div>
 
         {!permissionGranted && permissionGranted !== false && (
-            <button onClick={requestPermission} className="w-full py-4 bg-yellow-600 text-white font-black rounded-xl mb-4">ENABLE SHAKE SENSORS</button>
+            <button onClick={requestPermission} className={`w-full py-4 ${cBtn} text-white font-black rounded-xl mb-4`}>ENABLE SHAKE SENSORS</button>
         )}
 
         <button

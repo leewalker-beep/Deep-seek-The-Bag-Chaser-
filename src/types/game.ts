@@ -728,6 +728,7 @@ export interface GameState {
   activeHustleView: string | null;
   activeTierBadge: string | null;
   activeNarrative?: string | null;
+  showMinigame: boolean;
   deathBadge: string | null;
   fatalCause: string | null;
   pendingSpecialization: boolean;
@@ -746,6 +747,7 @@ export interface GameState {
   setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
+  setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
   selectSpecialization: (specializationId: string) => void;

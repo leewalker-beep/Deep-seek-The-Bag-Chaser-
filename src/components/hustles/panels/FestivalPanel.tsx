@@ -5,10 +5,11 @@ import { MARKET_CONFIGS } from '../../../config/marketConfig';
 
 interface FestivalPanelProps {
   hustle: Hustle;
+  onExecute: () => void;
 }
 
-export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle }) => {
-  const { pl, currentMarket, setFestivalChoices, executeHustle, setActiveHustleView } = useGameStore();
+export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle, onExecute }) => {
+  const { pl, currentMarket, setFestivalChoices } = useGameStore();
   const choices = pl.festivalChoices || {
     headliner: 'budget',
     venue: 'small',
@@ -136,10 +137,7 @@ export const FestivalPanel: React.FC<FestivalPanelProps> = ({ hustle }) => {
       </div>
 
       <button
-        onClick={() => {
-          executeHustle(hustle.id);
-          setActiveHustleView(null);
-        }}
+        onClick={onExecute}
         className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase rounded-xl transition-all active:scale-95"
       >
         Run Festival

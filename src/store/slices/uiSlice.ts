@@ -8,6 +8,7 @@ export interface UISlice {
   activeHustleView: string | null;
   activeTierBadge: string | null;
   activeNarrative: string | null | undefined;
+  showMinigame: boolean;
   deathBadge: string | null;
   fatalCause: string | null;
   pendingSpecialization: boolean;
@@ -20,6 +21,7 @@ export interface UISlice {
   setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
+  setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
   setTutorialStep: (step: number) => void;
   setTutorialSkipped: (skipped: boolean) => void;
@@ -34,6 +36,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   activeHustleView: null,
   activeTierBadge: null,
   activeNarrative: null,
+  showMinigame: false,
   deathBadge: null,
   fatalCause: null,
   pendingSpecialization: false,
@@ -46,6 +49,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   setActiveTab: (tab) => set({ activeTab: tab, activeHustleView: null }),
   setActiveHustleView: (hustleId) => set({ activeHustleView: hustleId }),
   setActiveTierBadge: (badge) => set({ activeTierBadge: badge }),
+  setShowMinigame: (show) => set({ showMinigame: show }),
   dismissNarrative: () => set({ activeNarrative: null }),
   setTutorialStep: (step) => set((state) => ({
     tutorialStep: step,

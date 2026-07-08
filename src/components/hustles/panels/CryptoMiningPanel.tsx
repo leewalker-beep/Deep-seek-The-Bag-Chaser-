@@ -4,10 +4,11 @@ import type { Hustle } from '../../../config/hustles/base';
 
 interface CryptoMiningPanelProps {
   hustle: Hustle;
+  onExecute: () => void;
 }
 
-export const CryptoMiningPanel: React.FC<CryptoMiningPanelProps> = ({ hustle }) => {
-  const { pl, setCryptoStrategy, executeHustle, setActiveHustleView } = useGameStore();
+export const CryptoMiningPanel: React.FC<CryptoMiningPanelProps> = ({ hustle, onExecute }) => {
+  const { pl, setCryptoStrategy } = useGameStore();
   const currentStrategy = pl.cryptoStrategy || 'solo';
   const currentLevel = pl.hustleLevels[hustle.id] || 1;
 
@@ -66,10 +67,7 @@ export const CryptoMiningPanel: React.FC<CryptoMiningPanelProps> = ({ hustle }) 
       </div>
 
       <button
-        onClick={() => {
-          executeHustle(hustle.id);
-          setActiveHustleView(null);
-        }}
+        onClick={onExecute}
         className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase rounded-xl transition-all active:scale-95"
       >
         Start Mining

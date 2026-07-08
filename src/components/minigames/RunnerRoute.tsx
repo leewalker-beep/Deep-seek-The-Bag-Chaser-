@@ -8,11 +8,27 @@ interface RunnerRouteProps {
   onComplete: (multiplier: number) => void;
   level?: number;
   tier?: Tier;
+  title?: string;
+  instruction?: string;
+  icon?: string;
+  obstacleEmoji?: string;
+  playerEmoji?: string;
+  scoreLabel?: string;
 }
 
 const LANE_POSITIONS = ['16%', '50%', '84%'];
 
-export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
+export const RunnerRoute: React.FC<RunnerRouteProps> = ({
+  onComplete,
+  level = 1,
+  tier = 'MUD',
+  title = "RUNNER ROUTE",
+  instruction = "Dodge the obstacles!",
+  icon = "🚚",
+  obstacleEmoji = "🚧",
+  playerEmoji = "🚚",
+  scoreLabel = "DELIVERIES"
+}) => {
   const [lane, setLane] = useState(1);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
@@ -103,9 +119,10 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-12 text-center w-full px-8 z-20">
-        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">RUNNER ROUTE <span className="text-orange-500 text-sm">L{level}</span></h2>
+        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">{icon} {title} <span className="text-orange-500 text-sm">L{level}</span></h2>
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{instruction}</p>
         <div className="mt-6 text-orange-500 font-mono font-black text-4xl drop-shadow-xl tabular-nums">
-            DELIVERIES: {score}
+            {scoreLabel}: {score}
         </div>
       </div>
 
@@ -121,7 +138,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
           style={{ position: 'absolute', left: LANE_POSITIONS[lane], transform: 'translateX(-50%)' }}
           className="w-16 h-16 bg-orange-500 rounded-xl mb-4 z-10 flex items-center justify-center text-3xl shadow-lg border-t-2 border-white/20 bottom-0 transition-all duration-150"
         >
-          🚚
+          {playerEmoji}
         </div>
 
         {/* Obstacles */}
@@ -133,7 +150,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
             style={{ position: 'absolute', left: LANE_POSITIONS[o.lane], transform: 'translateX(-50%)' }}
             className="absolute top-0 w-16 h-16 bg-slate-700 rounded-xl flex items-center justify-center text-3xl"
           >
-            🚧
+            {obstacleEmoji}
           </motion.div>
         ))}
       </div>
@@ -156,7 +173,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ onComplete, level = 1,
         <ProgressBar
           value={timeLeft}
           max={15}
-          label={`ROUTE CLEARANCE: ${timeLeft.toFixed(1)}s`}
+          label={`${title} CLEARANCE: ${timeLeft.toFixed(1)}s`}
           colorClass="bg-orange-500"
         />
       </div>
