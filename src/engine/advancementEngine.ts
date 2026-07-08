@@ -775,6 +775,44 @@ export function advanceMonth(
     news.push({ text: TIER_MESSAGES[newPl.currentTier], colorClass: 'text-yellow-400 font-black animate-pulse' });
   }
 
+  // Presidency Term End Detection
+  if (newPl.currentTier === 'PRESIDENT' && newPl.presidentMonth >= 48 && !newPl.termComplete) {
+    const approvalRating = newPl.approvalRating || 50;
+    const scandals = newPl.scandalCount || 0;
+
+    let verdict = '';
+    let verdictEmoji = '';
+    let legacyBonus = 0;
+
+    if (approvalRating >= 70 && scandals === 0) {
+      verdict = 'GREATEST OF ALL TIME';
+      verdictEmoji = '🏆';
+      legacyBonus = 500000;
+    } else if (approvalRating >= 55) {
+      verdict = 'RESPECTED LEADER';
+      verdictEmoji = '🤝';
+      legacyBonus = 200000;
+    } else if (approvalRating >= 40) {
+      verdict = 'COMPLICATED LEGACY';
+      verdictEmoji = '📜';
+      legacyBonus = 50000;
+    } else if (scandals > 2) {
+      verdict = 'DISGRACED';
+      verdictEmoji = '💀';
+      legacyBonus = 0;
+    } else {
+      verdict = 'FORGOTTEN';
+      verdictEmoji = '👻';
+      legacyBonus = 10000;
+    }
+
+    newPl.termComplete = true;
+    newPl.pendingTermEnd = true;
+    newPl.termVerdict = verdict;
+    newPl.termVerdictEmoji = verdictEmoji;
+    newPl.legacyScore = (newPl.legacyScore || 0) + legacyBonus;
+  }
+
   // Check for death conditions
   let shouldDie = false;
   let deathCause: string | null = null;
