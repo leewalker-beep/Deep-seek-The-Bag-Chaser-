@@ -685,6 +685,12 @@ export interface PlayerStats {
     tier: string;
     fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
     fatalStatValue?: number;
+    // Expanded transparency fields
+    preStatValue?: number;
+    baseDamage?: number;
+    multipliers?: Record<string, number>;
+    finalDamage?: number;
+    postStatValue?: number;
   };
   stats?: {
     totalHustles: number;

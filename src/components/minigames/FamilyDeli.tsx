@@ -68,7 +68,7 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
   const [total, setTotal] = useState(0);
   const [streak, setStreak] = useState(0);
   const [gameActive, setGameActive] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(45);
+  const [timeLeft, setTimeLeft] = useState(level === 1 ? 15 : level === 2 ? 25 : 35);
   const [showResults, setShowResults] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
@@ -340,7 +340,8 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                   key={customer.id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  onClick={() => {
+                  onPointerDown={(e) => {
+                    e.preventDefault();
                     setSelectedCustomerIndex(idx);
                     setCurrentAssembly([]);
                   }}
@@ -426,7 +427,8 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                   {MODIFIERS.map(mod => (
                     <button
                       key={mod.id}
-                      onClick={() => {
+                      onPointerDown={(e) => {
+                        e.preventDefault();
                         setSelectedModifiers(prev =>
                           prev.includes(mod.id) ? prev.filter(id => id !== mod.id) : [...prev, mod.id]
                         );
@@ -446,7 +448,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                 {MENU.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleAssemble(item.id)}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      handleAssemble(item.id);
+                    }}
                     disabled={selectedCustomerIndex === null || inventory[item.id] <= 0}
                     className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all active:scale-95 ${
                       selectedCustomerIndex !== null && inventory[item.id] > 0
@@ -480,7 +485,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
               {changeOptions.map(val => (
                 <button
                   key={val}
-                  onClick={() => handleRegister(val)}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    handleRegister(val);
+                  }}
                   className="py-4 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 rounded-2xl font-black text-xl text-white transition-all active:scale-95"
                 >
                   ${val}
@@ -505,7 +513,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                  return (
                    <button
                     key={id}
-                    onClick={() => handleRestock(id)}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      handleRestock(id);
+                    }}
                     className="flex flex-col items-center gap-2 p-4 bg-slate-800/80 rounded-2xl border-2 border-blue-900/50 hover:bg-blue-900/40"
                    >
                      <span className="text-3xl">{item?.icon}</span>
@@ -527,7 +538,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
             <h3 className="text-2xl font-black text-red-500 italic uppercase tracking-tighter mb-2">Health Inspector</h3>
             <p className="text-slate-300 text-sm mb-10 font-bold uppercase tracking-widest italic">"This counter is a mess!"</p>
             <button
-              onClick={handleClean}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                handleClean();
+              }}
               className="w-full py-5 bg-red-600 hover:bg-red-500 text-white font-black rounded-2xl transition-all active:scale-95 shadow-lg uppercase tracking-widest"
             >
               CLEAN SPILL
@@ -564,7 +578,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
               </div>
 
               <button
-                onClick={() => onComplete(finalMultiplier)}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  onComplete(finalMultiplier);
+                }}
                 className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-white font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-orange-500/20 uppercase tracking-widest"
               >
                 End Shift
