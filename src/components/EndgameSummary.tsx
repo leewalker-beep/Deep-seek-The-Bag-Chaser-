@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
-import { StatCard } from './ui/StatCard';
-import { HUSTLES } from '../config/hustles/base';
+import Avatar from './Avatar';
 
 interface EndgameSummaryProps {
   onRestart: () => void;
@@ -39,9 +38,6 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
   const successRate = stats.totalHustles > 0
     ? Math.floor((stats.successfulHustles / stats.totalHustles) * 100)
     : 0;
-
-  const lastHustleName = pl.lastExecutedHustleId ? (HUSTLES[pl.lastExecutedHustleId]?.name || 'a mystery') : 'doing nothing';
-  const personalizedSummary = `You hit ${pl.currentTier} tier, died ${pl.deathCount || 1} times, and your final act was ${lastHustleName}.`;
 
   const shareText = `I just finished a run of Bag Chaser! Hit ${pl.currentTier} tier with $${pl.bag.toLocaleString()} bag. Legacy score: ${(pl.legacyScore || 0).toLocaleString()}. Can you beat me?`;
 
@@ -96,53 +92,104 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8"
       >
-        <div className="text-center mb-6">
-          <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white mb-2">Run Summary</h2>
-          <div className="text-slate-500 text-xs font-bold uppercase tracking-widest">The Final Ledger</div>
-        </div>
-
-        <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 mb-6 text-center">
-          <p className="text-slate-300 text-sm font-medium italic">"{personalizedSummary}"</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="col-span-2 p-6 bg-slate-950 border border-yellow-500/30 rounded-2xl text-center">
-            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Final Legacy Score</div>
-            <div className="text-5xl font-black text-yellow-400 tabular-nums">
-              {displayScore.toLocaleString()}
+        {/* 1. PLAYER HEADER */}
+        <div className="flex flex-col items-center mb-8">
+          <Avatar avatarId={pl.avatarId} size={80} ring="ring-slate-800" />
+          <div className="mt-4 text-center">
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{pl.name}</h2>
+            <div className="inline-block px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-2">
+              {pl.currentTier} TIER
             </div>
           </div>
-
-          <StatCard label="Highest Tier" value={pl.currentTier} colorClass="text-purple-400" />
-          <StatCard label="Final Bag" value={`$${pl.bag.toLocaleString()}`} colorClass="text-emerald-400" />
-          <StatCard label="Hustles" value={stats.totalHustles} />
-          <StatCard label="Deaths" value={pl.deathCount || 1} colorClass="text-red-400" />
-          <StatCard label="Achievements" value={pl.unlockedAchievements?.length || 0} icon="🏆" />
-          <StatCard label="Death Badges" value={pl.collectedDeathBadges?.length || 0} icon="💀" />
-          <StatCard label="Time Played" value={`${pl.month} Months`} icon="📅" />
-          <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
         </div>
 
-        {pl.biography && pl.biography.length > 0 && (
-          <div className="mb-8">
-            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3 text-center">The Life Story of {pl.name}</div>
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-slate-800">
-              {pl.biography.map((entry, idx) => (
-                <div key={idx} className="relative pl-10">
-                  <div className="absolute left-0 top-1 w-8 h-8 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center z-10">
-                    <span className="text-yellow-500 font-black text-[8px] italic">{(idx + 1).toString().padStart(2, '0')}</span>
-                  </div>
-                  <div className="bg-slate-950/50 border border-slate-800/50 p-3 rounded-2xl">
-                    <p className="text-[11px] text-slate-400 leading-relaxed font-medium uppercase tracking-tight">
-                      {entry}
-                    </p>
-                  </div>
-                </div>
+        {/* 2. LEGACY SCORE */}
+        <div className="text-center mb-8">
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mb-1">
+            FINAL LEGACY SCORE
+          </div>
+          <div className="text-6xl font-black text-yellow-400 tabular-nums">
+            {displayScore.toLocaleString()}
+          </div>
+        </div>
+
+        {/* 3. THE STORY — biography as hero */}
+        <div className="w-full mb-6">
+          <div className="text-[9px] text-slate-600
+            uppercase tracking-[0.3em] text-center mb-4">
+            YOUR STORY
+          </div>
+
+          {pl.biography && pl.biography.length > 0 ? (
+            <div className="space-y-2">
+              {pl.biography.map((line: any, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex gap-3 items-start
+                    bg-slate-900/50 rounded-xl px-4 py-3
+                    border border-slate-800/50"
+                >
+                  <span className="text-slate-600
+                    font-mono text-[9px] uppercase
+                    tracking-wider mt-0.5 shrink-0
+                    w-16">
+                    {line.month
+                      ? `MO. ${line.month}`
+                      : `CH. ${idx + 1}`}
+                  </span>
+                  <span className="text-slate-300
+                    text-xs leading-relaxed italic">
+                    {line.text || line}
+                  </span>
+                </motion.div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center text-slate-700
+              text-xs italic py-8">
+              No story written yet.
+              Play longer to build your legend.
+            </div>
+          )}
+        </div>
 
+        {/* 4. STATS GRID — moved to position 4 */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <div className="bg-slate-900/50 rounded-xl
+            p-3 text-center">
+            <div className="text-[9px] text-slate-600
+              uppercase tracking-wider mb-1">
+              Months
+            </div>
+            <div className="text-white font-black
+              text-lg">{pl.month}</div>
+          </div>
+          <div className="bg-slate-900/50 rounded-xl
+            p-3 text-center">
+            <div className="text-[9px] text-slate-600
+              uppercase tracking-wider mb-1">
+              Peak Tier
+            </div>
+            <div className="text-white font-black
+              text-lg">{pl.currentTier}</div>
+          </div>
+          <div className="bg-slate-900/50 rounded-xl
+            p-3 text-center">
+            <div className="text-[9px] text-slate-600
+              uppercase tracking-wider mb-1">
+              Hustles
+            </div>
+            <div className="text-white font-black
+              text-lg">
+              {pl.stats?.totalHustles || 0}
+            </div>
+          </div>
+        </div>
+
+        {/* 5. BUTTONS — unchanged */}
         <div className="space-y-4">
           <div className="flex flex-col gap-3">
             <BaseButton variant="primary" onClick={onRestart} className="w-full py-5 text-xl font-black">
