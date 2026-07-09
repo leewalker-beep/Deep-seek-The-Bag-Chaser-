@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
 import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
+import { PRESIDENTIAL_ACTIVITIES } from '../../config/presidencyActivities';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
@@ -18,6 +19,8 @@ export interface PresidentSlice {
   advancePresidentialMonth: () => void;
   updatePresidentialStat: (stat: string, value: number) => void;
   updateDemographicApproval: (demographic: string, value: number) => void;
+  startPresidentialActivity: (activityId: string) => void;
+  resolvePresidentialActivity: (activityId: string, choiceId: string, multiplier: number) => any;
 }
 
 export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlice> = (set, get) => ({
@@ -872,5 +875,86 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         demographicApproval: newDemographics
       })
     });
+  },
+
+  startPresidentialActivity: (activityId) => {
+    set({ activeHustleView: activityId });
+  },
+
+  resolvePresidentialActivity: (activityId, choiceId, multiplier) => {
+    const state = get();
+    const activity = PRESIDENTIAL_ACTIVITIES.find(a => a.id === activityId);
+    if (!activity) return null;
+
+    const choice = activity.choices.find(c => c.id === choiceId);
+    if (!choice) return null;
+
+    // Apply Cabinet Bonuses
+    let choiceMultiplier = multiplier;
+    let cabinetBonusApplied = false;
+    if (choice.cabinetBonus) {
+      const member = state.pl.cabinet[choice.cabinetBonus.roleId];
+      if (member && member.loyalty >= 50) {
+        const bonusValue = member.isTrustedAlly ? choice.cabinetBonus.multiplier + 0.5 : choice.cabinetBonus.multiplier;
+        choiceMultiplier *= bonusValue;
+        cabinetBonusApplied = true;
+        state.addTickerMessage(`CABINET SUPPORT: ${choice.cabinetBonus.message}`, 'text-emerald-400 font-bold');
+      }
+    }
+
+    // Difficulty scaling (based on month)
+    const monthScaling = 1 + (state.pl.presidentMonth / 48) * 0.5;
+    const finalMultiplier = choiceMultiplier / monthScaling;
+
+    const impacts: Record<string, number> = {};
+    const newPl = { ...state.pl };
+
+    // Update stats and track impacts
+    const statsToUpdate = [
+      'approval', 'gdp', 'inflation', 'debt', 'foreignRelations',
+      'worldPeace', 'congressSupport', 'bag', 'federalBudget',
+      'clout', 'aura', 'heat'
+    ];
+
+    statsToUpdate.forEach(stat => {
+      const val = choice.impact[stat as keyof typeof choice.impact];
+      if (val !== undefined) {
+        // Use higher precision for macro-economic stats and approval
+        const isMacro = ['gdp', 'inflation', 'debt', 'approval'].includes(stat);
+        const rawImpact = (val as number) * finalMultiplier;
+        const impact = isMacro ? Number(rawImpact.toFixed(2)) : Math.floor(rawImpact);
+
+        impacts[stat] = impact;
+        if (stat === 'approval') newPl.approvalRating += impact;
+        else if (stat === 'foreignRelations') newPl.foreignRelations = (newPl.foreignRelations || 0) + impact;
+        else if (stat === 'federalBudget') newPl.federalBudget += impact;
+        else (newPl as any)[stat] += impact;
+      }
+    });
+
+    // Record in diary
+    const diaryEntryText = `Strategic Decision: ${choice.label} for ${activity.title}. ${cabinetBonusApplied ? 'Cabinet supported the initiative. ' : ''}Outcomes: ${Object.entries(impacts).filter(([_,v]) => v !== 0).map(([k,v]) => `${k} ${v > 0 ? '+' : ''}${v}`).join(', ')}.`;
+
+    const diaryEntry = {
+      id: Math.random().toString(36).substring(7),
+      month: state.pl.presidentMonth,
+      event: activity.title,
+      outcome: diaryEntryText,
+      type: 'ORDER' as const
+    };
+    newPl.presidentialDiary = [diaryEntry, ...state.pl.presidentialDiary];
+
+    set({
+      pl: enforceStatCaps(newPl),
+      activeHustleView: null
+    });
+
+    state.addTickerMessage(`ACTIVITY COMPLETE: ${activity.title}`, 'text-blue-400 font-bold');
+
+    return {
+      impacts,
+      diaryEntry: diaryEntryText,
+      finalMultiplier
+    };
   }
 });

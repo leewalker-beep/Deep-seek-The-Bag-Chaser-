@@ -4,14 +4,10 @@ import { CABINET_ROLES, EXECUTIVE_ORDERS, generateCandidatePool } from '../engin
 import { motion, AnimatePresence } from 'framer-motion';
 import { PresidentialNewsTicker } from './PresidentialNewsTicker';
 import { ConfirmationModal } from './ui/ConfirmationModal';
-import type { CabinetMember, ExecutiveOrder, PresidentCrisis } from '../types/game';
-import { StateOfTheUnion } from './presidency/StateOfTheUnion';
-import { DebatePrep } from './presidency/DebatePrep';
-import { NegotiateTreaty } from './presidency/NegotiateTreaty';
-import { CrisisRiskAssessment } from './presidency/CrisisRiskAssessment';
-import { GOTV } from './presidency/GOTV';
-import { LegislativeAgenda } from './presidency/LegislativeAgenda';
+import type { CabinetMember, ExecutiveOrder, PresidentCrisis, PresidentialActivity } from '../types/game';
 import { CabinetAppointmentModal } from './presidency/CabinetAppointmentModal';
+import { PRESIDENTIAL_ACTIVITIES } from '../config/presidencyActivities';
+import { StrategicMeetingModal } from './presidency/StrategicMeetingModal';
 
 const PAGE_TITLES = [
   'THE OVAL',
@@ -23,33 +19,6 @@ const PAGE_TITLES = [
   'ADVANCE MONTH'
 ];
 
-const PRESIDENTIAL_ACTIONS = [
-  { id: 'StateOfTheUnion', emoji: '🎙️',
-    title: 'State of the Union',
-    description: 'Address the nation',
-    reward: '+8% Approval' },
-  { id: 'DebatePrep', emoji: '🤝',
-    title: 'Debate Prep',
-    description: 'Sharpen your arguments',
-    reward: '+5% Approval, +5 Congress' },
-  { id: 'NegotiateTreaty', emoji: '🌐',
-    title: 'Negotiate Treaty',
-    description: 'Strengthen foreign ties',
-    reward: '+10 Relations, +5 Peace' },
-  { id: 'CrisisRiskAssessment', emoji: '🛡️',
-    title: 'Risk Assessment',
-    description: 'Get ahead of threats',
-    reward: '+5% Approval' },
-  { id: 'GOTV', emoji: '🗳️',
-    title: 'GOTV Drive',
-    description: 'Mobilise your base',
-    reward: '+10 Turnout, +3% Approval' },
-  { id: 'LegislativeAgenda', emoji: '📋',
-    title: 'Legislative Push',
-    description: 'Move your agenda',
-    reward: '+10 Congress, +5% Approval' },
-];
-
 export const PresidentDashboard: React.FC = () => {
   const {
     pl,
@@ -57,9 +26,7 @@ export const PresidentDashboard: React.FC = () => {
     appointCabinetMember,
     fireCabinetMember,
     resolveCrisis,
-    advancePresidentialMonth,
-    updatePresidentialStat,
-    addTickerMessage
+    advancePresidentialMonth
   } = useGameStore();
 
   const [page, setPage] = useState(0);
@@ -77,7 +44,7 @@ export const PresidentDashboard: React.FC = () => {
 
   const [pendingOrder, setPendingOrder] = useState<ExecutiveOrder | null>(null);
   const [pendingCrisis, setPendingCrisis] = useState<PresidentCrisis | null>(null);
-  const [activeMinigame, setActiveMinigame] = useState<string | null>(null);
+  const [activeActivity, setActiveActivity] = useState<PresidentialActivity | null>(null);
   const [pendingAppointment, setPendingAppointment] = useState<{ roleId: string; candidates: CabinetMember[] } | null>(null);
 
   const approvalColor = pl.approvalRating > 60 ? 'text-emerald-400' : pl.approvalRating > 40 ? 'text-yellow-400' : 'text-red-400';
@@ -105,68 +72,6 @@ export const PresidentDashboard: React.FC = () => {
       setPendingCrisis(null);
     }
   };
-
-  if (activeMinigame === 'StateOfTheUnion') {
-    return <StateOfTheUnion onComplete={(mult) => {
-      const gain = Math.floor(mult * 8);
-      updatePresidentialStat('approvalRating', gain);
-      addTickerMessage(`State of the Union: +${gain}% Approval`, 'text-emerald-400 font-bold');
-      setActiveMinigame(null);
-    }} />;
-  }
-
-  if (activeMinigame === 'DebatePrep') {
-    return <DebatePrep onComplete={(mult) => {
-      const appGain = Math.floor(mult * 5);
-      const conGain = Math.floor(mult * 5);
-      updatePresidentialStat('approvalRating', appGain);
-      updatePresidentialStat('congressSupport', conGain);
-      addTickerMessage(`Debate Prep: +${appGain}% Approval, +${conGain} Congress Support`, 'text-blue-400');
-      setActiveMinigame(null);
-    }} />;
-  }
-
-  if (activeMinigame === 'NegotiateTreaty') {
-    return <NegotiateTreaty onComplete={(mult) => {
-      const relGain = Math.floor(mult * 10);
-      const peaceGain = Math.floor(mult * 5);
-      updatePresidentialStat('foreignRelations', relGain);
-      updatePresidentialStat('worldPeace', peaceGain);
-      addTickerMessage(`Treaty Negotiated: +${relGain} Foreign Relations, +${peaceGain} World Peace`, 'text-purple-400');
-      setActiveMinigame(null);
-    }} />;
-  }
-
-  if (activeMinigame === 'CrisisRiskAssessment') {
-    return <CrisisRiskAssessment onComplete={(mult) => {
-      const impact = Math.floor(mult * 5);
-      updatePresidentialStat('approvalRating', impact);
-      addTickerMessage(`Crisis assessed. Impact: ${impact}% Approval`, 'text-orange-400');
-      setActiveMinigame(null);
-    }} />;
-  }
-
-  if (activeMinigame === 'GOTV') {
-    return <GOTV onComplete={(mult) => {
-      const turnGain = Math.floor(mult * 10);
-      const appGain = Math.floor(mult * 3);
-      updatePresidentialStat('voterTurnout', turnGain);
-      updatePresidentialStat('approvalRating', appGain);
-      addTickerMessage(`GOTV Efforts: +${turnGain} Voter Turnout, +${appGain}% Approval`, 'text-emerald-400');
-      setActiveMinigame(null);
-    }} />;
-  }
-
-  if (activeMinigame === 'LegislativeAgenda') {
-    return <LegislativeAgenda onComplete={(mult) => {
-      const conGain = Math.floor(mult * 10);
-      const appGain = Math.floor(mult * 5);
-      updatePresidentialStat('congressSupport', conGain);
-      updatePresidentialStat('approvalRating', appGain);
-      addTickerMessage(`Agenda pushed: +${conGain} Congress Support, +${appGain}% Approval`, 'text-blue-400');
-      setActiveMinigame(null);
-    }} />;
-  }
 
   const renderPage = (index: number) => {
     switch (index) {
@@ -452,21 +357,31 @@ export const PresidentDashboard: React.FC = () => {
         );
       case 4: // ACTIONS
         return (
-          <div className="grid grid-cols-2 gap-3">
-            {PRESIDENTIAL_ACTIONS.map(action => (
-              <button
-                key={action.id}
-                onClick={() => setActiveMinigame(action.id)}
-                className="bg-slate-900/80 border border-slate-700 rounded-2xl p-4 text-left active:scale-95 transition-all hover:border-blue-500/40"
-              >
-                <div className="text-2xl mb-2">{action.emoji}</div>
-                <div className="text-xs font-black text-white uppercase tracking-tight">{action.title}</div>
-                <div className="text-[9px] text-slate-500 mt-1">{action.description}</div>
-                <div className="text-[9px] text-blue-400 font-black uppercase mt-2">
-                  {action.reward}
-                </div>
-              </button>
-            ))}
+          <div className="space-y-4">
+            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2 text-center">Presidential Agenda</div>
+            <div className="grid grid-cols-1 gap-3">
+              {PRESIDENTIAL_ACTIVITIES.map(action => (
+                <button
+                  key={action.id}
+                  onClick={() => setActiveActivity(action)}
+                  className="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 text-left active:scale-95 transition-all hover:border-blue-500/40 flex items-center gap-4 group"
+                >
+                  <div className="text-3xl bg-slate-800 w-16 h-16 rounded-xl flex items-center justify-center group-hover:bg-blue-900/30 transition-colors">
+                    {action.icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div className="text-[8px] text-blue-400 font-black uppercase tracking-widest mb-1">{action.category}</div>
+                    </div>
+                    <div className="text-sm font-black text-white uppercase tracking-tight">{action.title}</div>
+                    <div className="text-[10px] text-slate-500 mt-1 font-serif italic line-clamp-1">"{action.description}"</div>
+                  </div>
+                  <div className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    →
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         );
       case 5: // INTELLIGENCE
@@ -659,6 +574,13 @@ export const PresidentDashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {activeActivity && (
+        <StrategicMeetingModal
+          activity={activeActivity}
+          onClose={() => setActiveActivity(null)}
+        />
+      )}
 
       <ConfirmationModal
         isOpen={!!pendingOrder}
