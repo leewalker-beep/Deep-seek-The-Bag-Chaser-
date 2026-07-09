@@ -23,9 +23,9 @@ export const ShakeToInfluence: React.FC<ShakeToInfluenceProps> = ({ onComplete, 
   const decayRate = (2 + (level - 1) * 1.5) * Math.sqrt(scaling);
 
   const requestPermission = async () => {
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+    if (typeof ((window.DeviceMotionEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
       try {
-        const response = await (DeviceMotionEvent as any).requestPermission();
+        const response = await ((window.DeviceMotionEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission();
         if (response === 'granted') {
           setPermissionGranted(true);
           setGameActive(true);

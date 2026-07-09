@@ -39,7 +39,7 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, leve
   // Difficulty scaling: more parts required at higher difficulty
   const partsToAssemble = ALL_PARTS.slice(0, Math.min(ALL_PARTS.length, Math.floor((1 + level) * (1 + (scaling * 0.1)))));
 
-  const handleDragEnd = (partId: string, info: any) => {
+  const handleDragEnd = (partId: string, info: import('framer-motion').PanInfo) => {
     const target = document.getElementById('socket-target');
     if (target) {
       const rect = target.getBoundingClientRect();

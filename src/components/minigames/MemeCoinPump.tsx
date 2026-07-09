@@ -25,9 +25,9 @@ export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({ onComplete, level = 
   const volatility = (0.05 + (level - 1) * 0.02) * scaling;
 
   const requestPermission = async () => {
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+    if (typeof ((window.DeviceMotionEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
       try {
-        const response = await (DeviceMotionEvent as any).requestPermission();
+        const response = await ((window.DeviceMotionEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission();
         if (response === 'granted') {
           setPermissionGranted(true);
         } else {

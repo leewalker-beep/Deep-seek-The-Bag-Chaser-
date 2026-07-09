@@ -1,4 +1,4 @@
-import type { GameState, GameEvent, HustleCompletedMetadata, SpecialEventMetadata } from '../types/game';
+import type { GameState, GameEvent, HustleCompletedMetadata, SpecialEventMetadata, Achievement } from '../types/game';
 
 export type AchievementCategory = 'PROGRESSION' | 'HUSTLE MASTERY' | 'EARNINGS' | 'MINIGAME SKILL' | 'COLLECTION' | 'STREAKS' | 'DAILY CHALLENGES' | 'LEGACY' | 'ENDINGS';
 
@@ -480,9 +480,9 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
     description: 'Complete all other achievements.',
     category: 'COLLECTION',
     requirement: {
-      check: (state: GameState) => state.achievements.filter((a: any) => a.id !== 'PLATINUM').every((a: any) => a.isUnlocked),
+      check: (state: GameState) => state.achievements.filter((a: Achievement) => a.id !== 'PLATINUM').every((a: Achievement) => a.isUnlocked),
       progress: (state: GameState) => ({
-          current: state.achievements.filter((a: any) => a.id !== 'PLATINUM' && a.isUnlocked).length,
+          current: state.achievements.filter((a: Achievement) => a.id !== 'PLATINUM' && a.isUnlocked).length,
           target: state.achievements.length - 1
       })
     },

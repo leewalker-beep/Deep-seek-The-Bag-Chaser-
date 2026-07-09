@@ -42,6 +42,7 @@ export interface HustleCompletedMetadata {
   passiveIncomeTotal?: number;
   passiveBreakdown?: PassiveBreakdown;
   passiveAdded?: number;
+  [key: string]: unknown;
 }
 
 export interface PromotionEarnedMetadata {
@@ -215,7 +216,7 @@ export interface GameEvent {
     heat: number;
     tier: Tier;
   };
-  metadata: GameEventMetadata;
+  metadata: Record<string, unknown>;
 }
 
 export type PassiveCategory = 'BUSINESS' | 'REAL_ESTATE' | 'FLEX' | 'ROYALTY' | 'BONUS';
@@ -716,7 +717,7 @@ export interface GameState {
   updateDemographicApproval: (demographic: string, value: number) => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
-  logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
+  logEvent: (type: GameEventType, metadata?: Record<string, unknown>) => void;
   checkMilestones: () => void;
   processLogin: () => void;
   dailyChallenges: DailyChallenge[];

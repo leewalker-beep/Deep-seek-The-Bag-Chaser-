@@ -470,7 +470,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const suggestedVariation = winningCategory?.variations[0];
   const activeVariation = winningCategory?.variations.find(v => v.id === selectedVarId) || suggestedVariation;
 
-  const handleMinigameComplete = (category: keyof typeof scores, score: number) => {
+  const handleMinigameComplete = (category: string, score: number) => {
     setScores(prev => ({ ...prev, [category]: score }));
     setScreen(prev => prev + 1);
   };
@@ -585,7 +585,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             <div className="relative z-10 rounded-3xl overflow-hidden"
               style={{ border: t.border, boxShadow: t.shadow }}
             >
-              <t.component onComplete={(s) => handleMinigameComplete(t.id as any, s)} />
+              <t.component onComplete={(s) => handleMinigameComplete(t.id, s)} />
             </div>
           </div>
 

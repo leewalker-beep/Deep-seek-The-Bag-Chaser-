@@ -454,7 +454,7 @@ function App() {
           activeTab={activeTab}
         currentTier={pl.currentTier}
           onTabChange={(tab) => {
-            setActiveTab(tab as AppTab);
+            setActiveTab(tab);
             setShowMinigame(false);
           }}
         />

@@ -28,7 +28,7 @@ export const RotateToScale: React.FC<RotateToScaleProps> = ({
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(() => {
     if (typeof window === 'undefined') return null;
     const needsPermission = typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+      typeof ((window.DeviceOrientationEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission === 'function';
     return !needsPermission ? true : null;
   });
   const [result, setResult] = useState<number | null>(null);

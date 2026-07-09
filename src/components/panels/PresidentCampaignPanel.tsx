@@ -77,7 +77,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
   }
 
   if (activeMinigame === 'SwingStateSweep') {
-    return <SwingStateSweep onComplete={(res: any) => {
+    return <SwingStateSweep onComplete={(res: { multiplier: number; isRare: boolean }) => {
       const votes = Math.floor(res.multiplier * 20);
       updatePresidentialStat('electoralVotes', votes);
       addTickerMessage(`Swing State Sweep complete: +${votes} Electoral Votes`, 'text-blue-400 font-bold');
@@ -110,7 +110,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
                 ].map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => setCampaignPlatform(p.id as any)}
+                    onClick={() => setCampaignPlatform(p.id as 'economy' | 'healthcare' | 'foreign')}
                     className={`p-3 rounded-lg border text-left transition-all ${platform === p.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 hover:border-slate-700'}`}
                   >
                     <div className="font-bold text-sm text-white">{p.label}</div>

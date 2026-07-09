@@ -41,7 +41,7 @@ export const DataAnalyticsPanel: React.FC<DataAnalyticsPanelProps> = ({ hustle }
           <button
             key={opt.id}
             disabled={opt.disabled}
-            onClick={() => setDataAnalyticsChoice(opt.id as any)}
+            onClick={() => setDataAnalyticsChoice(opt.id as 'consumer' | 'financial' | 'social' | 'all')}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
               currentChoice === opt.id
                 ? 'border-emerald-500 bg-emerald-500/10'

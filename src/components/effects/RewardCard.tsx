@@ -13,10 +13,12 @@ export const RewardCard: React.FC<RewardCardProps> = ({
   title,
   subtitle,
   stats,
+  isRare?: boolean;
   isRare,
   onDismiss,
 }) => {
-  const [displayStats, setDisplayStats] = useState<any[]>(stats.map(s => ({ ...s, current: 0 })));
+  interface DisplayStat { label: string; value: string | number; colorClass?: string; current: string | number; }
+  const [displayStats, setDisplayStats] = useState<DisplayStat[]>(stats.map(s => ({ ...s, current: 0 })));
 
   useEffect(() => {
     if (isRare) {

@@ -42,7 +42,7 @@ export const CryptoMiningPanel: React.FC<CryptoMiningPanelProps> = ({ hustle }) 
           <button
             key={strat.id}
             disabled={strat.disabled}
-            onClick={() => setCryptoStrategy(strat.id as any)}
+            onClick={() => setCryptoStrategy(strat.id as 'solo' | 'pool' | 'cloud' | 'asic')}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
               currentStrategy === strat.id
                 ? 'border-emerald-500 bg-emerald-500/10'

@@ -37,9 +37,9 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1, tie
         setGameActive(true);
     };
 
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    if (typeof ((window.DeviceOrientationEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission === 'function') {
       try {
-        const response = await (DeviceOrientationEvent as any).requestPermission();
+        const response = await ((window.DeviceOrientationEvent as unknown) as { requestPermission?: () => Promise<string> }).requestPermission();
         if (response === 'granted') {
           startAction();
         } else {
@@ -86,7 +86,7 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1, tie
     const d2 = Math.floor(Math.random() * 6) + 1;
     const total = d1 + d2;
 
-    const rollAnimation = (controls: any) => controls.start({
+    const rollAnimation = (controls: import('framer-motion').AnimationControls) => controls.start({
       rotate: [0, 90, 180, 270, 360, 450, 540],
       x: [0, -40, 40, -20, 20, 0],
       y: [0, -80, 0, -40, 0],
@@ -175,7 +175,7 @@ export const DiceCraps: React.FC<DiceCrapsProps> = ({ onComplete, level = 1, tie
     }
   };
 
-  const Die = ({ value, controls }: { value: number; controls: any }) => (
+  const Die = ({ value, controls }: { value: number; controls: import('framer-motion').AnimationControls }) => (
     <motion.div
       animate={controls}
       className="w-24 h-24 bg-white rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-center border-4 border-slate-200 relative p-5"
