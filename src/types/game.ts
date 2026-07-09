@@ -421,6 +421,44 @@ export interface CabinetMember {
   loyaltyMonths?: number;
 }
 
+export interface PresidentialActivityChoice {
+  id: string;
+  label: string;
+  description: string;
+  impact: {
+    approval?: number;
+    gdp?: number;
+    inflation?: number;
+    debt?: number;
+    foreignRelations?: number;
+    worldPeace?: number;
+    congressSupport?: number;
+    bag?: number;
+    federalBudget?: number;
+    clout?: number;
+    aura?: number;
+    heat?: number;
+  };
+  cabinetBonus?: {
+    roleId: string;
+    multiplier: number;
+    message: string;
+  };
+  requirement?: {
+    stat: { type: 'aura' | 'clout' | 'relations'; value: number };
+  };
+}
+
+export interface PresidentialActivity {
+  id: string;
+  title: string;
+  description: string;
+  category: 'BUDGET' | 'DIPLOMACY' | 'CRISIS' | 'CABINET' | 'ELECTION' | 'SECURITY' | 'DISASTER' | 'INTELLIGENCE';
+  icon: string;
+  minigameType: 'RISK' | 'PATTERN' | 'MASH' | 'SEQUENCE' | 'RHYTHM' | 'HOLD';
+  choices: PresidentialActivityChoice[];
+}
+
 export interface PresidentCrisis {
   id: string;
   name: string;
@@ -809,6 +847,12 @@ export interface GameState {
   advancePresidentialMonth: () => void;
   updatePresidentialStat: (stat: string, value: number) => void;
   updateDemographicApproval: (demographic: string, value: number) => void;
+  startPresidentialActivity: (activityId: string) => void;
+  resolvePresidentialActivity: (activityId: string, choiceId: string, multiplier: number) => {
+    impacts: Record<string, number>;
+    diaryEntry: string;
+    finalMultiplier: number;
+  } | null;
   serveMonth: () => void;
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
