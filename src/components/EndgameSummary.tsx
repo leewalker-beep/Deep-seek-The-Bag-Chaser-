@@ -120,6 +120,11 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
             YOUR STORY
           </div>
 
+          <div className="mb-4 p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight text-center">
+            <span className="font-black text-white block mb-1">🎬 Your Chronicled Journey</span>
+            Every critical decision, high-stakes trade, and systemic milestone in your run was cataloged to form this eternal biography. It highlights "What happened" and "Why" you achieved this legendary legacy.
+          </div>
+
           {pl.biography && pl.biography.length > 0 ? (
             <div className="space-y-2">
               {pl.biography.map((line: any, idx) => (

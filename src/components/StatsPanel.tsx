@@ -86,22 +86,31 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
 
       {/* Core Stats Grid */}
       <div className="grid grid-cols-4 gap-2 mb-3 text-center">
-        <div className="bg-slate-800 rounded-lg p-2">
+        <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">CLOUT</div>
+          <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+            <span className="font-black text-blue-400 uppercase block mb-1">👑 Clout (Influence)</span>
+            Represents your public reach, street rep, and political sway. Reaching the max allows tier promotions. Failing active checks reduces your fame.
+          </div>
           <div className="text-[10px] font-bold text-blue-400">
             {Math.floor(stats.clout)} / {getTierMax(stats.currentTier).clout}
           </div>
         </div>
-        <div className="bg-slate-800 rounded-lg p-2">
+        <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">AURA</div>
+          <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+            <span className="font-black text-purple-400 uppercase block mb-1">✨ Aura (Mystique)</span>
+            Represents your personal presence, charisma, and star power. Necessary for massive negotiations, business deals, and general respect.
+          </div>
           <div className="text-[10px] font-bold text-purple-400">
             {Math.floor(stats.aura)} / {getTierMax(stats.currentTier).aura}
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">MENTAL</div>
-          <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl text-right">
-            Burnout risk. Reaching 0% ends your run. Restore at mud/street tier.
+          <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+            <span className="font-black text-red-400 uppercase block mb-1">🧠 Mental Health</span>
+            Your psychological capacity. Exhausting work drains your mental health. Reaching <span className="font-black text-red-500">0% causes burnout (Death)</span>. Restore it via sleep/recreation.
           </div>
           <div className={`text-sm font-bold ${stats.mentalHealth < 30 ? 'text-red-400' : 'text-white'}`}>
             {Math.floor(stats.mentalHealth)}%
@@ -112,8 +121,9 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
         </div>
         <div className="bg-slate-800 rounded-lg p-2 group relative">
           <div className="text-[8px] text-slate-500 uppercase">HEAT</div>
-          <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl text-right">
-            Police attention. High heat increases raid risk. Cool down in Ghost Mode.
+          <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+            <span className="font-black text-orange-400 uppercase block mb-1">🔥 Heat (WANTED)</span>
+            Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
           </div>
           <div className={`text-sm font-bold ${stats.heat > 70 ? 'text-orange-400' : 'text-white'}`}>
             {Math.floor(stats.heat)}%

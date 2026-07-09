@@ -34,6 +34,15 @@ export const LegacyShop: React.FC<{ onProceed: () => void }> = ({ onProceed }) =
           </p>
         </div>
 
+        <div className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+          <span className="font-black text-white block mb-1">🏛️ Welcome to the Vault</span>
+          <span className="font-bold text-white">What is this?</span> This is your persistent Meta-Progression Vault.
+          <br />
+          <span className="font-bold text-white">Why are you here?</span> Convert the Legacy Points banked from your past run's retirement into permanent starting cash, unlockable businesses, active multiplier perks, or custom character origins.
+          <br />
+          <span className="font-bold text-white">What should I do next?</span> Unlock desired buffs below using your banked points, then select "INITIALIZE RUN" to launch your next lifetime with these active buffs!
+        </div>
+
         <div className="bg-slate-900/50 border border-emerald-500/20 rounded-[2rem] p-6 flex justify-between items-center shadow-[0_0_30px_rgba(16,185,129,0.05)]">
           <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">BANKED LEGACY</div>
           <div className="text-3xl font-black text-emerald-400 font-mono leading-none">

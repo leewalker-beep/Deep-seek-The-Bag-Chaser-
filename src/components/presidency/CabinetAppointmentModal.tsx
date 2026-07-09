@@ -28,6 +28,19 @@ export const CabinetAppointmentModal: React.FC<CabinetAppointmentModalProps> = (
       accentColor="blue"
       maxWidth="2xl"
     >
+      <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight m-4">
+        <span className="font-black text-white block mb-1">👔 Cabinet Selection Metrics</span>
+        • <span className="text-white font-bold">Competence:</span> Drives policy yield & strategic multiplier bonuses.
+        <br />
+        • <span className="text-white font-bold">Integrity:</span> Keeps scandals in check; lowers leakage risk.
+        <br />
+        • <span className="text-white font-bold">Popularity:</span> Provides direct boosts to presidential approval.
+        <br />
+        • <span className="text-white font-bold">Ambition:</span> Amplifies strategic drive but speeds up loyalty decay.
+        <br />
+        • <span className="text-white font-bold">Corruption Risk:</span> Chance of inducing heavy legal heat & public backlash crises.
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
         {candidates.map((candidate, idx) => (
           <motion.div

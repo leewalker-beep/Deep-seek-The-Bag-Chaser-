@@ -60,18 +60,53 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="grid grid-cols-2 gap-3"
+                className="space-y-4"
               >
-                <StatCard label="Lifetime Profit" value={`$${stats.lifetimeEarnings.toLocaleString()}`} colorClass="text-emerald-400" />
-                <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
-                <StatCard label="Total Hustles" value={stats.totalHustles} />
-                <StatCard label="Legacy Score" value={pl.legacyPoints || 0} colorClass="text-yellow-400" />
-                <StatCard label="Login Streak" value={`${pl.loginStreak || 0} Days`} icon="🔥" />
-                <StatCard label="Endings Found" value={`${JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').length}/16`} icon="🎬" />
-                <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
-                <StatCard label="Vending Machines" value={pl.vendingCount || 0} icon="🥤" />
-                <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
-                <div className="col-span-2 p-4 bg-slate-950 border border-yellow-500/20 rounded-2xl">
+                <div className="p-3 bg-slate-950/80 border border-slate-800/80 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+                  <span className="font-black text-white block mb-1">💼 Career Overview</span>
+                  Tracks your global performance and accomplishments across this lifetime. All activities shape your eventual retirement score.
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="group relative">
+                    <StatCard label="Lifetime Profit" value={`$${stats.lifetimeEarnings.toLocaleString()}`} colorClass="text-emerald-400" />
+                    <div className="absolute top-full left-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+                      The sum total of all cash cleared from successful contracts, deals, and revenue streams.
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <StatCard label="Success Rate" value={`${successRate}%`} colorClass="text-blue-400" />
+                    <div className="absolute top-full right-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+                      Your historical accuracy rate in minigames. Higher rate means optimal payout multipliers.
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <StatCard label="Total Hustles" value={stats.totalHustles} />
+                    <div className="absolute top-full left-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+                      Total number of months spent running active gigs or strategic actions.
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <StatCard label="Legacy Score" value={pl.legacyPoints || 0} colorClass="text-yellow-400" />
+                    <div className="absolute top-full right-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+                      Current rating of your character's life. Converts to buyable meta upgrades upon death.
+                    </div>
+                  </div>
+
+                  <StatCard label="Login Streak" value={`${pl.loginStreak || 0} Days`} icon="🔥" />
+                  <StatCard label="Endings Found" value={`${JSON.parse(localStorage.getItem('bag-chaser-endings') || '[]').length}/16`} icon="🎬" />
+                  <StatCard label="Grammys" value={pl.grammyCount || 0} icon="🏆" />
+                  <StatCard label="Vending Machines" value={pl.vendingCount || 0} icon="🥤" />
+                  <StatCard label="Flex Assets" value={Object.keys(pl.flexAssets || {}).length} icon="💎" />
+                </div>
+
+                <div className="p-4 bg-slate-950 border border-yellow-500/20 rounded-2xl group relative">
+                  <div className="absolute bottom-full left-0 mb-2 w-full p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+                    Completed goals award Momentum. Every 10 milestones provide a permanent cross-lifetime multiplier for all cash yields.
+                  </div>
                   <div className="flex justify-between items-center mb-2">
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Legacy Momentum</div>
                     <div className="text-[10px] font-black text-yellow-400">
@@ -408,6 +443,11 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter italic">Living Biography</span>
                 </div>
 
+                <div className="p-3 bg-slate-950/80 border border-slate-800/80 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+                  <span className="font-black text-white block mb-1">📖 The Chronicled Legend</span>
+                  What is this? This biography automatically logs every major career move, economic milestone, and pivotal choice you make. It records the "What happened" and "Why" of your rise to power, shaping your retirement narrative.
+                </div>
+
                 {!pl.biography || pl.biography.length === 0 ? (
                   <div className="text-center py-12 bg-slate-950/30 border-2 border-dashed border-slate-800 rounded-3xl italic text-slate-700 text-xs">
                     Your story is still being written. Every major move you make will be recorded here.
@@ -444,26 +484,26 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           ) : (
             <div className="mt-8 p-4 border border-red-500/30 rounded-xl bg-red-950/20 space-y-3">
               <div className="text-xs text-red-400 font-black uppercase tracking-widest text-center">
-                This ends your run permanently.
+                Are you sure you want to retire?
               </div>
-              <div className="text-[10px] text-slate-500 text-center">
-                Your legacy score will be saved.
+              <div className="text-[10px] text-slate-300 text-center uppercase tracking-tight font-serif italic">
+                "Your current lifetime accomplishments and accumulated wealth will be locked in. They will convert permanently into Legacy Points, which can be spent inside the Legacy Shop for next-lifetime permanent boosts."
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mt-4">
                 <button
                   onClick={() => setConfirmingEnd(false)}
                   className="py-3 border border-slate-700 text-slate-400 text-xs font-black uppercase rounded-xl"
                 >
-                  Cancel
+                  No, Keep Grinding
                 </button>
                 <button
                   onClick={() => {
                     setConfirmingEnd(false);
                     handleEndRun();
                   }}
-                  className="py-3 bg-red-900/60 border border-red-700 text-red-300 text-xs font-black uppercase rounded-xl"
+                  className="py-3 bg-red-900/60 border border-red-700 text-red-300 text-xs font-black uppercase rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.3)] animate-pulse"
                 >
-                  End Run
+                  Yes, Liquidate Life
                 </button>
               </div>
             </div>
