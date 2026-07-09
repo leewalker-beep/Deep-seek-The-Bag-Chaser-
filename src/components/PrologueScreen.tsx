@@ -1,56 +1,28 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
-import { useGameStore } from '../store/gameStore';
 import { PLAYER_AVATARS } from '../config/avatars';
 import Avatar from './Avatar';
-import { getHallOfFameEntries } from '../utils/hallOfFame';
 
 interface PrologueScreenProps {
-  onStart: (name: string, backgroundId: string, categoryId: string, variationId: string, avatarId: string) => void;
+  onStart: (
+    name: string,
+    backgroundId: string,
+    categoryId: string,
+    variationId: string,
+    avatarId: string,
+    prologueStats?: {
+      bag: number;
+      clout: number;
+      aura: number;
+      biography: string[];
+      recordedBioKeys: string[];
+      hustlePlays: Record<string, number>;
+      totalHustlesCompleted: number;
+      actionLog: any[];
+    }
+  ) => void;
 }
-
-const SILHOUETTES = [
-  { id: 1, icon: '📦', speed: 45, delay: 0, direction: 'ltr', bottom: '10%' },
-  { id: 2, icon: '🚲', speed: 35, delay: 15, direction: 'rtl', bottom: '25%' },
-  { id: 3, icon: '💰', speed: 55, delay: 5, direction: 'ltr', bottom: '15%' },
-  { id: 4, icon: '🛒', speed: 40, delay: 25, direction: 'rtl', bottom: '20%' },
-  { id: 5, icon: '🚶', speed: 50, delay: 10, direction: 'ltr', bottom: '5%' },
-];
-
-const THEMES: Record<string, { bg: string, glow: string }> = {
-  industrial: { bg: 'bg-zinc-900', glow: 'shadow-zinc-500/20' },
-  neon: { bg: 'bg-slate-900', glow: 'shadow-cyan-500/30' },
-  gritty: { bg: 'bg-stone-950', glow: 'shadow-orange-900/20' },
-  studio: { bg: 'bg-neutral-900', glow: 'shadow-purple-500/20' },
-  tech: { bg: 'bg-gray-950', glow: 'shadow-emerald-500/20' },
-};
-
-const ORIGIN_CINEMATICS: Record<string, {
-  scene: string;
-  line1: string;
-  line2: string;
-  bg: string;
-}> = {
-  street_kid: {
-    scene: '🌆',
-    line1: 'The city never gave you anything.',
-    line2: 'Time to take it.',
-    bg: 'linear-gradient(180deg, #0a0a0f 0%, #0f1a0a 100%)',
-  },
-  dropout: {
-    scene: '🎤',
-    line1: "They said you'd amount to nothing.",
-    line2: 'Prove them wrong.',
-    bg: 'linear-gradient(180deg, #0a0a0f 0%, #0a0f1a 100%)',
-  },
-  benefactor: {
-    scene: '🏙️',
-    line1: 'You were born with advantages.',
-    line2: 'Now earn them.',
-    bg: 'linear-gradient(180deg, #0a0a0f 0%, #1a140a 100%)',
-  },
-};
 
 const GrainOverlay = () => (
   <>
@@ -71,7 +43,7 @@ const GrainOverlay = () => (
     `}</style>
     <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
       <div
-        className="absolute inset-[-200%] opacity-[0.4] mix-blend-overlay pointer-events-none"
+        className="absolute inset-[-200%] opacity-[0.35] mix-blend-overlay pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
           animation: 'noise-anim 0.2s infinite steps(1)',
@@ -81,973 +53,1256 @@ const GrainOverlay = () => (
   </>
 );
 
-// --- Local Minigame Components ---
+export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
+  // State machine: 'opening' | 'ch1_intro' | 'ch1_game' | 'ch1_results' | 'ch2_choice' | 'ch3_upgrade' | 'ch4_intro' | 'ch4_game' | 'ch4_results' | 'ch5_future' | 'character_select'
+  const [phase, setPh] = useState<
+    | 'opening'
+    | 'ch1_intro'
+    | 'ch1_game'
+    | 'ch1_results'
+    | 'ch2_choice'
+    | 'ch3_upgrade'
+    | 'ch4_intro'
+    | 'ch4_game'
+    | 'ch4_results'
+    | 'ch5_future'
+    | 'character_select'
+  >('opening');
 
-const StreetKidTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
-  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
-  const [phaseTimer, setPhaseTimer] = useState(2);
-  const [gameState, setGameState] = useState<'waiting' | 'ready' | 'clicked' | 'too-soon'>('waiting');
-  const [reactions, setReactions] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(8);
-  const finishedRef = useRef(false);
-  const [lastReactionMs, setLastReactionMs] = useState<number | null>(null);
-  const readyTimestamp = useRef<number>(0);
+  // Cinematic lines for Screen 1
+  const [cinematicIndex, setCinematicIndex] = useState(0);
+  const cinematicLines = [
+    { text: 'Some people inherit wealth.', glow: 'shadow-emerald-500/20' },
+    { text: 'You inherited nothing.', glow: 'shadow-red-500/20' },
+    { text: 'No money. No reputation. No influence. No safety net.', glow: 'shadow-yellow-500/20' },
+    { text: 'Every decision shapes your future.', glow: 'shadow-blue-500/20' },
+    { text: 'Every life tells a different story.', glow: 'shadow-purple-500/20' },
+    { text: 'You only get one life.', glow: 'shadow-pink-500/20' },
+    { text: 'When your life ends, your legacy remains.', glow: 'shadow-white/20' },
+  ];
+
+  // Prologue state values
+  const [prologueCash, setPrologueCash] = useState(0);
+  const [prologueClout, setPrologueClout] = useState(0);
+  const [prologueAura, setPrologueAura] = useState(0);
+  const [prologueBiography, setPrologueBiography] = useState<string[]>([]);
+  const [prologueBioKeys, setPrologueBioKeys] = useState<string[]>([]);
+  const [prologueHustlePlays, setPrologueHustlePlays] = useState<Record<string, number>>({});
+  const [prologueTotalHustles, setPrologueTotalHustles] = useState(0);
+  const [prologueActionLog, setPrologueActionLog] = useState<any[]>([]);
+
+  // Upgrade option selected in Chapter 3
+  const [activeUpgrade, setActiveUpgrade] = useState<'gloves' | 'magnet' | null>(null);
+
+  // Floating text feedback for minigames
+  const [floatingTexts, setFloatingTexts] = useState<
+    { id: number; text: string; x: number; y: number; color?: string }[]
+  >([]);
+  const nextFloatingId = useRef(0);
+
+  const addFloatingText = (text: string, x: number, y: number, color?: string) => {
+    const id = nextFloatingId.current++;
+    setFloatingTexts(prev => [...prev, { id, text, x, y, color }]);
+    setTimeout(() => {
+      setFloatingTexts(prev => prev.filter(item => item.id !== id));
+    }, 1000);
+  };
+
+  // Chapter 1 Mini-Game: Copper Salvage tapping (5 seconds)
+  const [ch1TimeLeft, setCh1TimeLeft] = useState(5.0);
+  const [ch1Score, setCh1Score] = useState(0);
+  const ch1ActiveRef = useRef(false);
 
   useEffect(() => {
-    if (phase === 'instruction') {
-      const timer = setTimeout(() => {
-        setPhase('countdown');
-        setPhaseTimer(3);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-    if (phase === 'countdown') {
-      const timer = setInterval(() => {
-        setPhaseTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setPhase('playing');
+    if (phase === 'ch1_game') {
+      setCh1Score(0);
+      setCh1TimeLeft(5.0);
+      ch1ActiveRef.current = true;
+      const interval = setInterval(() => {
+        setCh1TimeLeft(prev => {
+          if (prev <= 0.1) {
+            clearInterval(interval);
+            ch1ActiveRef.current = false;
+            // Record Chapter 1
+            const earned = ch1Score * 15;
+            const guaranteedEarned = Math.max(200, earned);
+            setPrologueCash(guaranteedEarned);
+            setPrologueTotalHustles(t => t + 1);
+            setPrologueHustlePlays(p => ({ ...p, r_scrap: (p.r_scrap || 0) + 1 }));
+            setPrologueActionLog(log => [
+              ...log,
+              {
+                month: 0,
+                tier: 'MUD',
+                hustleId: 'r_scrap',
+                hustleName: 'Scrap Metal',
+                level: 1,
+                branchId: 'l1',
+                branchName: 'Scavenger',
+                cost: 0,
+                yieldCash: guaranteedEarned,
+                yieldClout: 0,
+                yieldAura: 0,
+                netCash: guaranteedEarned,
+                success: true,
+              },
+            ]);
+            setPh('ch1_results');
             return 0;
           }
-          return prev - 1;
+          return Math.round((prev - 0.1) * 10) / 10;
         });
-      }, 1000);
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [phase, ch1Score]);
+
+  const handleCh1Tap = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ch1ActiveRef.current) return;
+    setCh1Score(s => s + 1);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    addFloatingText('+$15', x, y, 'text-emerald-400');
+    if (navigator.vibrate) {
+      navigator.vibrate(20);
+    }
+  };
+
+  // Chapter 2 Choice details
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+
+  const handleCh2Choice = (choice: 'share' | 'ignore' | 'threaten') => {
+    setSelectedChoiceId(choice);
+    let cashChange = 0;
+    let cloutChange = 0;
+    let auraChange = 0;
+    let bioEntry = '';
+    let bioKey = '';
+
+    if (choice === 'share') {
+      cashChange = -50;
+      cloutChange = 10;
+      auraChange = 10;
+      bioEntry = 'Shared your first earnings to buy food for a hungry neighborhood kid, earning early respect on the block.';
+      bioKey = 'prologue_shared_food';
+    } else if (choice === 'ignore') {
+      cashChange = 0;
+      cloutChange = 0;
+      auraChange = -5;
+      bioEntry = 'Walked past a hungry kid, holding tightly to your hard-earned copper. Survival comes first.';
+      bioKey = 'prologue_survival_first';
+    } else {
+      cashChange = 0;
+      cloutChange = 15;
+      auraChange = -10;
+      bioEntry = 'Aggressively chased off a local kid trying to ask for cash, earning a cold, feared reputation early.';
+      bioKey = 'prologue_feared_start';
+    }
+
+    setPrologueCash(c => Math.max(0, c + cashChange));
+    setPrologueClout(c => c + cloutChange);
+    setPrologueAura(a => a + auraChange);
+    setPrologueBiography(b => [...b, bioEntry]);
+    setPrologueBioKeys(k => [...k, bioKey]);
+    setPrologueActionLog(log => [
+      ...log,
+      {
+        month: 0,
+        tier: 'MUD',
+        hustleId: 'reflection_choice',
+        hustleName: 'First Choice',
+        level: 1,
+        branchId: choice,
+        branchName: choice === 'share' ? 'Share Wealth' : choice === 'ignore' ? 'Keep Capital' : 'Feared Instinct',
+        cost: Math.abs(Math.min(0, cashChange)),
+        yieldCash: 0,
+        yieldClout: cloutChange,
+        yieldAura: auraChange,
+        netCash: cashChange,
+        success: true,
+      },
+    ]);
+
+    setTimeout(() => {
+      setPh('ch3_upgrade');
+    }, 1500);
+  };
+
+  // Chapter 3 Upgrade logic
+  const handleCh3Upgrade = (upgrade: 'gloves' | 'magnet') => {
+    const cost = upgrade === 'gloves' ? 100 : 150;
+    if (prologueCash < cost) return; // fail-safe
+
+    setPrologueCash(c => c - cost);
+    setActiveUpgrade(upgrade);
+    setPrologueBiography(b => [
+      ...b,
+      `Invested early cash in a professional tool (${upgrade === 'gloves' ? 'Heavy Gloves' : 'Industrial Sweep Magnet'}) to scale productivity.`,
+    ]);
+    setPh('ch4_intro');
+  };
+
+  // Chapter 4 Mini-Game: Sorting gold from debris (8 seconds)
+  const [ch4TimeLeft, setCh4TimeLeft] = useState(8.0);
+  const [ch4Score, setCh4Score] = useState(0);
+  const [ch4Items, setCh4Items] = useState<{ id: number; type: 'gold' | 'rust'; x: number; y: number; speed: number }[]>([]);
+  const ch4ActiveRef = useRef(false);
+  const nextItemId = useRef(0);
+
+  useEffect(() => {
+    if (phase === 'ch4_game') {
+      setCh4Score(0);
+      setCh4TimeLeft(8.0);
+      setCh4Items([]);
+      ch4ActiveRef.current = true;
+
+      // Timer
+      const interval = setInterval(() => {
+        setCh4TimeLeft(prev => {
+          if (prev <= 0.1) {
+            clearInterval(interval);
+            ch4ActiveRef.current = false;
+            // Calculate yield: gold has 40 base yield. Multiplied by tool upgrade!
+            const multiplier = activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0;
+            const earned = Math.round(ch4Score * 40 * multiplier);
+
+            setPrologueCash(c => c + earned);
+            setPrologueTotalHustles(t => t + 1);
+            setPrologueHustlePlays(p => ({ ...p, r_scrap: (p.r_scrap || 0) + 1 }));
+            setPrologueActionLog(log => [
+              ...log,
+              {
+                month: 0,
+                tier: 'MUD',
+                hustleId: 'r_scrap_metals',
+                hustleName: 'Precious Sorting',
+                level: 2,
+                branchId: 'l2',
+                branchName: 'Precious Salvage',
+                cost: 0,
+                yieldCash: earned,
+                yieldClout: 5,
+                yieldAura: 2,
+                netCash: earned,
+                success: true,
+              },
+            ]);
+            setPrologueClout(c => c + 5);
+            setPrologueAura(a => a + 2);
+
+            setPh('ch4_results');
+            return 0;
+          }
+          return Math.round((prev - 0.1) * 10) / 10;
+        });
+      }, 100);
+
+      // Spawning loop
+      const spawnInterval = setInterval(() => {
+        if (!ch4ActiveRef.current) return;
+        const isGold = Math.random() > 0.4;
+        setCh4Items(prev => [
+          ...prev,
+          {
+            id: nextItemId.current++,
+            type: isGold ? 'gold' : 'rust',
+            x: -20,
+            y: 30 + Math.random() * 50,
+            speed: 3 + Math.random() * 4,
+          },
+        ]);
+      }, 600);
+
+      // Animation frame loop for item movement
+      let animationFrameId: number;
+      const updateMovement = () => {
+        if (ch4ActiveRef.current) {
+          setCh4Items(prev =>
+            prev
+              .map(item => ({ ...item, x: item.x + item.speed }))
+              .filter(item => item.x < 110)
+          );
+          animationFrameId = requestAnimationFrame(updateMovement);
+        }
+      };
+      animationFrameId = requestAnimationFrame(updateMovement);
+
+      return () => {
+        clearInterval(interval);
+        clearInterval(spawnInterval);
+        cancelAnimationFrame(animationFrameId);
+      };
+    }
+  }, [phase, ch4Score, activeUpgrade]);
+
+  const handleCh4TapItem = (id: number, type: 'gold' | 'rust', e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!ch4ActiveRef.current) return;
+    e.stopPropagation();
+
+    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+    const x = rect ? e.clientX - rect.left : 150;
+    const y = rect ? e.clientY - rect.top : 150;
+
+    const multiplier = activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0;
+
+    if (type === 'gold') {
+      setCh4Score(s => s + 1);
+      const val = Math.round(40 * multiplier);
+      addFloatingText(`+$${val}`, x, y, 'text-yellow-400');
+      if (navigator.vibrate) navigator.vibrate(30);
+    } else {
+      addFloatingText('Debris! -0', x, y, 'text-red-500');
+      if (navigator.vibrate) navigator.vibrate([15, 15]);
+    }
+    setCh4Items(prev => prev.filter(item => item.id !== id));
+  };
+
+  // Chapter 5 Cinematic Future montage controls
+  const [futureIndex, setFutureIndex] = useState(0);
+  const futureCards = [
+    {
+      title: '🏗️ Build Local Businesses',
+      desc: 'Invest in real assets. Scale from manual labor to street-side taco stands, automatic vending machines, and local institution delis.',
+      color: 'from-emerald-500/10 to-teal-500/10 border-emerald-500/30 text-emerald-400',
+    },
+    {
+      title: '📈 Trade High-Stakes Markets',
+      desc: 'Command complex portfolios. Allocate capital into venture capital rounds, real estate trusts, and highly leveraged private equity buyouts.',
+      color: 'from-blue-500/10 to-indigo-500/10 border-blue-500/30 text-blue-400',
+    },
+    {
+      title: '💎 Command Elite Luxury',
+      desc: 'Dazzle the rivals with absolute flex. Acquire heavy luxury items: designer watches, hypercars, massive penthouses, and private islands.',
+      color: 'from-purple-500/10 to-pink-500/10 border-purple-500/30 text-purple-400',
+    },
+    {
+      title: '⚔️ Destroy Hostile Rivals',
+      desc: 'Competitors will challenge you at every tier. Counter-bid, launch hostile corporate sabotage, or trigger deep retaliations.',
+      color: 'from-orange-500/10 to-red-500/10 border-orange-500/30 text-orange-400',
+    },
+    {
+      title: '🏛️ Claim the Oval Office',
+      desc: 'Appoint candidate archetypes to your Cabinet, direct military generals, pass economy-shifting bills, and manage geopolitical crises.',
+      color: 'from-yellow-500/10 to-amber-500/10 border-yellow-500/30 text-yellow-400',
+    },
+    {
+      title: '🏆 Carve a Legends History',
+      desc: 'Every milestone, failure, arrest, and choice writes your biography. Ensure your story finishes at the top of the permanent Hall of Fame.',
+      color: 'from-indigo-500/10 to-violet-500/10 border-indigo-500/30 text-indigo-400',
+    },
+  ];
+
+  useEffect(() => {
+    if (phase === 'ch5_future') {
+      const interval = setInterval(() => {
+        setFutureIndex(prev => {
+          if (prev >= futureCards.length - 1) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 3500);
+      return () => clearInterval(interval);
+    }
+  }, [phase]);
+
+  // Character selection states
+  const [selectedCatId, setSelectedCatId] = useState('street_kid');
+  const [selectedVarId, setSelectedVarId] = useState('sk_delivery');
+  const [selectedAvatarId, setSelectedAvatarId] = useState('av_m1');
+  const [playerName, setPlayerName] = useState('');
+
+  const filteredCategories = useMemo(() => {
+    return BACKGROUND_CATEGORIES.filter(c => c.id !== 'legacy'); // Hide legacy by default
+  }, []);
+
+  const activeCategory = useMemo(() => {
+    return BACKGROUND_CATEGORIES.find(c => c.id === selectedCatId) || BACKGROUND_CATEGORIES[0];
+  }, [selectedCatId]);
+
+  const activeVariation = useMemo(() => {
+    return activeCategory.variations.find(v => v.id === selectedVarId) || activeCategory.variations[0];
+  }, [activeCategory, selectedVarId]);
+
+  // Handle default variation update when category changes
+  const handleSelectCategory = (catId: string) => {
+    setSelectedCatId(catId);
+    const cat = BACKGROUND_CATEGORIES.find(c => c.id === catId);
+    if (cat && cat.variations.length > 0) {
+      setSelectedVarId(cat.variations[0].id);
+    }
+  };
+
+  const handleEnterWorld = () => {
+    if (playerName.trim().length < 2) return;
+    onStart(
+      playerName.trim().toUpperCase(),
+      activeVariation.id,
+      activeCategory.id,
+      activeVariation.id,
+      selectedAvatarId,
+      {
+        bag: prologueCash,
+        clout: prologueClout,
+        aura: prologueAura,
+        biography: [
+          `Left behind the shadows of your old life to make something of yourself.`,
+          ...prologueBiography,
+        ],
+        recordedBioKeys: ['prologue_origin', ...prologueBioKeys],
+        hustlePlays: prologueHustlePlays,
+        totalHustlesCompleted: prologueTotalHustles,
+        actionLog: prologueActionLog,
+      }
+    );
+  };
+
+  // Cinematic sequence handler
+  useEffect(() => {
+    if (phase === 'opening') {
+      const timer = setInterval(() => {
+        setCinematicIndex(prev => {
+          if (prev >= cinematicLines.length - 1) {
+            clearInterval(timer);
+            setTimeout(() => {
+              setPh('ch1_intro');
+            }, 3000);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 3200);
       return () => clearInterval(timer);
     }
   }, [phase]);
-
-  const onCompleteRef = useRef(onComplete);
-  const reactionsRef = useRef(reactions);
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-    reactionsRef.current = reactions;
-  }, [onComplete, reactions]);
-
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 0.1) {
-          if (!finishedRef.current) {
-            finishedRef.current = true;
-            onCompleteRef.current(reactionsRef.current);
-          }
-          return 0;
-        }
-        return prev - 0.1;
-      });
-    }, 100);
-    return () => clearInterval(timer);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase === 'playing' && gameState === 'waiting') {
-      const waitTime = 500 + Math.random() * 1000;
-      const timeout = setTimeout(() => {
-        setGameState('ready');
-        readyTimestamp.current = Date.now();
-      }, waitTime);
-      return () => clearTimeout(timeout);
-    }
-  }, [gameState, phase]);
-
-  const handleClick = () => {
-    if (phase !== 'playing') return;
-    if (gameState === 'waiting') {
-      setGameState('too-soon');
-      setTimeout(() => setGameState('waiting'), 300);
-    } else if (gameState === 'ready') {
-      const reactionMs = Date.now() - readyTimestamp.current;
-      setLastReactionMs(reactionMs);
-      setReactions(prev => prev + 1);
-      setGameState('clicked');
-      setTimeout(() => setGameState('waiting'), 300);
-    }
-  };
 
   return (
     <div
-      onPointerDown={handleClick}
-      style={{ touchAction: 'none' }}
-      className={`w-full h-96 flex flex-col items-center justify-center cursor-pointer rounded-3xl transition-colors duration-200 border-8 ${
-        phase === 'playing' && gameState === 'ready' ? 'bg-emerald-600 border-emerald-400' : 'bg-slate-900 border-slate-800'
-      }`}
+      className="min-h-screen w-full relative flex flex-col items-center justify-center p-4 md:p-8 font-sans overflow-hidden select-none bg-slate-950 text-white"
+      style={{
+        background: 'radial-gradient(ellipse at 50% 50%, #0d0d1a 0%, #030308 100%)',
+      }}
     >
-       <div className="text-white text-center pointer-events-none">
-          {phase === 'instruction' && (
-            <div className="text-xl font-black uppercase tracking-widest leading-tight p-8">
-              Tap the button the moment it lights up
-            </div>
-          )}
-          {phase === 'countdown' && (
+      <GrainOverlay />
+
+      <AnimatePresence mode="wait">
+        {/* PHASE: OPENING CINEMATIC */}
+        {phase === 'opening' && (
+          <motion.div
+            key="opening"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2 }}
+            className="text-center max-w-lg space-y-12 z-10 flex flex-col items-center justify-center h-full px-6"
+          >
             <motion.div
-              key={phaseTimer}
-              initial={{ scale: 1.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="font-black text-emerald-400"
-              style={{ fontSize: '120px', fontWeight: 900 }}
+              key={cinematicIndex}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.8 }}
+              className="space-y-4"
             >
-              {Math.ceil(phaseTimer)}
+              <p className="text-slate-500 text-[10px] tracking-[0.4em] uppercase font-black">
+                Prologue – Origin
+              </p>
+              <h1
+                className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-tight max-w-md mx-auto"
+                style={{
+                  textShadow: '0 0 40px rgba(255,255,255,0.1)',
+                }}
+              >
+                {cinematicLines[cinematicIndex].text}
+              </h1>
             </motion.div>
-          )}
-          {phase === 'playing' && (
-            <>
-              <div className="text-6xl mb-4">{gameState === 'ready' ? '⚡' : '🛑'}</div>
-              <div className="text-xl font-black uppercase tracking-widest">
-                {gameState === 'ready' ? 'TAP NOW!' : 'WAIT...'}
+
+            {/* Skipping button to speed up testing */}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              whileHover={{ opacity: 0.8 }}
+              onClick={() => setPh('ch1_intro')}
+              className="text-[9px] uppercase tracking-widest text-slate-500 font-bold hover:text-white transition-all pt-12"
+            >
+              Skip Prologue →
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 1 INTRO */}
+        {phase === 'ch1_intro' && (
+          <motion.div
+            key="ch1_intro"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
+          >
+            <div className="space-y-2">
+              <span className="text-[10px] text-emerald-400 tracking-[0.3em] font-black uppercase">
+                Chapter 1
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">The First Hustle</h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                You begin in the mud. No reputation. No cash. No influence.
+              </p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                A scrap copper heap sits in front of you. Work fast and salvage as much as possible before the yard owner returns!
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-xs text-slate-400 space-y-1">
+              <div className="font-bold text-slate-200">How to play:</div>
+              <div>Tap or click rapidly on the scrap heap pile.</div>
+              <div>Each tap salvages copper and awards <span className="text-emerald-400 font-bold">+$15</span>.</div>
+            </div>
+
+            <button
+              onClick={() => setPh('ch1_game')}
+              className="w-full py-5 bg-emerald-500 text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-emerald-500/10"
+            >
+              Start Scraping →
+            </button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 1 GAMEPLAY */}
+        {phase === 'ch1_game' && (
+          <motion.div
+            key="ch1_game"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-sm flex flex-col items-center justify-center space-y-8 z-10"
+          >
+            <div className="w-full flex justify-between items-center px-2">
+              <div className="text-left">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  FIRST CASH
+                </span>
+                <div className="text-3xl font-mono font-black text-emerald-400">
+                  ${ch1Score * 15}
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  TIME LEFT
+                </span>
+                <div className="text-3xl font-mono font-black text-white">{ch1TimeLeft.toFixed(1)}s</div>
+              </div>
+            </div>
+
+            <div
+              onPointerDown={handleCh1Tap}
+              className="w-full h-80 relative flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-emerald-500/20 bg-gradient-to-b from-slate-900/40 to-slate-950/80 cursor-pointer overflow-hidden active:scale-[0.98] transition-transform shadow-2xl"
+              style={{ touchAction: 'none' }}
+            >
+              {/* Central wire heap node */}
+              <div className="w-32 h-32 rounded-full bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-6xl shadow-inner relative z-10 animate-pulse">
+                🏗️
+                <div className="absolute inset-0 bg-emerald-500/10 blur-xl rounded-full" />
               </div>
 
-              {reactions > 0 && (
-                <div className="mt-4 text-center">
-                  <div className="text-emerald-400 font-black text-2xl tabular-nums">
-                    {reactions} taps
-                  </div>
-                  {lastReactionMs && (
-                    <div className="text-slate-400 text-sm mt-1">
-                      Last: {lastReactionMs}ms
-                      {lastReactionMs < 300
-                        ? ' ⚡ FAST'
-                        : lastReactionMs < 500
-                        ? ' ✓ GOOD'
-                        : ' SLOW'}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="mt-6 text-center z-10">
+                <p className="text-xs text-emerald-400 font-black tracking-widest uppercase animate-bounce">
+                  TAP THE PILE RAPIDLY!
+                </p>
+                <p className="text-[10px] text-slate-500 uppercase mt-1">
+                  Every tap gathers copper wire
+                </p>
+              </div>
 
-              <div className="mt-8 text-4xl font-mono font-black">{timeLeft.toFixed(1)}s</div>
-            </>
-          )}
-       </div>
-    </div>
-  );
-};
+              {/* Taps count badge */}
+              <div className="absolute top-4 right-4 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full text-[10px] font-black text-emerald-400">
+                {ch1Score} Taps
+              </div>
 
-const DropoutTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
-  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
-  const [phaseTimer, setPhaseTimer] = useState(2);
-  const [words, setWords] = useState<{ id: number, text: string, isGood: boolean, x: number, y: number, speed: number }[]>([]);
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
-  const nextId = useRef(0);
-  const finishedRef = useRef(false);
-  const [feedback, setFeedback] = useState<{
-    id: number;
-    x: number;
-    y: number;
-    good: boolean;
-  } | null>(null);
+              {/* Render local floating texts */}
+              {floatingTexts.map(f => (
+                <motion.div
+                  key={f.id}
+                  initial={{ opacity: 1, scale: 1, y: f.y }}
+                  animate={{ opacity: 0, scale: 1.4, y: f.y - 60 }}
+                  transition={{ duration: 0.6 }}
+                  className={`absolute font-mono font-black text-lg pointer-events-none select-none ${f.color || 'text-emerald-400'}`}
+                  style={{ left: f.x }}
+                >
+                  {f.text}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
-  const onCompleteRef = useRef(onComplete);
-  const scoreRef = useRef(score);
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-    scoreRef.current = score;
-  }, [onComplete, score]);
-
-  const GOOD_WORDS = ['CASH', 'PROFIT', 'BAG', 'CRYPTO', 'DEAL'];
-  const BAD_WORDS = ['TAXES', 'LOAN', 'SCAM', 'DEBT', 'LOSS'];
-
-  useEffect(() => {
-    if (phase === 'instruction') {
-      const timer = setTimeout(() => {
-        setPhase('countdown');
-        setPhaseTimer(3);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-    if (phase === 'countdown') {
-      const timer = setInterval(() => {
-        setPhaseTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setPhase('playing');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 0.1) {
-          if (!finishedRef.current) {
-            finishedRef.current = true;
-            onCompleteRef.current(scoreRef.current);
-          }
-          return 0;
-        }
-        return prev - 0.1;
-      });
-    }, 100);
-    return () => clearInterval(timer);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    const spawnTimer = setInterval(() => {
-      const isGood = Math.random() > 0.3;
-      const text = isGood ? GOOD_WORDS[Math.floor(Math.random() * GOOD_WORDS.length)] : BAD_WORDS[Math.floor(Math.random() * BAD_WORDS.length)];
-      setWords(prev => [...prev, {
-        id: nextId.current++,
-        text,
-        isGood,
-        x: 15 + Math.random() * 70,
-        y: 100,
-        speed: 0.4 + Math.random() * 0.2
-      }]);
-    }, 1500);
-    return () => clearInterval(spawnTimer);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    const moveTimer = setInterval(() => {
-      setWords(prev => prev.map(w => ({ ...w, y: w.y - w.speed })).filter(w => w.y > -10));
-    }, 20);
-    return () => clearInterval(moveTimer);
-  }, [phase]);
-
-  const handleTap = (
-    id: number,
-    isGood: boolean,
-    x: number,
-    y: number
-  ) => {
-    if (isGood) setScore(s => s + 1);
-    else setScore(s => Math.max(0, s - 2));
-    setWords(prev => prev.filter(w => w.id !== id));
-    setFeedback({
-      id: Date.now(), x, y, good: isGood
-    });
-    setTimeout(() => setFeedback(null), 500);
-  };
-
-  if (phase === 'instruction') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 pointer-events-none text-center">
-        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
-          TAP THE GREEN WORDS 💚<br />
-          <span className="text-sm opacity-70">Avoid the red ones — every mistake costs you 2 points</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === 'countdown') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
-        <motion.div
-          key={phaseTimer}
-          initial={{ scale: 1.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="font-black text-blue-400"
-          style={{ fontSize: '120px', fontWeight: 900 }}
-        >
-          {Math.ceil(phaseTimer)}
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-blue-400/30 relative overflow-hidden">
-      <div className="absolute top-4 left-4 text-white font-mono font-black text-xl">{score} pts</div>
-      <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
-
-      {feedback && (
-        <motion.div
-          key={feedback.id}
-          initial={{ opacity: 1, y: 0 }}
-          animate={{ opacity: 0, y: -30 }}
-          transition={{ duration: 0.5 }}
-          className={`absolute font-black text-xl pointer-events-none z-20 ${feedback.good ? 'text-emerald-400' : 'text-red-400'}`}
-          style={{
-            left: `${feedback.x}%`,
-            top: `${feedback.y}%`,
-            transform: 'translateX(-50%)'
-          }}
-        >
-          {feedback.good ? '+1' : '-2'}
-        </motion.div>
-      )}
-
-      <AnimatePresence>
-        {words.map(w => (
-          <motion.button
-            key={w.id}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            onPointerDown={() => handleTap(w.id, w.isGood, w.x, w.y)}
-            className={`absolute px-5 py-3 min-w-[100px] min-h-[44px] rounded-xl text-lg font-black ${w.isGood ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}`}
-            style={{ left: `${w.x}%`, top: `${w.y}%`, transform: 'translateX(-50%)' }}
+        {/* PHASE: CHAPTER 1 RESULTS */}
+        {phase === 'ch1_results' && (
+          <motion.div
+            key="ch1_results"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
           >
-            {w.text}
-          </motion.button>
-        ))}
+            <div className="space-y-3">
+              <div className="text-4xl">💰</div>
+              <span className="text-[10px] text-emerald-400 tracking-[0.3em] font-black uppercase">
+                Success
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Haul Secured!</h2>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
+                The yard owner didn't catch you. You successfully sorted and sold the copper wire scrap pile.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
+                  Total Taps
+                </span>
+                <span className="text-white font-black text-2xl">{ch1Score}</span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+                <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
+                  First Cash Earned
+                </span>
+                <span className="text-emerald-400 font-black text-2xl">${prologueCash}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPh('ch2_choice')}
+              className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
+            >
+              Continue →
+            </button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 2 FIRST CHOICE */}
+        {phase === 'ch2_choice' && (
+          <motion.div
+            key="ch2_choice"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md text-left"
+          >
+            <div className="text-center space-y-2">
+              <span className="text-[10px] text-blue-400 tracking-[0.3em] font-black uppercase">
+                Chapter 2
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter text-center">First Choice</h2>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm leading-relaxed">
+                With a pocket full of fresh dollar bills, you walk down a dark avenue. A young local kid looks up at you with wide eyes.
+              </p>
+              <p className="text-slate-200 text-sm font-medium italic p-4 rounded-2xl bg-white/[0.02] border-l-4 border-blue-400">
+                "Yo, share a couple of bucks? I haven't eaten a single thing in two days..."
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Choice 1: Share food */}
+              <button
+                disabled={selectedChoiceId !== null}
+                onClick={() => handleCh2Choice('share')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all ${
+                  selectedChoiceId === 'share'
+                    ? 'bg-emerald-500/20 border-emerald-500 ring-2 ring-emerald-500'
+                    : selectedChoiceId !== null
+                    ? 'opacity-40 border-white/5 bg-transparent'
+                    : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-white text-sm">A. Buy them a hot meal</span>
+                  <span className="text-xs font-mono font-black text-red-400">-$50</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  Earn early respect and build your aura on the block. (+10 Clout, +10 Aura)
+                </div>
+              </button>
+
+              {/* Choice 2: Ignore */}
+              <button
+                disabled={selectedChoiceId !== null}
+                onClick={() => handleCh2Choice('ignore')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all ${
+                  selectedChoiceId === 'ignore'
+                    ? 'bg-blue-500/20 border-blue-500 ring-2 ring-blue-500'
+                    : selectedChoiceId !== null
+                    ? 'opacity-40 border-white/5 bg-transparent'
+                    : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-white text-sm">B. Ignore and walk past</span>
+                  <span className="text-xs font-mono font-black text-emerald-400">-$0</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  Keep every single dime. Survival takes absolute priority. (-5 Aura)
+                </div>
+              </button>
+
+              {/* Choice 3: Threaten */}
+              <button
+                disabled={selectedChoiceId !== null}
+                onClick={() => handleCh2Choice('threaten')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all ${
+                  selectedChoiceId === 'threaten'
+                    ? 'bg-orange-500/20 border-orange-500 ring-2 ring-orange-500'
+                    : selectedChoiceId !== null
+                    ? 'opacity-40 border-white/5 bg-transparent'
+                    : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-white text-sm">C. Threaten them to back off</span>
+                  <span className="text-xs font-mono font-black text-emerald-400">-$0</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  Project strength and dominance, but draw local heat. (+15 Clout, -10 Aura, +10 Heat)
+                </div>
+              </button>
+            </div>
+
+            {selectedChoiceId && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center font-bold text-xs text-blue-400 tracking-wider uppercase animate-pulse"
+              >
+                ✓ Decision recorded. Your choices shape your destiny.
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 3 UPGRADE */}
+        {phase === 'ch3_upgrade' && (
+          <motion.div
+            key="ch3_upgrade"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
+          >
+            <div className="space-y-2">
+              <span className="text-[10px] text-purple-400 tracking-[0.3em] font-black uppercase">
+                Chapter 3
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">The First Upgrade</h2>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
+                Raw hands and raw street experience. To scale, you must invest in yourself.
+              </p>
+              <p className="text-slate-400 text-xs italic">
+                Choose a professional tool. This is the key to unlocking massive multipliers on future payouts!
+              </p>
+            </div>
+
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex justify-between items-center font-mono">
+              <span className="text-xs uppercase text-slate-500 font-black">Your Current Funds</span>
+              <span className="text-emerald-400 text-2xl font-black">${prologueCash}</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {/* Option A: Heavy-Duty Gloves */}
+              <button
+                disabled={prologueCash < 100}
+                onClick={() => handleCh3Upgrade('gloves')}
+                className={`p-5 rounded-2xl border text-left flex justify-between items-center transition-all ${
+                  prologueCash < 100
+                    ? 'opacity-30 border-white/5 cursor-not-allowed bg-transparent'
+                    : 'bg-white/[0.02] border-white/5 hover:border-purple-500/40 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="font-black text-sm text-white">🧤 Heavy-Duty Work Gloves</div>
+                  <div className="text-xs text-slate-400">
+                    Provides grip and safety. Grants <span className="text-purple-400 font-bold">1.5x Yields</span> in Chapter 4.
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-black text-red-400 font-mono">-$100</div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Cost</div>
+                </div>
+              </button>
+
+              {/* Option B: Industrial Sweep Magnet */}
+              <button
+                disabled={prologueCash < 150}
+                onClick={() => handleCh3Upgrade('magnet')}
+                className={`p-5 rounded-2xl border text-left flex justify-between items-center transition-all ${
+                  prologueCash < 150
+                    ? 'opacity-30 border-white/5 cursor-not-allowed bg-transparent'
+                    : 'bg-white/[0.02] border-white/5 hover:border-purple-500/40 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="font-black text-sm text-white">🧲 Industrial Sweep Magnet</div>
+                  <div className="text-xs text-slate-400">
+                    Attracts high-value alloys. Grants <span className="text-purple-400 font-bold">2.0x Yields</span> in Chapter 4.
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-black text-red-400 font-mono">-$150</div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Cost</div>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 4 INTRO */}
+        {phase === 'ch4_intro' && (
+          <motion.div
+            key="ch4_intro"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
+          >
+            <div className="space-y-2">
+              <span className="text-[10px] text-amber-400 tracking-[0.3em] font-black uppercase">
+                Chapter 4
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Second Hustle: Precious Sorting</h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Skill and investments create massive wealth.
+              </p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                You've accessed a container of premium electrical scraps. High-value Gold and Rust Debris items will roll by.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 bg-white/[0.01] border border-white/5 rounded-2xl p-4 text-xs">
+              <div className="space-y-1">
+                <div className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Active Tool</div>
+                <div className="text-purple-400 font-black text-sm">
+                  {activeUpgrade === 'magnet' ? '🧲 SWEEP MAGNET' : '🧤 WORK GLOVES'}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Cash Multiplier</div>
+                <div className="text-emerald-400 font-black text-sm">
+                  {activeUpgrade === 'magnet' ? '2.0x Active' : '1.5x Active'}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-xs text-slate-400 space-y-1">
+              <div className="font-bold text-slate-200 text-center">How to play:</div>
+              <div>Items fly rapidly from left to right.</div>
+              <div>Tap **only** the Gold items <span className="text-yellow-400 font-bold">(🌟/💰)</span>.</div>
+              <div>Avoid tapping the rusty junk items.</div>
+            </div>
+
+            <button
+              onClick={() => setPh('ch4_game')}
+              className="w-full py-5 bg-amber-500 text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-amber-500/10"
+            >
+              Start Sorting →
+            </button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 4 GAMEPLAY */}
+        {phase === 'ch4_game' && (
+          <motion.div
+            key="ch4_game"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-sm flex flex-col items-center justify-center space-y-6 z-10"
+          >
+            <div className="w-full flex justify-between items-center px-2">
+              <div className="text-left">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  GOLD FOUND
+                </span>
+                <div className="text-3xl font-mono font-black text-yellow-400">
+                  {ch4Score} <span className="text-xs text-slate-500">Gold</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  TIME LEFT
+                </span>
+                <div className="text-3xl font-mono font-black text-white">{ch4TimeLeft.toFixed(1)}s</div>
+              </div>
+            </div>
+
+            <div className="w-full h-80 relative rounded-3xl border-2 border-dashed border-amber-500/20 bg-gradient-to-b from-slate-900/40 to-slate-950/80 overflow-hidden shadow-2xl">
+              {/* Conveyor Belt Guideline */}
+              <div className="absolute top-[50%] left-0 right-0 h-1 bg-slate-800 border-b border-dashed border-white/5 transform translate-y-[-50%]" />
+
+              <AnimatePresence>
+                {ch4Items.map(item => (
+                  <button
+                    key={item.id}
+                    onPointerDown={(e) => handleCh4TapItem(item.id, item.type, e)}
+                    className="absolute w-12 h-12 flex items-center justify-center text-3xl focus:outline-none select-none transition-transform active:scale-[0.8] pointer-events-auto"
+                    style={{
+                      left: `${item.x}%`,
+                      top: `${item.y}%`,
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 20,
+                    }}
+                  >
+                    {item.type === 'gold' ? (Math.random() > 0.5 ? '🌟' : '💰') : (Math.random() > 0.5 ? '🧱' : '🔩')}
+                  </button>
+                ))}
+              </AnimatePresence>
+
+              {/* Multiplier Badge */}
+              <div className="absolute bottom-4 left-4 bg-purple-500/10 border border-purple-500/30 px-3 py-1.5 rounded-full text-[10px] font-black text-purple-400 uppercase tracking-wider">
+                ⚡ Tool Yield: {activeUpgrade === 'magnet' ? '2.0x' : '1.5x'}
+              </div>
+
+              {/* Render local floating texts */}
+              {floatingTexts.map(f => (
+                <motion.div
+                  key={f.id}
+                  initial={{ opacity: 1, scale: 1, y: f.y }}
+                  animate={{ opacity: 0, scale: 1.4, y: f.y - 60 }}
+                  transition={{ duration: 0.6 }}
+                  className={`absolute font-mono font-black text-lg pointer-events-none select-none ${f.color || 'text-yellow-400'}`}
+                  style={{ left: f.x }}
+                >
+                  {f.text}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 4 RESULTS */}
+        {phase === 'ch4_results' && (
+          <motion.div
+            key="ch4_results"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
+          >
+            <div className="space-y-3">
+              <div className="text-4xl">🌟</div>
+              <span className="text-[10px] text-amber-400 tracking-[0.3em] font-black uppercase">
+                Hustle complete
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Sorting Complete!</h2>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
+                Skill meets technology. Your investment in professional gear generated high-purity yields!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+                <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
+                  Gold Harvested
+                </span>
+                <span className="text-white font-black text-2xl">{ch4Score}</span>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+                <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
+                  Cash Flow Earned
+                </span>
+                <span className="text-emerald-400 font-black text-2xl">
+                  ${Math.round(ch4Score * 40 * (activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0))}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
+                Prologue Wallet Balance
+              </span>
+              <span className="text-emerald-400 font-black text-3xl font-mono">${prologueCash}</span>
+            </div>
+
+            <button
+              onClick={() => setPh('ch5_future')}
+              className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
+            >
+              See the Future →
+            </button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHAPTER 5 FUTURE MONTAGE */}
+        {phase === 'ch5_future' && (
+          <motion.div
+            key="ch5_future"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-md space-y-8 z-10 flex flex-col items-center justify-center px-4"
+          >
+            <div className="text-center space-y-1.5">
+              <span className="text-[10px] text-pink-400 tracking-[0.3em] font-black uppercase">
+                Chapter 5
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">A Glimpse of the Future</h2>
+              <p className="text-slate-400 text-xs max-w-xs mx-auto">
+                Escape the mud. Build your legacy. Write your story.
+              </p>
+            </div>
+
+            <div className="relative w-full h-44 overflow-hidden rounded-3xl border border-white/5">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={futureIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  className={`absolute inset-0 bg-gradient-to-b p-6 flex flex-col justify-center space-y-2 text-left rounded-3xl border ${futureCards[futureIndex].color}`}
+                >
+                  <h3 className="text-lg font-black uppercase tracking-tight">
+                    {futureCards[futureIndex].title}
+                  </h3>
+                  <p className="text-slate-300 text-xs leading-relaxed">
+                    {futureCards[futureIndex].desc}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Stepper Dots */}
+            <div className="flex gap-2 justify-center">
+              {futureCards.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    idx === futureIndex ? 'bg-pink-400 w-6' : 'bg-slate-700'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="text-center pt-4 space-y-4">
+              <p className="text-xl md:text-2xl font-black italic tracking-wide text-white uppercase tracking-tighter animate-pulse">
+                "Every legend begins somewhere."
+              </p>
+              <p className="text-xs text-slate-500 uppercase tracking-[0.2em] font-bold">
+                How far will your life go?
+              </p>
+            </div>
+
+            <button
+              onClick={() => setPh('character_select')}
+              className="w-full py-5 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-pink-500/10"
+            >
+              Shape Your Identity →
+            </button>
+          </motion.div>
+        )}
+
+        {/* PHASE: CHARACTER SELECTION */}
+        {phase === 'character_select' && (
+          <motion.div
+            key="character_select"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-lg space-y-6 z-10 p-4 md:p-6 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md overflow-y-auto max-h-[90vh] custom-scrollbar animate-in"
+          >
+            <div className="text-center space-y-1">
+              <span className="text-[10px] text-emerald-400 tracking-[0.3em] font-black uppercase">
+                Final Step
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter animate-pulse">Shape Your Story</h2>
+              <p className="text-slate-400 text-xs">
+                Select your origin. This background defines your initial starting conditions.
+              </p>
+            </div>
+
+            {/* Origin Category Grid */}
+            <div className="grid grid-cols-3 gap-2 animate-in slide-in-from-bottom duration-300">
+              {filteredCategories.map(cat => {
+                let badgeColor = 'bg-slate-800 text-slate-400';
+                let diffLabel = 'Medium';
+                if (cat.id === 'street_kid') {
+                  badgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                  diffLabel = 'Hard';
+                } else if (cat.id === 'dropout') {
+                  badgeColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                  diffLabel = 'Medium';
+                } else if (cat.id === 'benefactor') {
+                  badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                  diffLabel = 'Easy';
+                }
+
+                const isSelected = selectedCatId === cat.id;
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleSelectCategory(cat.id)}
+                    className={`p-3 rounded-xl text-center border transition-all ${
+                      isSelected
+                        ? 'bg-white/10 border-white ring-2 ring-white/20'
+                        : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <div className="font-black text-xs text-white truncate uppercase mb-1">
+                      {cat.name}
+                    </div>
+                    <span className={`inline-block text-[8px] px-1.5 py-0.5 rounded border uppercase font-black ${badgeColor}`}>
+                      {diffLabel}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Expanded Category Description, Strengths, Weaknesses, Bonuses */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4 text-left">
+              <div className="space-y-1">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  Origin Context
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {activeCategory.description}
+                </p>
+              </div>
+
+              {/* Strengths & Weaknesses badges */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <span className="block text-[8px] uppercase tracking-widest text-emerald-500 font-black">
+                    Strengths
+                  </span>
+                  <div className="text-[10px] text-slate-200 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1.5 rounded-lg leading-relaxed">
+                    {selectedCatId === 'street_kid' && 'Sharp survival grit. +15% Cash from street level operations.'}
+                    {selectedCatId === 'dropout' && 'Highly adaptable and charismatic. +20% Clout across early tiers.'}
+                    {selectedCatId === 'benefactor' && 'Elite family headstart. +15% Aura at Corporate levels.'}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="block text-[8px] uppercase tracking-widest text-red-400 font-black">
+                    Weaknesses
+                  </span>
+                  <div className="text-[10px] text-slate-200 bg-red-500/5 border border-red-500/10 px-2.5 py-1.5 rounded-lg leading-relaxed">
+                    {selectedCatId === 'street_kid' && 'Extremely scarce starting capital. High grind index.'}
+                    {selectedCatId === 'dropout' && 'Under relentless scrutiny. Highly competitive landscape.'}
+                    {selectedCatId === 'benefactor' && 'Higher rent & overhead. Lacks street survival instincts.'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Variation selector within category */}
+              <div className="space-y-2">
+                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                  Select Specific Variation
+                </span>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {activeCategory.variations.map(v => (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVarId(v.id)}
+                      className={`p-3 rounded-xl border text-left flex justify-between items-center transition-all ${
+                        selectedVarId === v.id
+                          ? 'bg-white/5 border-white/20'
+                          : 'bg-transparent border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{v.icon}</span>
+                        <div className="space-y-0.5">
+                          <span className="block text-xs font-black text-white uppercase">{v.name}</span>
+                          <span className="block text-[10px] text-slate-400 line-clamp-1">{v.flavor}</span>
+                        </div>
+                      </div>
+                      <div className="text-right whitespace-nowrap font-mono text-emerald-400 text-xs font-bold">
+                        +${v.starterBag.toLocaleString()}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Choose Face Selector: Sleek layout with names beneath portraits removed */}
+            <div className="space-y-2 text-left">
+              <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                Select Your Face
+              </span>
+              <div className="grid grid-cols-4 gap-2">
+                {PLAYER_AVATARS.map(av => {
+                  const isSelected = selectedAvatarId === av.id;
+                  return (
+                    <button
+                      key={av.id}
+                      onClick={() => setSelectedAvatarId(av.id)}
+                      className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all active:scale-95 ${
+                        isSelected
+                          ? 'bg-emerald-500/20 ring-2 ring-emerald-500'
+                          : 'bg-slate-900/60 ring-1 ring-slate-700/50 hover:bg-slate-800/40'
+                      }`}
+                    >
+                      <Avatar avatarId={av.id} size={48} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* What they call you */}
+            <div className="space-y-2 text-left">
+              <label className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
+                Enter Your Alias
+              </label>
+              <input
+                type="text"
+                placeholder="What do they call you on the block?"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                maxLength={16}
+                className="w-full bg-white/[0.02] border border-white/10 rounded-2xl px-6 py-4 text-center text-white text-lg focus:outline-none focus:border-white/20 transition-all placeholder:text-slate-800 font-bold tracking-tight"
+              />
+            </div>
+
+            {/* PROLOGUE ACCUMULATED BONUSES PREVIEW */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-left space-y-2">
+              <span className="text-[8px] uppercase tracking-widest text-emerald-400 font-black">
+                ✓ Prologue Stats Secured
+              </span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-400">Total Prologue Cash Earned:</span>
+                <span className="font-mono font-black text-emerald-400">+${prologueCash}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-400">First Choice Decision logged:</span>
+                <span className="font-mono font-bold text-slate-300">Biography Saved</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-1">
+                This cash and biography history will carry directly into your real Month 1 game.
+              </div>
+            </div>
+
+            {/* FINAL ENTER WORLD ACTION */}
+            <div className="pt-2">
+              <button
+                disabled={playerName.trim().length < 2}
+                onClick={handleEnterWorld}
+                className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg transition-all ${
+                  playerName.trim().length >= 2
+                    ? 'bg-[#4ade80] text-black shadow-2xl shadow-[#4ade80]/20 hover:scale-[1.01]'
+                    : 'bg-white/5 text-slate-700 cursor-not-allowed'
+                }`}
+              >
+                Enter Month 1: Start Your Legacy
+              </button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
-};
-
-const BenefactorTrial: React.FC<{ onComplete: (score: number) => void }> = ({ onComplete }) => {
-  const [phase, setPhase] = useState<'instruction' | 'countdown' | 'playing'>('instruction');
-  const [phaseTimer, setPhaseTimer] = useState(2);
-  const [current, setCurrent] = useState(Math.floor(Math.random() * 13));
-  const [next, setNext] = useState(Math.floor(Math.random() * 13));
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [rounds, setRounds] = useState(0);
-  const finishedRef = useRef(false);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
-
-  const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-
-  useEffect(() => {
-    if (phase === 'instruction') {
-      const timer = setTimeout(() => {
-        setPhase('countdown');
-        setPhaseTimer(3);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-    if (phase === 'countdown') {
-      const timer = setInterval(() => {
-        setPhaseTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setPhase('playing');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [phase]);
-
-  const onCompleteRef = useRef(onComplete);
-  const scoreRef = useRef(score);
-  const roundsRef = useRef(rounds);
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-    scoreRef.current = score;
-    roundsRef.current = rounds;
-  }, [onComplete, score, rounds]);
-
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 0.1 || roundsRef.current >= 12) {
-          if (!finishedRef.current) {
-            finishedRef.current = true;
-            onCompleteRef.current(scoreRef.current);
-          }
-          return 0;
-        }
-        return prev - 0.1;
-      });
-    }, 100);
-    return () => clearInterval(timer);
-  }, [phase]);
-
-  const handleGuess = (higher: boolean) => {
-    const correct = (higher && next >= current) || (!higher && next <= current);
-
-    if (correct) {
-      setScore(s => s + 1);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      if (newStreak > bestStreak) setBestStreak(newStreak);
-    } else {
-      setStreak(0);
-    }
-
-    setLastCorrect(correct);
-    setTimeout(() => setLastCorrect(null), 400);
-
-    setCurrent(next);
-    setNext(Math.floor(Math.random() * 13));
-    setRounds(r => r + 1);
-  };
-
-  if (phase === 'instruction') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 p-8 text-center pointer-events-none">
-        <div className="text-white text-xl font-black uppercase tracking-widest leading-tight">
-          HIGHER or LOWER than the card?<br />
-          <span className="text-sm opacity-70">Hit 3 in a row for a streak 🔥<br />Score = total correct in 15 seconds</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === 'countdown') {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-slate-900 rounded-3xl border-8 border-slate-800 pointer-events-none">
-        <motion.div
-          key={phaseTimer}
-          initial={{ scale: 1.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="font-black text-amber-400"
-          style={{ fontSize: '120px', fontWeight: 900 }}
-        >
-          {Math.ceil(phaseTimer)}
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ touchAction: 'none' }} className="w-full h-96 bg-slate-900 rounded-3xl border-4 border-yellow-600 flex flex-col items-center justify-center p-6 space-y-8 relative">
-      <div className="absolute top-4 right-4 text-white font-mono font-black">{timeLeft.toFixed(1)}s</div>
-
-      <div className="flex justify-between w-full px-2 mb-3">
-        <div className="text-center">
-          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Correct</div>
-          <div className="text-2xl font-black text-white tabular-nums">{score}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Streak</div>
-          <div className={`text-2xl font-black tabular-nums transition-colors ${streak >= 3 ? 'text-amber-400' : 'text-white'}`}>
-            {streak >= 3 ? `${streak}🔥` : streak}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-[9px] text-slate-500 uppercase tracking-widest">Round</div>
-          <div className="text-2xl font-black text-slate-400 tabular-nums">
-            {rounds}/12
-          </div>
-        </div>
-      </div>
-
-      <div className="text-center">
-        <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">CURRENT DATA</div>
-        <div className="text-6xl font-black text-white bg-white/5 w-24 h-32 flex items-center justify-center rounded-2xl border-2 border-white/10">
-          {VALUES[current]}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4 w-full">
-        <button
-          onPointerDown={() => handleGuess(true)}
-          className={`py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px] transition-colors duration-200 ${lastCorrect === true ? 'bg-emerald-400' : lastCorrect === false ? 'bg-red-700' : 'bg-emerald-600'}`}
-        >
-          Higher
-        </button>
-        <button
-          onPointerDown={() => handleGuess(false)}
-          className={`py-6 rounded-xl font-black text-white uppercase tracking-widest text-xs min-h-[44px] transition-colors duration-200 ${lastCorrect === false ? 'bg-red-400' : 'bg-red-600'}`}
-        >
-          Lower
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// --- Main Component ---
-
-export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
-  const [screen, setScreen] = useState<number>(1);
-  const [name, setName] = useState('');
-  const [selectedAvatarId, setSelectedAvatarId] = useState('av_m1');
-  const [scores, setScores] = useState<{ street: number, dropout: number, benefactor: number }>({ street: 0, dropout: 0, benefactor: 0 });
-
-  const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
-  const [selectedVarId, setSelectedVarId] = useState<string | null>(null);
-
-  const [showCinematic, setShowCinematic] =
-    useState(false);
-  const startParamsRef = useRef<{
-    name: string;
-    backgroundId: string;
-    categoryId: string;
-    variationId: string;
-    avatarId: string;
-  } | null>(null);
-
-  const suggestedCategory = useMemo(() => {
-    const STREET_MAX = 12;
-    const DROPOUT_MAX = 20;
-    const BENEFACTOR_MAX = 12;
-
-    const s = scores.street / STREET_MAX;
-    const d = scores.dropout / DROPOUT_MAX;
-    const b = scores.benefactor / BENEFACTOR_MAX;
-
-    // Tiebreak: Street Kid -> Dropout -> Benefactor
-    if (s >= d && s >= b) return 'street_kid';
-    if (d >= b) return 'dropout';
-    return 'benefactor';
-  }, [scores]);
-
-  const { unlockedLegacyUpgradeIds } = useGameStore();
-
-  const filteredCategories = useMemo(() => {
-    return BACKGROUND_CATEGORIES.filter(cat => {
-      if (cat.id === 'legacy') {
-        return unlockedLegacyUpgradeIds.includes('unique_origin_chosen');
-      }
-      return true;
-    });
-  }, [unlockedLegacyUpgradeIds]);
-
-  const winningCategory = filteredCategories.find(c => c.id === (selectedCatId || suggestedCategory));
-  const suggestedVariation = winningCategory?.variations[0];
-  const activeVariation = winningCategory?.variations.find(v => v.id === selectedVarId) || suggestedVariation;
-
-  const handleMinigameComplete = (category: keyof typeof scores, score: number) => {
-    setScores(prev => ({ ...prev, [category]: score }));
-    setScreen(prev => prev + 1);
-  };
-
-  const handleFinalStart = () => {
-    const trimmedName = name.trim();
-    if (trimmedName.length >= 2 &&
-        activeVariation && winningCategory) {
-      startParamsRef.current = {
-        name: trimmedName.toUpperCase(),
-        backgroundId: activeVariation.id,
-        categoryId: winningCategory.id,
-        variationId: activeVariation.id,
-        avatarId: selectedAvatarId,
-      };
-      setShowCinematic(true);
-      setTimeout(() => {
-        const p = startParamsRef.current;
-        if (p) {
-          onStart(p.name, p.backgroundId,
-            p.categoryId, p.variationId,
-            p.avatarId);
-        }
-      }, 3200);
-    }
-  };
-
-  if (showCinematic) {
-    const catId = winningCategory?.id || 'street_kid';
-    const cinematic = ORIGIN_CINEMATICS[catId] ||
-      ORIGIN_CINEMATICS.street_kid;
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="fixed inset-0 z-50 flex
-          flex-col items-center justify-center"
-        style={{ background: cinematic.bg }}
-      >
-        <GrainOverlay />
-
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-8xl mb-8"
-        >
-          {cinematic.scene}
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="text-white/60 text-sm italic
-            text-center font-light tracking-wide
-            px-8"
-        >
-          {cinematic.line1}
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.5 }}
-          className="text-white font-black text-2xl
-            uppercase tracking-widest text-center
-            mt-3 px-8"
-        >
-          {cinematic.line2}
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.4, duration: 0.4 }}
-          className="mt-16 flex gap-1"
-        >
-          {[0,1,2].map(i => (
-            <motion.div
-              key={i}
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{
-                duration: 0.8,
-                repeat: Infinity,
-                delay: i * 0.2
-              }}
-              className="w-1.5 h-1.5 rounded-full
-                bg-white/40"
-            />
-          ))}
-        </motion.div>
-      </motion.div>
-    );
-  }
-
-  // Screen 1: TITLE
-  if (screen === 1) {
-    return (
-      <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center p-6 font-sans"
-        style={{ background: 'radial-gradient(ellipse at 50% 60%, #1a1a2e 0%, #0a0a0f 70%)' }}
-      >
-        <GrainOverlay />
-
-        {/* Background Blobs */}
-        <div className="absolute top-[-5%] left-[-10%] w-64 h-64 rounded-full bg-emerald-900/20 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-15%] w-80 h-80 rounded-full bg-purple-900/20 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 w-full max-w-lg flex flex-col items-center text-center space-y-12">
-          {(() => {
-            const entries = getHallOfFameEntries();
-            const biographies = entries.flatMap(e => e.biography || []);
-            if (biographies.length === 0) return null;
-            const randomBio = biographies[Math.floor(Math.random() * biographies.length)];
-            return (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-950/40 border border-white/5 backdrop-blur-sm p-4 rounded-2xl max-w-xs"
-              >
-                <div className="text-[8px] text-slate-500 font-black uppercase tracking-[0.3em] mb-2">Echoes of a Past Life</div>
-                <p className="text-[10px] text-slate-400 italic font-medium leading-relaxed uppercase tracking-tighter">
-                  "{randomBio}"
-                </p>
-              </motion.div>
-            );
-          })()}
-          <div className="space-y-4">
-            <motion.h1
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-6xl md:text-8xl font-black text-white tracking-tighter"
-              style={{ textShadow: '0 0 80px rgba(255,255,255,0.15)' }}
-            >
-              BAG CHASER
-            </motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-emerald-400 italic text-sm md:text-lg font-light tracking-widest uppercase">
-              Escape the mud. Build the empire. Don't lose your soul.
-            </motion.p>
-          </div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex flex-col items-center space-y-6">
-            <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em]">Three trials. One path. No do-overs.</p>
-            <button onClick={() => setScreen(2)} className="px-8 py-4 bg-[#4ade80] text-black font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-[#4ade80]/20 hover:scale-105 transition-transform">
-              Find out who you are →
-            </button>
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none z-[5] overflow-hidden">
-          {SILHOUETTES.map((s) => (
-            <motion.div key={s.id} initial={{ x: s.direction === 'ltr' ? '-20vw' : '120vw', opacity: 0 }} animate={{ x: s.direction === 'ltr' ? '120vw' : '-20vw', opacity: [0, 0.3, 0.3, 0] }} transition={{ duration: s.speed, repeat: Infinity, delay: s.delay, ease: "linear", times: [0, 0.1, 0.9, 1] }} className="absolute text-7xl md:text-9xl brightness-0 filter grayscale invert-[0.1]" style={{ bottom: s.bottom, color: '#1a1a1a', opacity: 0.1 }}>
-              {s.icon}
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Screens 2-4: TRIALS
-  if (screen >= 2 && screen <= 4) {
-    const trials = [
-      {
-        id: 'street',
-        name: 'THE STREET KID',
-        flavour: 'Survive on instinct. The city doesn\'t wait.',
-        component: StreetKidTrial,
-        bg: 'linear-gradient(135deg, #0a1a12 0%, #0a0a0f 100%)',
-        accent: 'text-emerald-400',
-        border: '1px solid rgba(16,185,129,0.3)',
-        shadow: '0 0 40px rgba(16,185,129,0.1)',
-        blob: 'bg-emerald-500/15'
-      },
-      {
-        id: 'dropout',
-        name: 'THE DROPOUT',
-        flavour: 'You\'ve always known the right thing to say.',
-        component: DropoutTrial,
-        bg: 'linear-gradient(135deg, #0a0f1a 0%, #0a0a0f 100%)',
-        accent: 'text-blue-400',
-        border: '1px solid rgba(59,130,246,0.3)',
-        shadow: '0 0 40px rgba(59,130,246,0.1)',
-        blob: 'bg-blue-500/15'
-      },
-      {
-        id: 'benefactor',
-        name: 'THE BENEFACTOR',
-        flavour: 'Every decision is a calculated risk.',
-        component: BenefactorTrial,
-        bg: 'linear-gradient(135deg, #1a140a 0%, #0a0a0f 100%)',
-        accent: 'text-amber-400',
-        border: '1px solid rgba(245,158,11,0.3)',
-        shadow: '0 0 40px rgba(245,158,11,0.1)',
-        blob: 'bg-amber-500/15'
-      },
-    ];
-    const t = trials[screen - 2];
-    return (
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 text-center"
-        style={{ background: t.bg }}
-      >
-        <GrainOverlay />
-        <div className="w-full max-w-sm space-y-8 relative z-10">
-          <div>
-            <div className={`text-[10px] font-black uppercase tracking-[0.4em] mb-2 opacity-60 ${t.accent}`}>
-              TRIAL {screen - 1} OF 3
-            </div>
-            <h2 className={`text-3xl font-black uppercase ${t.accent}`}>{t.name}</h2>
-            <p className="text-slate-400 text-sm mt-2 font-medium italic">"{t.flavour}"</p>
-          </div>
-
-          <div className="relative">
-            {/* Centered color blob behind the box */}
-            <div className={`absolute inset-0 m-auto w-48 h-48 rounded-full blur-3xl pointer-events-none ${t.blob}`} />
-
-            <div className="relative z-10 rounded-3xl overflow-hidden"
-              style={{ border: t.border, boxShadow: t.shadow }}
-            >
-              <t.component onComplete={(s) => handleMinigameComplete(t.id as any, s)} />
-            </div>
-          </div>
-
-          <div className="text-[10px] text-white/20 font-black uppercase tracking-widest">Score recorded silently</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Screen 5: REVEAL
-  if (screen === 5) {
-    const destinyLines: Record<string, string> = {
-      street_kid: "The streets built you. Own it.",
-      dropout: "The crowd already knows your name.",
-      benefactor: "The money always finds its way to you.",
-    };
-
-    const bonusLines: Record<string, string> = {
-      street_kid: "Your instincts earned you +15% cash on street hustles",
-      dropout: "Your charisma earns you +20% clout through corporate tier",
-      benefactor: "Your smarts earn you +15% aura at corporate and elite tiers",
-    };
-
-    const STREET_MAX = 12;
-    const DROPOUT_MAX = 20;
-    const BENEFACTOR_MAX = 12;
-
-    const stats = [
-      { label: "Street Instinct", score: scores.street, max: STREET_MAX, color: 'bg-emerald-500' },
-      { label: "Street Charisma", score: scores.dropout, max: DROPOUT_MAX, color: 'bg-blue-500' },
-      { label: "Street Smarts", score: scores.benefactor, max: BENEFACTOR_MAX, color: 'bg-amber-500' },
-    ];
-
-    const originStyles: Record<string, { bg: string, accent: string, button: string }> = {
-      street_kid: {
-        bg: 'linear-gradient(135deg, #0a1a12 0%, #0a0a0f 100%)',
-        accent: 'text-emerald-400',
-        button: 'bg-emerald-500 shadow-emerald-500/20'
-      },
-      dropout: {
-        bg: 'linear-gradient(135deg, #0a0f1a 0%, #0a0a0f 100%)',
-        accent: 'text-blue-400',
-        button: 'bg-blue-500 shadow-blue-500/20'
-      },
-      benefactor: {
-        bg: 'linear-gradient(135deg, #1a140a 0%, #0a0a0f 100%)',
-        accent: 'text-amber-400',
-        button: 'bg-amber-500 shadow-amber-500/20'
-      },
-    };
-
-    const style = originStyles[winningCategory?.id || 'street_kid'];
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 text-center"
-        style={{ background: style.bg }}
-      >
-        <GrainOverlay />
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-sm space-y-12 z-10">
-          <div className="space-y-4">
-            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest">YOUR DESTINY IS SEALED</div>
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.3 }} className="text-9xl mb-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-              {activeVariation?.icon}
-            </motion.div>
-            <motion.h2
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-5xl font-black text-white uppercase tracking-tighter"
-            >
-              {winningCategory?.name}
-            </motion.h2>
-            <p className={`${style.accent} italic font-medium`}>"{destinyLines[winningCategory?.id || 'street_kid']}"</p>
-            <div className="text-[10px] text-white/60 font-black uppercase tracking-widest mt-2 max-w-[200px] mx-auto leading-relaxed">
-              {bonusLines[winningCategory?.id || 'street_kid']}
-            </div>
-          </div>
-
-          {!selectedCatId ? (
-            <div className="space-y-4 py-4 border-y border-white/5">
-              {stats.map((s, idx) => (
-                <div key={s.label}>
-                  <div className="flex justify-between text-[8px] text-slate-500 font-black uppercase mb-1">
-                    <span>{s.label}</span>
-                    <span>{Math.round((s.score / s.max) * 100)}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, (s.score / s.max) * 100)}%` }}
-                      transition={{ duration: 0.8, delay: 0.4 + idx * 0.2, ease: "easeOut" }}
-                      className={`h-full ${s.color}`}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-             <div className="grid grid-cols-1 gap-2">
-                {winningCategory?.variations.map(v => (
-                   <button key={v.id} onClick={() => setSelectedVarId(v.id)} className={`p-4 rounded-xl border text-left transition-all ${selectedVarId === v.id ? 'bg-white/10 border-white/40' : 'bg-white/5 border-white/5'}`}>
-                      <div className="flex items-center gap-3">
-                         <span className="text-2xl">{v.icon}</span>
-                         <span className="text-xs font-black text-white uppercase">{v.name}</span>
-                      </div>
-                   </button>
-                ))}
-             </div>
-          )}
-
-          <div className="space-y-3">
-            <button onClick={() => setScreen(6)} className={`w-full py-6 text-black font-black uppercase tracking-widest rounded-2xl text-xl shadow-2xl ${style.button}`}>
-              This is me →
-            </button>
-            <button onClick={() => setSelectedCatId(selectedCatId ? null : suggestedCategory)} className="w-full py-4 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:text-white transition-colors">
-              {selectedCatId ? 'Back to suggested' : 'Override'}
-            </button>
-          </div>
-
-          {selectedCatId && (
-            <div className="flex justify-center gap-2">
-               {filteredCategories.map(c => (
-                  <button key={c.id} onClick={() => { setSelectedCatId(c.id); setSelectedVarId(c.variations[0].id); }} className={`px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${selectedCatId === c.id ? 'bg-white text-black border-white' : 'text-slate-500 border-white/10'}`}>
-                    {c.name}
-                  </button>
-               ))}
-            </div>
-          )}
-        </motion.div>
-      </motion.div>
-    );
-  }
-
-  // Screen 6: ALIAS + CONFIRM
-  if (screen === 6) {
-    const theme = THEMES[activeVariation?.backgroundStyle || 'gritty'];
-    return (
-      <div className={`relative min-h-screen w-full ${theme.bg} overflow-hidden flex flex-col items-center justify-center p-6 text-center`}>
-        <GrainOverlay />
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-12 z-10">
-          <div className="flex flex-col items-center gap-2">
-             <div className="text-4xl">{activeVariation?.icon}</div>
-             <div className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em]">{activeVariation?.name}</div>
-          </div>
-
-          <div className="mb-6">
-            <div className="text-[10px] text-slate-500 uppercase tracking-widest text-center mb-3">
-              CHOOSE YOUR FACE
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {PLAYER_AVATARS.map(av => (
-                <button
-                  key={av.id}
-                  onClick={() => setSelectedAvatarId(av.id)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all active:scale-95 ${
-                    selectedAvatarId === av.id
-                      ? 'bg-emerald-500/20 ring-2 ring-emerald-500'
-                      : 'bg-slate-900/60 ring-1 ring-slate-700/50'
-                  }`}
-                >
-                  <Avatar avatarId={av.id} size={52} />
-                  <span className="text-[9px] text-slate-400 font-bold">
-                    {av.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-             <label className="text-[10px] text-slate-500 font-black uppercase tracking-widest">What do they call you?</label>
-             <input
-              type="text"
-              placeholder="Enter your alias"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/10 rounded-2xl px-6 py-5 text-center text-white text-xl focus:outline-none focus:border-white/20 transition-all placeholder:text-slate-800 font-bold tracking-tight"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-3">
-              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Bag</span>
-              <span className="text-emerald-400 font-black text-sm">${activeVariation?.starterBag.toLocaleString()}</span>
-            </div>
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-3">
-              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Clout</span>
-              <span className="text-blue-400 font-black text-sm">{activeVariation?.starterClout}</span>
-            </div>
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-3">
-              <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">Aura</span>
-              <span className="text-purple-400 font-black text-sm">{activeVariation?.starterAura}</span>
-            </div>
-          </div>
-
-          <div className="pt-8">
-             <button
-                disabled={name.trim().length < 2}
-                onClick={handleFinalStart}
-                className={`w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xl transition-all ${name.trim().length >= 2 ? 'bg-[#4ade80] text-black shadow-2xl shadow-[#4ade80]/20' : 'bg-white/5 text-slate-800 cursor-not-allowed'}`}
-             >
-                Enter the World
-             </button>
-             {activeVariation?.originBonus && (
-                <p className="mt-4 text-[10px] text-[#4ade80] font-black italic tracking-widest">
-                  {activeVariation.originBonus.description}
-                </p>
-             )}
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return null;
 };

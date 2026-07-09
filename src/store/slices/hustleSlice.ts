@@ -42,13 +42,29 @@ export interface HustleSlice {
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
   checkMilestones: () => void;
-  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string, avatarId?: string) => void;
+  resetGame: (
+    backgroundId?: string,
+    difficulty?: 1 | 2 | 3,
+    categoryId?: string,
+    variationId?: string,
+    avatarId?: string,
+    prologueStats?: {
+      bag: number;
+      clout: number;
+      aura: number;
+      biography: string[];
+      recordedBioKeys: string[];
+      hustlePlays: Record<string, number>;
+      totalHustlesCompleted: number;
+      actionLog: any[];
+    }
+  ) => void;
 }
 
 export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (set, get) => ({
   unlockedHustles: getUnlockedHustles(3, []),
 
-  resetGame: (backgroundId, difficulty = 3, categoryId, variationId, avatarId) => {
+  resetGame: (backgroundId, difficulty = 3, categoryId, variationId, avatarId, prologueStats) => {
     const currentState = get();
     const persistentStats = {
       totalChallengesCompleted: currentState.pl.totalChallengesCompleted || 0,
@@ -78,6 +94,19 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         newPl.recordedBioKeys = [bioUpdate.key!];
       }
     }
+
+    if (prologueStats) {
+      newPl.bag += prologueStats.bag;
+      newPl.clout += prologueStats.clout;
+      newPl.aura += prologueStats.aura;
+      newPl.biography = [...(newPl.biography || []), ...prologueStats.biography];
+      newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), ...prologueStats.recordedBioKeys];
+      newPl.hustlePlays = { ...newPl.hustlePlays, ...prologueStats.hustlePlays };
+      newPl.totalHustlesCompleted += prologueStats.totalHustlesCompleted;
+      newPl.actionLog = [...prologueStats.actionLog, ...(newPl.actionLog || [])];
+      newPl.month = 1;
+    }
+
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
     newPl.collectedDeathBadges = persistentStats.collectedDeathBadges;
     newPl.deathCount = persistentStats.deathCount;
@@ -87,9 +116,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     set({
       pl: newPl,
-      ph: 'PROLOGUE',
+      ph: prologueStats ? 'PLAYING' : 'PROLOGUE',
       currentMarket: 'NORMAL',
-      news: ['Game reset. Welcome back.'],
+      news: [prologueStats ? 'Prologue completed! Month 1 has begun.' : 'Game reset. Welcome back.'],
       unlockedHustles: getUnlockedHustles(difficulty, currentState.unlockedLegacyUpgradeIds),
       activeTab: difficulty === 1 ? 'STREET' : 'MUD',
       activeHustleView: null,

@@ -803,7 +803,23 @@ export interface GameState {
   chosenBackgroundVariation?: string;
 
   // Actions
-  resetGame: (backgroundId?: string, difficulty?: 1 | 2 | 3, categoryId?: string, variationId?: string, avatarId?: string) => void;
+  resetGame: (
+    backgroundId?: string,
+    difficulty?: 1 | 2 | 3,
+    categoryId?: string,
+    variationId?: string,
+    avatarId?: string,
+    prologueStats?: {
+      bag: number;
+      clout: number;
+      aura: number;
+      biography: string[];
+      recordedBioKeys: string[];
+      hustlePlays: Record<string, number>;
+      totalHustlesCompleted: number;
+      actionLog: any[];
+    }
+  ) => void;
   setPlayerName: (name: string) => void;
   setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
