@@ -15,12 +15,18 @@ interface TrafficDodgeProps {
   onComplete: (multiplier: number) => void;
   level?: number;
   tier?: Tier;
+  title?: string;
 }
 
 const VEHICLES = ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'];
 const LANES = ['25%', '50%', '75%'];
 
-export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
+export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
+  onComplete,
+  level = 1,
+  tier = 'MUD',
+  title = "DELIVERY GIGS"
+}) => {
   const [lane, setLane] = useState(1); // 0, 1, 2
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [gameActive, setGameActive] = useState(true);
@@ -57,7 +63,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
         const next = prev + Math.floor(gameSpeed);
         if (next >= targetDistance) {
             setGameActive(false);
-            const multiplier = 1.0 + (scaling * 2.0);
+            const multiplier = 4.0 * (0.8 + scaling * 0.2); // Modern reward scaling
             if (navigator.vibrate) navigator.vibrate(100);
             setTimeout(() => onComplete(multiplier), 1000);
             return targetDistance;
@@ -73,11 +79,13 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
         if (collision) {
           setGameActive(false);
           if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          // multiplier based on how far they got
-          // using a functional state update here is okay for local distance,
-          // but we can just use the prev distance + gameSpeed for the multiplier calc
           setDistance(d => {
-              const multiplier = Math.max(0.5, (d / targetDistance) * 1.5);
+              // Penalty based on how far they got, modern scaling
+              const progress = d / targetDistance;
+              let multiplier = 0.5;
+              if (progress >= 0.75) multiplier = 2.5;
+              else if (progress >= 0.4) multiplier = 1.2;
+
               setTimeout(() => onComplete(multiplier), 1000);
               return d;
           });
@@ -109,7 +117,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <PerfectFlow isActive={gameActive && distance > targetDistance * 0.5} intensity={Math.min(5, Math.floor(distance / (targetDistance * 0.2)))} />
       <div className="absolute top-12 text-center w-full z-20">
-        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">TRAFFIC DODGE <span className="text-emerald-500">L{level}</span></h2>
+        <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{title} <span className="text-emerald-500">L{level}</span></h2>
         <div className="mt-2 flex justify-center gap-10">
             <div className="text-center">
                 <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">DISTANCE</div>
@@ -134,7 +142,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({ onComplete, level = 
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           style={{ position: 'absolute', bottom: '8px', transform: 'translateX(-50%)' }}
         >
-          🚲
+          🛵
         </motion.div>
 
         {/* Obstacles */}

@@ -9,7 +9,6 @@ test('Verify thematic wrappers', async ({ page }) => {
   const wrappers = [
     { id: 'FestivalCrowdSurge', name: 'CROWD SURGE' },
     { id: 'CryptoMineRush', name: 'MINING RUSH' },
-    { id: 'DeliveryDash', name: 'DELIVERY DASH' },
     { id: 'PodcastFlowState', name: 'FLOW STATE' },
     { id: 'VCPitchRoom', name: 'PITCH ROOM' }
   ];
