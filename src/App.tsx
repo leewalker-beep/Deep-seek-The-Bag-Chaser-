@@ -68,7 +68,6 @@ const SimpleFallback = lazy(() => import('./components/minigames/SimpleFallback'
 // Thematic Wrappers
 const FestivalCrowdSurge = lazy(() => import('./components/hustles/panels/FestivalCrowdSurge').then(m => ({ default: m.FestivalCrowdSurge })));
 const CryptoMineRush = lazy(() => import('./components/hustles/panels/CryptoMineRush').then(m => ({ default: m.CryptoMineRush })));
-const DeliveryDash = lazy(() => import('./components/hustles/panels/DeliveryDash').then(m => ({ default: m.DeliveryDash })));
 const PodcastFlowState = lazy(() => import('./components/hustles/panels/PodcastFlowState').then(m => ({ default: m.PodcastFlowState })));
 const VCPitchRoom = lazy(() => import('./components/hustles/panels/VCPitchRoom').then(m => ({ default: m.VCPitchRoom })));
 
@@ -673,7 +672,6 @@ function App() {
                 if (activeMiniGame === 'SwipeOrder') return <SwipeOrder onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'FestivalCrowdSurge') return <FestivalCrowdSurge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'CryptoMineRush') return <CryptoMineRush onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
-                if (activeMiniGame === 'DeliveryDash') return <DeliveryDash onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'PodcastFlowState') return <PodcastFlowState onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeUpViral' || activeMiniGame === 'ContentCreation') return <ContentCreation onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SwipeAuthentic') return <SwipeAuthentic onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;

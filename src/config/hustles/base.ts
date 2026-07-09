@@ -61,12 +61,12 @@ HUSTLES.r_delivery = {
   tier: 'MUD',
   icon: '🛵',
   description: 'Fast cash, faster roads',
-  miniGame: 'DeliveryDash',
+  miniGame: 'TrafficDodge',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 1800, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'DeliveryDash' },
-    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 2000, yieldCash: 4500, yieldClout: 4, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'DeliveryDash' },
-    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 10000, yieldCash: 18000, yieldClout: 12, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'DeliveryDash' },
+    l1: { level: 1, id: 'l1', name: 'Bike Delivery', cost: 0, yieldCash: 1800, yieldClout: 2, yieldAura: 0, mentalHit: -5, cloutReq: 0, auraReq: 0, nextBranches: ['l2'], miniGame: 'TrafficDodge' },
+    l2: { level: 2, id: 'l2', name: 'Car Delivery', cost: 2000, yieldCash: 4500, yieldClout: 4, yieldAura: 0, mentalHit: -10, cloutReq: 40, auraReq: 0, nextBranches: ['l3'], miniGame: 'TrafficDodge' },
+    l3: { level: 3, id: 'l3', name: 'Fleet Owner', cost: 10000, yieldCash: 18000, yieldClout: 12, yieldAura: 0, mentalHit: -15, cloutReq: 100, auraReq: 0, miniGame: 'TrafficDodge' },
   }
 };
 
