@@ -370,6 +370,7 @@ export function advanceMonth(
   }
 
   newPl.month += 1;
+  newPl.monthsSinceLastEvent = (newPl.monthsSinceLastEvent || 0) + 1;
 
   // Narrative Cooldown decrement
   if (newPl.narrativeCooldown > 0) {
@@ -715,6 +716,13 @@ export function advanceMonth(
       // MAJOR events are gated by narrativeCooldown
       if (inferredCategory === 'MAJOR' && newPl.narrativeCooldown > 0) return false;
 
+      // New Cooldown Rules:
+      // 1. Same character cannot immediately reappear
+      if (event.characterId && event.characterId === newPl.lastCharacterId) return false;
+      // 2. Same story arc cannot repeat too quickly (12-month cooldown)
+      const lastFired = newPl.arcLastFired?.[event.arcId || ''];
+      if (event.arcId && lastFired !== undefined && (newPl.month - lastFired) < 12) return false;
+
       // 2. Remaining Filters
       if (event.trigger.background && !event.trigger.background.includes(newPl.chosenBackground!)) return false;
       if (event.trigger.category && !event.trigger.category.includes(newPl.chosenBackgroundCategory!)) return false;
@@ -739,10 +747,21 @@ export function advanceMonth(
       return true;
     });
 
-    // Pick one event based on probability
+    // Pick one event based on probability + Pacing
+    // Target: ~1 event per 4 months.
+    const pacingMult = Math.min(2.0, (newPl.monthsSinceLastEvent || 0) / 10);
+
     for (const event of validEvents) {
-      if (Math.random() < event.trigger.probability) {
+      const finalProb = event.trigger.probability * pacingMult;
+
+      if (Math.random() < finalProb) {
         newPl.activeNarrative = event.id;
+        newPl.monthsSinceLastEvent = 0;
+        if (event.characterId) newPl.lastCharacterId = event.characterId;
+        if (event.arcId) {
+            newPl.lastArcId = event.arcId;
+            newPl.arcLastFired = { ...newPl.arcLastFired, [event.arcId]: newPl.month };
+        }
 
         // Set cooldown for MAJOR events
         const explicitCategory = event.pacingCategory;

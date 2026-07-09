@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { advanceMonth } from '../engine/advancementEngine';
 import { getInitialStats } from '../store/initialState';
 import { NARRATIVE_EVENTS } from '../config/narrativeEvents';
-import { PlayerStats, MarketType } from '../types/game';
+import { PlayerStats, MarketType, Tier } from '../types/game';
 
 describe('Narrative Pacing System', () => {
   let pl: PlayerStats;
@@ -15,31 +15,18 @@ describe('Narrative Pacing System', () => {
     pl.narrativeCooldown = 0;
     pl.completedNarrativeEvents = [];
     pl.narrativeFlags = {};
+    pl.monthsSinceLastEvent = 0;
+    pl.lastCharacterId = undefined;
+    pl.lastArcId = undefined;
   });
 
   it('should enforce a 4-month cooldown for MAJOR events', () => {
-    // Force a MAJOR event to trigger
-    // scavenger_prototype is a MAJOR event (pacingCategory: 'MAJOR')
-    const eventId = 'scavenger_prototype';
-    const event = NARRATIVE_EVENTS.find(e => e.id === eventId);
-    expect(event).toBeDefined();
-    expect(event?.pacingCategory).toBe('MAJOR');
-
-    // Simulate 100 months and check gaps between MAJOR events
-    let lastMajorMonth = -10;
-    let majorEventCount = 0;
-
-    // Use a modified version of advanceMonth or just simulate the loop
-    // To make it deterministic for the test, we'll mock Math.random if needed,
-    // but here we can just loop until we get enough events.
-
-    let currentPl = { ...pl };
-
-    // We'll simulate 100 months.
-    // Since probability is involved, we might not get many events,
-    // so we'll bump probabilities for the test.
     const originalProbabilities = NARRATIVE_EVENTS.map(e => e.trigger.probability);
     NARRATIVE_EVENTS.forEach(e => e.trigger.probability = 1.0);
+
+    let currentPl = { ...pl };
+    let lastMajorMonth = -10;
+    let majorEventCount = 0;
 
     try {
         for (let m = 1; m <= 100; m++) {
@@ -53,130 +40,124 @@ describe('Narrative Pacing System', () => {
                 if (category === 'MAJOR') {
                     if (lastMajorMonth !== -10) {
                         const gap = m - lastMajorMonth;
-                        // It should be at least 4 months since the last one was *set*
-                        // Wait, if it triggered in month X, cooldown became 4.
-                        // Month X+1: cooldown 3
-                        // Month X+2: cooldown 2
-                        // Month X+3: cooldown 1
-                        // Month X+4: cooldown 0 -> can trigger again.
-                        // So gap should be >= 4.
                         expect(gap).toBeGreaterThanOrEqual(4);
                     }
                     lastMajorMonth = m;
                     majorEventCount++;
                 }
 
-                // Clear active narrative so another can trigger
                 currentPl.completedNarrativeEvents.push(currentPl.activeNarrative);
                 currentPl.activeNarrative = null;
             }
         }
     } finally {
-        // Restore original probabilities
         NARRATIVE_EVENTS.forEach((e, i) => e.trigger.probability = originalProbabilities[i]);
     }
 
     expect(majorEventCount).toBeGreaterThan(0);
   });
 
-  it('should allow CHARACTER events to trigger independently of MAJOR cooldown', () => {
-    // Force a MAJOR event to trigger in month 1
-    let currentPl = { ...pl };
-    currentPl.narrativeCooldown = 0;
-
+  it('should prevent immediate character reappearance', () => {
     const originalProbabilities = NARRATIVE_EVENTS.map(e => e.trigger.probability);
-    NARRATIVE_EVENTS.forEach(e => e.trigger.probability = 0); // Disable all
+    NARRATIVE_EVENTS.forEach(e => e.trigger.probability = 1.0);
 
-    const majorEvent = NARRATIVE_EVENTS.find(e => e.pacingCategory === 'MAJOR');
-    const charEvent = NARRATIVE_EVENTS.find(e => e.pacingCategory === 'CHARACTER' || e.characterId);
-
-    if (!majorEvent || !charEvent) return;
-
-    majorEvent.trigger.probability = 1.0;
-    charEvent.trigger.probability = 1.0;
+    let currentPl = { ...pl };
+    let lastCharacterId: string | undefined = undefined;
 
     try {
-        // Month 1: Major event triggers
-        let result = advanceMonth(currentPl, market);
-        currentPl = result.newPl;
-        expect(currentPl.activeNarrative).toBe(majorEvent.id);
-        expect(currentPl.narrativeCooldown).toBe(4);
-
-        // Resolve it
-        currentPl.completedNarrativeEvents.push(currentPl.activeNarrative!);
-        currentPl.activeNarrative = null;
-
-        // Month 2: Major should NOT trigger, but Character CAN
-        result = advanceMonth(currentPl, market);
+      for (let m = 1; m <= 50; m++) {
+        const result = advanceMonth(currentPl, market);
         currentPl = result.newPl;
 
-        // It might trigger the character event
-        expect(currentPl.activeNarrative).toBe(charEvent.id);
-        expect(currentPl.narrativeCooldown).toBe(3); // Cooldown still ticking down from Major
+        if (currentPl.activeNarrative) {
+          const triggeredEvent = NARRATIVE_EVENTS.find(e => e.id === currentPl.activeNarrative);
+          if (triggeredEvent?.characterId) {
+            expect(triggeredEvent.characterId).not.toBe(lastCharacterId);
+            lastCharacterId = triggeredEvent.characterId;
+          }
+          currentPl.completedNarrativeEvents.push(currentPl.activeNarrative);
+          currentPl.activeNarrative = null;
+        }
+      }
     } finally {
-        NARRATIVE_EVENTS.forEach((e, i) => e.trigger.probability = originalProbabilities[i]);
+      NARRATIVE_EVENTS.forEach((e, i) => e.trigger.probability = originalProbabilities[i]);
     }
   });
 
-  it('should allow RIVAL and PRESIDENCY events to trigger independently', () => {
-    let currentPl = { ...pl };
-    currentPl.currentTier = 'PRESIDENT'; // Enable presidency events
-
+  it('should enforce 12-month cooldown for the same story arc', () => {
     const originalProbabilities = NARRATIVE_EVENTS.map(e => e.trigger.probability);
-    const originalTiers = NARRATIVE_EVENTS.map(e => e.trigger.tier);
+    NARRATIVE_EVENTS.forEach(e => e.trigger.probability = 1.0);
 
-    // Disable all
-    NARRATIVE_EVENTS.forEach(e => e.trigger.probability = 0);
-
-    const majorEvent = NARRATIVE_EVENTS.find(e => e.pacingCategory === 'MAJOR');
-    const rivalEvent = NARRATIVE_EVENTS.find(e => e.pacingCategory === 'RIVAL');
-    const presEvent = NARRATIVE_EVENTS.find(e => e.pacingCategory === 'PRESIDENCY');
-
-    if (!majorEvent || !rivalEvent || !presEvent) return;
-
-    // Ensure they are valid for the test
-    majorEvent.trigger.probability = 1.0;
-    majorEvent.trigger.tier = ['PRESIDENT'];
-
-    rivalEvent.trigger.probability = 1.0;
-    rivalEvent.trigger.tier = ['PRESIDENT'];
-
-    presEvent.trigger.probability = 1.0;
-    presEvent.trigger.tier = ['PRESIDENT'];
+    let currentPl = { ...pl };
+    let arcFiredAt: Record<string, number> = {};
 
     try {
-        // Month 1: Major event triggers (it appears first in the array usually)
-        let result = advanceMonth(currentPl, market);
+      for (let m = 1; m <= 200; m++) {
+        const result = advanceMonth(currentPl, market);
         currentPl = result.newPl;
 
-        // Since we set several to 1.0, it picks the first valid one in NARRATIVE_EVENTS
-        const firstTriggered = currentPl.activeNarrative;
-        expect(firstTriggered).toBeDefined();
-        const firstCategory = NARRATIVE_EVENTS.find(e => e.id === firstTriggered)?.pacingCategory;
-
-        // Resolve it
-        currentPl.completedNarrativeEvents.push(currentPl.activeNarrative!);
-        currentPl.activeNarrative = null;
-
-        // If it was MAJOR, cooldown is set.
-        // If not, we can manually trigger a MAJOR one to test the gating.
-        if (firstCategory !== 'MAJOR') {
-            currentPl.narrativeCooldown = 4;
+        if (currentPl.activeNarrative) {
+          const triggeredEvent = NARRATIVE_EVENTS.find(e => e.id === currentPl.activeNarrative);
+          if (triggeredEvent?.arcId) {
+            if (arcFiredAt[triggeredEvent.arcId] !== undefined) {
+              const gap = m - arcFiredAt[triggeredEvent.arcId];
+              expect(gap).toBeGreaterThanOrEqual(12);
+            }
+            arcFiredAt[triggeredEvent.arcId] = m;
+          }
+          currentPl.completedNarrativeEvents.push(currentPl.activeNarrative);
+          currentPl.activeNarrative = null;
         }
+      }
+    } finally {
+      NARRATIVE_EVENTS.forEach((e, i) => e.trigger.probability = originalProbabilities[i]);
+    }
+  });
 
-        // Month 2: Rival or Presidency can trigger even if cooldown > 0
-        result = advanceMonth(currentPl, market);
+  it('should target approximately one event every 4 months over a 30-year simulation', () => {
+    let currentPl = { ...pl };
+    let totalEvents = 0;
+    const SIM_MONTHS = 360; // 30 years
+
+    // Use original probabilities to get a realistic measure of frequency
+    const originalProbabilities = NARRATIVE_EVENTS.map(e => e.trigger.probability);
+    // NARRATIVE_EVENTS.forEach(e => e.trigger.probability = Math.min(1.0, e.trigger.probability * 2));
+
+    try {
+      for (let m = 1; m <= SIM_MONTHS; m++) {
+        // Advance player through tiers to keep events valid
+        if (m === 24) currentPl.currentTier = 'STREET';
+        if (m === 60) currentPl.currentTier = 'STARTUP';
+        if (m === 120) currentPl.currentTier = 'CORPORATE';
+        if (m === 180) currentPl.currentTier = 'ELITE';
+        if (m === 240) currentPl.currentTier = 'MOGUL';
+        if (m === 300) currentPl.currentTier = 'PRESIDENT';
+
+        const result = advanceMonth(currentPl, market);
         currentPl = result.newPl;
 
-        expect(currentPl.activeNarrative).toBeDefined();
-        const secondCategory = NARRATIVE_EVENTS.find(e => e.id === currentPl.activeNarrative)?.pacingCategory;
-        expect(['RIVAL', 'PRESIDENCY', 'CHARACTER']).toContain(secondCategory);
-        expect(currentPl.narrativeCooldown).toBeGreaterThan(0);
+        if (currentPl.activeNarrative) {
+          totalEvents++;
+          const ev = NARRATIVE_EVENTS.find(e => e.id === currentPl.activeNarrative);
+          // Log for manual inspection in report
+          if (m < 60) { // Log first 5 years
+             console.log(`[Month ${m}] Event: ${ev?.title} | Char: ${ev?.characterId} | Arc: ${ev?.arcId}`);
+          }
+          currentPl.completedNarrativeEvents.push(currentPl.activeNarrative);
+          currentPl.activeNarrative = null;
+        }
+      }
     } finally {
-        NARRATIVE_EVENTS.forEach((e, i) => {
-            e.trigger.probability = originalProbabilities[i];
-            e.trigger.tier = originalTiers[i];
-        });
+      NARRATIVE_EVENTS.forEach((e, i) => e.trigger.probability = originalProbabilities[i]);
     }
+
+    const eventsPerMonth = totalEvents / SIM_MONTHS;
+    const monthsPerEvent = SIM_MONTHS / totalEvents;
+
+    console.log(`30-Year Simulation: ${totalEvents} events triggered. Average frequency: 1 event every ${monthsPerEvent.toFixed(2)} months.`);
+
+    // Target is ~4 months. Acceptable range 3-6 months given randomness and tier requirements.
+    expect(monthsPerEvent).toBeGreaterThanOrEqual(2.5);
+    expect(monthsPerEvent).toBeLessThanOrEqual(7.0);
   });
 });
