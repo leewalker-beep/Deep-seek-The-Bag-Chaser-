@@ -339,8 +339,14 @@ export const PresidentDashboard: React.FC = () => {
                     {appointee ? (
                       <div>
                         <div className="text-sm font-bold text-white mb-1">{appointee.name}</div>
-                        <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">+{appointee.bonus.value}% {appointee.bonus.type}</div>
-                        <div className="text-[7px] text-slate-500 uppercase font-black mb-2">{appointee.previousCareer}</div>
+                        <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">
+                          +{appointee.isTrustedAlly ? appointee.bonus.value * 2 : appointee.bonus.value}% {appointee.bonus.type}
+                          {appointee.isTrustedAlly && ' 🤝'}
+                        </div>
+                        <div className="text-[7px] text-slate-500 uppercase font-black mb-2">
+                          {appointee.previousCareer}
+                          {appointee.politicalAlignment && ` • ${appointee.politicalAlignment}`}
+                        </div>
 
                         <div className="space-y-1">
                           <div className="flex justify-between text-[7px] font-black uppercase">

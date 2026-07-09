@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { generateCandidatePool } from '../engine/presidentEngine';
 import { CABINET_CANDIDATES } from '../config/cabinetCandidates';
+import { useGameStore } from '../store/gameStore';
 import type { PlayerStats } from '../types/game';
 
 describe('Cabinet Expansion - Engine Logic', () => {
@@ -104,9 +105,9 @@ describe('Cabinet Expansion - Engine Logic', () => {
   });
 
   describe('generateCandidatePool', () => {
-    it('should return 3 candidates for a valid role', () => {
+    it('should return 5 candidates for a valid role', () => {
       const candidates = generateCandidatePool('treasury', mockPlayer);
-      expect(candidates).toHaveLength(3);
+      expect(candidates).toHaveLength(5);
       candidates.forEach(c => {
         expect(c.role).toBe('Secretary of Treasury');
       });
@@ -132,6 +133,133 @@ describe('Cabinet Expansion - Engine Logic', () => {
         // Ashley: 95 -> 70 - (95-50)/5 = 70 - 9 = 61
         expect(chen.loyalty).toBeGreaterThan(ashley.loyalty);
       }
+    });
+  });
+
+  describe('Relationship Evolution and Impacts', () => {
+    it('should apply monthly impacts from cabinet members', () => {
+      const store = useGameStore;
+      const candidate = CABINET_CANDIDATES.find(c => c.id === 'cand_lawrence_chen')!;
+      const member = {
+        ...candidate,
+        id: 'treasury',
+        role: 'Secretary of Treasury',
+        loyalty: 100,
+        bonus: { type: 'cash' as const, value: 10 },
+        impacts: {
+          gdp: 2,
+          inflation: -1,
+          approval: 1
+        }
+      };
+
+      store.setState({
+        pl: {
+          ...mockPlayer,
+          currentTier: 'PRESIDENT',
+          presidentMonth: 1,
+          cabinet: { treasury: member },
+          gdp: 100,
+          inflation: 5,
+          approvalRating: 50,
+          federalBudget: 100000000,
+          activeCrises: [],
+          presidentialDiary: [],
+          pendingPresidentialImpacts: [],
+        }
+      });
+
+      store.getState().advancePresidentialMonth();
+
+      const updatedPl = store.getState().pl;
+      expect(updatedPl.gdp).toBe(102);
+      expect(updatedPl.inflation).toBe(4);
+      expect(updatedPl.approvalRating).toBeGreaterThanOrEqual(51);
+    });
+
+    it('should evolve a relationship to Trusted Ally after 6 months of high loyalty', () => {
+      const store = useGameStore;
+      const candidate = CABINET_CANDIDATES.find(c => c.id === 'cand_lawrence_chen')!;
+      const member = {
+        ...candidate,
+        id: 'treasury',
+        role: 'Secretary of Treasury',
+        loyalty: 95,
+        monthsAtHighLoyalty: 5,
+        isTrustedAlly: false,
+        bonus: { type: 'cash' as const, value: 10 },
+        impacts: {}
+      };
+
+      store.setState({
+        pl: {
+          ...mockPlayer,
+          currentTier: 'PRESIDENT',
+          presidentMonth: 10,
+          cabinet: { treasury: member },
+          federalBudget: 100000000,
+          activeCrises: [],
+          presidentialDiary: [],
+        }
+      });
+
+      store.getState().advancePresidentialMonth();
+
+      expect(store.getState().pl.cabinet.treasury.isTrustedAlly).toBe(true);
+    });
+
+    it('should trigger a betrayal leak when loyalty is very low', () => {
+      // Advance month uses Date.now() for leak IDs, which can cause collision in rapid tests
+      // but here we just need to ensure the leak triggers.
+      const store = useGameStore;
+      const candidate = CABINET_CANDIDATES.find(c => c.id === 'cand_lawrence_chen')!;
+      const member = {
+        ...candidate,
+        id: 'treasury',
+        role: 'Secretary of Treasury',
+        loyalty: 5,
+        hasLeaked: false,
+        bonus: { type: 'cash' as const, value: 10 },
+        impacts: {}
+      };
+
+      store.setState({
+        pl: {
+          ...mockPlayer,
+          currentTier: 'PRESIDENT',
+          presidentMonth: 10,
+          cabinet: { treasury: member },
+          federalBudget: 100000000,
+          activeCrises: [],
+          presidentialDiary: [],
+        }
+      });
+
+      // Mock random to ensure betrayal triggers (Betrayal chance is 0.2)
+      // Note: Scandal check also uses random. We need to be careful.
+      // Scandal check: Math.random() < scandalRisk * 0.12
+      // Loyalty check: Math.random() < 0.2
+      // We set random to 0.05 to ensure it passes all common checks
+      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.05);
+
+      // Force loyalty even lower just in case
+      store.setState(s => ({
+        pl: {
+            ...s.pl,
+            cabinet: {
+                ...s.pl.cabinet,
+                treasury: { ...s.pl.cabinet.treasury, loyalty: 2 }
+            }
+        }
+      }));
+
+      store.getState().advancePresidentialMonth();
+
+      const crises = store.getState().pl.activeCrises;
+      expect(crises.some(c => c.name === 'Cabinet Leak')).toBe(true);
+      expect(store.getState().pl.cabinet.treasury.hasLeaked).toBe(true);
+
+      vi.restoreAllMocks();
     });
   });
 });

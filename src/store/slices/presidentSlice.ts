@@ -374,7 +374,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     }));
 
     const expiredCrises = updatedCrises.filter(c => c.monthsRemaining !== undefined && (c.monthsRemaining as number) <= 0);
-    const activeCrises = updatedCrises.filter(c => c.monthsRemaining === undefined || c.monthsRemaining > 0);
+    let activeCrises = updatedCrises.filter(c => c.monthsRemaining === undefined || c.monthsRemaining > 0);
     const newDiaryEntries = [...pl.presidentialDiary];
 
     expiredCrises.forEach(c => {
@@ -445,8 +445,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const ambition = member.ambition ?? 50;
 
       // Scandal Chance based on Corruption Risk and Integrity
-      const scandalRisk = (corruptionRisk / 100) * (1 - integrity / 100);
-      if (Math.random() < scandalRisk * 0.1) {
+      const scandalRisk = (corruptionRisk / 100) * (1.5 - integrity / 100);
+      if (Math.random() < scandalRisk * 0.12) {
         const appPenalty = 15 + Math.floor(Math.random() * 16);
         approvalHit -= appPenalty;
         updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
@@ -480,6 +480,62 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       }
 
       if (!resigned) {
+        // Apply Member Specific Impacts
+        if (member.impacts) {
+          Object.entries(member.impacts).forEach(([stat, value]) => {
+            if (stat === 'approval') approvalHit += value;
+            else if (stat === 'scandals') {
+              if (value > 0 && Math.random() < value * 0.05) {
+                approvalHit -= 10;
+                updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
+                state.addTickerMessage(`LEAK: Small scandal linked to ${member.name}'s department.`, 'text-red-400');
+              } else if (value < 0) {
+                // negative scandals value means they prevent scandals
+              }
+            } else if (stat === 'passiveCash') {
+               // Handled in passive calculation below
+            } else if (stat === 'gdp') updatedPl.gdp += value;
+            else if (stat === 'inflation') updatedPl.inflation += value;
+            else if (stat === 'nationalDebt') updatedPl.nationalDebt += value;
+            else if (stat === 'aura') updatedPl.aura += value;
+            else if (stat === 'heat') updatedPl.heat += value;
+            else if (stat === 'clout') updatedPl.clout += value;
+            else if (stat === 'congressSupport') updatedPl.congressSupport += value;
+            else if (stat === 'foreignRelations') updatedPl.foreignRelations = (updatedPl.foreignRelations || 0) + value;
+          });
+        }
+
+        // Relationship Evolution
+        if (member.loyalty > 90) {
+          member.monthsAtHighLoyalty = (member.monthsAtHighLoyalty || 0) + 1;
+          if (member.monthsAtHighLoyalty >= 6 && !member.isTrustedAlly) {
+            member.isTrustedAlly = true;
+            state.addTickerMessage(`TRUSTED ALLY: ${member.name} is now a cornerstone of your administration!`, 'text-emerald-400 font-bold');
+          }
+        } else {
+          member.monthsAtHighLoyalty = 0;
+          if (member.isTrustedAlly && member.loyalty < 70) {
+            member.isTrustedAlly = false;
+            state.addTickerMessage(`BOND BROKEN: ${member.name} no longer considers you a trusted ally.`, 'text-orange-400');
+          }
+        }
+
+        // Betrayal Logic
+        if (member.loyalty < 15 && !member.hasLeaked && Math.random() < 0.2) {
+          const leakId = `leak_${Date.now()}`;
+          const leakCrisis: PresidentCrisis = {
+            id: leakId,
+            name: 'Cabinet Leak',
+            description: `Damaging internal documents leaked from ${member.name}'s department.`,
+            monthsRemaining: 2,
+            resolutionCost: { clout: 50 },
+            impact: { approval: -8, heat: 10 }
+          };
+          activeCrises.push(leakCrisis);
+          member.hasLeaked = true;
+          state.addTickerMessage(`BETRAYAL: ${member.name} has leaked documents to the press!`, 'text-red-600 font-black');
+        }
+
         // Rivalries between ambitious members
         cabinetMembers.forEach(otherRoleId => {
           if (roleId !== otherRoleId && newCabinet[otherRoleId]) {
@@ -543,7 +599,20 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     Object.values(pl.cabinet).forEach(member => {
       const loyaltyFactor = member.loyalty / 100;
-      const effectiveBonus = member.loyalty < 40 ? member.bonus.value * 0.2 : member.bonus.value * loyaltyFactor;
+      let effectiveBonus = member.loyalty < 40 ? member.bonus.value * 0.2 : member.bonus.value * loyaltyFactor;
+
+      if (member.isTrustedAlly) {
+        effectiveBonus *= 2;
+      }
+
+      if (pl.inJail) {
+        effectiveBonus = 0;
+      }
+
+      // Add extra passive cash from candidate impacts
+      if (member.impacts?.passiveCash) {
+        cabinetCash += member.impacts.passiveCash;
+      }
 
       switch (member.bonus.type) {
         case 'cash': cabinetCash += effectiveBonus; break;
