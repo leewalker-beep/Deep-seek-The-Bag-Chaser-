@@ -32,9 +32,13 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
   const spawnFactor = getSpawnFactor(level, tier);
 
   // Difficulty scaling
-  const TOTAL_BEATS = Math.floor((10 + (level * 2)) * spawnFactor);
+  const TOTAL_BEATS = Math.floor((10 + (level * 3)) * spawnFactor);
   const baseSpeed = (1.5 + (level * 0.4)) * Math.sqrt(scaling);
   const MAX_DURATION = 30000;
+
+  // L4+ has tighter window
+  const hitWindowWidth = level >= 4 ? 16 : 24;
+  const targetRange = [20 - hitWindowWidth / 2, 20 + hitWindowWidth / 2];
 
   useEffect(() => {
     // Generate beats based on level and tier
@@ -45,15 +49,18 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     for (let i = 0; i < beatsToGenerate; i++) {
         intervals.push(currentMs);
         // Randomize interval between beats - tighter intervals at higher difficulty
-        currentMs += Math.max(400, (1500 - (level * 150)) / spawnFactor) + Math.random() * (1000 / (level * spawnFactor));
+        const minGap = Math.max(300, (1200 - (level * 150)) / spawnFactor);
+        currentMs += minGap + Math.random() * (800 / (level * spawnFactor));
     }
 
     const timers = intervals.map((ms, _index) => {
       return setTimeout(() => {
         if (!isGameOver) {
-          // Higher levels have "drops" (sudden speed changes or different visual types)
-          const fastProb = Math.min(0.8, 0.1 * level * spawnFactor);
-          const type = Math.random() < fastProb ? 'fast' : 'normal';
+          // Higher levels have "drops" or "fast" beats
+          let type: 'normal' | 'fast' | 'drop' = 'normal';
+          if (level >= 2 && Math.random() < 0.15 * (level - 1)) {
+            type = level >= 3 && Math.random() < 0.4 ? 'drop' : 'fast';
+          }
           setBeats(prev => [...prev, { id: nextId.current++, offset: 100, type }]);
         }
       }, ms);
@@ -74,20 +81,29 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
   useEffect(() => {
     const moveInterval = setInterval(() => {
       setBeats(prev => {
-        const next = prev.map(b => ({
-            ...b,
-            offset: b.offset - (b.type === 'fast' ? baseSpeed * 1.5 : baseSpeed)
-        }));
+        const next = prev.map(b => {
+            let speed = b.type === 'fast' ? baseSpeed * 1.6 : baseSpeed;
+            // Drops suddenly speed up when they hit 50%
+            if (b.type === 'drop' && b.offset < 50) speed = baseSpeed * 2.5;
+
+            return {
+                ...b,
+                offset: b.offset - speed
+            };
+        });
         const missed = next.filter(b => b.offset < 0);
 
         if (missed.length > 0) {
-          const newTotal = totalAttempts + missed.length;
-          setTotalAttempts(newTotal);
+          setTotalAttempts(t => {
+            const newTotal = t + missed.length;
+            if (newTotal >= TOTAL_BEATS) {
+                handleGameOver(hits, newTotal);
+            }
+            return newTotal;
+          });
           setFeedback('miss');
           setTimeout(() => setFeedback(null), 200);
-          if (newTotal >= TOTAL_BEATS) {
-            handleGameOver(hits, newTotal);
-          }
+          if (navigator.vibrate) navigator.vibrate([30, 30]);
         }
 
         return next.filter(b => b.offset >= 0);
@@ -102,11 +118,12 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     setIsGameOver(true);
 
     const accuracy = finalAttempts > 0 ? finalHits / finalAttempts : 0;
-    let multiplier = 0.5;
-    if (accuracy >= 0.9) multiplier = 4.0;
-    else if (accuracy >= 0.7) multiplier = 2.5;
-    else if (accuracy >= 0.5) multiplier = 1.2;
+    let base = 0.5;
+    if (accuracy >= 0.9) base = 4.0;
+    else if (accuracy >= 0.7) base = 2.5;
+    else if (accuracy >= 0.5) base = 1.2;
 
+    const multiplier = base * (0.8 + scaling * 0.2);
     onComplete(multiplier);
   };
 
@@ -115,7 +132,6 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     e.stopPropagation();
     e.preventDefault();
 
-    const targetRange = [8, 32]; // Target is between 8% and 32% from left
     const hitIndex = beats.findIndex(b => b.offset >= targetRange[0] && b.offset <= targetRange[1]);
 
     const newTotal = totalAttempts + 1;
@@ -156,14 +172,18 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
         </div>
       </div>
 
-      <div className="w-full h-20 bg-slate-800 relative rounded-2xl border-2 border-slate-700 shadow-inner overflow-hidden flex items-center">
+      <div className="w-full h-24 bg-slate-800 relative rounded-2xl border-2 border-slate-700 shadow-inner overflow-hidden flex items-center">
         {/* Target Zone */}
-        <div className="absolute left-[8%] top-0 bottom-0 w-[24%] bg-blue-500/20 border-x-4 border-blue-400/50 z-0">
+        <div
+            className="absolute top-0 bottom-0 bg-blue-500/20 border-x-4 border-blue-400/50 z-0 transition-all duration-300"
+            style={{ left: `${targetRange[0]}%`, width: `${hitWindowWidth}%` }}
+        >
            <motion.div
              animate={{ opacity: [0.2, 0.5, 0.2] }}
              transition={{ repeat: Infinity, duration: 1 }}
              className="w-full h-full bg-blue-400/20"
            />
+           {level >= 4 && <div className="absolute inset-0 flex items-center justify-center text-[8px] text-blue-300 font-black uppercase opacity-40">TIGHT</div>}
         </div>
 
         {/* Moving Beats */}
@@ -173,11 +193,13 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
               key={beat.id}
               exit={{ scale: 2, opacity: 0 }}
               className={`absolute top-1/2 -translate-y-1/2 w-12 h-12 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.4)] z-10 flex items-center justify-center text-2xl border-2 ${
-                  beat.type === 'fast' ? 'bg-orange-500 border-orange-300' : 'bg-white border-blue-200'
+                  beat.type === 'fast' ? 'bg-orange-500 border-orange-300' :
+                  beat.type === 'drop' ? 'bg-purple-600 border-purple-400 animate-pulse' :
+                  'bg-white border-blue-200'
               }`}
               style={{ left: `${beat.offset}%` }}
             >
-              {icon}
+              {beat.type === 'drop' ? '⚡' : icon}
             </motion.div>
           ))}
         </AnimatePresence>
