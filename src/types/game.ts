@@ -416,7 +416,9 @@ export interface CabinetMember {
   impacts: Record<string, number>;
   monthsAtHighLoyalty?: number;
   isTrustedAlly?: boolean;
+  trustedAlly?: boolean;
   hasLeaked?: boolean;
+  loyaltyMonths?: number;
 }
 
 export interface PresidentCrisis {
@@ -424,6 +426,10 @@ export interface PresidentCrisis {
   name: string;
   description: string;
   monthsRemaining?: number;
+  type?: string;
+  title?: string;
+  resolved?: boolean;
+  approvalImpact?: number;
   resolutionCost: {
     cash?: number;
     clout?: number;

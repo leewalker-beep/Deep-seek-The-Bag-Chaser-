@@ -505,34 +505,47 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
           });
         }
 
-        // Relationship Evolution
-        if (member.loyalty > 90) {
-          member.monthsAtHighLoyalty = (member.monthsAtHighLoyalty || 0) + 1;
-          if (member.monthsAtHighLoyalty >= 6 && !member.isTrustedAlly) {
-            member.isTrustedAlly = true;
-            state.addTickerMessage(`TRUSTED ALLY: ${member.name} is now a cornerstone of your administration!`, 'text-emerald-400 font-bold');
-          }
+        // Trusted Ally — after 6 months high loyalty
+        const currentLoyaltyMonths = member.loyaltyMonths ?? member.monthsAtHighLoyalty ?? 0;
+        if (!member.trustedAlly && currentLoyaltyMonths >= 5 && member.loyalty >= 80) {
+          member.trustedAlly = true;
+          member.isTrustedAlly = true;
+          member.bonus = { ...member.bonus, value: Math.floor(member.bonus.value * 2) };
+          member.loyaltyMonths = currentLoyaltyMonths + 1;
+          member.monthsAtHighLoyalty = member.loyaltyMonths;
+          state.addTickerMessage(`TRUSTED ALLY: ${member.name} is now a cornerstone of your administration!`, 'text-emerald-400 font-bold');
         } else {
-          member.monthsAtHighLoyalty = 0;
-          if (member.isTrustedAlly && member.loyalty < 70) {
+          member.loyaltyMonths = member.loyalty >= 70 ? currentLoyaltyMonths + 1 : 0;
+          member.monthsAtHighLoyalty = member.loyaltyMonths;
+
+          // Bond Broken - if loyalty falls too low, lose Trusted Ally status and its bonus
+          if ((member.trustedAlly || member.isTrustedAlly) && member.loyalty < 70) {
+            member.trustedAlly = false;
             member.isTrustedAlly = false;
+            member.bonus = { ...member.bonus, value: Math.ceil(member.bonus.value / 2) };
             state.addTickerMessage(`BOND BROKEN: ${member.name} no longer considers you a trusted ally.`, 'text-orange-400');
           }
         }
 
-        // Betrayal Logic
-        if (member.loyalty < 15 && !member.hasLeaked && Math.random() < 0.2) {
-          const leakId = `leak_${Date.now()}`;
-          const leakCrisis: PresidentCrisis = {
-            id: leakId,
-            name: 'Cabinet Leak',
-            description: `Damaging internal documents leaked from ${member.name}'s department.`,
-            monthsRemaining: 2,
-            resolutionCost: { clout: 50 },
-            impact: { approval: -8, heat: 10 }
-          };
-          activeCrises.push(leakCrisis);
+        // Betrayal — disgruntled members may leak
+        if (member.loyalty < 30 && !member.hasLeaked && Math.random() < 0.15) {
           member.hasLeaked = true;
+          // Trigger a scandal crisis
+          const crisisExists = activeCrises?.some(c => c.type === 'cabinet_leak');
+          if (!crisisExists) {
+            activeCrises.push({
+              id: `leak_${member.name}_${Date.now()}`,
+              type: 'cabinet_leak',
+              name: 'Cabinet Leak',
+              title: `${member.name} Leaks Documents`,
+              description: `${member.name} has leaked confidential documents to the press. Your approval rating is taking damage.`,
+              approvalImpact: -8,
+              impact: { approval: -8, heat: 10 },
+              resolved: false,
+              resolutionCost: { clout: 50 },
+              monthsRemaining: 2
+            });
+          }
           state.addTickerMessage(`BETRAYAL: ${member.name} has leaked documents to the press!`, 'text-red-600 font-black');
         }
 
@@ -601,9 +614,6 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const loyaltyFactor = member.loyalty / 100;
       let effectiveBonus = member.loyalty < 40 ? member.bonus.value * 0.2 : member.bonus.value * loyaltyFactor;
 
-      if (member.isTrustedAlly) {
-        effectiveBonus *= 2;
-      }
 
       if (pl.inJail) {
         effectiveBonus = 0;
