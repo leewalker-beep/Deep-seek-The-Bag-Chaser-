@@ -53,9 +53,9 @@ export function generateCandidatePool(roleId: string, player: PlayerStats): Cabi
   let eligible = CABINET_CANDIDATES.filter(c => c.preferredRoles.includes(roleId));
 
   // If not enough specific ones, add others
-  if (eligible.length < 3) {
+  if (eligible.length < 5) {
     const others = CABINET_CANDIDATES.filter(c => !c.preferredRoles.includes(roleId));
-    eligible = [...eligible, ...others.slice(0, 3 - eligible.length)];
+    eligible = [...eligible, ...others.slice(0, 5 - eligible.length)];
   }
 
   // 2. Score candidates based on player history
@@ -74,10 +74,10 @@ export function generateCandidatePool(roleId: string, player: PlayerStats): Cabi
     return { cand, score };
   });
 
-  // 3. Sort and pick top 3
+  // 3. Sort and pick top 5
   const selection = scoredCandidates
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, 5)
     .map(({ cand }) => {
       // Calculate initial loyalty
       let initialLoyalty = 70;

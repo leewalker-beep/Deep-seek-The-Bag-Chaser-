@@ -104,9 +104,9 @@ describe('Cabinet Expansion - Engine Logic', () => {
   });
 
   describe('generateCandidatePool', () => {
-    it('should return 3 candidates for a valid role', () => {
+    it('should return 5 candidates for a valid role', () => {
       const candidates = generateCandidatePool('treasury', mockPlayer);
-      expect(candidates).toHaveLength(3);
+      expect(candidates).toHaveLength(5);
       candidates.forEach(c => {
         expect(c.role).toBe('Secretary of Treasury');
       });

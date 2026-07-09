@@ -410,6 +410,13 @@ export interface CabinetMember {
     type: 'approval' | 'cash' | 'clout' | 'aura';
     value: number;
   };
+  strengths: string[];
+  weaknesses: string[];
+  politicalAlignment: string;
+  impacts: Record<string, number>;
+  monthsAtHighLoyalty?: number;
+  isTrustedAlly?: boolean;
+  hasLeaked?: boolean;
 }
 
 export interface PresidentCrisis {
@@ -574,8 +581,8 @@ export interface PlayerStats {
   philanthropyDonation?: number;
   loginStreak?: number;
   electoralVotes?: number;
-  foreignRelations?: number;
-  worldPeace?: number;
+  foreignRelations: number;
+  worldPeace: number;
   voterTurnout?: number;
   campaignStage?: number;
   campaignPlatform?: 'economy' | 'healthcare' | 'foreign';
