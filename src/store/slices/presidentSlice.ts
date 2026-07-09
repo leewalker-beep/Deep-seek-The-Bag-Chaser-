@@ -906,11 +906,6 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const monthScaling = 1 + (state.pl.presidentMonth / 48) * 0.5;
     const finalMultiplier = choiceMultiplier / monthScaling;
 
-    const applyImpact = (baseValue: number | undefined) => {
-      if (baseValue === undefined) return 0;
-      return Math.floor(baseValue * finalMultiplier);
-    };
-
     const impacts: Record<string, number> = {};
     const newPl = { ...state.pl };
 
