@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
 import { useGameStore } from '../store/gameStore';
 import { PLAYER_AVATARS } from '../config/avatars';
-import { HERO_ARTWORK } from '../config/heroArtwork';
 import Avatar from './Avatar';
 import { getHallOfFameEntries } from '../utils/hallOfFame';
 
@@ -25,6 +24,32 @@ const THEMES: Record<string, { bg: string, glow: string }> = {
   gritty: { bg: 'bg-stone-950', glow: 'shadow-orange-900/20' },
   studio: { bg: 'bg-neutral-900', glow: 'shadow-purple-500/20' },
   tech: { bg: 'bg-gray-950', glow: 'shadow-emerald-500/20' },
+};
+
+const ORIGIN_CINEMATICS: Record<string, {
+  scene: string;
+  line1: string;
+  line2: string;
+  bg: string;
+}> = {
+  street_kid: {
+    scene: '🌆',
+    line1: 'The city never gave you anything.',
+    line2: 'Time to take it.',
+    bg: 'linear-gradient(180deg, #0a0a0f 0%, #0f1a0a 100%)',
+  },
+  dropout: {
+    scene: '🎤',
+    line1: "They said you'd amount to nothing.",
+    line2: 'Prove them wrong.',
+    bg: 'linear-gradient(180deg, #0a0a0f 0%, #0a0f1a 100%)',
+  },
+  benefactor: {
+    scene: '🏙️',
+    line1: 'You were born with advantages.',
+    line2: 'Now earn them.',
+    bg: 'linear-gradient(180deg, #0a0a0f 0%, #1a140a 100%)',
+  },
 };
 
 const GrainOverlay = () => (
@@ -546,6 +571,16 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedVarId, setSelectedVarId] = useState<string | null>(null);
 
+  const [showCinematic, setShowCinematic] =
+    useState(false);
+  const startParamsRef = useRef<{
+    name: string;
+    backgroundId: string;
+    categoryId: string;
+    variationId: string;
+    avatarId: string;
+  } | null>(null);
+
   const suggestedCategory = useMemo(() => {
     const STREET_MAX = 12;
     const DROPOUT_MAX = 20;
@@ -581,17 +616,98 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     setScreen(prev => prev + 1);
   };
 
-  const { triggerTransition } = useGameStore();
-
   const handleFinalStart = () => {
     const trimmedName = name.trim();
-    if (trimmedName.length >= 2 && activeVariation && winningCategory) {
-      triggerTransition(HERO_ARTWORK.NEW_RUN);
+    if (trimmedName.length >= 2 &&
+        activeVariation && winningCategory) {
+      startParamsRef.current = {
+        name: trimmedName.toUpperCase(),
+        backgroundId: activeVariation.id,
+        categoryId: winningCategory.id,
+        variationId: activeVariation.id,
+        avatarId: selectedAvatarId,
+      };
+      setShowCinematic(true);
       setTimeout(() => {
-        onStart(trimmedName.toUpperCase(), activeVariation.id, winningCategory.id, activeVariation.id, selectedAvatarId);
-      }, 500); // Small delay to let transition start
+        const p = startParamsRef.current;
+        if (p) {
+          onStart(p.name, p.backgroundId,
+            p.categoryId, p.variationId,
+            p.avatarId);
+        }
+      }, 3200);
     }
   };
+
+  if (showCinematic) {
+    const catId = winningCategory?.id || 'street_kid';
+    const cinematic = ORIGIN_CINEMATICS[catId] ||
+      ORIGIN_CINEMATICS.street_kid;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 z-50 flex
+          flex-col items-center justify-center"
+        style={{ background: cinematic.bg }}
+      >
+        <GrainOverlay />
+
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="text-8xl mb-8"
+        >
+          {cinematic.scene}
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="text-white/60 text-sm italic
+            text-center font-light tracking-wide
+            px-8"
+        >
+          {cinematic.line1}
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4, duration: 0.5 }}
+          className="text-white font-black text-2xl
+            uppercase tracking-widest text-center
+            mt-3 px-8"
+        >
+          {cinematic.line2}
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.4, duration: 0.4 }}
+          className="mt-16 flex gap-1"
+        >
+          {[0,1,2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                delay: i * 0.2
+              }}
+              className="w-1.5 h-1.5 rounded-full
+                bg-white/40"
+            />
+          ))}
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // Screen 1: TITLE
   if (screen === 1) {
