@@ -177,10 +177,12 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
                    <div>
                       <div className="text-[9px] text-slate-500 uppercase font-black tracking-widest mb-1">LESSONS LEARNED</div>
                       <p className="text-[10px] text-slate-400 leading-relaxed italic">
-                        {deathContext.fatalStat === 'mental' ? "Burnout is the silent killer of empires. Balance the grind with recovery." :
-                         deathContext.fatalStat === 'bag' ? "Liquidity is life. Never over-leverage your future for a temporary gain." :
-                         deathContext.fatalStat === 'heat' ? "The law always catches up. Cool down before you blow up." :
-                         "Irrelevance is the only true death. Leave a mark next time."}
+                        {deathContext.fatalStat === 'mental' ? "🧠 What happened? Your mental health reached 0%, resulting in burnout. Why? Heavy-yielding gigs take a heavy psychological toll when repeated without recovery. What to do next? Make sure to balance high-stress corporate tiers by using sleep/recreation hustles at Mud and Street tiers, or buying protective items." :
+                         deathContext.fatalStat === 'bag' ? "💸 What happened? You ran completely out of money, triggering bankruptcy. Why? You didn't secure enough cash buffer to survive passive rent deductions or upfront costs. What to do next? Keep a healthy cash reserve, invest in automatic passive cash streams, and watch the top-row receipts closely." :
+                         deathContext.fatalStat === 'heat' ? "👮 What happened? Law enforcement caught up and raided you. Why? Your active Wanted status (Heat) exceeded 80% because of high-risk activities. What to do next? Lay low in Ghost Mode to cool off your Heat, or invest in legitimate fronts to lower police attention." :
+                         deathContext.fatalStat === 'clout' ? "👑 What happened? You faded into total irrelevance. Why? Your public influence dropped to 0 from failing active checks. What to do next? Focus on contracts that build your rep and influence, and choose choices that preserve your image." :
+                         deathContext.fatalStat === 'aura' ? "✨ What happened? You were canceled and lost your star presence. Why? Your Aura dropped to 0. What to do next? Rebuild your star power with high-aura projects, and avoid choices that make you look like a sellout." :
+                         "💀 Irrelevance is the only true death. Leave a mark next time."}
                       </p>
                    </div>
                 </div>

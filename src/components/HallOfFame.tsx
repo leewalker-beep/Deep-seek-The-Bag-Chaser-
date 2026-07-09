@@ -311,6 +311,15 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
           <h2 className="text-4xl font-black tracking-tighter uppercase italic text-white">Hall of Fame</h2>
         </div>
 
+        <div className="p-4 bg-slate-950 border border-purple-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight m-4">
+          <span className="font-black text-white block mb-1">🎭 The Permanent Ledger</span>
+          <span className="font-bold text-white">What is this?</span> Your persistent scoreboard cataloging all finished lifetimes.
+          <br />
+          <span className="font-bold text-white">Why are you here?</span> Review your highest-scoring character runs, view completed timeline histories, inspect the endings gallery, or download visual brag cards to share your score with others!
+          <br />
+          <span className="font-bold text-white">What should I do next?</span> Explore the tabs below, or select "START NEW RUN" to launch your next meta-progression cycle in the Legacy Shop!
+        </div>
+
         {/* Tabs */}
         <div className="flex border-b border-slate-800 bg-slate-950/30">
           {(['BEST', 'ALL', 'ENDINGS'] as const).map((tab) => (

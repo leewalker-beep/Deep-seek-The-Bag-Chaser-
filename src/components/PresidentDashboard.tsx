@@ -78,6 +78,12 @@ export const PresidentDashboard: React.FC = () => {
       case 0: // THE OVAL
         return (
           <div className="space-y-6">
+            <div className="p-4 bg-blue-950/80 border border-blue-500/30 rounded-2xl text-[10px] text-slate-300 leading-relaxed uppercase tracking-tight">
+              <span className="font-black text-white block mb-1">🏛️ President's Strategic Overview</span>
+              Welcome to the Situation Room. You have transitioned from a corporate titan to the leader of the free world.
+              Your mandate is to balance GDP growth, control inflation, manage the national debt, and sustain public approval above the critical <span className="text-red-400 font-bold">50% threshold</span>.
+            </div>
+
             <PresidentialNewsTicker headlines={headlines} />
 
             {pl.presidentMonth === 0 && (
@@ -176,6 +182,15 @@ export const PresidentDashboard: React.FC = () => {
       case 1: // TREASURY
         return (
           <div className="space-y-6">
+            <div className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+              <span className="font-black text-white block mb-1">💰 Federal Treasury</span>
+              <span className="font-bold text-white">What is this?</span> Your administration's operating budget.
+              <br />
+              <span className="font-bold text-white">Why are you here?</span> Administration costs, strategic choices, and emergency crisis responses draw cash directly from the Treasury. If this reaches zero, national stability collapses.
+              <br />
+              <span className="font-bold text-white">What should I do next?</span> If the Treasury is critical or depleted, liquidate your personal business empire wealth below to inject emergency capital into the Treasury!
+            </div>
+
             <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl relative z-10">
               <div className={`text-5xl font-black font-mono mb-2 ${pl.federalBudget > 0 ? 'text-emerald-400' : 'text-red-500 animate-pulse'}`}>
                 ${(pl.federalBudget / 1_000_000).toFixed(1)}M
@@ -222,6 +237,15 @@ export const PresidentDashboard: React.FC = () => {
         const appointedCount = Object.values(pl.cabinet).filter(Boolean).length;
         return (
           <div className="space-y-4">
+            <div className="p-4 bg-slate-950 border border-blue-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+              <span className="font-black text-white block mb-1">🤝 Presidential Cabinet</span>
+              <span className="font-bold text-white">What is this?</span> Your network of elite national advisers and policy directors.
+              <br />
+              <span className="font-bold text-white">Why are you here?</span> Cabinet appointees provide monthly economic buffs (boosting GDP or lowering inflation/debt) and specific choice-based multipliers for Strategic Meetings. If their loyalty falls too low (<span className="text-red-400">below 30%</span>), they may trigger critical cabinet leak crises.
+              <br />
+              <span className="font-bold text-white">What should I do next?</span> Appoint competent leaders into vacant roles below. Keep their loyalty elevated through actions, or fire low-loyalty leaders before they sabotage you.
+            </div>
+
              <div className="text-xs text-slate-500 font-black uppercase mb-3 tracking-widest">
               THE CABINET — {appointedCount}/{CABINET_ROLES.length} FILLED
             </div>
@@ -288,6 +312,15 @@ export const PresidentDashboard: React.FC = () => {
       case 3: // CRISES & ORDERS
         return (
           <div className="space-y-6">
+            <div className="p-4 bg-slate-950 border border-red-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+              <span className="font-black text-white block mb-1">📢 Crises & Executive Orders</span>
+              <span className="font-bold text-white">What is this?</span> Emergency situations requiring intervention, alongside executive powers you can command.
+              <br />
+              <span className="font-bold text-white">Why are you here?</span> Active crises decay your national metrics and approval rating every month they remain unresolved. Executive Orders allow you to directly boost approval at a cash or clout cost.
+              <br />
+              <span className="font-bold text-white">What should I do next?</span> Instantly authorize federal responses to resolve active crises, or issue Executive Orders to stabilize national sentiment!
+            </div>
+
             <div className="space-y-3">
               <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">ACTIVE CRISES</h2>
               {pl.activeCrises.length === 0 ? (
@@ -443,7 +476,16 @@ export const PresidentDashboard: React.FC = () => {
         const displayMonth = pl.isSecondTerm ? pl.presidentMonth - 48 : pl.presidentMonth;
 
         return (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+            <div className="p-4 bg-slate-950 border border-blue-500/30 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight w-full">
+              <span className="font-black text-white block mb-1">📅 Advance Month Checklist</span>
+              <span className="font-bold text-white">What happens next?</span> Advancing the month updates economic cycles (GDP, inflation, national debt), processes Cabinet loyalty gains/losses, triggers automatic news ticker diary logs, and potentially spawns reactive crises or narrative events.
+              <br />
+              <span className="font-bold text-white">Why?</span> To simulate a dynamic presidency. Each step checks your active leadership against national parameters.
+              <br />
+              <span className="font-bold text-white">What should I do next?</span> Verify that approval ratings are strong, crises are fully resolved, and the Treasury has healthy liquidity before advancing!
+            </div>
+
             <div className="text-center">
               <div className="text-5xl font-black text-white text-center">
                 MONTH {displayMonth} OF 48
