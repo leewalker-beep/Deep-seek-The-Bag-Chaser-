@@ -22,6 +22,7 @@ describe('Jail System', () => {
 
   it('should apply passive losses while in jail', () => {
     const stats = getInitialStats(3);
+    stats.rivals = []; // Prevent random rival actions from affecting clout
     stats.currentTier = 'STREET';
     stats.inJail = true;
     stats.jailMonthsRemaining = 5;

@@ -350,6 +350,7 @@ export interface NarrativeEvent {
   description: string;
   image?: string;
   characterId?: string;
+  arcId?: string;
   pacingCategory?: NarrativePacingCategory;
   trigger: {
     tier?: Tier[];
@@ -694,6 +695,10 @@ export interface PlayerStats {
   worldEventCooldown: number;
   activeNarrative: string | null;
   narrativeCooldown: number;
+  lastCharacterId?: string;
+  lastArcId?: string;
+  arcLastFired: Record<string, number>;
+  monthsSinceLastEvent: number;
   originBonus: OriginBonus | null;
   completedNarrativeEvents: string[];
   biography: string[];
