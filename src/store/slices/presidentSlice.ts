@@ -374,7 +374,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     }));
 
     const expiredCrises = updatedCrises.filter(c => c.monthsRemaining !== undefined && (c.monthsRemaining as number) <= 0);
-    const activeCrises = updatedCrises.filter(c => c.monthsRemaining === undefined || c.monthsRemaining > 0);
+    let activeCrises = updatedCrises.filter(c => c.monthsRemaining === undefined || c.monthsRemaining > 0);
     const newDiaryEntries = [...pl.presidentialDiary];
 
     expiredCrises.forEach(c => {
@@ -531,7 +531,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
             resolutionCost: { clout: 50 },
             impact: { approval: -8, heat: 10 }
           };
-          updatedPl.activeCrises.push(leakCrisis);
+          activeCrises.push(leakCrisis);
           member.hasLeaked = true;
           state.addTickerMessage(`BETRAYAL: ${member.name} has leaked documents to the press!`, 'text-red-600 font-black');
         }
@@ -603,6 +603,10 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
       if (member.isTrustedAlly) {
         effectiveBonus *= 2;
+      }
+
+      if (pl.inJail) {
+        effectiveBonus = 0;
       }
 
       // Add extra passive cash from candidate impacts

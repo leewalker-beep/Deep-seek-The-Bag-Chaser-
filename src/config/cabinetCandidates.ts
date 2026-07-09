@@ -21,7 +21,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Relentless', 'Ethical', 'Sharp'],
     bio: 'A former top-tier investigative journalist who knows how to handle the media and sniff out a story before it breaks.',
     preferredRoles: ['press'],
-    baseBonusValue: 15
+    baseBonusValue: 15,
+    strengths: ['Transparency', 'Fact-Checking', 'Media Relations'],
+    weaknesses: ['Uncompromising', 'Confrontational'],
+    politicalAlignment: 'MODERATE',
+    impacts: {
+      approval: 2,
+      scandals: -0.1
+    }
   },
   {
     id: 'cand_lawrence_chen',
@@ -37,7 +44,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Calculating', 'Data-driven', 'Influential'],
     bio: 'A high-stakes investor with an unparalleled understanding of market dynamics and capital flow.',
     preferredRoles: ['treasury'],
-    baseBonusValue: 20
+    baseBonusValue: 20,
+    strengths: ['Efficiency', 'Capital Flow', 'Market Analysis'],
+    weaknesses: ['Market Volatility', 'Elitism'],
+    politicalAlignment: 'RIGHT-WING',
+    impacts: {
+      gdp: 3,
+      inflation: 1,
+      passiveCash: 10000
+    }
   },
   {
     id: 'cand_victor_kane',
@@ -53,7 +68,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Ruthless', 'Strategic', 'Arrogant'],
     bio: 'One of the most powerful CEOs in the country. His results are unquestionable, but his methods are often shrouded in controversy.',
     preferredRoles: ['treasury', 'state'],
-    baseBonusValue: 25
+    baseBonusValue: 25,
+    strengths: ['Efficiency', 'Global Logistics', 'Ruthless Negotiation'],
+    weaknesses: ['Corruption Risk', 'Low Empathy', 'Public Backlash'],
+    politicalAlignment: 'RIGHT-WING',
+    impacts: {
+      gdp: 5,
+      passiveCash: 50000,
+      scandals: 0.2
+    }
   },
   {
     id: 'cand_silas_whitaker',
@@ -69,7 +92,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Disciplined', 'Blunt', 'Strategic'],
     bio: 'A decorated war hero and former Chairman of the Joint Chiefs. He views national security through a lens of absolute discipline.',
     preferredRoles: ['defense'],
-    baseBonusValue: 18
+    baseBonusValue: 18,
+    strengths: ['Discipline', 'Strategic Planning', 'Logistics'],
+    weaknesses: ['Rigidity', 'High Cost', 'Diplomatic Bluntness'],
+    politicalAlignment: 'CONSERVATIVE',
+    impacts: {
+      aura: 5,
+      heat: -2,
+      nationalDebt: 2
+    }
   },
   {
     id: 'cand_sofia_ramirez',
@@ -85,7 +116,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Charismatic', 'Pragmatic', 'Eloquent'],
     bio: 'A rising political star with a massive base of popular support and a deep understanding of legislative maneuvering.',
     preferredRoles: ['state', 'press'],
-    baseBonusValue: 12
+    baseBonusValue: 12,
+    strengths: ['Charisma', 'Legislation', 'Coalition Building'],
+    weaknesses: ['Ambition', 'Polarizing', 'Political Baggage'],
+    politicalAlignment: 'LIBERAL',
+    impacts: {
+      approval: 3,
+      congressSupport: 2
+    }
   },
   {
     id: 'cand_sarah_jenkins',
@@ -101,7 +139,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Tough', 'Uncompromising', 'Protective'],
     bio: 'A fierce advocate for the working class who can mobilize millions. She brings a unique perspective to the administration.',
     preferredRoles: ['treasury', 'press'],
-    baseBonusValue: 14
+    baseBonusValue: 14,
+    strengths: ['Labor Rights', 'Mobilization', 'Public Trust'],
+    weaknesses: ['Business Opposition', 'Inflexibility'],
+    politicalAlignment: 'LEFT-WING',
+    impacts: {
+      approval: 4,
+      gdp: -1,
+      inflation: 2
+    }
   },
   {
     id: 'cand_elias_blackwood',
@@ -117,7 +163,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Secretive', 'Cynical', 'Omnipresent'],
     bio: 'The ultimate spymaster. He knows where all the bodies are buried and how to keep yours from joining them.',
     preferredRoles: ['defense', 'state'],
-    baseBonusValue: 22
+    baseBonusValue: 22,
+    strengths: ['Information Gathering', 'Security', 'Counter-Intelligence'],
+    weaknesses: ['Secretive', 'Paranoid', 'Civil Liberty Concerns'],
+    politicalAlignment: 'NEUTRAL',
+    impacts: {
+      aura: 3,
+      heat: -5,
+      scandals: -0.05
+    }
   },
   {
     id: 'cand_margaret_holloway',
@@ -133,7 +187,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Impartial', 'Intellectual', 'Formidable'],
     bio: 'A legal titan known for her unwavering commitment to the rule of law. Her presence grants immediate legitimacy to any policy.',
     preferredRoles: ['state'],
-    baseBonusValue: 16
+    baseBonusValue: 16,
+    strengths: ['Legitimacy', 'Impartiality', 'Constitutional Law'],
+    weaknesses: ['Traditionalism', 'Slow Pace', 'Inflexible Interpretation'],
+    politicalAlignment: 'CONSERVATIVE',
+    impacts: {
+      aura: 4,
+      congressSupport: 1
+    }
   },
   {
     id: 'cand_fiona_glass',
@@ -149,7 +210,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Relentless', 'Analytical', 'Dry'],
     bio: 'An expert in following the money. She can spot corruption from a mile away and is feared by every accountant in the country.',
     preferredRoles: ['treasury'],
-    baseBonusValue: 18
+    baseBonusValue: 18,
+    strengths: ['Auditing', 'Transparency', 'Financial Forensics'],
+    weaknesses: ['Pedantic', 'Socially Awkward'],
+    politicalAlignment: 'NEUTRAL',
+    impacts: {
+      federalBudget: 500000,
+      scandals: -0.2
+    }
   },
   {
     id: 'cand_arthur_bennett',
@@ -165,7 +233,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Traditional', 'Scholarly', 'Influential'],
     bio: 'An academic heavyweight who has mentored the next generation of business leaders. He brings prestige and theory to the table.',
     preferredRoles: ['treasury'],
-    baseBonusValue: 12
+    baseBonusValue: 12,
+    strengths: ['Economic Theory', 'Academic Networks', 'Prestige'],
+    weaknesses: ['Out of Touch', 'Conservative Forecasts'],
+    politicalAlignment: 'MODERATE',
+    impacts: {
+      gdp: 1,
+      passiveCash: 5000
+    }
   },
   {
     id: 'cand_elena_vance',
@@ -181,7 +256,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Efficient', 'Cold', 'Discreet'],
     bio: 'A shadow player who specializes in making problems disappear. Highly effective, but operates in a moral grey area.',
     preferredRoles: ['defense', 'state'],
-    baseBonusValue: 20
+    baseBonusValue: 20,
+    strengths: ['Problem Solving', 'Discretion', 'Crisis Management'],
+    weaknesses: ['Unethical', 'Ruthless'],
+    politicalAlignment: 'NEUTRAL',
+    impacts: {
+      heat: -5,
+      scandals: 0.1
+    }
   },
   {
     id: 'cand_alistair_clark',
@@ -197,7 +279,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Ruthless', 'Precise', 'Arrogant'],
     bio: 'The "Closer." A legal shark who has never met a contract he couldn\'t manipulate or an opponent he couldn\'t crush.',
     preferredRoles: ['state', 'treasury'],
-    baseBonusValue: 18
+    baseBonusValue: 18,
+    strengths: ['Legal Maneuvering', 'Negotiation', 'Loophole Discovery'],
+    weaknesses: ['Arrogant', 'Mercenary Attitude'],
+    politicalAlignment: 'RIGHT-WING',
+    impacts: {
+      gdp: 2,
+      scandals: 0.05
+    }
   },
   {
     id: 'cand_anya_singh',
@@ -213,7 +302,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Visionary', 'Intense', 'Risk-tolerant'],
     bio: 'A pioneer of the second space age. She brings a futuristic perspective and massive technological expertise to the cabinet.',
     preferredRoles: ['defense', 'treasury'],
-    baseBonusValue: 20
+    baseBonusValue: 20,
+    strengths: ['Innovation', 'Future-proofing', 'Tech Expertise'],
+    weaknesses: ['High Risk', 'Distant', 'Expensive Vision'],
+    politicalAlignment: 'LIBERAL',
+    impacts: {
+      gdp: 4,
+      worldPeace: 1
+    }
   },
   {
     id: 'cand_marcus_stone',
@@ -229,7 +325,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Cynical', 'High-energy', 'Predatory'],
     bio: 'A legendary political operative who has won some of the toughest elections in history. He plays dirty and he plays to win.',
     preferredRoles: ['press', 'state'],
-    baseBonusValue: 15
+    baseBonusValue: 15,
+    strengths: ['Optics', 'Voter Psychology', 'Dirty Tricks'],
+    weaknesses: ['Cynical', 'Corruptible', 'Low Public Trust'],
+    politicalAlignment: 'MODERATE',
+    impacts: {
+      approval: 5,
+      scandals: 0.15
+    }
   },
   {
     id: 'cand_kenji_tanaka',
@@ -245,7 +348,83 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Diplomatic', 'Observant', 'Firm'],
     bio: 'A master of international relations and soft power. His appointment would be a massive signal of global cooperation.',
     preferredRoles: ['state'],
-    baseBonusValue: 18
+    baseBonusValue: 18,
+    strengths: ['Diplomacy', 'Global Trade', 'International Law'],
+    weaknesses: ['Outsider', 'Soft Touch', 'Diplomatic Protocol Obsession'],
+    politicalAlignment: 'LIBERAL',
+    impacts: {
+      foreignRelations: 5,
+      worldPeace: 2
+    }
+  },
+  // Archetype-focused candidates
+  {
+    id: 'cand_julian_vane',
+    name: 'Dr. Julian Vane',
+    avatarId: 'av_m4',
+    previousCareer: 'Nobel Economist',
+    competence: 99,
+    integrity: 85,
+    popularity: 55,
+    corruptionRisk: 10,
+    ambition: 30,
+    personalityTraits: ['Brilliant', 'Eccentric', 'Detached'],
+    bio: 'A Nobel laureate whose theories redefined modern macroeconomics. He speaks in equations and expects the world to follow.',
+    preferredRoles: ['treasury'],
+    baseBonusValue: 30,
+    strengths: ['Macroeconomic Theory', 'Inflation Control', 'Global Respect'],
+    weaknesses: ['Detached', 'Complexity', 'Theoretical Blindness'],
+    politicalAlignment: 'MODERATE',
+    impacts: {
+      gdp: 6,
+      inflation: -2
+    }
+  },
+  {
+    id: 'cand_sarah_chen_ai',
+    name: 'Dr. Sarah Chen',
+    avatarId: 'av_f1',
+    previousCareer: 'AI Technocrat',
+    competence: 95,
+    integrity: 75,
+    popularity: 60,
+    corruptionRisk: 20,
+    ambition: 70,
+    personalityTraits: ['Efficient', 'Forward-looking', 'Cold'],
+    bio: 'The architect of the national AI grid. She believes that human error is the greatest threat to governance.',
+    preferredRoles: ['defense', 'treasury'],
+    baseBonusValue: 25,
+    strengths: ['Automation', 'Data Efficiency', 'Technological Dominance'],
+    weaknesses: ['Algorithmic Bias', 'Dehumanization', 'Privacy Concerns'],
+    politicalAlignment: 'NEUTRAL',
+    impacts: {
+      gdp: 4,
+      federalBudget: 1000000,
+      aura: -2
+    }
+  },
+  {
+    id: 'cand_maya_thorne',
+    name: 'Maya Thorne',
+    avatarId: 'av_f3',
+    previousCareer: 'Environmental Reformer',
+    competence: 80,
+    integrity: 95,
+    popularity: 85,
+    corruptionRisk: 5,
+    ambition: 60,
+    personalityTraits: ['Passionate', 'Incorruptible', 'Idealistic'],
+    bio: 'A grassroots leader who built a global movement for climate action. She demands radical change and accepts no compromises.',
+    preferredRoles: ['press', 'state'],
+    baseBonusValue: 20,
+    strengths: ['Sustainability', 'Public Enthusiasm', 'Ethical Leadership'],
+    weaknesses: ['Economic Friction', 'Industry Opposition'],
+    politicalAlignment: 'LIBERAL',
+    impacts: {
+      approval: 5,
+      gdp: -2,
+      worldPeace: 1
+    }
   },
   // Generic but named candidates
   {
@@ -261,7 +440,14 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Disciplined', 'Methodical', 'Brave'],
     bio: 'A career naval officer known for her cool head under pressure and impeccable service record.',
     preferredRoles: ['defense'],
-    baseBonusValue: 15
+    baseBonusValue: 15,
+    strengths: ['Logistics', 'Bravery', 'Naval Strategy'],
+    weaknesses: ['Stoic', 'Literal Minded'],
+    politicalAlignment: 'CONSERVATIVE',
+    impacts: {
+      aura: 2,
+      heat: -1
+    }
   },
   {
     id: 'cand_generic_2',
@@ -276,7 +462,15 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Fast-talking', 'Ambitious', 'Nervous'],
     bio: 'A former wunderkind of Wall Street who understands the numbers but occasionally cuts corners to get them.',
     preferredRoles: ['treasury'],
-    baseBonusValue: 15
+    baseBonusValue: 15,
+    strengths: ['Speculation', 'High Yield', 'Market Insight'],
+    weaknesses: ['Instability', 'Nervousness', 'Risk-taking'],
+    politicalAlignment: 'RIGHT-WING',
+    impacts: {
+      gdp: 2,
+      inflation: 3,
+      passiveCash: 25000
+    }
   },
   {
     id: 'cand_generic_3',
@@ -291,6 +485,13 @@ export const CABINET_CANDIDATES: CabinetCandidate[] = [
     personalityTraits: ['Compassionate', 'Organized', 'Tireless'],
     bio: 'A dedicated public servant who has managed multiple health crises with transparency and empathy.',
     preferredRoles: ['press'],
-    baseBonusValue: 12
+    baseBonusValue: 12,
+    strengths: ['Crisis Management', 'Empathy', 'Public Health'],
+    weaknesses: ['Exhaustion', 'Bureaucratic Slowdown'],
+    politicalAlignment: 'LEFT-WING',
+    impacts: {
+      approval: 2,
+      aura: 1
+    }
   }
 ];

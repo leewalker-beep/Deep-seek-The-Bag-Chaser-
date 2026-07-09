@@ -67,10 +67,13 @@ describe('Final Audit: Store-Level Verification', () => {
   it('Hustle Execution Audit (Points 1-5, 12)', () => {
     const { executeHustle } = useGameStore.getState();
 
+    // Mock random to avoid rival interference
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
     // Execute r_labor (Manual Labor)
     // Math: yieldCash: 2000, yieldClout: 2, yieldAura: 2, mentalHit: -8 (x1.5 = -12), heatHit: 5
     // Street Kid Origin Bonus: +15% Cash (multiplier 1.15)
-    // advanceMonth: Rent -200, heatDecay -10
+    // advanceMonth: Rent -50 (MUD tier), heatDecay -10
     const res = executeHustle('r_labor', 1, true);
 
     const finalStats = useGameStore.getState().pl;
@@ -94,6 +97,8 @@ describe('Final Audit: Store-Level Verification', () => {
     // 12. Receipts vs Reality
     expect(event!.metadata.profit).toBe(2300); // 2000 * 1.15
     expect(event!.metadata.yieldClout).toBe(2);
+
+    vi.restoreAllMocks();
   });
 
   it('Upgrades Audit (Point 9)', () => {
