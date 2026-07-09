@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
 import { PLAYER_AVATARS } from '../config/avatars';
 import Avatar from './Avatar';
+import { MagneticSweep } from './minigames/MagneticSweep';
+import { TrafficDodge } from './minigames/TrafficDodge';
 
 interface PrologueScreenProps {
   onStart: (
@@ -94,79 +96,38 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   // Upgrade option selected in Chapter 3
   const [activeUpgrade, setActiveUpgrade] = useState<'gloves' | 'magnet' | null>(null);
 
-  // Floating text feedback for minigames
-  const [floatingTexts, setFloatingTexts] = useState<
-    { id: number; text: string; x: number; y: number; color?: string }[]
-  >([]);
-  const nextFloatingId = useRef(0);
-
-  const addFloatingText = (text: string, x: number, y: number, color?: string) => {
-    const id = nextFloatingId.current++;
-    setFloatingTexts(prev => [...prev, { id, text, x, y, color }]);
-    setTimeout(() => {
-      setFloatingTexts(prev => prev.filter(item => item.id !== id));
-    }, 1000);
-  };
-
-  // Chapter 1 Mini-Game: Copper Salvage tapping (5 seconds)
-  const [ch1TimeLeft, setCh1TimeLeft] = useState(5.0);
+  // Chapter 1 Mini-Game: Copper Salvage with actual Magnetic Sweep
   const [ch1Score, setCh1Score] = useState(0);
-  const ch1ActiveRef = useRef(false);
 
-  useEffect(() => {
-    if (phase === 'ch1_game') {
-      setCh1Score(0);
-      setCh1TimeLeft(5.0);
-      ch1ActiveRef.current = true;
-      const interval = setInterval(() => {
-        setCh1TimeLeft(prev => {
-          if (prev <= 0.1) {
-            clearInterval(interval);
-            ch1ActiveRef.current = false;
-            // Record Chapter 1
-            const earned = ch1Score * 15;
-            const guaranteedEarned = Math.max(200, earned);
-            setPrologueCash(guaranteedEarned);
-            setPrologueTotalHustles(t => t + 1);
-            setPrologueHustlePlays(p => ({ ...p, r_scrap: (p.r_scrap || 0) + 1 }));
-            setPrologueActionLog(log => [
-              ...log,
-              {
-                month: 0,
-                tier: 'MUD',
-                hustleId: 'r_scrap',
-                hustleName: 'Scrap Metal',
-                level: 1,
-                branchId: 'l1',
-                branchName: 'Scavenger',
-                cost: 0,
-                yieldCash: guaranteedEarned,
-                yieldClout: 0,
-                yieldAura: 0,
-                netCash: guaranteedEarned,
-                success: true,
-              },
-            ]);
-            setPh('ch1_results');
-            return 0;
-          }
-          return Math.round((prev - 0.1) * 10) / 10;
-        });
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [phase, ch1Score]);
+  const handleCh1Complete = (sweepRes: { multiplier: number; isRare: boolean }) => {
+    // Standard MUD tier scrap base yield is 400
+    const baseYield = 400;
+    const earned = Math.round(baseYield * sweepRes.multiplier);
+    const guaranteedEarned = Math.max(200, earned);
 
-  const handleCh1Tap = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ch1ActiveRef.current) return;
-    setCh1Score(s => s + 1);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    addFloatingText('+$15', x, y, 'text-emerald-400');
-    if (navigator.vibrate) {
-      navigator.vibrate(20);
-    }
+    setCh1Score(Math.round(sweepRes.multiplier * 10)); // proxy score for results UI
+    setPrologueCash(guaranteedEarned);
+    setPrologueTotalHustles(t => t + 1);
+    setPrologueHustlePlays(p => ({ ...p, r_scrap: (p.r_scrap || 0) + 1 }));
+    setPrologueActionLog(log => [
+      ...log,
+      {
+        month: 0,
+        tier: 'MUD',
+        hustleId: 'r_scrap',
+        hustleName: 'Scrap Metal',
+        level: 1,
+        branchId: 'l1',
+        branchName: 'Scavenger',
+        cost: 0,
+        yieldCash: guaranteedEarned,
+        yieldClout: 0,
+        yieldAura: 0,
+        netCash: guaranteedEarned,
+        success: true,
+      },
+    ]);
+    setPh('ch1_results');
   };
 
   // Chapter 2 Choice details
@@ -243,119 +204,42 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     setPh('ch4_intro');
   };
 
-  // Chapter 4 Mini-Game: Sorting gold from debris (8 seconds)
-  const [ch4TimeLeft, setCh4TimeLeft] = useState(8.0);
+  // Chapter 4 Mini-Game: Delivery Gigs with actual TrafficDodge
   const [ch4Score, setCh4Score] = useState(0);
-  const [ch4Items, setCh4Items] = useState<{ id: number; type: 'gold' | 'rust'; x: number; y: number; speed: number }[]>([]);
-  const ch4ActiveRef = useRef(false);
-  const nextItemId = useRef(0);
 
-  useEffect(() => {
-    if (phase === 'ch4_game') {
-      setCh4Score(0);
-      setCh4TimeLeft(8.0);
-      setCh4Items([]);
-      ch4ActiveRef.current = true;
+  const handleCh4Complete = (trafficMult: number) => {
+    // Deliveries base yield is 1800 (from Bike Delivery Branch l1)
+    const baseYield = 1800;
+    // We also apply the tool upgrade multiplier as a speed/performance boost!
+    const toolMultiplier = activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0;
+    const earned = Math.round(baseYield * trafficMult * toolMultiplier);
 
-      // Timer
-      const interval = setInterval(() => {
-        setCh4TimeLeft(prev => {
-          if (prev <= 0.1) {
-            clearInterval(interval);
-            ch4ActiveRef.current = false;
-            // Calculate yield: gold has 40 base yield. Multiplied by tool upgrade!
-            const multiplier = activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0;
-            const earned = Math.round(ch4Score * 40 * multiplier);
+    setCh4Score(Math.round(trafficMult * 10)); // proxy score
+    setPrologueCash(c => c + earned);
+    setPrologueTotalHustles(t => t + 1);
+    setPrologueHustlePlays(p => ({ ...p, r_delivery: (p.r_delivery || 0) + 1 }));
+    setPrologueActionLog(log => [
+      ...log,
+      {
+        month: 0,
+        tier: 'MUD',
+        hustleId: 'r_delivery',
+        hustleName: 'Delivery Gigs',
+        level: 1,
+        branchId: 'l1',
+        branchName: 'Bike Delivery',
+        cost: 0,
+        yieldCash: earned,
+        yieldClout: 5,
+        yieldAura: 2,
+        netCash: earned,
+        success: true,
+      },
+    ]);
+    setPrologueClout(c => c + 5);
+    setPrologueAura(a => a + 2);
 
-            setPrologueCash(c => c + earned);
-            setPrologueTotalHustles(t => t + 1);
-            setPrologueHustlePlays(p => ({ ...p, r_scrap: (p.r_scrap || 0) + 1 }));
-            setPrologueActionLog(log => [
-              ...log,
-              {
-                month: 0,
-                tier: 'MUD',
-                hustleId: 'r_scrap_metals',
-                hustleName: 'Precious Sorting',
-                level: 2,
-                branchId: 'l2',
-                branchName: 'Precious Salvage',
-                cost: 0,
-                yieldCash: earned,
-                yieldClout: 5,
-                yieldAura: 2,
-                netCash: earned,
-                success: true,
-              },
-            ]);
-            setPrologueClout(c => c + 5);
-            setPrologueAura(a => a + 2);
-
-            setPh('ch4_results');
-            return 0;
-          }
-          return Math.round((prev - 0.1) * 10) / 10;
-        });
-      }, 100);
-
-      // Spawning loop
-      const spawnInterval = setInterval(() => {
-        if (!ch4ActiveRef.current) return;
-        const isGold = Math.random() > 0.4;
-        setCh4Items(prev => [
-          ...prev,
-          {
-            id: nextItemId.current++,
-            type: isGold ? 'gold' : 'rust',
-            x: -20,
-            y: 30 + Math.random() * 50,
-            speed: 3 + Math.random() * 4,
-          },
-        ]);
-      }, 600);
-
-      // Animation frame loop for item movement
-      let animationFrameId: number;
-      const updateMovement = () => {
-        if (ch4ActiveRef.current) {
-          setCh4Items(prev =>
-            prev
-              .map(item => ({ ...item, x: item.x + item.speed }))
-              .filter(item => item.x < 110)
-          );
-          animationFrameId = requestAnimationFrame(updateMovement);
-        }
-      };
-      animationFrameId = requestAnimationFrame(updateMovement);
-
-      return () => {
-        clearInterval(interval);
-        clearInterval(spawnInterval);
-        cancelAnimationFrame(animationFrameId);
-      };
-    }
-  }, [phase, ch4Score, activeUpgrade]);
-
-  const handleCh4TapItem = (id: number, type: 'gold' | 'rust', e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!ch4ActiveRef.current) return;
-    e.stopPropagation();
-
-    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-    const x = rect ? e.clientX - rect.left : 150;
-    const y = rect ? e.clientY - rect.top : 150;
-
-    const multiplier = activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0;
-
-    if (type === 'gold') {
-      setCh4Score(s => s + 1);
-      const val = Math.round(40 * multiplier);
-      addFloatingText(`+$${val}`, x, y, 'text-yellow-400');
-      if (navigator.vibrate) navigator.vibrate(30);
-    } else {
-      addFloatingText('Debris! -0', x, y, 'text-red-500');
-      if (navigator.vibrate) navigator.vibrate([15, 15]);
-    }
-    setCh4Items(prev => prev.filter(item => item.id !== id));
+    setPh('ch4_results');
   };
 
   // Chapter 5 Cinematic Future montage controls
@@ -571,70 +455,18 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
         {/* PHASE: CHAPTER 1 GAMEPLAY */}
         {phase === 'ch1_game' && (
-          <motion.div
-            key="ch1_game"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full max-w-sm flex flex-col items-center justify-center space-y-8 z-10"
-          >
-            <div className="w-full flex justify-between items-center px-2">
-              <div className="text-left">
-                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
-                  FIRST CASH
-                </span>
-                <div className="text-3xl font-mono font-black text-emerald-400">
-                  ${ch1Score * 15}
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
-                  TIME LEFT
-                </span>
-                <div className="text-3xl font-mono font-black text-white">{ch1TimeLeft.toFixed(1)}s</div>
-              </div>
-            </div>
-
-            <div
-              onPointerDown={handleCh1Tap}
-              className="w-full h-80 relative flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-emerald-500/20 bg-gradient-to-b from-slate-900/40 to-slate-950/80 cursor-pointer overflow-hidden active:scale-[0.98] transition-transform shadow-2xl"
-              style={{ touchAction: 'none' }}
-            >
-              {/* Central wire heap node */}
-              <div className="w-32 h-32 rounded-full bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-6xl shadow-inner relative z-10 animate-pulse">
-                🏗️
-                <div className="absolute inset-0 bg-emerald-500/10 blur-xl rounded-full" />
-              </div>
-
-              <div className="mt-6 text-center z-10">
-                <p className="text-xs text-emerald-400 font-black tracking-widest uppercase animate-bounce">
-                  TAP THE PILE RAPIDLY!
-                </p>
-                <p className="text-[10px] text-slate-500 uppercase mt-1">
-                  Every tap gathers copper wire
-                </p>
-              </div>
-
-              {/* Taps count badge */}
-              <div className="absolute top-4 right-4 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full text-[10px] font-black text-emerald-400">
-                {ch1Score} Taps
-              </div>
-
-              {/* Render local floating texts */}
-              {floatingTexts.map(f => (
-                <motion.div
-                  key={f.id}
-                  initial={{ opacity: 1, scale: 1, y: f.y }}
-                  animate={{ opacity: 0, scale: 1.4, y: f.y - 60 }}
-                  transition={{ duration: 0.6 }}
-                  className={`absolute font-mono font-black text-lg pointer-events-none select-none ${f.color || 'text-emerald-400'}`}
-                  style={{ left: f.x }}
-                >
-                  {f.text}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          <MagneticSweep
+            level={1}
+            tier="MUD"
+            onComplete={handleCh1Complete}
+            itemEmojis={['🔩', '⚙️', '🖇️', '📎']}
+            rareEmoji="⭐"
+            title="Prologue Chapter 1"
+            instruction="Drag Magnet or tap items to salvage copper wire"
+            scoreLabel="COPPER SECURED"
+            rareLabel="PREMIUM COPPER"
+            icon="🧲"
+          />
         )}
 
         {/* PHASE: CHAPTER 1 RESULTS */}
@@ -660,9 +492,9 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
                 <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
-                  Total Taps
+                  Performance Index
                 </span>
-                <span className="text-white font-black text-2xl">{ch1Score}</span>
+                <span className="text-white font-black text-2xl">{ch1Score} pts</span>
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
                 <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
@@ -871,12 +703,12 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               <span className="text-[10px] text-amber-400 tracking-[0.3em] font-black uppercase">
                 Chapter 4
               </span>
-              <h2 className="text-3xl font-black uppercase tracking-tighter">Second Hustle: Precious Sorting</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Second Hustle: Delivery Gigs</h2>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Skill and investments create massive wealth.
+                To truly scale your capital, you branch out into delivery gigs.
               </p>
               <p className="text-slate-400 text-sm leading-relaxed">
-                You've accessed a container of premium electrical scraps. High-value Gold and Rust Debris items will roll by.
+                Using your bicycle and professional tools, weave through incoming city traffic to complete deliveries safely!
               </p>
             </div>
 
@@ -888,7 +720,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Cash Multiplier</div>
+                <div className="text-slate-500 uppercase tracking-widest text-[8px] font-bold">Speed Multiplier</div>
                 <div className="text-emerald-400 font-black text-sm">
                   {activeUpgrade === 'magnet' ? '2.0x Active' : '1.5x Active'}
                 </div>
@@ -897,88 +729,28 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
             <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-xs text-slate-400 space-y-1">
               <div className="font-bold text-slate-200 text-center">How to play:</div>
-              <div>Items fly rapidly from left to right.</div>
-              <div>Tap **only** the Gold items <span className="text-yellow-400 font-bold">(🌟/💰)</span>.</div>
-              <div>Avoid tapping the rusty junk items.</div>
+              <div>Use left/right arrows to switch lanes.</div>
+              <div>Dodge incoming vehicles <span className="text-red-400 font-bold">(🚗/🚌)</span>.</div>
+              <div>Safely complete the target distance to claim massive cash rewards.</div>
             </div>
 
             <button
               onClick={() => setPh('ch4_game')}
               className="w-full py-5 bg-amber-500 text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-amber-500/10"
             >
-              Start Sorting →
+              Start Delivering →
             </button>
           </motion.div>
         )}
 
         {/* PHASE: CHAPTER 4 GAMEPLAY */}
         {phase === 'ch4_game' && (
-          <motion.div
-            key="ch4_game"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full max-w-sm flex flex-col items-center justify-center space-y-6 z-10"
-          >
-            <div className="w-full flex justify-between items-center px-2">
-              <div className="text-left">
-                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
-                  GOLD FOUND
-                </span>
-                <div className="text-3xl font-mono font-black text-yellow-400">
-                  {ch4Score} <span className="text-xs text-slate-500">Gold</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black">
-                  TIME LEFT
-                </span>
-                <div className="text-3xl font-mono font-black text-white">{ch4TimeLeft.toFixed(1)}s</div>
-              </div>
-            </div>
-
-            <div className="w-full h-80 relative rounded-3xl border-2 border-dashed border-amber-500/20 bg-gradient-to-b from-slate-900/40 to-slate-950/80 overflow-hidden shadow-2xl">
-              {/* Conveyor Belt Guideline */}
-              <div className="absolute top-[50%] left-0 right-0 h-1 bg-slate-800 border-b border-dashed border-white/5 transform translate-y-[-50%]" />
-
-              <AnimatePresence>
-                {ch4Items.map(item => (
-                  <button
-                    key={item.id}
-                    onPointerDown={(e) => handleCh4TapItem(item.id, item.type, e)}
-                    className="absolute w-12 h-12 flex items-center justify-center text-3xl focus:outline-none select-none transition-transform active:scale-[0.8] pointer-events-auto"
-                    style={{
-                      left: `${item.x}%`,
-                      top: `${item.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 20,
-                    }}
-                  >
-                    {item.type === 'gold' ? (Math.random() > 0.5 ? '🌟' : '💰') : (Math.random() > 0.5 ? '🧱' : '🔩')}
-                  </button>
-                ))}
-              </AnimatePresence>
-
-              {/* Multiplier Badge */}
-              <div className="absolute bottom-4 left-4 bg-purple-500/10 border border-purple-500/30 px-3 py-1.5 rounded-full text-[10px] font-black text-purple-400 uppercase tracking-wider">
-                ⚡ Tool Yield: {activeUpgrade === 'magnet' ? '2.0x' : '1.5x'}
-              </div>
-
-              {/* Render local floating texts */}
-              {floatingTexts.map(f => (
-                <motion.div
-                  key={f.id}
-                  initial={{ opacity: 1, scale: 1, y: f.y }}
-                  animate={{ opacity: 0, scale: 1.4, y: f.y - 60 }}
-                  transition={{ duration: 0.6 }}
-                  className={`absolute font-mono font-black text-lg pointer-events-none select-none ${f.color || 'text-yellow-400'}`}
-                  style={{ left: f.x }}
-                >
-                  {f.text}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          <TrafficDodge
+            level={1}
+            tier="MUD"
+            onComplete={handleCh4Complete}
+            title="Prologue Chapter 4"
+          />
         )}
 
         {/* PHASE: CHAPTER 4 RESULTS */}
@@ -991,29 +763,29 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             className="text-center max-w-md space-y-8 z-10 p-8 rounded-3xl bg-slate-900/60 border border-white/5 backdrop-blur-md"
           >
             <div className="space-y-3">
-              <div className="text-4xl">🌟</div>
+              <div className="text-4xl">📦</div>
               <span className="text-[10px] text-amber-400 tracking-[0.3em] font-black uppercase">
                 Hustle complete
               </span>
-              <h2 className="text-3xl font-black uppercase tracking-tighter">Sorting Complete!</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Deliveries Completed!</h2>
               <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto">
-                Skill meets technology. Your investment in professional gear generated high-purity yields!
+                You successfully delivered every parcel through hectic city streets. Your professional upgrades made scaling safe and fast!
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
                 <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
-                  Gold Harvested
+                  Efficiency Rating
                 </span>
-                <span className="text-white font-black text-2xl">{ch4Score}</span>
+                <span className="text-white font-black text-2xl">{ch4Score} pts</span>
               </div>
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
                 <span className="block text-[8px] uppercase tracking-widest text-slate-500 mb-1">
                   Cash Flow Earned
                 </span>
                 <span className="text-emerald-400 font-black text-2xl">
-                  ${Math.round(ch4Score * 40 * (activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0))}
+                  ${Math.round(1800 * (ch4Score / 10) * (activeUpgrade === 'magnet' ? 2.0 : activeUpgrade === 'gloves' ? 1.5 : 1.0))}
                 </span>
               </div>
             </div>

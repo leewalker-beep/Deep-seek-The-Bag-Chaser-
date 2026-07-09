@@ -105,6 +105,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       newPl.totalHustlesCompleted += prologueStats.totalHustlesCompleted;
       newPl.actionLog = [...prologueStats.actionLog, ...(newPl.actionLog || [])];
       newPl.month = 1;
+      newPl.isTutorialSkipped = true;
     }
 
     newPl.totalChallengesCompleted = persistentStats.totalChallengesCompleted;
@@ -117,6 +118,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     set({
       pl: newPl,
       ph: prologueStats ? 'PLAYING' : 'PROLOGUE',
+      isTutorialSkipped: prologueStats ? true : currentState.isTutorialSkipped,
       currentMarket: 'NORMAL',
       news: [prologueStats ? 'Prologue completed! Month 1 has begun.' : 'Game reset. Welcome back.'],
       unlockedHustles: getUnlockedHustles(difficulty, currentState.unlockedLegacyUpgradeIds),
