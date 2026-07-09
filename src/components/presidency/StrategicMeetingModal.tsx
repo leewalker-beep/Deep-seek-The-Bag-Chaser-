@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import type { PresidentialActivity, PresidentialActivityChoice } from '../../types/game';
-import { Activity, Shield, Users, CheckCircle2 } from 'lucide-react';
+import { Activity, Shield, Users, CheckCircle2, Zap } from 'lucide-react';
 
 interface StrategicMeetingModalProps {
   activity: PresidentialActivity;
@@ -16,7 +16,10 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
   const [stage, setStage] = useState<Stage>('BRIEFING');
   const [selectedChoice, setSelectedChoice] = useState<PresidentialActivityChoice | null>(null);
   const [executionProgress, setExecutionProgress] = useState(0);
+  const [performanceMultiplier, setPerformanceMultiplier] = useState(1.0);
   const [outcome, setOutcome] = useState<any>(null);
+  const [activePrompt, setActivePrompt] = useState<{ id: number; x: number; y: number } | null>(null);
+  const promptIdRef = useRef(0);
 
   // Auto-advance execution
   useEffect(() => {
@@ -30,16 +33,35 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
           }
           return prev + 2;
         });
+
+        // Strategic Response Prompts
+        if (Math.random() < 0.08 && !activePrompt) {
+            setActivePrompt({
+                id: promptIdRef.current++,
+                x: Math.random() * 60 + 20,
+                y: Math.random() * 60 + 20
+            });
+            // Auto-clear after 1s
+            setTimeout(() => setActivePrompt(null), 1000);
+        }
       }, 30);
       return () => clearInterval(interval);
     }
-  }, [stage]);
+  }, [stage, activePrompt]);
 
   const handleResolution = () => {
     if (!selectedChoice) return;
-    const result = resolvePresidentialActivity(activity.id, selectedChoice.id, 1.0); // Assuming 1.0 performance for now
+    const result = resolvePresidentialActivity(activity.id, selectedChoice.id, performanceMultiplier);
     setOutcome(result);
     setStage('RESULTS');
+  };
+
+  const handleStrategicResponse = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activePrompt) return;
+    setPerformanceMultiplier(prev => Math.min(1.5, prev + 0.1));
+    setActivePrompt(null);
+    if (navigator.vibrate) navigator.vibrate(20);
   };
 
   const checkRequirement = (choice: PresidentialActivityChoice) => {
@@ -169,7 +191,7 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
   );
 
   const renderExecution = () => (
-    <div className="space-y-8 text-center py-12">
+    <div className="space-y-8 text-center py-12 relative min-h-[300px]">
       <div className="relative w-32 h-32 mx-auto">
         <div className="absolute inset-0 border-4 border-slate-800 rounded-full" />
         <motion.div
@@ -186,9 +208,25 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
         </div>
       </div>
 
+      <AnimatePresence>
+          {activePrompt && (
+              <motion.button
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 2, opacity: 0 }}
+                onClick={handleStrategicResponse}
+                className="absolute z-40 bg-blue-600 text-white p-4 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)] border-2 border-white/50"
+                style={{ top: `${activePrompt.y}%`, left: `${activePrompt.x}%` }}
+              >
+                  <Zap size={24} className="fill-current" />
+              </motion.button>
+          )}
+      </AnimatePresence>
+
       <div>
         <div className="text-[10px] text-blue-400 font-black uppercase tracking-[0.4em] mb-2">Simulating Outcomes</div>
         <h3 className="text-xl font-black text-white uppercase italic">Executing {selectedChoice?.label}</h3>
+        <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">Strategic Performance: {performanceMultiplier.toFixed(1)}x</div>
       </div>
 
       <div className="max-w-xs mx-auto">
@@ -203,6 +241,10 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
           <span>Processing Data</span>
           <span>{executionProgress}%</span>
         </div>
+      </div>
+
+      <div className="absolute bottom-0 w-full text-[8px] text-slate-600 font-black uppercase tracking-[0.3em] animate-pulse">
+          TAP STRATEGIC UPDATES TO BOOST RESULTS
       </div>
     </div>
   );
@@ -223,6 +265,7 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
           </div>
           <div className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em] mb-1">Strategic Victory</div>
           <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Resolution Complete</h2>
+          <div className="text-[10px] text-slate-500 font-bold">PERFORMANCE BONUS: +{Math.round((performanceMultiplier - 1.0) * 100)}%</div>
         </div>
 
         <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">

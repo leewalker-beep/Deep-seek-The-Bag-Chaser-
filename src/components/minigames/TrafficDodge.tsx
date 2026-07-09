@@ -9,6 +9,8 @@ interface Obstacle {
   lane: number;
   y: number;
   type: string;
+  isPickup?: boolean;
+  isNegative?: boolean;
 }
 
 interface TrafficDodgeProps {
@@ -31,6 +33,8 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [gameActive, setGameActive] = useState(true);
   const [distance, setDistance] = useState(0);
+  const [score, setScore] = useState(0);
+  const [controlDelay, setControlDelay] = useState(0);
   const obstacleId = useRef(0);
 
   // Ref-based lane for the interval closure
@@ -47,7 +51,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
   const targetDistance = Math.floor((400 + (level - 1) * 200) * scaling);
 
   const handleLaneChange = (dir: 'left' | 'right') => {
-    if (!gameActive) return;
+    if (!gameActive || controlDelay > 0) return;
     setLane(prev => {
       if (dir === 'left') return Math.max(0, prev - 1);
       return Math.min(2, prev + 1);
@@ -59,11 +63,16 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
     if (!gameActive) return;
 
     const gameLoop = setInterval(() => {
+      if (controlDelay > 0) {
+          setControlDelay(prev => Math.max(0, prev - 50));
+      }
+
       setDistance(prev => {
         const next = prev + Math.floor(gameSpeed);
         if (next >= targetDistance) {
             setGameActive(false);
-            const multiplier = 4.0 * (0.8 + scaling * 0.2); // Modern reward scaling
+            const accuracyMult = 1 + (score * 0.1);
+            const multiplier = 4.0 * (0.8 + scaling * 0.2) * accuracyMult;
             if (navigator.vibrate) navigator.vibrate(100);
             setTimeout(() => onComplete(multiplier), 1000);
             return targetDistance;
@@ -72,23 +81,31 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
       });
 
       setObstacles(prev => {
-        const updated = prev.map(o => ({ ...o, y: o.y + gameSpeed }));
+        const updated = prev.map(o => ({ ...o, y: o.y + (o.isPickup ? gameSpeed * 0.8 : gameSpeed) }));
 
-        // Collision detection: if any obstacle has y > 75 AND y < 90 AND obstacle.lane === lane, that's a hit.
-        const collision = updated.find(o => o.lane === laneRef.current && o.y > 75 && o.y < 90);
+        // Collision detection
+        const collision = updated.find(o => o.lane === laneRef.current && o.y > 75 && o.y < 95);
         if (collision) {
-          setGameActive(false);
-          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          setDistance(d => {
-              // Penalty based on how far they got, modern scaling
-              const progress = d / targetDistance;
-              let multiplier = 0.5;
-              if (progress >= 0.75) multiplier = 2.5;
-              else if (progress >= 0.4) multiplier = 1.2;
+          if (collision.isPickup) {
+             setScore(s => s + 1);
+             if (navigator.vibrate) navigator.vibrate(20);
+             return updated.filter(o => o.id !== collision.id);
+          } else if (collision.isNegative) {
+             setControlDelay(1500); // 1.5s delay
+             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+             return updated.filter(o => o.id !== collision.id);
+          } else {
+             setGameActive(false);
+             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+             // Penalty based on how far they got
+             const progress = distance / targetDistance;
+             let base = 0.5;
+             if (progress >= 0.75) base = 2.5;
+             else if (progress >= 0.4) base = 1.2;
 
-              setTimeout(() => onComplete(multiplier), 1000);
-              return d;
-          });
+             const multiplier = base * (1 + score * 0.05);
+             setTimeout(() => onComplete(multiplier), 1000);
+          }
         }
 
         return updated.filter(o => o.y < 105);
@@ -96,36 +113,57 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
     }, 50);
 
     const spawner = setInterval(() => {
-      setObstacles(prev => [
-        ...prev,
-        {
-          id: obstacleId.current++,
-          lane: Math.floor(Math.random() * 3),
-          y: 0,
-          type: VEHICLES[Math.floor(Math.random() * VEHICLES.length)]
-        }
-      ]);
+      setObstacles(prev => {
+          let type = VEHICLES[Math.floor(Math.random() * VEHICLES.length)];
+          let isPickup = false;
+          let isNegative = false;
+
+          const roll = Math.random();
+          if (level >= 3 && roll < 0.15) {
+              type = '📦';
+              isPickup = true;
+          } else if (level >= 4 && roll < 0.25) {
+              type = '🛢️';
+              isNegative = true;
+          }
+
+          return [
+            ...prev,
+            {
+              id: obstacleId.current++,
+              lane: Math.floor(Math.random() * 3),
+              y: 0,
+              type,
+              isPickup,
+              isNegative
+            }
+          ];
+      });
     }, spawnRate);
 
     return () => {
       clearInterval(gameLoop);
       clearInterval(spawner);
     };
-  }, [gameActive, gameSpeed, targetDistance, spawnRate, scaling, onComplete]);
+  }, [gameActive, gameSpeed, targetDistance, spawnRate, scaling, onComplete, score, distance, level, controlDelay]);
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <PerfectFlow isActive={gameActive && distance > targetDistance * 0.5} intensity={Math.min(5, Math.floor(distance / (targetDistance * 0.2)))} />
       <div className="absolute top-12 text-center w-full z-20">
         <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{title} <span className="text-emerald-500">L{level}</span></h2>
-        <div className="mt-2 flex justify-center gap-10">
+        <div className="mt-2 flex justify-center gap-6">
             <div className="text-center">
                 <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">DISTANCE</div>
-                <div className="text-2xl font-black text-emerald-400 font-mono">{distance}m</div>
+                <div className="text-xl font-black text-emerald-400 font-mono">{distance}m</div>
+            </div>
+            <div className="text-center">
+                <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">PACKAGES</div>
+                <div className="text-xl font-black text-blue-400 font-mono">{score}</div>
             </div>
             <div className="text-center">
                 <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">GOAL</div>
-                <div className="text-2xl font-black text-white font-mono">{targetDistance}m</div>
+                <div className="text-xl font-black text-white font-mono">{targetDistance}m</div>
             </div>
         </div>
       </div>
@@ -137,7 +175,7 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
 
         {/* Player */}
         <motion.div
-          className="absolute w-24 h-24 flex items-center justify-center text-6xl z-20 drop-shadow-[0_0_15px_rgba(52,211,153,0.4)]"
+          className={`absolute w-24 h-24 flex items-center justify-center text-6xl z-20 drop-shadow-[0_0_15px_rgba(52,211,153,0.4)] ${controlDelay > 0 ? 'opacity-50 grayscale animate-pulse' : ''}`}
           animate={{ left: LANES[lane] }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           style={{ position: 'absolute', bottom: '8px', transform: 'translateX(-50%)' }}
@@ -150,22 +188,41 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
           {obstacles.map(o => (
             <div
               key={o.id}
-              className="absolute w-24 h-24 flex items-center justify-center text-6xl z-10"
+              className={`absolute w-24 h-24 flex items-center justify-center z-10 ${o.isPickup ? 'text-4xl' : 'text-5xl'}`}
               style={{
                 position: 'absolute',
                 left: LANES[o.lane],
                 top: `${o.y}%`,
                 transform: 'translateX(-50%)',
-                fontSize: '2rem'
               }}
             >
               {o.type}
+              {o.isPickup && (
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl"
+                  />
+              )}
+              {o.isNegative && (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                    className="absolute inset-0 bg-red-500/10 rounded-full blur-md"
+                  />
+              )}
             </div>
           ))}
         </AnimatePresence>
 
+        {controlDelay > 0 && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-red-500 font-black text-xl italic uppercase tracking-widest z-30 animate-bounce">
+                ENGINE STALLED!
+            </div>
+        )}
+
         {!gameActive && (
-             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-40">
                 <div className="text-4xl font-black text-white italic uppercase tracking-tighter">
                     {distance >= targetDistance ? 'GOAL REACHED!' : 'CRASHED!'}
                 </div>
@@ -177,20 +234,22 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
       <div className="mt-8 flex gap-4 w-full max-w-xs">
           <button
             onPointerDown={() => handleLaneChange('left')}
-            className="flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl"
+            disabled={controlDelay > 0}
+            className={`flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl ${controlDelay > 0 ? 'opacity-30' : ''}`}
           >
               ⬅️
           </button>
           <button
             onPointerDown={() => handleLaneChange('right')}
-            className="flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl"
+            disabled={controlDelay > 0}
+            className={`flex-1 py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl border-b-8 border-slate-950 active:border-b-0 active:translate-y-1 transition-all text-4xl ${controlDelay > 0 ? 'opacity-30' : ''}`}
           >
               ➡️
           </button>
       </div>
 
       <div className="mt-6 text-[8px] text-slate-600 font-black uppercase tracking-widest text-center opacity-30">
-          USE BUTTONS TO DODGE TRAFFIC
+          {level >= 3 ? "COLLECT PACKAGES • DODGE OIL SPILLS" : "USE BUTTONS TO DODGE TRAFFIC"}
       </div>
     </div>
   );

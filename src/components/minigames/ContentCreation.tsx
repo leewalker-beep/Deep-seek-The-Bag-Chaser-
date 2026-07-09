@@ -24,6 +24,13 @@ const TOPICS: Topic[] = [
   { id: 12, label: 'Terms & Conditions Reading', isViral: false },
 ];
 
+interface LiveChat {
+  id: number;
+  text: string;
+  x: number;
+  y: number;
+}
+
 interface ContentCreationProps {
   onComplete: (multiplier: number) => void;
   level?: number;
@@ -55,17 +62,19 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const [offsetX, setOffsetX] = useState(0);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [liveChats, setLiveChats] = useState<LiveChat[]>([]);
   const touchStart = useRef<{ x: number, y: number } | null>(null);
   const timerRef = useRef<number | null>(null);
+  const chatCounter = useRef(0);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
   const timerFactor = getTimerFactor(level, tier);
 
-  // Difficulty scaling: less time per topic, more topics
+  // Difficulty scaling
   const timePerTopic = useMemo(() => Math.max(0.8, (2.5 - (level * 0.2)) * timerFactor), [level, timerFactor]);
   const totalTopics = useMemo(() => Math.min(25, 3 + (level * 2) + Math.floor(scaling * 2)), [level, scaling]);
-  const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]); // Easier swipe at high difficulty to prevent friction
+  const swipeThreshold = useMemo(() => Math.max(40, 80 * (1/scaling)), [scaling]);
 
   const [shuffledTopics] = useState(() => {
     const shuffled = [...TOPICS];
@@ -73,7 +82,6 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    // Repeat topics if needed for higher levels
     let finalTopics = shuffled;
     while (finalTopics.length < totalTopics) {
         finalTopics = [...finalTopics, ...shuffled];
@@ -82,21 +90,21 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   });
 
   const endGame = useCallback(() => {
+    if (!gameActive) return;
     setGameActive(false);
     const accuracy = total > 0 ? score / total : 0;
 
-    let baseMultiplier = 0.5;
-    if (accuracy >= 0.9) baseMultiplier = 3.0;
-    else if (accuracy >= 0.7) baseMultiplier = 2.0;
-    else if (accuracy >= 0.5) baseMultiplier = 1.2;
-    else baseMultiplier = 0.8;
+    let base = 0.5;
+    if (accuracy >= 0.9) base = 3.0;
+    else if (accuracy >= 0.7) base = 2.0;
+    else if (accuracy >= 0.5) base = 1.2;
+    else base = 0.8;
 
-    // Apply scaling reward and streak bonus
     const streakBonus = 1 + (Math.min(10, streak) * 0.05);
-    const multiplier = baseMultiplier * (0.8 + scaling * 0.2) * streakBonus;
+    const multiplier = base * (0.8 + scaling * 0.2) * streakBonus;
 
     setTimeout(() => onComplete(multiplier), 800);
-  }, [score, total, onComplete, scaling, streak]);
+  }, [score, total, onComplete, scaling, streak, gameActive]);
 
   const handleTimeout = useCallback(() => {
     if (!gameActive || result !== null) return;
@@ -125,19 +133,28 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
           if (timerRef.current) clearInterval(timerRef.current);
           handleTimeout();
         }
+
+        // Random Live Chat spawn for L4+
+        if (level >= 4 && Math.random() < 0.02) {
+            setLiveChats(prev => [...prev, {
+                id: chatCounter.current++,
+                text: ["POG!", "CRINGE", "W", "L", "FR FR", "CAP"][Math.floor(Math.random() * 6)],
+                x: Math.random() * 60 + 20,
+                y: Math.random() * 60 + 20
+            }]);
+        }
       }, 50);
     } else if (topicIndex >= shuffledTopics.length && gameActive) {
       if (timerRef.current) clearInterval(timerRef.current);
       endGame();
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [topicIndex, shuffledTopics, gameActive, endGame, timePerTopic, handleTimeout]);
+  }, [topicIndex, shuffledTopics, gameActive, endGame, timePerTopic, handleTimeout, level]);
 
   const handleAction = (isPost: boolean) => {
     if (!gameActive || !currentTopic || result !== null) return;
     if (timerRef.current) clearInterval(timerRef.current);
 
-    // Viral items should be posted (swiped up), non-viral declined (swiped down)
     const isCorrect = (isPost && currentTopic.isViral) || (!isPost && !currentTopic.isViral);
 
     if (isCorrect) {
@@ -186,6 +203,11 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
     touchStart.current = null;
   };
 
+  const dismissChat = (id: number) => {
+    setLiveChats(prev => prev.filter(c => c.id !== id));
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
+
   const colorMap: Record<string, string> = {
     purple: 'text-purple-400 border-purple-500/30 bg-purple-500 text-purple-400 text-purple-500/50',
     blue: 'text-blue-400 border-blue-500/30 bg-blue-500 text-blue-400 text-blue-500/50',
@@ -197,7 +219,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   const [cText, cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
 
   return (
-    <div className={`bg-slate-950 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-96 flex flex-col justify-center items-center relative overflow-hidden ${
+    <div className={`bg-slate-950 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-[420px] flex flex-col justify-center items-center relative overflow-hidden ${
       result === 'correct' ? 'border-emerald-500 bg-emerald-950/20' :
       result === 'wrong' ? 'border-red-500 bg-red-950/20' :
       cBorder
@@ -233,10 +255,10 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
           >
             {/* Feedback Overlays */}
             {(offsetY < -40 || (level >= 3 && offsetX > 40)) && (
-                <div className="absolute top-4 font-black text-emerald-400 text-xl rotate-[-10deg]">POST IT!</div>
+                <div className="absolute top-4 font-black text-emerald-400 text-xl rotate-[-10deg] drop-shadow-lg z-30">POST IT!</div>
             )}
             {(offsetY > 40 || (level >= 3 && offsetX < -40)) && (
-                <div className="absolute bottom-4 font-black text-red-400 text-xl rotate-[10deg]">DECLINE</div>
+                <div className="absolute bottom-4 font-black text-red-400 text-xl rotate-[10deg] drop-shadow-lg z-30">DECLINE</div>
             )}
 
             <div className="text-5xl mb-2">{currentTopic.isViral ? '🔥' : '📄'}</div>
@@ -258,6 +280,23 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
         )}
       </AnimatePresence>
 
+      {/* Live Chat Popups */}
+      <AnimatePresence>
+        {liveChats.map(chat => (
+            <motion.button
+                key={chat.id}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                onPointerDown={(e) => { e.stopPropagation(); dismissChat(chat.id); }}
+                className="absolute z-40 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 py-1 text-[10px] font-black text-white shadow-xl flex items-center gap-1"
+                style={{ top: `${chat.y}%`, left: `${chat.x}%` }}
+            >
+                💬 {chat.text} <span className="ml-1 opacity-50">×</span>
+            </motion.button>
+        ))}
+      </AnimatePresence>
+
       <div className="absolute bottom-6 w-full flex justify-around px-6 opacity-30 pointer-events-none">
            <div className="flex flex-col items-center gap-1">
               <span className="text-2xl">{level >= 3 ? '⬆️/➡️' : '⬆️'}</span>
@@ -276,7 +315,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
       </div>
 
       {!gameActive && (
-        <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 p-6">
+        <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-50 p-6">
           <div className="text-6xl mb-4">📈</div>
           <div className="text-3xl font-black text-white italic uppercase tracking-tighter">FEED UPDATED</div>
           <div className="text-emerald-500 font-black font-mono text-xl mt-2">{score}/{total} VIRAL SUCCESS</div>

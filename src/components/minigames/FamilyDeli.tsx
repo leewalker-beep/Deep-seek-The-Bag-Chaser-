@@ -32,7 +32,7 @@ interface OrderItem {
 
 interface Customer {
   id: number;
-  type: 'REGULAR' | 'VIP';
+  type: 'REGULAR' | 'VIP' | 'CRITIC';
   order: OrderItem[];
   patience: number; // 0 to 100
   maxPatience: number;
@@ -78,28 +78,34 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
   const scaling = getScalingMultiplier(level, tier);
   const timerFactor = getTimerFactor(level, tier);
 
-  const maxCustomers = useMemo(() => Math.min(4, level + 1), [level]);
-  const itemsPerOrder = useMemo(() => Math.min(3, level), [level]);
+  const maxCustomers = useMemo(() => Math.min(5, level + 1), [level]);
+  const itemsPerOrder = useMemo(() => Math.min(5, level), [level]);
   const memoryEnabled = level >= 2;
   const modifiersEnabled = level >= 3;
   const registerEnabled = level >= 2;
   const eventsEnabled = level >= 3;
 
   // Visual Evolution
-  const deliTitle = level >= 3 ? "CITY INSTITUTION" : level >= 2 ? "CATERING SERVICE" : "SERVICE COUNTER";
-  const deliBg = level >= 3 ? 'bg-slate-900' : level >= 2 ? 'bg-orange-900/40' : 'bg-orange-950/20';
+  const deliTitle = level >= 5 ? "GLOBAL INSTITUTION" : level >= 3 ? "CITY INSTITUTION" : level >= 2 ? "CATERING SERVICE" : "SERVICE COUNTER";
+  const deliBg = level >= 4 ? 'bg-slate-900' : level >= 2 ? 'bg-orange-900/40' : 'bg-orange-950/20';
 
   const spawnCustomer = useCallback(() => {
     if (customers.length >= maxCustomers) return;
 
-    const isVIP = level >= 3 && Math.random() < 0.15;
+    // L4+ introduces Food Critics
+    const roll = Math.random();
+    let type: 'REGULAR' | 'VIP' | 'CRITIC' = 'REGULAR';
+    if (level >= 4 && roll < 0.1) type = 'CRITIC';
+    else if (level >= 3 && roll < 0.2) type = 'VIP';
+
     const orderSize = Math.floor(Math.random() * itemsPerOrder) + 1;
     const order: OrderItem[] = [];
 
     for (let i = 0; i < orderSize; i++) {
-      const menuId = MENU[Math.floor(Math.random() * (level >= 5 ? MENU.length : 3))].id;
+      const menuLimit = level >= 4 ? MENU.length : 3;
+      const menuId = MENU[Math.floor(Math.random() * menuLimit)].id;
       const modifiers: string[] = [];
-      if (modifiersEnabled && Math.random() < 0.3) {
+      if (modifiersEnabled && Math.random() < 0.4) {
         modifiers.push(MODIFIERS[Math.floor(Math.random() * MODIFIERS.length)].id);
       }
       order.push({ menuId, modifiers: modifiers.length > 0 ? modifiers : undefined });
@@ -107,17 +113,17 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
 
     const newCustomer: Customer = {
       id: customerIdRef.current++,
-      type: isVIP ? 'VIP' : 'REGULAR',
+      type,
       order,
       patience: 100,
-      maxPatience: 100 * (isVIP ? 0.7 : 1),
+      maxPatience: 100 * (type === 'CRITIC' ? 0.4 : type === 'VIP' ? 0.7 : 1),
       showOrder: true,
     };
 
     setCustomers(prev => [...prev, newCustomer]);
 
     if (memoryEnabled) {
-      const showTime = Math.max(1000, 3000 * timerFactor);
+      const showTime = Math.max(800, 3000 * timerFactor);
       setTimeout(() => {
         setCustomers(prev => prev.map(c => c.id === newCustomer.id ? { ...c, showOrder: false } : c));
       }, showTime);
@@ -145,10 +151,14 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
       });
 
       setCustomers(prev => {
-        const next = prev.map(c => ({
-          ...c,
-          patience: Math.max(0, c.patience - (1.5 * (1 / (timerFactor || 1))))
-        }));
+        const next = prev.map(c => {
+           let decay = 1.5 * (1 / (timerFactor || 1));
+           if (c.type === 'CRITIC') decay *= 1.5;
+           return {
+            ...c,
+            patience: Math.max(0, c.patience - decay)
+           };
+        });
 
         // Handle impatience
         const impatient = next.find(c => c.patience <= 0);
@@ -172,13 +182,15 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
       }
 
       // Try to spawn new customers
-      if (Math.random() < 0.1) {
+      // Spawning gets faster on streaks in L5
+      const spawnChance = (level >= 5 && streak >= 5) ? 0.25 : 0.1;
+      if (Math.random() < spawnChance) {
         spawnCustomer();
       }
     }, 100);
 
     return () => clearInterval(interval);
-  }, [gameActive, phase, timerFactor, eventsEnabled, spawnCustomer]);
+  }, [gameActive, phase, timerFactor, eventsEnabled, spawnCustomer, level, streak]);
 
   const handleAssemble = (menuId: string) => {
     if (phase !== 'SERVICE' || selectedCustomerIndex === null) return;
@@ -224,7 +236,7 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
           setChangeOptions(Array.from(options).sort((a,b) => a-b));
           setPhase('REGISTER');
         } else {
-          handleOrderSuccess(targetCustomer.type === 'VIP');
+          handleOrderSuccess(targetCustomer.type !== 'REGULAR');
         }
       } else {
         handleOrderFailure();
@@ -232,8 +244,8 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
     }
   };
 
-  const handleOrderSuccess = (isVIP: boolean) => {
-    setScore(s => s + (isVIP ? 3 : 1));
+  const handleOrderSuccess = (isPremium: boolean) => {
+    setScore(s => s + (isPremium ? 3 : 1));
     setStreak(prev => prev + 1);
     setTotal(t => t + 1);
     setFeedback('correct');
@@ -262,7 +274,7 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
 
   const handleRegister = (selectedChange: number) => {
     if (selectedChange === correctChange) {
-      handleOrderSuccess(customers[selectedCustomerIndex!].type === 'VIP');
+      handleOrderSuccess(customers[selectedCustomerIndex!].type !== 'REGULAR');
     } else {
       handleOrderFailure();
     }
@@ -270,7 +282,6 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
 
   const handleRestock = (menuId: string) => {
     setInventory(prev => ({ ...prev, [menuId]: 10 }));
-    // If all restocked or just enough
     setPhase('SERVICE');
   };
 
@@ -288,9 +299,7 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
     const totalAttempted = total + wrong;
     const accuracy = totalAttempted > 0 ? (score / totalAttempted) : 0;
 
-    // Penalize heavily for wrong orders/change to satisfy "Wrong orders reduce Clout"
-    // via the engine's success/failure threshold (0.5)
-    let base = 0.4; // Failure base
+    let base = 0.4;
     if (accuracy >= 0.9) base = 3.0;
     else if (accuracy >= 0.7) base = 2.0;
     else if (accuracy >= 0.5) base = 1.2;
@@ -347,9 +356,10 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                   }}
                   className={`flex-shrink-0 w-24 h-28 rounded-2xl border-2 flex flex-col items-center justify-between p-2 transition-all ${
                     selectedCustomerIndex === idx ? 'border-orange-500 bg-orange-500/20 scale-105' : 'border-slate-700 bg-slate-800'
-                  } ${customer.type === 'VIP' ? 'ring-2 ring-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' : ''}`}
+                  } ${customer.type === 'VIP' ? 'ring-2 ring-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+                      customer.type === 'CRITIC' ? 'ring-2 ring-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]' : ''}`}
                 >
-                  <div className="text-3xl">{customer.type === 'VIP' ? '🤵' : '👤'}</div>
+                  <div className="text-3xl">{customer.type === 'VIP' ? '🤵' : customer.type === 'CRITIC' ? '🧐' : '👤'}</div>
                   <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${customer.patience > 50 ? 'bg-emerald-500' : customer.patience > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
@@ -377,16 +387,18 @@ export const FamilyDeli: React.FC<FamilyDeliProps> = ({ onComplete, level = 1, t
                {selectedCustomerIndex !== null ? (
                  <>
                    <div className="text-center mb-4">
-                      <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">CURRENT ORDER</div>
+                      <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">
+                          {customers[selectedCustomerIndex].type === 'CRITIC' ? 'CRITIC ORDER' : 'CURRENT ORDER'}
+                      </div>
                       <div className="flex gap-3 justify-center items-center">
                         {customers[selectedCustomerIndex].order.map((item, i) => (
                           <div key={i} className="flex flex-col items-center gap-1">
                             <div className={`text-4xl p-2 rounded-xl bg-slate-800 border ${currentAssembly[i] ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700'}`}>
                               {customers[selectedCustomerIndex].showOrder ? MENU.find(m => m.id === item.menuId)?.icon : '❓'}
                             </div>
-                            {item.modifiers && customers[selectedCustomerIndex].showOrder && (
-                              <div className="text-[8px] bg-blue-500/20 text-blue-400 px-1 rounded border border-blue-500/30 font-bold uppercase">
-                                {MODIFIERS.find(m => m.id === item.modifiers![0])?.name}
+                            {item.modifiers && (
+                              <div className={`text-[8px] px-1 rounded border font-bold uppercase ${customers[selectedCustomerIndex].showOrder ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-slate-700 text-slate-500 border-slate-600'}`}>
+                                {customers[selectedCustomerIndex].showOrder ? MODIFIERS.find(m => m.id === item.modifiers![0])?.name : '??'}
                               </div>
                             )}
                           </div>

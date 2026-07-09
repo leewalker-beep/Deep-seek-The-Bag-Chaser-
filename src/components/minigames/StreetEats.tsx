@@ -7,7 +7,7 @@ import type { Tier } from '../../types/game';
 interface Ingredient {
   id: number;
   icon: string;
-  side: 'left' | 'right';
+  side: 'left' | 'right' | 'top' | 'bottom';
   level: number;
 }
 
@@ -22,15 +22,15 @@ const ALL_INGREDIENTS: Ingredient[] = [
   { id: 6, icon: '🍅', side: 'right', level: 2 },
   { id: 7, icon: '🧀', side: 'right', level: 2 },
   { id: 8, icon: '🥓', side: 'left', level: 2 },
-  // L3
-  { id: 9, icon: '🦐', side: 'left', level: 3 },
-  { id: 10, icon: '🍍', side: 'right', level: 3 },
-  { id: 11, icon: '🥑', side: 'right', level: 3 },
-  { id: 12, icon: '🍄', side: 'left', level: 3 },
+  // L3+ 4-way sorting
+  { id: 9, icon: '🍤', side: 'top', level: 3 },
+  { id: 10, icon: '🍍', side: 'top', level: 3 },
+  { id: 11, icon: '🥑', side: 'bottom', level: 3 },
+  { id: 12, icon: '🍄', side: 'bottom', level: 3 },
   // L4+
-  { id: 13, icon: '🍣', side: 'left', level: 4 },
+  { id: 13, icon: '🍣', side: 'top', level: 4 },
   { id: 14, icon: '🥡', side: 'right', level: 4 },
-  { id: 15, icon: '🥗', side: 'right', level: 4 },
+  { id: 15, icon: '🥗', side: 'bottom', level: 4 },
   { id: 16, icon: '🍳', side: 'left', level: 4 },
 ];
 
@@ -43,13 +43,12 @@ interface StreetEatsProps {
 export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
   const [currentOrder, setCurrentOrder] = useState<Ingredient[]>([]);
   const [score, setScore] = useState(0);
-  const [wrong, setWrong] = useState(0);
   const [total, setTotal] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [showResults, setShowResults] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [streak, setStreak] = useState(0);
-  const touchStart = useRef<number | null>(null);
+  const touchStart = useRef<{ x: number, y: number } | null>(null);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -71,7 +70,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
     spawnOrder();
   }, [spawnOrder]);
 
-  // Timer logic - speed increases with scaling
+  // Timer logic
   useEffect(() => {
     if (!gameActive) return;
 
@@ -81,14 +80,13 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
           setGameActive(false);
           return 0;
         }
-        // Shave time slightly faster at higher scaling
         return prev - (0.1 * Math.sqrt(scaling));
       });
     }, 100);
     return () => clearInterval(timer);
   }, [gameActive, scaling]);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = (direction: 'left' | 'right' | 'top' | 'bottom') => {
     if (!gameActive || currentOrder.length === 0) return;
 
     const correctSide = currentOrder[0].side;
@@ -98,7 +96,6 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
       setFeedback('correct');
       if (navigator.vibrate) navigator.vibrate(20);
     } else {
-      setWrong(w => w + 1);
       setStreak(0);
       setFeedback('wrong');
       if (navigator.vibrate) navigator.vibrate([30, 30]);
@@ -108,17 +105,27 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
     spawnOrder();
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.targetTouches[0].clientX;
+  const onPointerDown = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    touchStart.current = { x: e.clientX, y: e.clientY };
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart.current === null) return;
-    const endX = e.changedTouches[0].clientX;
-    const diff = endX - touchStart.current;
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!touchStart.current) return;
+    const diffX = e.clientX - touchStart.current.x;
+    const diffY = e.clientY - touchStart.current.y;
+    const absX = Math.abs(diffX);
+    const absY = Math.abs(diffY);
 
-    if (diff > 50) handleSwipe('right');
-    else if (diff < -50) handleSwipe('left');
+    if (Math.max(absX, absY) < 30) return;
+
+    if (absX > absY) {
+        if (diffX > 50) handleSwipe('right');
+        else if (diffX < -50) handleSwipe('left');
+    } else if (level >= 3) {
+        if (diffY > 50) handleSwipe('bottom');
+        else if (diffY < -50) handleSwipe('top');
+    }
 
     touchStart.current = null;
   };
@@ -131,16 +138,9 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
 
   const finalMultiplier = useMemo(() => {
     const accuracy = total > 0 ? score / total : 0;
-    // Multiplier scales with difficulty (scaling factor)
-    const base = accuracy >= 0.8 ? 2.0 : accuracy >= 0.5 ? 1.2 : 0.6;
+    const base = accuracy >= 0.8 ? 2.5 : accuracy >= 0.5 ? 1.5 : 0.6;
     return base * (0.8 + scaling * 0.2);
   }, [score, total, scaling]);
-
-  const accuracyPercent = total > 0 ? Math.round((score / total) * 100) : 0;
-  const netScore = score - wrong;
-
-  const leftIngredients = availableIngredients.filter(i => i.side === 'left');
-  const rightIngredients = availableIngredients.filter(i => i.side === 'right');
 
   const menuTitle = level >= 5 ? "GOURMET FUSION" : level >= 3 ? "STREET DELUXE" : "STREET EATS";
 
@@ -152,24 +152,28 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
       <div className="absolute top-12 text-center w-full px-6">
         <h2 className="text-4xl font-black text-orange-500 italic tracking-tighter uppercase drop-shadow-lg">{menuTitle} <span className="text-white text-sm">L{level}</span></h2>
         <div className="flex items-center justify-center gap-4 mt-1">
-          <motion.span animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700 font-black">⬅️</motion.span>
-          <p className="text-slate-200 text-xs font-black uppercase tracking-widest">SORT INGREDIENTS!</p>
-          <motion.span animate={{ x: [5, -5, 5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-orange-700 font-black">➡️</motion.span>
+          <p className="text-slate-200 text-xs font-black uppercase tracking-widest">
+              {level >= 3 ? "SORT 4-WAYS!" : "SORT LEFT/RIGHT!"}
+          </p>
         </div>
-        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">Score: {score}/{total}</div>
+        <div className="mt-6 text-emerald-400 font-mono font-black text-3xl tabular-nums">{score}/{total}</div>
       </div>
 
       <div
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
         className={`relative w-full max-w-sm h-72 bg-slate-900 rounded-[3rem] border-8 transition-colors duration-200 flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ${
           feedback === 'correct' ? 'border-emerald-500' : feedback === 'wrong' ? 'border-red-500' : 'border-orange-900/50'
         }`}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
-        <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-5xl opacity-20 z-0">⬅️</div>
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-5xl opacity-20 z-0">➡️</div>
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-4xl opacity-10">⬅️</div>
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-4xl opacity-10">➡️</div>
+        {level >= 3 && (
+            <>
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 text-4xl opacity-10">⬆️</div>
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-4xl opacity-10">⬇️</div>
+            </>
+        )}
 
         <AnimatePresence mode="wait">
           {currentOrder.map(item => (
@@ -177,7 +181,12 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
               key={item.id + total}
               initial={{ scale: 0, y: 50, rotate: -45 }}
               animate={{ scale: 1.8, y: 0, rotate: 0 }}
-              exit={{ x: item.side === 'left' ? -400 : 400, opacity: 0, rotate: item.side === 'left' ? -90 : 90 }}
+              exit={{
+                  x: item.side === 'left' ? -400 : item.side === 'right' ? 400 : 0,
+                  y: item.side === 'top' ? -400 : item.side === 'bottom' ? 400 : 0,
+                  opacity: 0,
+                  rotate: item.side === 'left' ? -90 : 90
+              }}
               transition={{ type: "spring", damping: 12 }}
               className="text-8xl z-10 drop-shadow-2xl"
             >
@@ -187,19 +196,27 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
         </AnimatePresence>
       </div>
 
-      <div className="mt-12 flex justify-between w-full max-w-sm px-6 bg-slate-950/50 p-4 rounded-2xl border border-slate-800 backdrop-blur-sm">
+      <div className="mt-12 grid grid-cols-2 gap-4 w-full max-w-sm px-6 bg-slate-950/50 p-4 rounded-2xl border border-slate-800 backdrop-blur-sm">
         <div className="text-left flex flex-col gap-1">
-          <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">LEFT PAN</div>
-          <div className="text-2xl flex gap-1">
-            {leftIngredients.slice(-4).map(i => <span key={i.id}>{i.icon}</span>)}
-          </div>
+          <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">LEFT</div>
+          <div className="text-xl flex gap-1">{availableIngredients.filter(i => i.side === 'left').slice(-3).map(i => <span key={i.id}>{i.icon}</span>)}</div>
         </div>
         <div className="text-right flex flex-col gap-1">
-          <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">RIGHT PAN</div>
-          <div className="text-2xl flex gap-1 flex-row-reverse">
-            {rightIngredients.slice(-4).map(i => <span key={i.id}>{i.icon}</span>)}
-          </div>
+          <div className="text-[8px] text-slate-500 font-black uppercase tracking-widest">RIGHT</div>
+          <div className="text-xl flex gap-1 flex-row-reverse">{availableIngredients.filter(i => i.side === 'right').slice(-3).map(i => <span key={i.id}>{i.icon}</span>)}</div>
         </div>
+        {level >= 3 && (
+            <>
+                <div className="text-left flex flex-col gap-1">
+                  <div className="text-[8px] text-blue-500 font-black uppercase tracking-widest font-bold">TOP (PREMIUM)</div>
+                  <div className="text-xl flex gap-1">{availableIngredients.filter(i => i.side === 'top').slice(-3).map(i => <span key={i.id}>{i.icon}</span>)}</div>
+                </div>
+                <div className="text-right flex flex-col gap-1">
+                  <div className="text-[8px] text-red-500 font-black uppercase tracking-widest font-bold">BOTTOM (TRASH)</div>
+                  <div className="text-xl flex gap-1 flex-row-reverse">{availableIngredients.filter(i => i.side === 'bottom').slice(-3).map(i => <span key={i.id}>{i.icon}</span>)}</div>
+                </div>
+            </>
+        )}
       </div>
 
       <div className="absolute bottom-12 w-full max-w-[320px] px-4">
@@ -227,12 +244,8 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
 
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                  <span className="text-slate-400 font-bold uppercase text-xs">Final Score</span>
-                  <span className="text-2xl font-black text-white">{netScore}</span>
-                </div>
-                <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
                   <span className="text-slate-400 font-bold uppercase text-xs">Accuracy</span>
-                  <span className="text-2xl font-black text-emerald-400">{accuracyPercent}%</span>
+                  <span className="text-2xl font-black text-emerald-400">{total > 0 ? Math.round((score/total)*100) : 0}%</span>
                 </div>
                 <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
                   <span className="text-slate-400 font-bold uppercase text-xs">Multiplier</span>
@@ -241,7 +254,7 @@ export const StreetEats: React.FC<StreetEatsProps> = ({ onComplete, level = 1, t
               </div>
 
               <button
-                onClick={() => onComplete(finalMultiplier)}
+                onPointerDown={(e) => { e.preventDefault(); onComplete(finalMultiplier); }}
                 className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-white font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-orange-500/20 uppercase tracking-widest"
               >
                 Collect Earnings
