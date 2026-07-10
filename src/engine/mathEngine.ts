@@ -335,3 +335,61 @@ export function calculatePassiveIncome(
   // Tree passives will be added later
   return total;
 }
+
+export interface HustleMathContext {
+  baseYield: number;
+  levelMult: number;
+  badgeCount: number;
+  tierBonusFraction: number; // e.g., 0.02 per unlocked milestone tier
+  legacyPoints: number;
+  specializationBonusFraction: number; // e.g., 0.20 for matching class paths
+  sentimentModifier: number; // raw adjustment fraction above/below 0
+  worldEventModifier: number; // raw adjustment fraction above/below 0
+  flexAssetBonusFraction: number;
+}
+
+export const calculateHustleStatsAdditive = (context: HustleMathContext): number => {
+  // 1. Establish the baseline scaled by level profile
+  const baseScaledYield = context.baseYield * context.levelMult;
+
+  // 2. Accumulate individual performance bonus fractions linearly instead of multiplying
+  let totalBonusFraction = 0;
+
+  // Mastery Badges (+5% linear yield per badge asset)
+  if (context.badgeCount > 0) {
+    totalBonusFraction += context.badgeCount * 0.05;
+  }
+
+  // Progression Tier Bonuses (+2% linear increment)
+  if (context.tierBonusFraction > 0) {
+    totalBonusFraction += context.tierBonusFraction;
+  }
+
+  // Class Specialization Perks (e.g., +20% or 0.20 linear injection)
+  if (context.specializationBonusFraction > 0) {
+    totalBonusFraction += context.specializationBonusFraction;
+  }
+
+  // Roguelite Permanent Legacy Points (+0.1% linear boost per banked point)
+  if (context.legacyPoints > 0) {
+    totalBonusFraction += context.legacyPoints * 0.001;
+  }
+
+  // Flex Asset holdings (Compounding limited to linear fraction addition)
+  if (context.flexAssetBonusFraction > 0) {
+    totalBonusFraction += context.flexAssetBonusFraction;
+  }
+
+  // 3. Coordinate Living World dynamic macro shifts additively
+  // Global market trends add/subtract directly from the active pool bonus
+  const dynamicEnvironmentFraction = context.sentimentModifier + context.worldEventModifier;
+
+  // Enforce engine safety limits on dynamic environment impacts
+  const clampedDynamicFraction = Math.max(-0.7, Math.min(1.5, dynamicEnvironmentFraction));
+  totalBonusFraction += clampedDynamicFraction;
+
+  // 4. Resolve the ultimate payload without exponential multiplication inflation
+  const finalCalculatedYield = Math.floor(baseScaledYield * (1 + totalBonusFraction));
+
+  return Math.max(0, finalCalculatedYield);
+};
