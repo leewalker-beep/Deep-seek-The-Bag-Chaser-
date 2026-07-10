@@ -32,6 +32,8 @@ export const useGameStore = create<GameState>()(
           flexOfferCooldown: state.pl.flexOfferCooldown,
           avatarId: state.pl.avatarId,
           deathContext: state.pl.deathContext,
+          activeLiveEvent: state.pl.activeLiveEvent,
+          completedLiveEvents: state.pl.completedLiveEvents,
           inJail: state.pl.inJail,
           jailMonthsRemaining: state.pl.jailMonthsRemaining,
           jailSentenceTotal: state.pl.jailSentenceTotal,

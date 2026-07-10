@@ -568,6 +568,31 @@ export interface HallOfFameEntry {
 
 export type WorldFeedCategory = 'SOCIAL' | 'BUSINESS' | 'POLITICS' | 'OPINION' | 'MARKET' | 'NEWS' | 'WORLD';
 
+export type LiveWorldEventType =
+  | 'BREAKING_NEWS'
+  | 'SOCIAL_TRENDING'
+  | 'MARKET_FLASH'
+  | 'POLICE_ALERT'
+  | 'GOVERNMENT_BULLETIN'
+  | 'COMMUNITY_SPOTLIGHT'
+  | 'CELEBRITY_WATCH';
+
+export interface LiveWorldEvent {
+  id: string;
+  type: LiveWorldEventType;
+  title: string;
+  headline: string;
+  body: string;
+  source: string;
+  likes?: number;
+  shares?: number;
+  avatarId?: string;
+  author?: string;
+  effect?: string;
+  fameLevel: 'local' | 'regional' | 'national' | 'global';
+  month: number;
+}
+
 export interface WorldFeedItem {
   id: string;
   category: WorldFeedCategory;
@@ -594,6 +619,8 @@ export interface PlayerStats {
   runId: string;
   name?: string;
   worldFeed?: WorldFeedItem[];
+  activeLiveEvent?: LiveWorldEvent | null;
+  completedLiveEvents?: string[];
   avatarId: string;
   bag: number;
   clout: number;
@@ -844,6 +871,7 @@ export interface GameState {
   setActiveTierBadge: (badge: string | null) => void;
   setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
+  dismissLiveEvent: () => void;
   setTutorialStep: (step: number) => void;
   selectSpecialization: (specializationId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;

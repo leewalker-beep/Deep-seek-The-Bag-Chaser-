@@ -23,6 +23,7 @@ export interface UISlice {
   setActiveTierBadge: (badge: string | null) => void;
   setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
+  dismissLiveEvent: () => void;
   setTutorialStep: (step: number) => void;
   setTutorialSkipped: (skipped: boolean) => void;
   setPendingSpecialization: (pending: boolean) => void;
@@ -51,6 +52,9 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   setActiveTierBadge: (badge) => set({ activeTierBadge: badge }),
   setShowMinigame: (show) => set({ showMinigame: show }),
   dismissNarrative: () => set({ activeNarrative: null }),
+  dismissLiveEvent: () => set((state) => ({
+    pl: { ...state.pl, activeLiveEvent: null }
+  })),
   setTutorialStep: (step) => set((state) => ({
     tutorialStep: step,
     pl: { ...state.pl, tutorialStep: step }
