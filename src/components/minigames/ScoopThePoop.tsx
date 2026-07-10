@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getScalingMultiplier } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
+import { useGameStore } from '../../store/gameStore';
 
 interface ScoopThePoopProps {
   onComplete: (multiplier: number) => void;
@@ -41,10 +42,34 @@ export const ScoopThePoop: React.FC<ScoopThePoopProps> = ({
     const current = tiles[key];
 
     if (current === '☣️') {
-        // Penalty for tapping biohazard
-        setTimeLeft(prev => Math.max(0, prev - 2));
+        const store = useGameStore.getState();
+
+        if (level === 2) {
+            // Level 2: Lingering skin contact infection / sick drain
+            store.updatePl({
+              mentalHealth: Math.max(0, store.pl.mentalHealth - 10),
+              narrativeFlags: { ...store.pl.narrativeFlags, chemical_rash_turns: 3 }
+            });
+        }
+        else if (level >= 3) {
+            // Level 3: Critical biohazard toxicity breakdown - Hospital Lockout
+            store.updatePl({
+              bag: Math.max(0, store.pl.bag - 5000),
+              mentalHealth: Math.max(0, store.pl.mentalHealth - 25),
+              aura: Math.max(0, store.pl.aura - 15),
+              // Trigger intensive care unit isolation lockout
+              inJail: true,
+              jailMonthsRemaining: 3,
+              jailSentenceTotal: 3,
+              jailCharge: "Severe Toxemia Isolation Hospitalization"
+            });
+            setGameActive(false); // Instantly terminate the active loop
+        }
+
+        // Retain baseline visual/audio feedback triggers
+        setTimeLeft(prev => Math.max(0, prev - 3));
         setTiles(prev => ({ ...prev, [key]: null }));
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
         return;
     }
 
@@ -57,7 +82,7 @@ export const ScoopThePoop: React.FC<ScoopThePoopProps> = ({
     setTimeout(() => {
       setTiles(prev => ({ ...prev, [key]: null }));
     }, 300);
-  }, [gameActive, tiles]);
+  }, [gameActive, tiles, level]);
 
   useEffect(() => {
     if (!gameActive) return;
