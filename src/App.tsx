@@ -342,6 +342,8 @@ function App() {
         onStart={(name, backgroundId, categoryId, variationId, avatarId, prologueStats) => {
           resetGame(backgroundId, 3, categoryId, variationId, avatarId, prologueStats);
           setPlayerName(name);
+          // Set isTutorialSkipped explicitly in the store as well
+          useGameStore.setState({ isTutorialSkipped: true });
         }}
       />
     );
