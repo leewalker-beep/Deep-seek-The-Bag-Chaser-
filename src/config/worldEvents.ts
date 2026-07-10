@@ -13,6 +13,22 @@ export interface WorldEvent {
   rarity: 'COMMON' | 'RARE';
 }
 
+// Overwrite the newsTemplates object map inside world event declarations
+export const HIGH_SATIRE_WORLD_NEWS = {
+  bull_market: {
+    start: "📈 BULL MARKET: Venture Capital firms report record-breaking $40B seed round for an AI startup that translates corporate sigh cycles into actionable marketing slates.",
+    end: "📉 MARKET NORMALIZATION: The AI sigh-translation bubble pops after the platform accidentally manifests structural sentience and goes on strike."
+  },
+  recession: {
+    start: "📉 ECONOMIC RECESSION: Global financial experts suggest replacing basic grocery spending with high-yield inspirational quote downloads to optimize personal asset leverage.",
+    end: "🌱 RECESSION CONCLUDED: The working class runs out of things to liquidate; major tech conglomerates declare victory over inflation."
+  },
+  crackdown: {
+    start: "🚨 FEDERAL CRACKDOWN: IRS deploys weaponized algorithmic audits against street-level drop-shipping operations; citizens reminded that tax avoidance is a low-vibe offense.",
+    end: "🔓 REGULATORY THAW: Federal compliance agencies successfully pivot to consulting firms; shady offshore operations resume standard yield optimization loops."
+  }
+};
+
 export const WORLD_EVENTS: WorldEvent[] = [
   {
     id: 'economic_boom',
@@ -25,10 +41,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       Construction: 0.2,
       Entertainment: 0.2,
     },
-    newsTemplates: {
-      start: "🚀 ECONOMIC BOOM: Markets are surging! Most sectors seeing increased yields.",
-      end: "⚖️ Markets stabilize as the economic boom cools down."
-    },
+    newsTemplates: HIGH_SATIRE_WORLD_NEWS.bull_market,
     rarity: 'COMMON'
   },
   {
@@ -42,10 +55,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       Construction: -0.3,
       Finance: -0.2,
     },
-    newsTemplates: {
-      start: "📉 RECESSION: Consumer spending is plummeting. Times are tough.",
-      end: "📈 The recession ends. Markets are beginning to recover."
-    },
+    newsTemplates: HIGH_SATIRE_WORLD_NEWS.recession,
     rarity: 'COMMON'
   },
   {
@@ -199,10 +209,7 @@ export const WORLD_EVENTS: WorldEvent[] = [
       Technology: -0.3,
       Politics: -0.2,
     },
-    newsTemplates: {
-      start: "🚔 CRACKDOWN: New regulations are hammering Tech and Finance profits.",
-      end: "🏛️ Regulatory environment stabilizes."
-    },
+    newsTemplates: HIGH_SATIRE_WORLD_NEWS.crackdown,
     rarity: 'RARE'
   },
   {

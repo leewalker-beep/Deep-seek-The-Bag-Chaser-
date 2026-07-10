@@ -322,7 +322,8 @@ export interface Challenge {
 export interface NarrativeChoice {
   id: string;
   label: string;
-  description: string;
+  description?: string;
+  logMessage?: string;
   consequences: {
     bag?: number;
     clout?: number;
