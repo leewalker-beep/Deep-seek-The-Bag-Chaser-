@@ -124,18 +124,20 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     if (!gameActive || craneStunned > 0) return;
 
     setGrid(prev =>
-      prev.map(cell => {
+      prev.map((cell): GridCell => {
         if (cell.id === id && cell.state === 'hidden') {
           if (cell.itemEmoji === '💥') {
             // Trigger hazard stun penalty
             setCraneStunned(1500);
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             setTimeLeft(t => Math.max(0, t - 2)); // deduct battery time
-            return { ...cell, state: 'hazard' };
+            const updatedCell: GridCell = { ...cell, state: 'hazard' };
+            return updatedCell;
           } else {
             // Revealed normal or rare scrap!
             if (navigator.vibrate) navigator.vibrate(20);
-            return { ...cell, state: 'revealed' };
+            const updatedCell: GridCell = { ...cell, state: 'revealed' };
+            return updatedCell;
           }
         }
         return cell;
@@ -155,7 +157,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     // Proximity check: if magnet sweeps over a revealed scrap tile, attract it!
     setGrid(prev => {
       let updated = false;
-      const nextGrid = prev.map(cell => {
+      const nextGrid = prev.map((cell): GridCell => {
         if (cell.state === 'revealed' && cell.itemEmoji) {
           // Calculate grid cell center percentage
           const cellX = 12.5 + cell.col * 25;
@@ -182,7 +184,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
               }
             ]);
             if (navigator.vibrate) navigator.vibrate(15);
-            return { ...cell, state: 'revealed', itemEmoji: null }; // remove item from tile
+            const updatedCell: GridCell = { ...cell, state: 'revealed', itemEmoji: null };
+            return updatedCell;
           }
         }
         return cell;
