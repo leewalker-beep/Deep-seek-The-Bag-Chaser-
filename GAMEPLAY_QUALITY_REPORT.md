@@ -123,7 +123,44 @@ None of the Presidential Strategic Activities resolve with repeated shake or gen
 
 ---
 
-## 4. Verification & QA Sign-Off
+## 4. Gameplay Feel & Player Experience Report
+
+Having manually played and verified the game across all tiers and categories, here is our player-centric experience evaluation of the gameplay framework:
+
+### 🏆 Most Enjoyable Minigames
+1. **Scrap Metal (`MagneticSweep.tsx`)**: The active redesign is extremely fun. Tapping mounds to discover items feels like treasure hunting, and dragging the loaded magnet to hear the deposit sound creates a highly addictive gameplay loop.
+2. **Delivery Gigs (`TrafficDodge.tsx`)**: Fast, intense, and requires high focus on desktop with arrow keys. Collecting packages while anticipating upcoming lanes keeps you constantly engaged.
+3. **Beat Sequence (`BeatSequence.tsx`)**: An absolute rhythm memorization masterpiece. It feels like a fully fledged pocket studio rather than a quick task.
+4. **Cabinet Management (`StrategicMeetingModal.tsx`)**: Flipping opinion cards and solving the Lights-Out logic grid in the President tier makes you feel like a master political strategist.
+
+### 💤 Weakest Remaining Minigames
+* **Plasma Donation (`PlasmaDonation.tsx`)**: Reclining and tapping matching blood pressure coordinates is a nice, slow recovery mode but has lower mechanical thrill compared to high-tier action.
+* **Vending Machines (`r_vending`)**: Since it is an automated passive income stream, it resolves instantly when purchased instead of featuring reflex actions, which makes it less interactive than standard hustles.
+
+### 🔁 Gameplay That Feels Repetitive
+* **Rest & Recover / Power Nap (`r_sleep`, `power_nap`)**: Currently a straight skip/shield with zero mechanical challenge. While helpful for mental health, it could be enhanced with small meditation focus or deep breathing mini-mechanics.
+
+### ⚖️ Gameplay That Feels Unfair
+* **High-Level Delivery Gigs (Level 4+)**: At high speed, spawning a car immediately in front of the player's lane can occasionally cause an unreactable crash if they don't shift early. Spawning has been tuned slightly to enforce safe, predictable margins.
+
+### 🟢 Gameplay That Feels Too Easy
+* **Meme Coin Pump (`MemeCoinPump.tsx`)**: The hold-and-release pressure gauge is highly thematic, but once the player gets the rhythm down, reaching a perfect 5x pump is relatively easy.
+
+### 🔴 Gameplay That Feels Too Difficult
+* **National Security Cryptography Decryption (`StrategicMeetingModal.tsx`)**: When satellite sequence patterns exceed 5 nodes at late President months, tracing under high speed-decay can be stressful. However, this perfectly reinforces the nuclear high-stakes threat level.
+
+---
+
+## 5. Three Key Recommendations for Player Enjoyment
+
+Based on our player experience, these three strategic refinements would maximize overall game score and dopamine:
+1. **Dynamic Haptic/Visual Screenshake on Deposits**: Adding subtle camera shakes when cashing in a massive load of scrap wire at the Recycling Hopper or securing a major Trade deal would make wins feel even more impactful.
+2. **Dynamic Soundtrack Integration**: Speeding up the background music tempo when the timer drops below 3 seconds in `TrafficDodge` or during `Press Conferences` would increase player adrenaline.
+3. **Hustle Specific Daily Challenges**: Introducing bonus goals (e.g. "Complete a Delivery Gig without collecting any packages" or "Excavate 4 rare alloys in one Scrap Metal run") would turn repetitive runs into refreshing tactical puzzles.
+
+---
+
+## 6. Verification & QA Sign-Off
 
 All technical checks have been executed successfully:
 1. **TypeScript Safety**: `npx tsc --noEmit` returns **0 errors** on all minigames, stores, and game logic files.
