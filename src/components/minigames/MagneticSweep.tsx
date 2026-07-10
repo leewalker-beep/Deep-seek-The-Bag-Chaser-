@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
@@ -40,16 +40,24 @@ interface MagneticSweepProps {
   icon?: string;
 }
 
+const DEFAULT_ITEM_EMOJIS = ['🔩', '⚙️', '🖇️', '📎', '🔑'];
+
 export const MagneticSweep: React.FC<MagneticSweepProps> = ({
   onComplete,
   level = 1,
   tier = 'MUD',
-  itemEmojis = ['🔩', '⚙️', '🖇️', '📎', '🔑'],
+  itemEmojis = DEFAULT_ITEM_EMOJIS,
   rareEmoji = '⭐',
   scoreLabel = "SCRAP SECURED",
   rareLabel = "RARE FIND!",
   icon = "🧲"
 }) => {
+  // Stabilize itemEmojis using a string comparison of its elements
+  const itemEmojisKey = itemEmojis.join(',');
+  const stableItemEmojis = useMemo(() => {
+    return itemEmojisKey.split(',');
+  }, [itemEmojisKey]);
+
   // Game state
   const [grid, setGrid] = useState<GridCell[]>([]);
   const [attachedItems, setAttachedItems] = useState<AttachedItem[]>([]);
@@ -94,7 +102,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
           const isItemCell = roll < 0.65;
           if (isItemCell) {
             isRare = Math.random() < (0.05 + level * 0.02);
-            itemEmoji = isRare ? rareEmoji : itemEmojis[Math.floor(Math.random() * itemEmojis.length)];
+            itemEmoji = isRare ? rareEmoji : stableItemEmojis[Math.floor(Math.random() * stableItemEmojis.length)];
           }
         }
 
@@ -109,25 +117,27 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
       }
     }
     setGrid(cells);
-  }, [level, itemEmojis, rareEmoji]);
+  }, [level, stableItemEmojis, rareEmoji]);
 
   // Dig/Excavate action when clicking a tile
   const handleDigCell = (id: number) => {
     if (!gameActive || craneStunned > 0) return;
 
     setGrid(prev =>
-      prev.map(cell => {
+      prev.map((cell): GridCell => {
         if (cell.id === id && cell.state === 'hidden') {
           if (cell.itemEmoji === '💥') {
             // Trigger hazard stun penalty
             setCraneStunned(1500);
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             setTimeLeft(t => Math.max(0, t - 2)); // deduct battery time
-            return { ...cell, state: 'hazard' };
+            const updatedCell: GridCell = { ...cell, state: 'hazard' };
+            return updatedCell;
           } else {
             // Revealed normal or rare scrap!
             if (navigator.vibrate) navigator.vibrate(20);
-            return { ...cell, state: 'revealed' };
+            const updatedCell: GridCell = { ...cell, state: 'revealed' };
+            return updatedCell;
           }
         }
         return cell;
@@ -146,7 +156,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
 
     // Proximity check: if magnet sweeps over a revealed scrap tile, attract it!
     setGrid(prev => {
-      return prev.map(cell => {
+      let updated = false;
+      const nextGrid = prev.map((cell): GridCell => {
         if (cell.state === 'revealed' && cell.itemEmoji) {
           // Calculate grid cell center percentage
           const cellX = 12.5 + cell.col * 25;
@@ -156,8 +167,9 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
           const dy = cellY - clampedY;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          // Within attraction distance
-          if (dist < 15) {
+          // Within attraction distance (increased slightly to 18 for improved accessibility and better alignment)
+          if (dist < 18) {
+            updated = true;
             if (cell.isRare) {
               setIsRareFound(true);
             }
@@ -172,17 +184,20 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
               }
             ]);
             if (navigator.vibrate) navigator.vibrate(15);
-            return { ...cell, state: 'revealed', itemEmoji: null }; // remove item from tile
+            const updatedCell: GridCell = { ...cell, state: 'revealed', itemEmoji: null };
+            return updatedCell;
           }
         }
         return cell;
       });
+      return updated ? nextGrid : prev;
     });
   }, [gameActive, craneStunned]);
 
   // Handle deposits when dragging magnet over the recycling hopper (bottom of screen)
   useEffect(() => {
-    if (magnetPos.y >= 72 && attachedItems.length > 0 && gameActive && craneStunned === 0) {
+    // Deposit threshold updated from >= 72 to >= 68 to align cleanly with layout constraints and prevent pointer mismatch at screen edges
+    if (magnetPos.y >= 68 && attachedItems.length > 0 && gameActive && craneStunned === 0) {
       setIsDepositing(true);
 
       let pointsGained = 0;
@@ -205,9 +220,10 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
       if (navigator.vibrate) navigator.vibrate(100);
 
       // Reset deposit feedback
-      setTimeout(() => {
+      const feedbackTimer = setTimeout(() => {
         setIsDepositing(false);
       }, 500);
+      return () => clearTimeout(feedbackTimer);
     }
   }, [magnetPos, attachedItems, gameActive, craneStunned]);
 
@@ -333,22 +349,22 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
         className="relative w-full h-[62vh] max-h-[500px] bg-slate-900 border-y-4 border-slate-800 overflow-hidden"
       >
         {/* Scrapyard Dig Grid (Upper 65% of the screen) */}
-        <div className="absolute inset-x-2 top-4 bottom-[28%] grid grid-cols-4 gap-2 p-1">
+        <div className="absolute inset-x-2 top-4 bottom-[28%] grid grid-cols-4 gap-2 p-1 z-10">
           {grid.map(cell => (
             <button
               key={cell.id}
               onClick={() => handleDigCell(cell.id)}
-              disabled={!gameActive || cell.state !== 'hidden'}
+              disabled={!gameActive}
               className={`relative rounded-xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden ${
                 cell.state === 'hidden'
-                  ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 active:scale-95'
+                  ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 active:scale-95 cursor-pointer'
                   : cell.state === 'hazard'
-                  ? 'bg-red-950/40 border-red-500/50'
-                  : 'bg-slate-950/80 border-slate-800'
+                  ? 'bg-red-950/40 border-red-500/50 cursor-default'
+                  : 'bg-slate-950/80 border-slate-800 cursor-default'
               }`}
             >
               {cell.state === 'hidden' && (
-                <div className="text-center">
+                <div className="text-center pointer-events-none">
                   <span className="text-2xl opacity-60">🌫️</span>
                   <div className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">DIG</div>
                 </div>
@@ -358,7 +374,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: [1.2, 1] }}
-                  className="text-3xl relative"
+                  className="text-3xl relative pointer-events-none"
                 >
                   {cell.itemEmoji}
                   {cell.isRare && (
@@ -372,13 +388,13 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
               )}
 
               {cell.state === 'revealed' && !cell.itemEmoji && (
-                <span className="text-xs text-slate-700 font-bold uppercase tracking-wider">EMPTY</span>
+                <span className="text-xs text-slate-700 font-bold uppercase tracking-wider pointer-events-none">EMPTY</span>
               )}
 
               {cell.state === 'hazard' && (
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
-                  className="text-2xl text-red-500"
+                  className="text-2xl text-red-500 pointer-events-none"
                 >
                   💥
                 </motion.div>
@@ -439,7 +455,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
 
         {/* Recycling Hopper / Scrap Bin (Deposit corridor) */}
         <div
-          className={`absolute bottom-0 left-0 right-0 h-[26%] border-t-4 transition-all duration-300 z-10 flex flex-col items-center justify-center ${
+          className={`absolute bottom-0 left-0 right-0 h-[26%] border-t-4 transition-all duration-300 z-10 flex flex-col items-center justify-center pointer-events-none ${
             isDepositing
               ? 'bg-emerald-950 border-emerald-400 shadow-[0_0_25px_rgba(52,211,153,0.3)]'
               : attachedItems.length > 0
@@ -447,8 +463,8 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
               : 'bg-slate-950/80 border-slate-800'
           }`}
         >
-          <span className="text-2xl mb-1">{isDepositing ? '📥' : '🗑️'}</span>
-          <div className={`font-black text-xs uppercase tracking-widest ${
+          <span className="text-2xl mb-1 pointer-events-none">{isDepositing ? '📥' : '🗑️'}</span>
+          <div className={`font-black text-xs uppercase tracking-widest pointer-events-none ${
             isDepositing ? 'text-emerald-400' : attachedItems.length > 0 ? 'text-blue-400' : 'text-slate-500'
           }`}>
             {isDepositing
