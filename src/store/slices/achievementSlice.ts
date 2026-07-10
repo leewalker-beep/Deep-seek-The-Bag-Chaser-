@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, Achievement } from '../../types/game';
 import { ACHIEVEMENTS } from '../../config/achievements';
+import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 
 export interface AchievementSlice {
   achievements: Achievement[];
@@ -31,19 +32,25 @@ export const createAchievementSlice: StateCreator<GameState, [], [], Achievement
 
         const tickerMessage = `🏆 ACHIEVEMENT UNLOCKED: ${achievement.name}`;
 
+        const basePl = {
+          ...state.pl,
+          bag: state.pl.bag + (achievement.reward?.cash || 0),
+          clout: state.pl.clout + (achievement.reward?.clout || 0),
+          aura: state.pl.aura + (achievement.reward?.aura || 0),
+          heat: Math.max(0, state.pl.heat + (achievement.reward?.heat || 0)),
+          mentalHealth: Math.min(100, state.pl.mentalHealth + (achievement.reward?.mentalHealth || 0)),
+          legacyPoints: (state.pl.legacyPoints || 0) + (achievement.reward?.legacyPoints || 0),
+          unlockedAchievements: Array.from(new Set([...(state.pl.unlockedAchievements || []), id])),
+        };
+
+        const { updatedPl } = processWorldReaction(basePl, 'LEGENDARY_ACHIEVEMENT', {
+          achievementName: achievement.name
+        });
+
         return {
           achievements: updatedAchievements,
           news: [tickerMessage, ...state.news.slice(0, 49)],
-          pl: {
-            ...state.pl,
-            bag: state.pl.bag + (achievement.reward?.cash || 0),
-            clout: state.pl.clout + (achievement.reward?.clout || 0),
-            aura: state.pl.aura + (achievement.reward?.aura || 0),
-            heat: Math.max(0, state.pl.heat + (achievement.reward?.heat || 0)),
-            mentalHealth: Math.min(100, state.pl.mentalHealth + (achievement.reward?.mentalHealth || 0)),
-            legacyPoints: (state.pl.legacyPoints || 0) + (achievement.reward?.legacyPoints || 0),
-            unlockedAchievements: Array.from(new Set([...(state.pl.unlockedAchievements || []), id])),
-          }
+          pl: updatedPl
         };
       }
       return state;

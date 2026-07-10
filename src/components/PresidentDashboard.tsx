@@ -8,6 +8,7 @@ import type { CabinetMember, ExecutiveOrder, PresidentCrisis, PresidentialActivi
 import { CabinetAppointmentModal } from './presidency/CabinetAppointmentModal';
 import { PRESIDENTIAL_ACTIVITIES } from '../config/presidencyActivities';
 import { StrategicMeetingModal } from './presidency/StrategicMeetingModal';
+import { WorldReactionFeed } from './WorldReactionFeed';
 
 const PAGE_TITLES = [
   'THE OVAL',
@@ -32,6 +33,7 @@ export const PresidentDashboard: React.FC = () => {
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
   const totalPages = 7;
+  const [showPhoneFeed, setShowPhoneFeed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
@@ -580,8 +582,16 @@ export const PresidentDashboard: React.FC = () => {
               />
             ))}
           </div>
-          <div className="text-[10px] text-slate-600 font-bold">
-            {page + 1}/{totalPages}
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={() => setShowPhoneFeed(true)}
+              className="text-[9px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 px-2 py-0.5 rounded font-black uppercase tracking-tighter border border-indigo-500/20 flex items-center gap-1 shadow-md shadow-indigo-950/40"
+            >
+              📱 FEED
+            </button>
+            <div className="text-[10px] text-slate-600 font-bold">
+              {page + 1}/{totalPages}
+            </div>
           </div>
         </div>
 
@@ -653,6 +663,10 @@ export const PresidentDashboard: React.FC = () => {
         confirmLabel="Mobilize Resources"
         isHighStakes
       />
+
+      {showPhoneFeed && (
+        <WorldReactionFeed onClose={() => setShowPhoneFeed(false)} />
+      )}
     </div>
   );
 };

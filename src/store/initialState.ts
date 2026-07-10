@@ -12,6 +12,7 @@ export const getInitialStats = (
   const baseStats: PlayerStats = {
     runId: crypto.randomUUID?.() || Math.random().toString(36).substring(2, 15),
     avatarId: 'av_m1',
+    worldFeed: [],
     bag: 0,
     clout: 0,
     aura: 0,

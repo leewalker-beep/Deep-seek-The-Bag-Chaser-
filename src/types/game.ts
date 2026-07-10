@@ -566,6 +566,23 @@ export interface HallOfFameEntry {
   biography: string[];
 }
 
+export type WorldFeedCategory = 'SOCIAL' | 'BUSINESS' | 'POLITICS' | 'OPINION' | 'MARKET' | 'NEWS' | 'WORLD';
+
+export interface WorldFeedItem {
+  id: string;
+  category: WorldFeedCategory;
+  text: string;
+  source: string; // E.g. "Chirp", "Wall Street Ledger", "Capitol Press", "Public Polls"
+  timestamp: number;
+  month: number;
+  likes?: number;
+  shares?: number;
+  author?: string;
+  avatarId?: string;
+  effect?: string;
+  pinned?: boolean;
+}
+
 export interface OriginBonus {
   type: 'cash' | 'clout' | 'aura';
   multiplier: number;
@@ -576,6 +593,7 @@ export interface OriginBonus {
 export interface PlayerStats {
   runId: string;
   name?: string;
+  worldFeed?: WorldFeedItem[];
   avatarId: string;
   bag: number;
   clout: number;

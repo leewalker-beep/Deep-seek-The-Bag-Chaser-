@@ -17,6 +17,7 @@ import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
 import { StatsPanel } from './components/StatsPanel';
 import Avatar from './components/Avatar';
+import { WorldReactionFeed } from './components/WorldReactionFeed';
 
 // Lazy Loaded Minigames
 const SwipeOrder = lazy(() => import('./components/minigames/SwipeOrder').then(m => ({ default: m.SwipeOrder })));
@@ -166,6 +167,7 @@ function App() {
   const [showSummary, setShowSummary] = useState(false);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
+  const [showPhoneFeed, setShowPhoneFeed] = useState(false);
 
   const {
     pl,
@@ -501,6 +503,12 @@ function App() {
                 className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
               >
                 Receipts
+              </button>
+              <button
+                onClick={() => setShowPhoneFeed(true)}
+                className="text-[9px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 flex items-center gap-1"
+              >
+                📱 Feed
               </button>
             </div>
           </div>
@@ -972,6 +980,11 @@ function App() {
       {/* Receipts Modal */}
       {showReceipts && (
         <TheReceipts onClose={() => setShowReceipts(false)} />
+      )}
+
+      {/* World Reaction Phone Feed Modal */}
+      {showPhoneFeed && (
+        <WorldReactionFeed onClose={() => setShowPhoneFeed(false)} />
       )}
 
 

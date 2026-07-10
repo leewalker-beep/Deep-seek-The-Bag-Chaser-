@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
 import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
+import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 import { PRESIDENTIAL_ACTIVITIES } from '../../config/presidencyActivities';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth } from '../../engine/advancementEngine';
@@ -168,7 +169,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
       newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
     }
-    set({ pl: enforceStatCaps(newPl) });
+    const { updatedPl: reactedPl } = processWorldReaction(newPl, 'PRESIDENCY_ORDER', { hustleName: order.name });
+    set({ pl: enforceStatCaps(reactedPl) });
     state.addTickerMessage(`BREAKING: President signs ${order.name}`, 'text-blue-400 font-bold');
     if (masteryBonus > 0) {
       state.addTickerMessage(`Your ${masteredHustlesDetails[0].name} mastery boosted this order by +${Math.round(masteryBonus * 100)}%.`, 'text-emerald-400 text-xs');
@@ -653,6 +655,13 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       sotuHistory: newSotuHistory
     };
 
+    if (updatedPl.inflation > 5) {
+      const { updatedPl: reactedPl } = processWorldReaction(updatedPl, 'PRESIDENCY_INFLATION', {
+        macroValue: updatedPl.inflation
+      });
+      updatedPl = reactedPl;
+    }
+
     // 1.3 Midterm Elections
     if (updatedPl.presidentMonth === 24) {
       let newSupport = 50;
@@ -944,8 +953,10 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     };
     newPl.presidentialDiary = [diaryEntry, ...state.pl.presidentialDiary];
 
+    const { updatedPl: reactedPl } = processWorldReaction(newPl, 'PRESIDENCY_ORDER', { hustleName: activity.title });
+
     set({
-      pl: enforceStatCaps(newPl),
+      pl: enforceStatCaps(reactedPl),
       activeHustleView: null
     });
 

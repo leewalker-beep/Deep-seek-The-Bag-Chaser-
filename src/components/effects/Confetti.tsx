@@ -73,7 +73,8 @@ const ConfettiInternal: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
 };
 
 export const showConfetti = () => {
-  if (typeof document === 'undefined') return;
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test') return;
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
