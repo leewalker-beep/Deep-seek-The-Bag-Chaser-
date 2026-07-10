@@ -5655,6 +5655,73 @@ const CABINET_ARC: NarrativeEvent[] = [
   }
 ];
 
+// Append these unhinged narrative arcs to the NARRATIVE_EVENTS array
+export const SATIRICAL_NARRATIVE_EXPANSIONS = [
+  {
+    id: 'soul_equity_collateral',
+    title: 'THE SOUL-EQUITY PROTOCOL',
+    description: 'Your Series-B lead investor, Lawrence Chen, notes your burn rate is slightly sub-optimal. He offers a $500,000 cash injection, but demands you collateralize your childhood memories and right to unstructured REM sleep via an experimental smart-contract lien.',
+    trigger: { tier: ['STARTUP'], probability: 0.25 },
+    choices: [
+      {
+        id: 'monetize_psyche',
+        label: 'Sign the Lien (Sleep is for Non-Producers)',
+        consequences: { bag: 500000, mentalHealth: -35, clout: 50 },
+        setFlags: { liquidated_childhood: true },
+        logMessage: '❌ You monetized your early memories. You can no longer recall the layout of your childhood bedroom, but your automated Runway is extended by 6 months.'
+      },
+      {
+        id: 'protect_psyche',
+        label: 'Decline (Keep your sentimentality)',
+        consequences: { aura: 20, mentalHealth: 10, bag: -25000 },
+        logMessage: '🛡️ You kept your memories. Lawrence Chen looks visibly disgusted by your lack of capital discipline and charges you a $25k "sentimentality fine."'
+      }
+    ]
+  },
+  {
+    id: 'corporate_wellness_purge',
+    title: 'PERFORMATIVE MINDFULNESS PURGE',
+    description: 'Your Corporate Tier HR department introduces an automated "Gratitude App" that scans employee retinas for sub-optimal dopamine metrics. You can leverage this tool to identify and immediately offload low-vibe, non-synergistic human resources.',
+    trigger: { tier: ['CORPORATE'], probability: 0.3 },
+    choices: [
+      {
+        id: 'purge_low_vibe',
+        label: 'Optimize Vibe-Metrics (Terminate bottom 15%)',
+        consequences: { bag: 150000, aura: -40, heat: 15 },
+        setFlags: { hr_vibe_purged: true },
+        logMessage: '💼 You fired 45 workers via automated push notifications for possessing "low-vibe structural anxiety." Passive income scales up, but local unions place a curse on your name.'
+      },
+      {
+        id: 'mandate_kombucha',
+        label: 'Mandate Organic Kumbucha Infusions instead',
+        consequences: { bag: -50000, mentalHealth: 15, aura: 20 },
+        logMessage: '🍵 You spent $50k of federal capital on ceremonial-grade match infusions. Your staff is still underpaid, but their twitching eyes suggest increased performative gratitude.'
+      }
+    ]
+  },
+  {
+    id: 'presidential_distraction',
+    title: 'THE WAG-THE-DOG SYNERGY',
+    description: 'A major data-leak reveals you accidentally sold the state of Delaware to a sovereign wealth crypto DAO during an late-night trading stream. Your press secretary needs a distraction event immediately.',
+    trigger: { tier: ['PRESIDENT'], probability: 0.4 },
+    choices: [
+      {
+        id: 'declare_war_on_fud',
+        label: 'Declare War on Global FUD',
+        consequences: { clout: 5000, aura: -100, heat: 40 },
+        setFlags: { war_on_fud: true },
+        logMessage: '🇺🇸 You declared a national state of emergency against "Negative Pacing Dynamics." The news cycles forget Delaware completely, but your international trust rating takes a hit.'
+      },
+      {
+        id: 'cancel_delaware',
+        label: 'Pass an Executive Order declaring Delaware "Outdated Tech"',
+        consequences: { clout: 2000, aura: 50, bag: -10000000 },
+        logMessage: '📝 You signed an executive decree stating that Delaware was legacy architecture and deprecated its federal status. Real estate values plummet, but your technical execution scores a win.'
+      }
+    ]
+  }
+] as NarrativeEvent[];
+
 export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...BASE_EVENTS,
   ...POPS_ARC,
@@ -5708,4 +5775,5 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...PEACE_ARC,
   ...MONUMENT_ARC,
   ...CABINET_ARC,
+  ...SATIRICAL_NARRATIVE_EXPANSIONS
 ];

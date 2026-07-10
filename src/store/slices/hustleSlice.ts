@@ -1899,7 +1899,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     set({
       pl: enforceStatCaps(reactedPlDecision),
-      news: [{ text: `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
+      news: [{ text: choice.logMessage || `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 
     get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
