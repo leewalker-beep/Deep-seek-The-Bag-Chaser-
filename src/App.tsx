@@ -76,6 +76,7 @@ import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
 import { NarrativeEventModal } from './components/NarrativeEventModal';
+import { LiveWorldEventModal } from './components/LiveWorldEventModal';
 import { EndgameSummary } from './components/EndgameSummary';
 
 // Heavy Screens
@@ -1028,6 +1029,7 @@ function App() {
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
       <NarrativeEventModal />
+      <LiveWorldEventModal />
       <JailOverlay />
 
       {/* News Ticker */}

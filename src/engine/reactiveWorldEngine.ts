@@ -1,4 +1,4 @@
-import type { PlayerStats, WorldFeedItem, WorldFeedCategory } from '../types/game';
+import type { PlayerStats, WorldFeedItem, WorldFeedCategory, LiveWorldEvent, LiveWorldEventType } from '../types/game';
 import * as Bio from './biographyEngine';
 
 const generateId = () => Math.random().toString(36).substring(7);
@@ -524,6 +524,416 @@ export function processWorldReaction(
 
     default:
       break;
+  }
+
+  // --- LIVE WORLD EVENTS ENGINE ---
+  interface LiveEventCandidate {
+    id: string;
+    type: LiveWorldEventType;
+    priority: number;
+    title: string;
+    headline: string;
+    body: string;
+    source: string;
+    effect?: string;
+  }
+
+  const candidates: LiveEventCandidate[] = [];
+  const completed = updatedPl.completedLiveEvents || [];
+
+  // 1. Election Victory
+  if (actionType === 'ELECTION_VICTORY' && !completed.includes('ELECTION_VICTORY')) {
+    candidates.push({
+      id: 'ELECTION_VICTORY',
+      type: 'GOVERNMENT_BULLETIN',
+      priority: 10,
+      title: '🏛️ GOVERNMENT BULLETIN',
+      headline: `HISTORIC LANDSLIDE: PRESIDENT ${pName.toUpperCase()} ELECTED!`,
+      body: `The ballots are certified and the nation has spoken. ${pName} has achieved a legendary victory to become the President of the United States. A brand new term begins.`,
+      source: 'Capitol Press',
+      effect: '+200 Clout | +200 Aura'
+    });
+  }
+
+  // 2. Bankruptcy
+  if (actionType === 'BANKRUPTCY' && !completed.includes('BANKRUPTCY')) {
+    if (fame === 'local') {
+      candidates.push({
+        id: 'BANKRUPTCY',
+        type: 'BREAKING_NEWS',
+        priority: 9,
+        title: '📰 BREAKING NEWS',
+        headline: 'LOCAL COLLAPSE: ENTERPRISE DECLARES INSOLVENCY!',
+        body: `A sudden downslide hits the block. ${pName}'s business has declared complete bankruptcy, leaving behind heavy debts and shocked neighbors.`,
+        source: 'The Neighborhood Bulletin'
+      });
+    } else if (fame === 'regional') {
+      candidates.push({
+        id: 'BANKRUPTCY',
+        type: 'MARKET_FLASH',
+        priority: 9,
+        title: '📈 MARKET FLASH',
+        headline: `INSOLVENCY SHOCK: ${pName.toUpperCase()}'S OPERATIONS COLLAPSE!`,
+        body: `Regional business sectors are reeling as rising star ${pName} files for sudden bankruptcy under heavy debt. Creditors have begun liquidating local assets.`,
+        source: 'Metropolitan Herald'
+      });
+    } else {
+      candidates.push({
+        id: 'BANKRUPTCY',
+        type: 'MARKET_FLASH',
+        priority: 9,
+        title: '📈 MARKET FLASH',
+        headline: `METEORIC DOWNFALL: ${pName.toUpperCase()}'S EMPIRE FILES BANKRUPTCY!`,
+        body: `The global market is stunned. Tycoon ${pName}'s empire has declared Chapter 11 bankruptcy. Standard economic frameworks fail as all assets undergo massive liquidation.`,
+        source: 'Wall Street Ledger'
+      });
+    }
+  }
+
+  // 3. First Arrest
+  if (actionType === 'ARREST' && !completed.includes('FIRST_ARREST')) {
+    const charge = updatedPl.jailCharge || 'regulatory violation';
+    if (fame === 'local') {
+      candidates.push({
+        id: 'FIRST_ARREST',
+        type: 'POLICE_ALERT',
+        priority: 8,
+        title: '🚔 POLICE ALERT',
+        headline: 'LOCAL ENTREPRENEUR ESCORTED IN HANDCUFFS!',
+        body: `Siren lights flashing! Neighbors were shocked to see local figure ${pName} arrested and put in a police car on charges of ${charge}.`,
+        source: 'Local Police Gazette'
+      });
+    } else if (fame === 'regional') {
+      candidates.push({
+        id: 'FIRST_ARREST',
+        type: 'POLICE_ALERT',
+        priority: 8,
+        title: '🚔 POLICE ALERT',
+        headline: `REGIONAL DISRUPTOR ${pName.toUpperCase()} ARRESTED!`,
+        body: `The rising entrepreneur ${pName} is in custody following a raid by regional investigators. Charged with ${charge}, their operations face indefinite suspension.`,
+        source: 'Metropolitan Police Watch'
+      });
+    } else {
+      candidates.push({
+        id: 'FIRST_ARREST',
+        type: 'BREAKING_NEWS',
+        priority: 8,
+        title: '📰 BREAKING NEWS',
+        headline: `GLOBAL TYCOON ${pName.toUpperCase()} LOCKED UP!`,
+        body: `Breaking: Iconic business leader ${pName} has been arrested under federal charges of ${charge}. Global stock indices fluctuate as the mogul is held in custody.`,
+        source: 'Capitol Broadcaster'
+      });
+    }
+  }
+
+  // 4. Presidential Scandal
+  const inPresidency = updatedPl.currentTier === 'PRESIDENT';
+  if (inPresidency && (actionType === 'SCANDAL_TRIGGERED' || (metadata as any)?.type === 'DATA_BREACH') && !completed.includes('PRESIDENTIAL_SCANDAL')) {
+    candidates.push({
+      id: 'PRESIDENTIAL_SCANDAL',
+      type: 'GOVERNMENT_BULLETIN',
+      priority: 8,
+      title: '🏛️ GOVERNMENT BULLETIN',
+      headline: `OVAL OFFICE SCANDAL: CLASSIFIED DATA LEAKED!`,
+      body: `A massive data breach and internal leaks from President ${pName}'s close administration have triggered intense bipartisan controversy. Hearings are demanded immediately.`,
+      source: 'Capitol Hill Reporter'
+    });
+  }
+
+  // 5. Tier Promotion
+  if (actionType === 'TIER_PROMOTION' && updatedPl.currentTier !== 'PRESIDENT') {
+    const toTier = updatedPl.currentTier;
+    if (!completed.includes(`PROMOTION_${toTier}`)) {
+      if (toTier === 'STREET') {
+        candidates.push({
+          id: `PROMOTION_${toTier}`,
+          type: 'COMMUNITY_SPOTLIGHT',
+          priority: 9,
+          title: '❤️ COMMUNITY SPOTLIGHT',
+          headline: `MAKING IT OFF THE BLOCK: ${pName.toUpperCase()} ASCENDS!`,
+          body: `Pure local inspiration! Neighbors are cheering as ${pName} leaves the mud behind, advancing into Street level operations. Our block is proud!`,
+          source: 'The Daily Bulletin'
+        });
+      } else if (toTier === 'STARTUP') {
+        candidates.push({
+          id: `PROMOTION_${toTier}`,
+          type: 'BREAKING_NEWS',
+          priority: 9,
+          title: '📰 BREAKING NEWS',
+          headline: `REGIONAL LAUNCH: ${pName.toUpperCase()} ENTERS STARTUP SCENE!`,
+          body: `Tech blogs and investors are buzzing as regional pioneer ${pName} scales operations to Startup level. Early ventures are securing high capital injections.`,
+          source: 'Valley Tech Gazette'
+        });
+      } else if (toTier === 'CORPORATE') {
+        candidates.push({
+          id: `PROMOTION_${toTier}`,
+          type: 'MARKET_FLASH',
+          priority: 9,
+          title: '📈 MARKET FLASH',
+          headline: `BOARDROOM SHAKEUP: ${pName.toUpperCase()} GOES CORPORATE!`,
+          body: `A meteoric rise! Business leader ${pName} is scaling regional operations, entering the Corporate tier to manage multi-million dollar corporate mergers.`,
+          source: 'Metro Business Review'
+        });
+      } else if (toTier === 'ELITE') {
+        candidates.push({
+          id: `PROMOTION_${toTier}`,
+          type: 'CELEBRITY_WATCH',
+          priority: 9,
+          title: '⭐ CELEBRITY WATCH',
+          headline: `HIGH SOCIETY WELCOMES RISING ELITE: ${pName.toUpperCase()}!`,
+          body: `Absolute high-society glamour. Tycoon ${pName} enters the Elite tier, earning invitations to high-net-worth clubs and exclusive corporate gatherings.`,
+          source: 'The Elite Syndicate'
+        });
+      } else if (toTier === 'MOGUL') {
+        candidates.push({
+          id: `PROMOTION_${toTier}`,
+          type: 'BREAKING_NEWS',
+          priority: 9,
+          title: '📰 BREAKING NEWS',
+          headline: `GLOBAL MONOPOLY: ${pName.toUpperCase()} ASCENDS TO MOGUL!`,
+          body: `Undisputed global scale. ${pName} has broken into the Mogul class, gaining unparalleled influence over international trade, media, and tech.`,
+          source: 'Wall Street Ledger'
+        });
+      }
+    }
+  }
+
+  // 6. First Million
+  if (updatedPl.bag >= 1000000 && !completed.includes('FIRST_MILLION')) {
+    if (fame === 'local' || fame === 'regional') {
+      candidates.push({
+        id: 'FIRST_MILLION',
+        type: 'MARKET_FLASH',
+        priority: 7,
+        title: '📈 MARKET FLASH',
+        headline: `SEVEN-FIGURE CLUB: ${pName.toUpperCase()} REACHES $1,000,000!`,
+        body: `From extremely humble roots, self-made entrepreneur ${pName} has accumulated over $1,000,000 in liquid cash. Local businesses are stunned by the hustle.`,
+        source: 'The Regional Business Journal'
+      });
+    } else {
+      candidates.push({
+        id: 'FIRST_MILLION',
+        type: 'MARKET_FLASH',
+        priority: 7,
+        title: '📈 MARKET FLASH',
+        headline: `CASH SURGE: NEW MULTI-MILLIONAIRE ICON ${pName.toUpperCase()}!`,
+        body: `Financial sheets confirm that ${pName}'s liquid capital reserves have officially breached the $1,000,000 benchmark. They are cementing their status as an industry tycoon.`,
+        source: 'Global Financial Digest'
+      });
+    }
+  }
+
+  // 7. Legendary Achievement
+  if (actionType === 'LEGENDARY_ACHIEVEMENT' && !completed.includes(`ACHIEVEMENT_${(metadata as any)?.achievementName}`)) {
+    const achName = (metadata as any)?.achievementName || 'Supreme Icon';
+    candidates.push({
+      id: `ACHIEVEMENT_${achName}`,
+      type: 'CELEBRITY_WATCH',
+      priority: 6,
+      title: '⭐ CELEBRITY WATCH',
+      headline: `LEGENDARY RECORD: ${pName.toUpperCase()} UNLOCKS "${achName.toUpperCase()}"!`,
+      body: `The history books are forever written! ${pName} has completed the legendary milestone: "${achName}". Commentators are praising this near-impossible feat.`,
+      source: 'Global Achievements Gazette'
+    });
+  }
+
+  // 8. Major Philanthropy
+  if (actionType === 'PHILANTHROPY' && (metadata as any)?.cost >= 5000000 && !completed.includes('MAJOR_PHILANTHROPY')) {
+    const cost = (metadata as any)?.cost || 5000000;
+    candidates.push({
+      id: 'MAJOR_PHILANTHROPY',
+      type: 'COMMUNITY_SPOTLIGHT',
+      priority: 5,
+      title: '❤️ COMMUNITY SPOTLIGHT',
+      headline: `HUMANITARIAN FEAT: ${pName.toUpperCase()} DONATES $${(cost / 1000000).toFixed(1)}M!`,
+      body: `Absolute philanthropy! Tycoon ${pName} has pledged a stunning $${cost.toLocaleString()} donation to humanitarian aid, earning international praise.`,
+      source: 'World Philanthropy Digest'
+    });
+  }
+
+  // 9. Historic Business Acquisition
+  const isAcquisitionHustle = (metadata as any)?.hustleName === 'Private Equity' || (metadata as any)?.hustleName === 'Venture Capital';
+  if ((actionType === 'HUGE_PROFIT' || actionType === 'BUSINESS_LAUNCH') && isAcquisitionHustle && (metadata as any)?.cost >= 30000000 && !completed.includes('HISTORIC_ACQUISITION')) {
+    const cost = (metadata as any)?.cost || 30000000;
+    candidates.push({
+      id: 'HISTORIC_ACQUISITION',
+      type: 'MARKET_FLASH',
+      priority: 5,
+      title: '📈 MARKET FLASH',
+      headline: `MEGA MERGER: ${pName.toUpperCase()} ACQUIRES INDUSTRY CONGLOMERATE!`,
+      body: `A historic $${(cost / 1000000).toFixed(0)}M corporate takeover. ${pName} has successfully acquired leading sector operations. Markets brace for complete monopoly.`,
+      source: 'Wall Street Ledger'
+    });
+  }
+
+  // 10. Market Crash
+  if (actionType === 'PRESIDENCY_INFLATION' && (metadata as any)?.macroValue >= 8 && !completed.includes('MARKET_CRASH')) {
+    candidates.push({
+      id: 'MARKET_CRASH',
+      type: 'MARKET_FLASH',
+      priority: 5,
+      title: '📈 MARKET FLASH',
+      headline: `MARKET COLLAPSE: POLICIES TRIGGER SEVERE GLOBAL FREEZE!`,
+      body: `Stock indices plunge globally under President ${pName}'s controversial monetary directives and runaway inflation. Investors panic as a cold market crackdown spikes.`,
+      source: 'Global Financial Tracker'
+    });
+  }
+
+  // 11. Record Profits
+  if (actionType === 'HUGE_PROFIT' && (metadata as any)?.profit >= 10000000 && !completed.includes('RECORD_PROFIT')) {
+    const profit = (metadata as any)?.profit || 10000000;
+    const hName = (metadata as any)?.hustleName || 'operations';
+    candidates.push({
+      id: 'RECORD_PROFIT',
+      type: 'MARKET_FLASH',
+      priority: 4,
+      title: '📈 MARKET FLASH',
+      headline: `RECORD SHATTERED: ${pName.toUpperCase()} CLEARS $${(profit / 1000000).toFixed(1)}M SINGLE PROFIT!`,
+      body: `Absolute dominance. ${pName} records a legendary single-month profit of $${profit.toLocaleString()} from their ${hName} operations, shattering all corporate limits.`,
+      source: 'Wall Street Ledger'
+    });
+  }
+
+  // 12. Luxury Purchase
+  if (actionType === 'LUXURY_PURCHASE' && (metadata as any)?.cost >= 1000000 && !completed.includes(`LUXURY_${(metadata as any)?.assetId}`)) {
+    const assetId = (metadata as any)?.assetId || 'luxury item';
+    const cost = (metadata as any)?.cost || 1000000;
+    if (fame === 'local' || fame === 'regional') {
+      candidates.push({
+        id: `LUXURY_${assetId}`,
+        type: 'CELEBRITY_WATCH',
+        priority: 3,
+        title: '⭐ CELEBRITY WATCH',
+        headline: `LOCAL FLEX: ${pName.toUpperCase()} BUYS NEW ${assetId.replace(/_/g, ' ').toUpperCase()}!`,
+        body: `Local superstar ${pName} was seen cruising in their spectacular new ${assetId.replace(/_/g, ' ')} worth $${cost.toLocaleString()}. The neighborhood has never seen such a luxury flex!`,
+        source: 'The Daily Buzz'
+      });
+    } else {
+      candidates.push({
+        id: `LUXURY_${assetId}`,
+        type: 'CELEBRITY_WATCH',
+        priority: 3,
+        title: '⭐ CELEBRITY WATCH',
+        headline: `SUPREME FLEET: ${pName.toUpperCase()} ACQUIRES NEW ${assetId.replace(/_/g, ' ').toUpperCase()}!`,
+        body: `Iconic tycoon ${pName} was spotted stepping into a magnificent ${assetId.replace(/_/g, ' ')} worth $${cost.toLocaleString()}. A peak flex of raw influence and spending power.`,
+        source: 'Global Luxury Insider'
+      });
+    }
+  }
+
+  // 13. First Successful Business Launch
+  if (actionType === 'BUSINESS_LAUNCH' && !completed.includes('FIRST_BUSINESS_LAUNCH')) {
+    const hName = (metadata as any)?.hustleName || 'Venture';
+    if (fame === 'local') {
+      candidates.push({
+        id: 'FIRST_BUSINESS_LAUNCH',
+        type: 'COMMUNITY_SPOTLIGHT',
+        priority: 2,
+        title: '❤️ COMMUNITY SPOTLIGHT',
+        headline: `NEW STREET SHOP: ${pName.toUpperCase()} OPENS ${hName.toUpperCase()}!`,
+        body: `Local entrepreneur ${pName} has launched a small ${hName} on our block. Neighbors and local leaders are excited to see this home-grown ambition succeed.`,
+        source: 'The Neighborhood Gazette'
+      });
+    } else if (fame === 'regional') {
+      candidates.push({
+        id: 'FIRST_BUSINESS_LAUNCH',
+        type: 'SOCIAL_TRENDING',
+        priority: 2,
+        title: '📱 SOCIAL TRENDING',
+        headline: `REGIONAL PLAYER: ${pName.toUpperCase()} VENTURES INTO ${hName.toUpperCase()}!`,
+        body: `Industry blogs report that ${pName} is expanding regional operations into the ${hName} sector. Analysts describe the model as highly scalable.`,
+        source: 'Valley Venture Buzz'
+      });
+    } else {
+      candidates.push({
+        id: 'FIRST_BUSINESS_LAUNCH',
+        type: 'BREAKING_NEWS',
+        priority: 2,
+        title: '📰 BREAKING NEWS',
+        headline: `MARKET ENTRANCE: ${pName.toUpperCase()} LAUNCHES ${hName.toUpperCase()} SECTOR!`,
+        body: `Undisputed titan ${pName} expands their commercial grasp, launching a major division in the ${hName} sector. Competitors brace for rapid consolidation.`,
+        source: 'Wall Street Ledger'
+      });
+    }
+  }
+
+  if (candidates.length > 0) {
+    candidates.sort((a, b) => b.priority - a.priority);
+    const chosen = candidates[0];
+
+    const likes = chosen.type === 'SOCIAL_TRENDING' ? Math.floor(Math.random() * 50000) + 10000 : undefined;
+    const shares = chosen.type === 'SOCIAL_TRENDING' ? Math.floor(Math.random() * 8000) + 1500 : undefined;
+
+    const liveEvent: LiveWorldEvent = {
+      id: chosen.id,
+      type: chosen.type,
+      title: chosen.title,
+      headline: chosen.headline,
+      body: chosen.body,
+      source: chosen.source,
+      likes,
+      shares,
+      avatarId: chosen.type === 'SOCIAL_TRENDING' ? `av_f${Math.floor(Math.random() * 5) + 1}` : undefined,
+      author: chosen.type === 'SOCIAL_TRENDING' ? `@buzz_master` : undefined,
+      effect: chosen.effect,
+      fameLevel: fame,
+      month: updatedPl.month
+    };
+
+    updatedPl.activeLiveEvent = liveEvent;
+    updatedPl.completedLiveEvents = [...completed, chosen.id];
+
+    // INTEGRATE LIVING HISTORY SIDE EFFECTS
+    const categoryMap: Record<LiveWorldEventType, WorldFeedCategory> = {
+      BREAKING_NEWS: 'NEWS',
+      SOCIAL_TRENDING: 'SOCIAL',
+      MARKET_FLASH: 'MARKET',
+      POLICE_ALERT: 'WORLD',
+      GOVERNMENT_BULLETIN: 'POLITICS',
+      COMMUNITY_SPOTLIGHT: 'OPINION',
+      CELEBRITY_WATCH: 'SOCIAL'
+    };
+
+    const feedCat = categoryMap[liveEvent.type];
+    const feedText = `${liveEvent.headline} — ${liveEvent.body}`;
+    const feedSource = liveEvent.source;
+
+    const feedLikes = feedCat === 'SOCIAL' ? Math.floor(Math.random() * 24000) + 120 : undefined;
+    const feedShares = feedCat === 'SOCIAL' && feedLikes ? Math.floor(feedLikes * 0.15) + 5 : undefined;
+
+    const feedItem: WorldFeedItem = {
+      id: generateId(),
+      category: feedCat,
+      text: feedText,
+      source: feedSource,
+      timestamp: Date.now(),
+      month: updatedPl.month,
+      likes: feedLikes,
+      shares: feedShares,
+      author: feedCat === 'SOCIAL' ? `@user_${Math.floor(Math.random() * 8999) + 1000}` : undefined,
+      avatarId: feedCat === 'SOCIAL' ? `av_f${Math.floor(Math.random() * 5) + 1}` : undefined,
+      effect: liveEvent.effect,
+      pinned: true
+    };
+
+    addedItems.push(feedItem);
+
+    // Biography Update
+    const bioText = `[${liveEvent.title}] ${liveEvent.headline}: ${liveEvent.body}`;
+    updatedPl.biography = [...(updatedPl.biography || []), bioText];
+    updatedPl.recordedBioKeys = [...(updatedPl.recordedBioKeys || []), `live_event_${liveEvent.id}`];
+
+    // Timeline Milestone Update
+    if (!updatedPl.milestones) {
+      updatedPl.milestones = [];
+    }
+    updatedPl.milestones.push({
+      id: `LIVE_EVENT_${liveEvent.id}`,
+      name: chosen.headline,
+      description: chosen.body,
+      achievedAtMonth: updatedPl.month,
+      tier: updatedPl.currentTier
+    });
   }
 
   const sortedAddedItems = [
