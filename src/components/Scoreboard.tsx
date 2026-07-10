@@ -38,13 +38,15 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
         </div>
 
-        <div className="flex bg-slate-950/50 p-1 m-4 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
+        <div className="flex bg-slate-950/80 p-1 m-4 rounded-xl border border-slate-800/80 overflow-x-auto no-scrollbar">
           {['career', 'portfolio', 'history', 'biography', 'badges', 'achievements', 'endings', 'deaths'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`flex-shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                activeTab === tab ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'
+              className={`flex-shrink-0 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                activeTab === tab
+                  ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-emerald-400 border border-slate-700/50 shadow-md'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {tab}

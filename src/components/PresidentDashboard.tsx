@@ -566,9 +566,9 @@ export const PresidentDashboard: React.FC = () => {
       <div className="max-w-md mx-auto relative z-10">
         {/* Page indicator */}
         <div className="flex items-center justify-between mb-4 relative z-10">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            {PAGE_TITLES[page]}
-          </div>
+          <h1 className="text-xs font-black uppercase tracking-[0.25em] text-slate-300">
+            {page === 0 ? 'THE OVAL OFFICE' : PAGE_TITLES[page]}
+          </h1>
           <div className="flex gap-1.5">
             {Array.from({ length: totalPages }).map((_, i) => (
               <button
