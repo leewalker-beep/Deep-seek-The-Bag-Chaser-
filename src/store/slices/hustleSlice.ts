@@ -22,6 +22,7 @@ import { GAME_CONSTANTS } from '../../config/gameConstants';
 import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 import * as Bio from '../../engine/biographyEngine';
 import { BACKGROUNDS } from '../../config/backgrounds';
+import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 
 
 
@@ -1080,6 +1081,31 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       plFinal = { ...plFinal, activeChallenges: updatedChallenges };
     }
 
+    let reactedPl = plFinal;
+    if (newPl.inJail && !runningPl.inJail) {
+      reactedPl = processWorldReaction(reactedPl, 'ARREST', {}).updatedPl;
+    } else if (shouldDie && fatalStat === 'bag') {
+      reactedPl = processWorldReaction(reactedPl, 'BANKRUPTCY', {}).updatedPl;
+    } else if (result.success) {
+      const netChange = result.yieldCash - result.cost;
+      if (hustleId === 'philanthropy_empire') {
+        reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
+      } else {
+        if ((state.pl.hustlePlays[hustleId] || 0) === 0) {
+          reactedPl = processWorldReaction(reactedPl, 'BUSINESS_LAUNCH', { hustleName: hustle.name, cost: result.cost }).updatedPl;
+        }
+        if (netChange >= 50000) {
+          reactedPl = processWorldReaction(reactedPl, 'HUGE_PROFIT', { profit: netChange, hustleName: hustle.name }).updatedPl;
+        } else if (netChange < -10000) {
+          reactedPl = processWorldReaction(reactedPl, 'MAJOR_LOSS', { profit: netChange, hustleName: hustle.name }).updatedPl;
+        }
+      }
+    } else {
+      reactedPl = processWorldReaction(reactedPl, 'BUSINESS_FAILURE', { hustleName: hustle.name }).updatedPl;
+    }
+
+    plFinal = reactedPl;
+
     set({
       pl: plFinal,
       currentMarket: newMarket,
@@ -1547,8 +1573,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     }
 
+    const { updatedPl: reactedPlPurchase } = processWorldReaction(plAfterPurchase, 'LUXURY_PURCHASE', { assetId, cost: asset.cost });
+
     set({
-      pl: plAfterPurchase,
+      pl: reactedPlPurchase,
       ph: finalPh,
       deathBadge: finalDeathBadge,
       fatalCause: finalFatalCause,
@@ -1660,8 +1688,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
     }
 
+    const fromTier = state.pl.currentTier;
+    const { updatedPl: reactedPlPromotion } = processWorldReaction(nextPl, 'TIER_PROMOTION', {
+      tier: fromTier
+    });
+
+    let finalPromotionPl = reactedPlPromotion;
+    if (nextTier === 'PRESIDENT') {
+      finalPromotionPl = processWorldReaction(finalPromotionPl, 'ELECTION_VICTORY', {}).updatedPl;
+    }
+
     const revealedBenefits: string[] = [];
-    const masteredHustles = nextPl.masteredHustles || [];
+    const masteredHustles = finalPromotionPl.masteredHustles || [];
     masteredHustles.forEach(hId => {
       const badge = HUSTLE_BADGES[hId];
       if (badge && badge.relevantTier === nextTier && badge.futureBenefit) {
@@ -1670,7 +1708,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     set({
-      pl: nextPl,
+      pl: finalPromotionPl,
       pendingSpecialization: false,
       activeTab: nextTier,
       news: [
@@ -1855,8 +1893,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!nextPl.completedNarrativeEvents) nextPl.completedNarrativeEvents = [];
     nextPl.completedNarrativeEvents = [...nextPl.completedNarrativeEvents, eventId];
 
+    const { updatedPl: reactedPlDecision } = processWorldReaction(nextPl, 'NARRATIVE_DECISION', {
+      choiceText: choice.label
+    });
+
     set({
-      pl: enforceStatCaps(nextPl),
+      pl: enforceStatCaps(reactedPlDecision),
       news: [{ text: `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 
