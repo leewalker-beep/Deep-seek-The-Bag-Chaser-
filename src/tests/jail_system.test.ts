@@ -6,6 +6,7 @@ import { getSentence } from '../config/jailSentences';
 describe('Jail System', () => {
   it('should trigger jail at 100% heat', () => {
     const stats = getInitialStats(3);
+    stats.rivals = []; // Prevent random rival actions from affecting heat
     stats.heat = 100;
     stats.currentTier = 'STREET';
 

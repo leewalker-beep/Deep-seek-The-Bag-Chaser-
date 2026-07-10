@@ -630,7 +630,7 @@ HUSTLES.film_studio = {
   tier: 'MOGUL',
   icon: '🎬',
   description: 'Produce blockbusters. Greenlight or pass?',
-  miniGame: 'ShakeToInfluence',
+  miniGame: 'SwipeAuthentic',
   hasPanel: true,
   panelType: 'FILM_STUDIO',
   levels: [
@@ -656,7 +656,7 @@ HUSTLES.space_investment = {
   tier: 'MOGUL',
   icon: '🚀',
   description: "Long-term play. Level 1 burns cash. Returns compound at level 3+.",
-  miniGame: 'ShakeToInfluence',
+  miniGame: 'HoldHype',
   hasPanel: true,
   panelType: 'SPACE_INVESTMENT',
   levels: [
@@ -713,7 +713,7 @@ HUSTLES.data_monopoly = {
   tier: 'PRESIDENT',
   icon: '🔒',
   description: 'Own every byte of personal information',
-  miniGame: 'PresidentialCampaign',
+  miniGame: 'ReactionGrid',
   levels: [
     { level: 1, id: 'l1', cost: 10000000000, yieldCash: 18000000000, yieldClout: 1500, yieldAura: 800, mentalHit: -60, cloutReq: 20000, auraReq: 20000, passiveYield: 300000000 },
   ]
@@ -725,7 +725,7 @@ HUSTLES.central_bank_play = {
   tier: 'PRESIDENT',
   icon: '🏦',
   description: 'Influence interest rates for profit',
-  miniGame: 'PresidentialCampaign',
+  miniGame: 'BalanceScale',
   levels: [
     { level: 1, id: 'l1', cost: 5000000000, yieldCash: 9000000000, yieldClout: 1500, yieldAura: 600, mentalHit: -70, cloutReq: 40000, auraReq: 40000 },
   ]
@@ -737,7 +737,7 @@ HUSTLES.legacy_fund = {
   tier: 'PRESIDENT',
   icon: '🏛️',
   description: 'Ensuring your name lasts forever',
-  miniGame: 'PresidentialCampaign',
+  miniGame: 'PatternMemory',
   levels: [
     { level: 1, id: 'l1', cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 5000, mentalHit: 100, cloutReq: 20000, auraReq: 20000 },
   ]
@@ -749,7 +749,7 @@ HUSTLES.president_campaign = {
   tier: 'PRESIDENT',
   icon: '🇺🇸',
   description: 'Run for the highest office in the land',
-  miniGame: 'PresidentialCampaign',
+  miniGame: 'TapApprove',
   hasPanel: true,
   panelType: 'PRESIDENT_CAMPAIGN',
   levels: [
