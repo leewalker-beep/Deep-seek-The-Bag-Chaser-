@@ -9,6 +9,26 @@ import { getMasteryCount } from '../utils/masteryUtils';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { SPECIALIZATIONS } from '../config/specializations';
 
+interface SynergyContext {
+  backgroundId: string;
+  sectorName: string;
+  baseYield: number;
+}
+
+export const applyHQSynergies = (context: SynergyContext): number => {
+  let operationalMultiplier = 1.0;
+
+  if (context.backgroundId === 'hq_silicon_valley' && context.sectorName === 'Technology') {
+    operationalMultiplier += 0.25;
+  } else if (context.backgroundId === 'hq_wall_street' && context.sectorName === 'Finance') {
+    operationalMultiplier += 0.30;
+  } else if (context.backgroundId === 'hq_pentagon' && context.sectorName === 'Security') {
+    operationalMultiplier += 0.40;
+  }
+
+  return Math.floor(context.baseYield * operationalMultiplier);
+};
+
 export interface MathResult {
   cost: number;
   yieldCash: number;

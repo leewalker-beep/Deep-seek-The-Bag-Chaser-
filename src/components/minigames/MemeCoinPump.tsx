@@ -14,6 +14,25 @@ interface MemeCoinPumpProps {
   accentColor?: string;
 }
 
+export const calculateVolatilePump = (currentPrice: number, hype: number, volatility: number) => {
+  const anomalySeed = Math.random();
+  let anomalyMultiplier = 1.0;
+  let statusBanner = "";
+
+  if (anomalySeed < 0.03) {
+    anomalyMultiplier = 0.4;
+    statusBanner = "🚨 FUD RUG PULL EXPLOIT ACTIVATED!";
+  } else if (anomalySeed > 0.97) {
+    anomalyMultiplier = 2.2;
+    statusBanner = "🚀 WHALE PUMP INBOUND! PRICE PARABOLIC!";
+  }
+
+  const underlyingChange = (hype / 22) - 1 + (Math.random() - 0.5) * volatility;
+  const targetPrice = Math.max(0.05, (currentPrice + (currentPrice * underlyingChange * 0.1)) * anomalyMultiplier);
+
+  return { targetPrice, statusBanner };
+};
+
 export const MemeCoinPump: React.FC<MemeCoinPumpProps> = ({
   onComplete,
   level = 1,

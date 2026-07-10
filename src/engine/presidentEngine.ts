@@ -1,4 +1,20 @@
 import type { CabinetMember, PresidentCrisis, ExecutiveOrder, PlayerStats } from '../types/game';
+
+export const advancePresidentialDecay = (pl: PlayerStats): PlayerStats => {
+  const postDecayState = { ...pl };
+
+  const activeScandals = Object.keys(postDecayState.narrativeFlags).filter(key =>
+    key.startsWith('scandal_active_') && postDecayState.narrativeFlags[key] === true
+  ).length;
+
+  const auraDecayRate = 6 + (activeScandals * 10);
+  const cloutDecayRate = 20 * (1 + (postDecayState.heat / 100));
+
+  postDecayState.aura = Math.max(0, postDecayState.aura - auraDecayRate);
+  postDecayState.clout = Math.max(0, postDecayState.clout - cloutDecayRate);
+
+  return postDecayState;
+};
 import { MASTERY_TO_HUSTLE_ID, MASTERY_DISPLAY_NAMES, MASTERY_ORDER_BONUSES } from '../config/masteryOrderMapping';
 import { CABINET_CANDIDATES } from '../config/cabinetCandidates';
 
