@@ -270,13 +270,12 @@ const vaAgencyStrategy: HustleStrategy = (_hustleId, state, marketType, levelDat
   };
 };
 
-const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const intensity = Math.min(4, Math.max(1, Math.floor(minigameMultiplier || 1)));
-  const base = 5000000;
-  const cost = base;
-  const yieldCash = base * intensity;
-  const yieldClout = 100 * intensity;
-  const yieldAura = 50 * intensity;
+  const cost = levelData.cost;
+  const yieldCash = cost * intensity;
+  const yieldClout = levelData.yieldClout * intensity;
+  const yieldAura = levelData.yieldAura * intensity;
   const heatHit = 10 * intensity;
   return {
     success: true,
@@ -287,7 +286,7 @@ const lobbyingStrategy: HustleStrategy = (_hustleId, _state, _marketType, _level
     yieldClout,
     yieldAura,
     heatHit,
-    mentalHit: -5,
+    mentalHit: levelData.mentalHit,
     shieldTurns: 0
   };
 };
@@ -436,18 +435,18 @@ const ventureCapitalStrategy: HustleStrategy = (_hustleId, state, marketType, _l
   };
 };
 
-const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
+const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, levelData, _currentLevel, minigameMultiplier, _forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const genre = state.filmGenre || 'action';
   const budget = state.filmBudget || 'medium';
   const genreMult = { action: 1.2, comedy: 1.0, drama: 0.8 }[genre];
   const budgetMult = { low: 0.7, medium: 1.0, high: 1.5 }[budget];
-  const baseCost = 25000000;
+  const baseCost = levelData.cost;
   const cost = baseCost * budgetMult * market.expenseMultiplier;
 
   const perfMult = minigameMultiplier || 1.0;
   const finalYieldMult = perfMult * genreMult * budgetMult;
-  const yieldCash = Math.floor(baseCost * finalYieldMult * market.yieldMultiplier);
+  const yieldCash = Math.floor(levelData.yieldCash * finalYieldMult * market.yieldMultiplier);
 
   return {
     success: perfMult >= 0.5,
@@ -455,8 +454,8 @@ const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, _level
     message: perfMult >= 0.5 ? '' : 'Box office flop',
     cost,
     yieldCash,
-    yieldClout: 200 * (perfMult > 1 ? perfMult : 1),
-    yieldAura: 100 * (perfMult > 1 ? perfMult : 1),
+    yieldClout: levelData.yieldClout * (perfMult > 1 ? perfMult : 1),
+    yieldAura: levelData.yieldAura * (perfMult > 1 ? perfMult : 1),
     mentalHit: -15,
     heatHit: 10
   };
