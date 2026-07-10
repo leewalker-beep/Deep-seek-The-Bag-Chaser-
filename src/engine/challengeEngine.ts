@@ -1,4 +1,24 @@
 import type { PlayerStats, DailyChallenge, Tier, MarketType } from '../types/game';
+
+export interface SabotageResult {
+  playerStats: PlayerStats;
+  eventLogged: string | null;
+}
+
+export const assessRivalSabotage = (pl: PlayerStats, activeRivalId: string): SabotageResult => {
+  const resultStats = { ...pl };
+  let eventLogged: string | null = null;
+
+  if (resultStats.hustleLevels['saas_mvp'] >= 2 && activeRivalId === 'rival_startup') {
+    if (Math.random() < 0.12) {
+      resultStats.aura = Math.max(0, resultStats.aura - 15);
+      resultStats.bag = Math.max(0, resultStats.bag - 25000);
+      eventLogged = "⚠️ RIVAL SABOTAGE: Rival startup launched a smear campaign on your SaaS pipeline! -$25k and Aura hit.";
+    }
+  }
+
+  return { playerStats: resultStats, eventLogged };
+};
 import { WORLD_EVENTS } from '../config/worldEvents';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { TIER_REQUIREMENTS, PROGRESSION_ORDER } from '../config/tiers';

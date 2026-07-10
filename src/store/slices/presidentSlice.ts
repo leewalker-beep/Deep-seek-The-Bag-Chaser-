@@ -1,5 +1,28 @@
 import type { StateCreator } from 'zustand';
 import type { GameState, CabinetMember, PresidentCrisis } from '../../types/game';
+
+interface IntegrityAudit {
+  approvalImpact: number;
+  generatedNewsLogs: string[];
+}
+
+export const auditCabinetIntegrity = (members: CabinetMember[]): IntegrityAudit => {
+  let approvalImpact = 0;
+  const generatedNewsLogs: string[] = [];
+
+  members.forEach(member => {
+    const corruptionRisk = member.corruptionRisk ?? 20;
+    const integrity = member.integrity ?? 70;
+    if (corruptionRisk > 75 && integrity < 25) {
+      if (Math.random() < 0.14) {
+        generatedNewsLogs.push(`📰 INVESTIGATION: Your appointed ${member.role} was caught funneling public infrastructure state allocations!`);
+        approvalImpact -= 15;
+      }
+    }
+  });
+
+  return { approvalImpact, generatedNewsLogs };
+};
 import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 import { PRESIDENTIAL_ACTIVITIES } from '../../config/presidencyActivities';

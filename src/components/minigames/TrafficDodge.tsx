@@ -13,6 +13,30 @@ interface Obstacle {
   isNegative?: boolean;
 }
 
+interface Vehicle {
+  id: number;
+  x: number;
+  y: number;
+  type: string;
+}
+
+export const getElasticVehicleSpawn = (currentVehicles: Vehicle[], speedMultiplier: number): Vehicle | null => {
+  const sortedByY = [...currentVehicles].sort((a, b) => b.y - a.y);
+  const highestVehicle = sortedByY[sortedByY.length - 1];
+  const requiredVerticalGap = 200 * Math.max(1.0, speedMultiplier * 0.45);
+
+  if (highestVehicle && highestVehicle.y < requiredVerticalGap) {
+    return null;
+  }
+
+  return {
+    id: Math.random(),
+    x: Math.floor(Math.random() * 3),
+    y: -60,
+    type: Math.random() > 0.75 ? '🛢️' : '🚗'
+  };
+};
+
 interface TrafficDodgeProps {
   onComplete: (multiplier: number) => void;
   level?: number;
