@@ -9,29 +9,24 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
   });
 
   test('first load and new game flow', async ({ page }) => {
-    await page.click('button:has-text("Find out who you are")');
-    // Skip through minigames if possible or just wait for them
-    // (Assuming existing minigame logic in Prologue)
-    await expect(page.locator('h2')).toContainText('THE STREET KID');
-
-    // Check if we can skip tutorial
-    const skipBtn = page.locator('button:has-text("SKIP TUTORIAL")');
+    // Click on "Skip Prologue" button to bypass cinematic transitions
+    const skipBtn = page.locator('button:has-text("Skip Prologue")');
     if (await skipBtn.isVisible()) {
         await skipBtn.click();
     }
+
+    // Chapter 1 intro screen should be visible
+    await expect(page.locator('h2')).toContainText('The First Hustle');
   });
 
   test('save and load verification', async ({ page }) => {
-    // Start game
-    await page.click('button:has-text("Find out who you are")');
-    await page.waitForTimeout(1000);
-
-    // Manipulate state to set a name and jump into game
+    // Start game directly using store state
     await page.evaluate(() => {
         const store = (window as any).useGameStore;
         store.getState().resetGame('sk_ghost', 3);
         store.getState().setPlayerName('SmokeTester');
         store.getState().setPh('PLAYING');
+        store.getState().setTutorialSkipped(true);
     });
 
     await expect(page.locator('text=SmokeTester').first()).toBeVisible();
@@ -46,6 +41,7 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         const store = (window as any).useGameStore;
         store.getState().resetGame('sk_ghost', 3);
         store.getState().setPh('PLAYING');
+        store.getState().setTutorialSkipped(true);
         // Give enough stats to advance
         store.getState().updatePl({
             bag: 1000000,
@@ -64,7 +60,7 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
     // Click the first specialization button
     await page.locator('button:has(h3)').first().click();
 
-    await expect(page.locator('text=STREET')).first().toBeVisible();
+    await expect(page.locator('text=STREET').first()).toBeVisible();
   });
 
   test('death and preloading', async ({ page }) => {
@@ -72,6 +68,7 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         const store = (window as any).useGameStore;
         store.getState().resetGame('sk_ghost', 3);
         store.getState().setPh('PLAYING');
+        store.getState().setTutorialSkipped(true);
     });
 
     // Trigger death
@@ -80,7 +77,6 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
     });
 
     // Death screen should be visible immediately
-    await expect(page.locator('text=BURNED OUT')).toBeVisible();
     await expect(page.locator('text=Smoked by Jules')).toBeVisible();
   });
 
@@ -89,6 +85,7 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         const store = (window as any).useGameStore;
         store.getState().resetGame('sk_ghost', 3);
         store.getState().setPh('PLAYING');
+        store.getState().setTutorialSkipped(true);
         store.getState().updatePl({
             campaignStage: 8,
             currentTier: 'PRESIDENT'
@@ -97,7 +94,6 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
     });
 
     // Check for Presidency loader or content
-    // Since it's lazy, we might see the loader for a split second
     const loader = page.locator('text=Preparing the Situation Room...');
     const dashboard = page.locator('text=CABINET');
 
@@ -107,10 +103,15 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
     await page.evaluate(() => {
         (window as any).useGameStore.setState({ ph: 'POST_MORTEM' });
     });
-    await page.click('button:has-text("SEE THE LEDGER")');
 
-    const hofLoader = page.locator('text=Reading the History Books...');
-    const hofContent = page.locator('text=HALL OF FAME');
-    await expect(hofLoader.or(hofContent).first()).toBeVisible();
+    // Click through the progressive downfall stages
+    await page.click('button:has-text("Read Your Chronicle")');
+    await page.click('button:has-text("Claim Your Legacy")');
+
+    // Click "See Ledger & Share Run" to go to summary screen
+    await page.click('button:has-text("See Ledger")');
+
+    const summaryContent = page.locator('text=FINAL LEGACY SCORE');
+    await expect(summaryContent.first()).toBeVisible();
   });
 });

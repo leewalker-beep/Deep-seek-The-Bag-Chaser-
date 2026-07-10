@@ -390,17 +390,22 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               transition={{ duration: 0.8 }}
               className="space-y-4"
             >
-              <p className="text-slate-500 text-[10px] tracking-[0.4em] uppercase font-black">
-                Prologue – Origin
-              </p>
-              <h1
-                className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-tight max-w-md mx-auto"
+              <div className="space-y-2 mb-6">
+                <h1 className="text-4xl md:text-6xl font-black tracking-[0.25em] text-center uppercase bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 drop-shadow-[0_0_30px_rgba(16,185,129,0.3)] font-mono italic">
+                  BAG CHASER
+                </h1>
+                <p className="text-slate-500 text-[10px] tracking-[0.4em] uppercase font-black">
+                  Prologue – Origin
+                </p>
+              </div>
+              <h2
+                className="text-2xl md:text-4xl font-extrabold uppercase tracking-tight leading-tight max-w-md mx-auto text-slate-200"
                 style={{
                   textShadow: '0 0 40px rgba(255,255,255,0.1)',
                 }}
               >
                 {cinematicLines[cinematicIndex].text}
-              </h1>
+              </h2>
             </motion.div>
 
             {/* Skipping button to speed up testing */}
@@ -945,22 +950,22 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               </div>
 
               {/* Strengths & Weaknesses badges */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <span className="block text-[8px] uppercase tracking-widest text-emerald-500 font-black">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <span className="block text-[10px] uppercase tracking-widest text-emerald-400 font-black">
                     Strengths
                   </span>
-                  <div className="text-[10px] text-slate-200 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1.5 rounded-lg leading-relaxed">
+                  <div className="text-xs text-emerald-300 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5 rounded-xl leading-relaxed">
                     {selectedCatId === 'street_kid' && 'Sharp survival grit. +15% Cash from street level operations.'}
                     {selectedCatId === 'dropout' && 'Highly adaptable and charismatic. +20% Clout across early tiers.'}
                     {selectedCatId === 'benefactor' && 'Elite family headstart. +15% Aura at Corporate levels.'}
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="block text-[8px] uppercase tracking-widest text-red-400 font-black">
+                <div className="space-y-1.5">
+                  <span className="block text-[10px] uppercase tracking-widest text-rose-400 font-black">
                     Weaknesses
                   </span>
-                  <div className="text-[10px] text-slate-200 bg-red-500/5 border border-red-500/10 px-2.5 py-1.5 rounded-lg leading-relaxed">
+                  <div className="text-xs text-rose-300 font-semibold bg-rose-500/10 border border-rose-500/20 px-3 py-2.5 rounded-xl leading-relaxed">
                     {selectedCatId === 'street_kid' && 'Extremely scarce starting capital. High grind index.'}
                     {selectedCatId === 'dropout' && 'Under relentless scrutiny. Highly competitive landscape.'}
                     {selectedCatId === 'benefactor' && 'Higher rent & overhead. Lacks street survival instincts.'}

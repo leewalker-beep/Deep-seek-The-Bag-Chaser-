@@ -350,13 +350,15 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         {/* Filter */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
           {filterButtons.map(btn => (
             <button
               key={btn.value}
               onClick={() => setFilterType(btn.value)}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-black whitespace-nowrap transition-all border ${
-                filterType === btn.value ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-500'
+              className={`px-5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all border select-none ${
+                filterType === btn.value
+                  ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
               }`}
             >
               {btn.label}

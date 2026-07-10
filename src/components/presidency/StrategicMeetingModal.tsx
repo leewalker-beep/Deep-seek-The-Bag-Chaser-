@@ -770,9 +770,11 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
                 const isPos = val > 0;
                 // Simplify key names for display
                 const label = key === 'federalBudget' ? 'Budget' : key.charAt(0).toUpperCase() + key.slice(1);
+                const isInverse = key === 'inflation' || key === 'debt' || key === 'heat' || key === 'nationalDebt';
+                const isGood = isInverse ? val < 0 : val > 0;
                 return (
-                  <span key={key} className={`text-[7px] font-black px-1.5 py-0.5 rounded ${isPos ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {isPos ? '+' : ''}{key === 'federalBudget' ? `$${(val/1000000).toFixed(0)}M` : val}{key === 'approval' || key === 'inflation' || key === 'debt' ? '%' : ''} {label}
+                  <span key={key} className={`text-[7px] font-black px-1.5 py-0.5 rounded ${isGood ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {isPos ? '+' : ''}{key === 'federalBudget' ? `$${(val/1000000).toFixed(0)}M` : val}{key === 'approval' || key === 'inflation' || key === 'debt' || key === 'nationalDebt' ? '%' : ''} {label}
                   </span>
                 );
               })}
@@ -874,11 +876,13 @@ export const StrategicMeetingModal: React.FC<StrategicMeetingModalProps> = ({ ac
             if (typeof val !== 'number' || val === 0) return null;
             const isPos = val > 0;
             const label = key === 'federalBudget' ? 'Budget' : key.charAt(0).toUpperCase() + key.slice(1);
+            const isInverse = key === 'inflation' || key === 'debt' || key === 'heat' || key === 'nationalDebt';
+            const isGood = isInverse ? val < 0 : val > 0;
             return (
               <div key={key} className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col items-center">
                 <div className="text-[8px] text-slate-500 font-bold uppercase mb-1">{label}</div>
-                <div className={`text-lg font-black ${isPos ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {isPos ? '+' : ''}{key === 'federalBudget' ? `$${(val/1000000).toFixed(1)}M` : val}{key === 'approval' || key === 'inflation' || key === 'debt' ? '%' : ''}
+                <div className={`text-lg font-black ${isGood ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {isPos ? '+' : ''}{key === 'federalBudget' ? `$${(val/1000000).toFixed(1)}M` : val}{key === 'approval' || key === 'inflation' || key === 'debt' || key === 'nationalDebt' ? '%' : ''}
                 </div>
               </div>
             );

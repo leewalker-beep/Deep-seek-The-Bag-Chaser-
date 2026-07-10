@@ -257,7 +257,7 @@ export const DeathScreen: React.FC<DeathScreenProps> = ({
                 </div>
 
                 {/* Lessons Learned */}
-                <div className="p-5 bg-red-950/15 border border-red-950/40 rounded-2xl text-left text-xs leading-relaxed text-red-300/90 italic">
+                <div className="p-5 bg-red-950/20 border border-red-900/60 rounded-2xl text-left text-xs leading-relaxed text-red-200 italic shadow-lg shadow-red-950/20">
                   {getLessonsLearned()}
                 </div>
 
