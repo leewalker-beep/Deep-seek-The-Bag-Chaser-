@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
+import { getScalingMultiplier } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
 
 interface TapRhythmProps {
@@ -29,10 +29,9 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
-  const spawnFactor = getSpawnFactor(level, tier);
 
   // Difficulty scaling
-  const TOTAL_BEATS = Math.floor((10 + (level * 3)) * spawnFactor);
+  const TOTAL_BEATS = 5 + (level * 3); // Level 1 only requires 8 hits now (down from 15)
   const baseSpeed = (1.5 + (level * 0.4)) * Math.sqrt(scaling);
   const MAX_DURATION = 30000;
 
@@ -49,8 +48,8 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
     for (let i = 0; i < beatsToGenerate; i++) {
         intervals.push(currentMs);
         // Randomize interval between beats - tighter intervals at higher difficulty
-        const minGap = Math.max(300, (1200 - (level * 150)) / spawnFactor);
-        currentMs += minGap + Math.random() * (800 / (level * spawnFactor));
+        const minGap = Math.max(300, 1200 - (level * 150));
+        currentMs += minGap + Math.random() * (800 / level);
     }
 
     const timers = intervals.map((ms, _index) => {
@@ -76,7 +75,7 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
       timers.forEach(clearTimeout);
       clearTimeout(timeoutTimer);
     };
-  }, [isGameOver, hits, totalAttempts, level, TOTAL_BEATS, spawnFactor]);
+  }, [isGameOver, hits, totalAttempts, level, TOTAL_BEATS]);
 
   useEffect(() => {
     const moveInterval = setInterval(() => {
@@ -165,10 +164,11 @@ export const TapRhythm: React.FC<TapRhythmProps> = ({
         'border-slate-800'
       }`}
     >
-      <div className="absolute top-6 w-full text-center">
-        <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter uppercase">{title} <span className="text-white text-sm">L{level}</span></h2>
-        <div className="text-[10px] text-slate-500 uppercase font-black mt-1">
-          RHYTHM: {hits}/{TOTAL_BEATS}
+      {/* 1. HEADER SECTION (with clean padding-bottom, explicit block separation, and z-10) */}
+      <div className="text-center flex flex-col items-center gap-1 mb-4 relative z-10">
+        <h1 className="text-xl font-black italic tracking-wider text-blue-400">{title} L{level}</h1>
+        <div className="bg-zinc-900/80 px-3 py-1 rounded-full border border-zinc-800/60 text-[11px] font-mono text-slate-300">
+          ⚡ TRACK PROFILE: <span className="text-emerald-400 font-bold">{hits}</span> / <span className="text-slate-500">{TOTAL_BEATS}</span>
         </div>
       </div>
 
