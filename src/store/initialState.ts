@@ -41,6 +41,7 @@ export const getInitialStats = (
     mentalShieldTurns: 0,
     artists: [],
     scoutedTalentPool: [],
+    activeMinigame: null,
     rolodex: [],
     rareTechStockpile: 0,
     algorithmicLogs: 0,
