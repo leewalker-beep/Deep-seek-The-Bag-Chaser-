@@ -601,6 +601,7 @@ export const executeHustleAction = (
     passiveAdded: result.passiveAdded,
     isBigWin: result.isRare,
     bigWinMessage: result.bigWinMessage,
+    minigameMult: minigameMultiplier
   });
 
   // Apply variance for Corporate tier

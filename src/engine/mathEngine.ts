@@ -42,6 +42,7 @@ export interface MathResult {
   isBigWin?: boolean;
   bigWinMessage?: string;
   approvalBonus?: number;
+  minigameMult?: number; // Optional minigame multiplier for linear calculations
 }
 
 export const LEVEL_MULTIPLIERS: Record<number, number> = {
@@ -150,7 +151,6 @@ export function calculateHustleMath(
     yieldCash = Math.max(yieldCash, 5000);
   }
 
-
   return {
     cost,
     yieldCash,
@@ -161,7 +161,8 @@ export function calculateHustleMath(
     shieldTurns: levelData.shieldTurns || 0,
     passiveAdded: levelData.passiveYield,
     isBigWin,
-    bigWinMessage
+    bigWinMessage,
+    minigameMult
   };
 }
 
@@ -208,16 +209,16 @@ export const applyFlexBonuses = (result: MathResult, bonuses: ReturnType<typeof 
   }
 };
 
-export function getEffectiveHustleStats(
+export function calculateHustleStatsAdditive(
   hustleId: string,
   _levelData: HustleLevel,
   player: PlayerStats,
   _currentLevel: number,
-  result: MathResult // Result from calculateHustleMath or strategy
+  result: MathResult
 ): MathResult {
   const effectiveResult = { ...result };
 
-  // 1. Apply Sentiment Multiplier
+  // --- Dynamic Environmental Modifiers ---
   let sentimentMult = 1.0;
   if (player.activeSentiment) {
     const category = SENTIMENT_CATEGORIES.find(c => c.id === player.activeSentiment?.category);
@@ -226,7 +227,6 @@ export function getEffectiveHustleStats(
     }
   }
 
-  // 1b. Apply World Event Sector Modifiers
   let worldEventMult = 1.0;
   if (player.activeWorldEvent) {
     const worldEvent = WORLD_EVENTS.find(e => e.id === player.activeWorldEvent?.eventId);
@@ -236,114 +236,144 @@ export function getEffectiveHustleStats(
     }
   }
 
-  // 1c. Conservative Modifier Stacking (Cap total dynamic multiplier to prevent runaway/decimation)
-  const combinedDynamicMult = Math.max(0.3, Math.min(2.5, sentimentMult * worldEventMult));
-  effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * combinedDynamicMult);
+  const dynamicBonus = (sentimentMult - 1) + (worldEventMult - 1);
+  const combinedDynamicBonus = Math.max(-0.7, Math.min(1.5, dynamicBonus));
 
-  // 2. Apply Badge Buffs
-  let finalYieldMult = 1.0;
-  let finalCloutMult = 1.0;
-  let finalAuraMult = 1.0;
+  // --- permanent yield/clout/aura/mental/heat buffs ---
+  let badgeYieldBonus = 0;
+  let badgeCloutBonus = 0;
+  let badgeAuraBonus = 0;
   let finalMentalMult = 1.0;
   let finalHeatMult = 1.0;
 
-  player.masteredHustles.forEach(mId => {
+  player.masteredHustles?.forEach(mId => {
     const badge = HUSTLE_BADGES[mId];
     if (!badge) return;
-    if (badge.buff.type === 'yield') finalYieldMult *= badge.buff.value;
-    if (badge.buff.type === 'clout') finalCloutMult *= badge.buff.value;
-    if (badge.buff.type === 'aura') finalAuraMult *= badge.buff.value;
+    if (badge.buff.type === 'yield') badgeYieldBonus += (badge.buff.value - 1);
+    if (badge.buff.type === 'clout') badgeCloutBonus += (badge.buff.value - 1);
+    if (badge.buff.type === 'aura') badgeAuraBonus += (badge.buff.value - 1);
     if (badge.buff.type === 'mental') finalMentalMult *= badge.buff.value;
     if (badge.buff.type === 'heat') finalHeatMult *= badge.buff.value;
   });
 
-  // 3. Apply Tier Badge Buffs (+2% permanent yield on that tier's hustles)
+  // --- Tier Badge Buffs ---
+  let tierBadgeBonus = 0;
   const hustleTier = HUSTLES[hustleId]?.tier;
-  if (hustleTier && player.tierBadges.includes(hustleTier)) {
-    finalYieldMult *= 1.02;
+  if (hustleTier && player.tierBadges?.includes(hustleTier)) {
+    tierBadgeBonus = 0.02;
   }
 
-  // 4. Apply Tier Mechanics
+  // --- Tier Mechanics ---
   const activeRivalBid = player.rivals?.find(r => r.tier === player.currentTier && r.currentBid > 0);
   if (activeRivalBid) {
     effectiveResult.cost = Math.floor(effectiveResult.cost * 1.5);
   }
 
-  const hasCounterBidBonus = player.dynamicPassives[`counter_bid_bonus_${player.currentTier}`];
+  let counterBidBonus = 0;
+  const hasCounterBidBonus = player.dynamicPassives?.[`counter_bid_bonus_${player.currentTier}`];
   if (hasCounterBidBonus) {
-    effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 1.2);
+    counterBidBonus = 0.2;
   }
 
+  let marketLeaderBonus = 0;
   if (player.marketLeaderTiers?.includes(player.currentTier)) {
-    effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 1.05);
+    marketLeaderBonus = 0.05;
   }
+
+  let mogulBonus = 0;
+  let streetStreakBonus = 0;
+  let eliteCloutBonus = 0;
+  let presidentAuraBonus = 0;
 
   if (player.currentTier === 'MUD') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.5);
   } else if (player.currentTier === 'STREET') {
-    const streakBonus = Math.min(2.0, 1 + (player.streak || 0) * 0.1);
-    effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * streakBonus);
-  } else if (player.currentTier === 'CORPORATE') {
-    // Note: Variance is applied at execution time in hustleEngine,
-    // but for effective stats we show the base expected value.
+    streetStreakBonus = Math.min(1.0, (player.streak || 0) * 0.1);
   } else if (player.currentTier === 'ELITE') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.9);
-    effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * 1.2);
+    eliteCloutBonus = 0.2;
   } else if (player.currentTier === 'MOGUL') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
-    effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * 0.9);
+    mogulBonus = -0.1;
     effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.5);
   } else if (player.currentTier === 'PRESIDENT') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
-    const auraBonus = 1 + (player.aura / 5000);
-    effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * auraBonus);
+    presidentAuraBonus = (player.aura || 0) / 5000;
 
     const masteryCount = getMasteryCount(player);
     const masteryApprovalBonus = Math.min(15, masteryCount * 1.5);
     effectiveResult.approvalBonus = (effectiveResult.approvalBonus || 0) + masteryApprovalBonus;
   }
 
-  // 5. Apply Legacy Multiplier
-  const legacyMultiplier = 1 + ((player.legacyPoints || 0) * 0.001);
+  // --- Legacy Multiplier ---
+  const legacyBonus = (player.legacyPoints || 0) * 0.001;
 
-  const unlockedLegacyUpgrades = player.unlockedLegacyUpgradeIds || [];
-  if (unlockedLegacyUpgrades.includes('passive_boost')) {
-    if (effectiveResult.passiveAdded) {
-       // We'll apply this bonus where passive income is actually calculated if needed,
-       // but for now let's apply a 10% boost to the yieldCash if it comes from passives
-    }
-    // Actually, passive yields are handled in advancementEngine.
-  }
-
-  effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * legacyMultiplier * finalYieldMult);
-  effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * legacyMultiplier * finalCloutMult);
-  effectiveResult.yieldAura = Math.floor(effectiveResult.yieldAura * legacyMultiplier * finalAuraMult);
-  effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * finalMentalMult);
-  effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * finalHeatMult);
-
-  // 6. Apply Specialization Bonuses
+  // --- Specialization Bonuses ---
+  let specBonus = 0;
+  let specCloutBonus = 0;
+  let specAuraBonus = 0;
   if (player.activeSpecializationId) {
     const spec = SPECIALIZATIONS.find(s => s.id === player.activeSpecializationId);
     if (spec) {
-        if (spec.yieldCashMult) effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * spec.yieldCashMult);
-        if (spec.yieldCloutMult) effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * spec.yieldCloutMult);
-        if (spec.yieldAuraMult) effectiveResult.yieldAura = Math.floor(effectiveResult.yieldAura * spec.yieldAuraMult);
-        if (spec.heatMult) effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * spec.heatMult);
-        if (spec.mentalHitMult) {
-            if (effectiveResult.mentalHit < 0) {
-                effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * spec.mentalHitMult);
-            } else {
-                // For mental recovery, we might want a different logic or just skip it
-                effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (2 - spec.mentalHitMult));
-            }
+      if (spec.yieldCashMult) specBonus = spec.yieldCashMult - 1;
+      if (spec.yieldCloutMult) specCloutBonus = spec.yieldCloutMult - 1;
+      if (spec.yieldAuraMult) specAuraBonus = spec.yieldAuraMult - 1;
+      if (spec.heatMult) effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * spec.heatMult);
+      if (spec.mentalHitMult) {
+        if (effectiveResult.mentalHit < 0) {
+          effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * spec.mentalHitMult);
+        } else {
+          effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (2 - spec.mentalHitMult));
         }
+      }
     }
   }
 
-  // 7. Apply Flex Bonuses
-  applyFlexBonuses(effectiveResult, calculateFlexBonuses(player));
+  // --- Flex Bonuses ---
+  const flexBonuses = calculateFlexBonuses(player);
+  const flexBonus = Math.min(1.0, flexBonuses.cashBonus / 100);
+  const flexCloutBonus = Math.min(1.0, flexBonuses.cloutBonus / 100);
+  const flexAuraBonus = Math.min(1.0, flexBonuses.auraBonus / 100);
+
+  if (effectiveResult.mentalHit < 0) {
+    effectiveResult.mentalHit = Math.ceil(effectiveResult.mentalHit * (1 - flexBonuses.mentalBonus / 100));
+  } else if (effectiveResult.mentalHit > 0) {
+    effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * (1 + flexBonuses.mentalBonus / 100));
+  }
+
+  // --- Apply base badge/legacy multipliers to mental/heat ---
+  effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * finalMentalMult);
+  effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * finalHeatMult);
+
+  // --- Centralized Cash Yield Linear Multiplier ---
+  const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
+  const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
+
+  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus;
+  effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * totalMultiplier));
+
+  // --- Centralized Clout/Aura Yield Linear Multiplier ---
+  const totalCloutMultiplier = 1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus;
+  effectiveResult.yieldClout = Math.max(0, Math.floor(result.yieldClout * totalCloutMultiplier));
+
+  const totalAuraMultiplier = 1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus;
+  effectiveResult.yieldAura = Math.max(0, Math.floor(result.yieldAura * totalAuraMultiplier));
+
+  // --- Clamp Clout/Aura yields ---
+  effectiveResult.yieldClout = Math.floor(Math.max(0, Math.min(1000, effectiveResult.yieldClout)));
+  effectiveResult.yieldAura = Math.floor(Math.max(0, Math.min(1000, effectiveResult.yieldAura)));
 
   return effectiveResult;
+}
+
+export function getEffectiveHustleStats(
+  hustleId: string,
+  levelData: HustleLevel,
+  player: PlayerStats,
+  currentLevel: number,
+  result: MathResult // Result from calculateHustleMath or strategy
+): MathResult {
+  return calculateHustleStatsAdditive(hustleId, levelData, player, currentLevel, result);
 }
 
 export function calculatePassiveIncome(
