@@ -342,6 +342,36 @@ export function advanceMonth(
   // Apply financial changes
   newPl.bag = newPl.bag + passiveIncome - totalRent;
 
+  // New Record Label Artists handling (contract countdown, poaching alerts, revenue/retainer calculations)
+  newPl.artists = newPl.artists.map(artist => {
+    const currentContract = artist.contractMonthsLeft !== undefined ? artist.contractMonthsLeft : 120;
+    const nextContract = currentContract - 1;
+    let isTargetedByRival = artist.isTargetedByRival || false;
+
+    if (nextContract <= 0 && currentContract > 0) {
+      news.push(`🎤 Contract Expired: ${artist.name}'s contract has expired!`);
+    } else if (nextContract < 24 && nextContract > 0) {
+      if (Math.random() < 0.08) {
+        isTargetedByRival = true;
+        news.push(`⚠️ Rival Poaching Alert: Rivals are attempting to poach ${artist.name}!`);
+      }
+    }
+
+    return {
+      ...artist,
+      contractMonthsLeft: nextContract,
+      isTargetedByRival
+    };
+  });
+
+  let artistsNet = 0;
+  newPl.artists.forEach(artist => {
+    const revenue = artist.monthlyRevenue !== undefined ? artist.monthlyRevenue : 0;
+    const retainer = artist.monthlyRetainer !== undefined ? artist.monthlyRetainer : 0;
+    artistsNet += (revenue - retainer);
+  });
+  newPl.bag = Math.max(0, newPl.bag + artistsNet);
+
   const FLEX_THRESHOLDS: Record<number, string> = {
     10000:       'watch',
     50000:       'car',

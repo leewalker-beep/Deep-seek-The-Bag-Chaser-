@@ -275,6 +275,23 @@ export interface Artist {
   isGrammyWinner?: boolean;
 }
 
+export interface RecordLabelArtist extends Artist {
+  avatar: string;
+  contractMonthsLeft: number;
+  monthlyRetainer: number;
+  monthlyRevenue: number;
+  hypeFactor: number;
+  isTargetedByRival: boolean;
+}
+
+export interface RolodexCelebrity {
+  id: string;
+  name: string;
+  avatar: string;
+  relationshipScore: number; // 0-100
+  isUnlocked: boolean;
+}
+
 export interface Rival {
   id: string;
   name: string;
@@ -643,7 +660,11 @@ export interface PlayerStats {
   vendingCount: number;
   passiveLaborYield: number;
   mentalShieldTurns: number;
-  artists: Artist[];
+  artists: RecordLabelArtist[];
+  scoutedTalentPool: RecordLabelArtist[];
+  rolodex: RolodexCelebrity[];
+  rareTechStockpile: number;
+  algorithmicLogs: number;
   grammyCount: number;
   recordLabelLevel: number;
   festivalChoices?: {
@@ -892,7 +913,7 @@ export interface GameState {
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
-  scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
+  scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
   dropArtist: (artistId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
   setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;

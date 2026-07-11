@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PlayerStats, Artist } from '../../types/game';
+import type { GameState, PlayerStats, Artist, RecordLabelArtist } from '../../types/game';
 import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
@@ -27,7 +27,7 @@ export interface PlayerStatsSlice {
   setCampaignPlatform: (platform: 'economy' | 'healthcare' | 'foreign') => void;
   setCampaignVP: (vp: string) => void;
   setCampaignDelegates: (delegates: number) => void;
-  scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: Artist; message: string };
+  scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
   dropArtist: (artistId: string) => void;
   unlockLegacyUpgrade: (upgradeId: string) => void;
   updatePl: (updates: Partial<PlayerStats>) => void;
@@ -186,9 +186,15 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul', 'Star', 'Flow', 'Beat'];
     const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
 
-    const newArtist: Artist = {
+    const newArtist: RecordLabelArtist = {
       id: Math.random().toString(36).substring(7),
       name,
+      avatar: `av_artist_${Math.floor(Math.random() * 5) + 1}`,
+      contractMonthsLeft: 120,
+      monthlyRetainer: Math.floor(royalty * 0.2),
+      monthlyRevenue: Math.floor(royalty * 1.2),
+      hypeFactor: 1.0,
+      isTargetedByRival: false,
       tier,
       royaltyRate: royalty,
       monthsActive: 0,

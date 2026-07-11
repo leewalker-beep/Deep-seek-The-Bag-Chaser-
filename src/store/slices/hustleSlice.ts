@@ -1076,6 +1076,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
+      rareTechStockpile: (state.pl.rareTechStockpile || 0) + (result.success && (hustleId === 'r_scrap' || hustleId === 'techFlip') ? 1 : 0),
+      algorithmicLogs: (state.pl.algorithmicLogs || 0) + (result.success && (hustleId === 'r_delivery' || hustleId === 'cleaning') ? 1 : 0),
       annualCashEarned: state.pl.annualCashEarned + Math.max(0, result.yieldCash || 0),
       annualCashSpent: state.pl.annualCashSpent + (levelData.cost || 0),
       annualHustlesRun: state.pl.annualHustlesRun + 1,
