@@ -30,6 +30,7 @@ export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
 
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => HustleExecutionResult;
+  executeHustleWithTimelineTick: (hustleId: string, branchId: string) => { success: boolean; message: string };
   executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
@@ -358,6 +359,177 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         ],
       });
     }
+  },
+
+  executeHustleWithTimelineTick: (hustleId, branchId) => {
+    const state = get();
+    if (state.pl.inJail) return { success: false, message: 'Cannot work while in jail' };
+    const hustle = HUSTLES[hustleId];
+    const branch = hustle?.branches?.[branchId];
+
+    if (!branch) return { success: false, message: 'Branch not found' };
+
+    if (state.pl.bag < branch.cost) {
+      get().addTickerMessage(`Need $${branch.cost.toLocaleString()}`, 'text-red-400');
+      return { success: false, message: `Need $${branch.cost.toLocaleString()}` };
+    }
+    if (state.pl.clout < branch.cloutReq) {
+      get().addTickerMessage(`Need ${branch.cloutReq} clout`, 'text-red-400');
+      return { success: false, message: `Need ${branch.cloutReq} clout` };
+    }
+    if (state.pl.aura < branch.auraReq) {
+      get().addTickerMessage(`Need ${branch.auraReq} aura`, 'text-red-400');
+      return { success: false, message: `Need ${branch.auraReq} aura` };
+    }
+
+    if (branch.cost > state.pl.bag * 0.1) {
+      backupSave();
+    }
+
+    const newBag = state.pl.bag - branch.cost;
+    const newClout = state.pl.clout + branch.yieldClout;
+    const newAura = state.pl.aura + branch.yieldAura;
+    const newShieldTurns = state.pl.mentalShieldTurns + (branch.shieldTurns || 0);
+
+    const newStats = state.pl.stats
+      ? { ...state.pl.stats }
+      : { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
+
+    newStats.totalHustles += 1;
+    newStats.successfulHustles += 1;
+    const totalHustlesCompleted = state.pl.totalHustlesCompleted + 1;
+
+    const newHustlePlays = { ...state.pl.hustlePlays };
+    newHustlePlays[hustleId] = (newHustlePlays[hustleId] || 0) + 1;
+
+    const newTierStats = { ...state.pl.tierStats };
+    const tier = hustle.tier;
+    if (!newTierStats[tier]) {
+      newTierStats[tier] = { plays: 0, earnings: 0, favoriteHustle: hustle.name };
+    }
+    newTierStats[tier].plays += 1;
+
+    const nextPl = enforceStatCaps({
+      ...state.pl,
+      bag: newBag,
+      clout: newClout,
+      aura: newAura,
+      mentalShieldTurns: newShieldTurns,
+      hustleBranchIds: { ...state.pl.hustleBranchIds, [hustleId]: branchId },
+      hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
+      stats: newStats,
+      hustlePlays: newHustlePlays,
+      tierStats: newTierStats,
+      totalHustlesCompleted,
+    });
+    nextPl.legacyScore = calculateLegacyScore(nextPl);
+
+    const advancementResult = advanceMonth(
+      nextPl,
+      state.currentMarket,
+      state.unlockedLegacyUpgradeIds
+    );
+
+    let finalNextPl = enforceStatCaps(advancementResult.newPl);
+    finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+    const finalCurrentMarket = advancementResult.newMarket;
+    const tickNews = advancementResult.news;
+
+    finalNextPl.legacyScore = calculateLegacyScore(finalNextPl);
+
+    let finalPh = state.ph;
+    let finalDeathBadge = state.deathBadge;
+    let finalFatalCause = state.fatalCause;
+
+    if (advancementResult.shouldDie) {
+      const deathInfo = DEATH_MESSAGES[hustleId] || DEATH_MESSAGES['DEFAULT'];
+      finalPh = 'POST_MORTEM';
+      finalDeathBadge = deathInfo.badge;
+      finalFatalCause = advancementResult.deathCause;
+
+      finalNextPl.deathContext = {
+        mentalHealthAtDeath: Math.floor(finalNextPl.mentalHealth),
+        lastHustleMentalHit: 0,
+        lastHustleName: branch.name || hustle.name,
+        heatAtDeath: Math.floor(finalNextPl.heat),
+        monthsPlayed: finalNextPl.month,
+        tier: finalNextPl.currentTier,
+        fatalStat: advancementResult.fatalStat,
+        fatalStatValue: advancementResult.fatalStatValue,
+        preStatValue: advancementResult.fatalStat === 'mental' ? nextPl.mentalHealth :
+                     advancementResult.fatalStat === 'bag' ? nextPl.bag :
+                     advancementResult.fatalStat === 'clout' ? nextPl.clout :
+                     advancementResult.fatalStat === 'aura' ? nextPl.aura : nextPl.heat,
+        baseDamage: 0,
+        finalDamage: 0,
+        postStatValue: advancementResult.fatalStatValue
+      };
+
+      set({ bankedLegacyPoints: state.bankedLegacyPoints + (finalNextPl.legacyScore || 0) });
+
+      finalNextPl.deathCount = (finalNextPl.deathCount || 0) + 1;
+      if (finalDeathBadge && !finalNextPl.collectedDeathBadges.includes(finalDeathBadge)) {
+        finalNextPl.collectedDeathBadges.push(finalDeathBadge);
+      }
+
+      const finalStat = getDominantStat(finalNextPl);
+      const ending = getEnding(finalNextPl.legacyScore || 0, finalStat);
+      const arrestSummary = Bio.recordArrestSummary(finalNextPl);
+      if (arrestSummary) {
+        finalNextPl.biography = [...(finalNextPl.biography || []), arrestSummary.entry];
+        finalNextPl.recordedBioKeys = [...(finalNextPl.recordedBioKeys || []), arrestSummary.key!];
+      }
+      const bioUpdate = Bio.recordDeath(finalNextPl, ending.title, finalFatalCause || 'Unknown cause');
+      if (bioUpdate) {
+        finalNextPl.biography = [...(finalNextPl.biography || []), bioUpdate.entry];
+        finalNextPl.recordedBioKeys = [...(finalNextPl.recordedBioKeys || []), bioUpdate.key!];
+      }
+    }
+
+    set({
+      pl: finalNextPl,
+      currentMarket: finalCurrentMarket,
+      ph: finalPh,
+      deathBadge: finalDeathBadge,
+      fatalCause: finalFatalCause,
+      news: [...tickNews, `😴 Rested: ${branch.name} (-$${branch.cost.toLocaleString()})`, ...state.news].slice(0, 50),
+    });
+
+    get().logEvent('HUSTLE_COMPLETED', {
+      hustleId,
+      hustleName: hustle.name,
+      success: true,
+      profit: -branch.cost,
+      yieldClout: branch.yieldClout,
+      yieldAura: branch.yieldAura,
+      mentalHit: branch.mentalHit,
+      heatHit: 0,
+      branchId,
+      multiplier: 1.0
+    });
+
+    get().logAction({
+      month: state.pl.month,
+      tier: state.pl.currentTier,
+      hustleId,
+      hustleName: hustle.name,
+      level: branch.level,
+      branchId,
+      branchName: branch.name || hustle.name,
+      cost: branch.cost,
+      yieldCash: 0,
+      yieldClout: branch.yieldClout,
+      yieldAura: branch.yieldAura,
+      netCash: -branch.cost,
+      success: true,
+      passiveAdded: branch.passiveYield || 0,
+      marketMult: { yield: 1, expense: 1, heat: 1 },
+      marketName: state.currentMarket,
+      variation: 0
+    });
+    get().checkMilestones();
+
+    return { success: true, message: '' };
   },
 
   executeBranch: (hustleId, branchId) => {

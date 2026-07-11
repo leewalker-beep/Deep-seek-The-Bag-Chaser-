@@ -105,6 +105,7 @@ import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
+import { RestPanel } from './components/panels/RestPanel';
 import { PresidentialTermEnd } from './components/PresidentialTermEnd';
 import { MinigameLoader } from './components/ui/MinigameLoader';
 import { PremiumLoader } from './components/ui/PremiumLoader';
@@ -900,6 +901,15 @@ function App() {
                 }
                 if (hustle.panelType === 'PRESIDENT_CAMPAIGN') {
                   return <PresidentCampaignPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'REST') {
+                  const baseRecovery = currentBranch ? (currentBranch.mentalHit || 15) : 15;
+                  return (
+                    <RestPanel
+                      baseRecovery={baseRecovery}
+                      onClose={() => setActiveHustleView(null)}
+                    />
+                  );
                 }
               }
 
