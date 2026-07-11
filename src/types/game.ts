@@ -792,6 +792,7 @@ export interface PlayerStats {
   totalChallengesCompleted: number;
   totalHustlesCompleted: number;
   inJail: boolean;
+  isIncarcerated?: boolean;
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
   jailCharge: string;
