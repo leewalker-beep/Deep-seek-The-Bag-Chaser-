@@ -38,7 +38,8 @@ const PinchToZoom = lazy(() => import('./components/minigames/PinchToZoom').then
 const RotateToScale = lazy(() => import('./components/minigames/RotateToScale').then(m => ({ default: m.RotateToScale })));
 const MarketPredictor = lazy(() => import('./components/minigames/MarketPredictor').then(m => ({ default: m.MarketPredictor })));
 const BoardroomBattle = lazy(() => import('./components/minigames/BoardroomBattle').then(m => ({ default: m.BoardroomBattle })));
-const SlotMachine = lazy(() => import('./components/minigames/SlotMachine').then(m => ({ default: m.SlotMachine })));
+const CryptoLeverage = lazy(() => import('./components/minigames/CryptoLeverage').then(m => ({ default: m.CryptoLeverage })));
+const BioFeedbackRetreat = lazy(() => import('./components/minigames/BioFeedbackRetreat').then(m => ({ default: m.BioFeedbackRetreat })));
 const HigherLower = lazy(() => import('./components/minigames/HigherLower').then(m => ({ default: m.HigherLower })));
 const Blackjack = lazy(() => import('./components/minigames/Blackjack').then(m => ({ default: m.Blackjack })));
 const Roulette = lazy(() => import('./components/minigames/Roulette').then(m => ({ default: m.Roulette })));
@@ -769,7 +770,8 @@ function App() {
                 if (activeMiniGame === 'HoldHype') return <HoldHype onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
-                if (activeMiniGame === 'SlotMachine') return <SlotMachine onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'CryptoLeverage' || activeMiniGame === 'SlotMachine') return <CryptoLeverage onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'BioFeedbackRetreat') return <BioFeedbackRetreat level={hustleLevel} onComplete={(healAmount) => onComplete(healAmount >= 50 ? 1.5 : 0.5)} />;
                 if (activeMiniGame === 'HigherLower') return <HigherLower onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'Blackjack') return <Blackjack onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'Roulette') return <Roulette onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;

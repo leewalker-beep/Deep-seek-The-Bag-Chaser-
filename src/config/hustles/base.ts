@@ -609,7 +609,7 @@ HUSTLES.wellness_retreat = {
   tier: 'CORPORATE',
   icon: '🧘',
   description: 'Regain mental health',
-  miniGame: 'SlotMachine',
+  miniGame: 'BioFeedbackRetreat',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Wellness Retreat', cost: 100000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 60, cloutReq: 0, auraReq: 0, shieldTurns: 4 },
@@ -855,7 +855,7 @@ HUSTLES.open_crypto = {
   tier: 'OPEN',
   icon: '₿',
   description: 'Pump and dump your own coin',
-  miniGame: 'PinchToZoom',
+  miniGame: 'CryptoLeverage',
   levels: [
     { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 500, yieldAura: 200, mentalHit: -30, cloutReq: 500, auraReq: 200, passiveYield: 0 }
   ]
