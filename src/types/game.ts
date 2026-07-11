@@ -662,6 +662,7 @@ export interface PlayerStats {
   mentalShieldTurns: number;
   artists: RecordLabelArtist[];
   scoutedTalentPool: RecordLabelArtist[];
+  activeMinigame?: { panelType: string; level: number } | null;
   rolodex: RolodexCelebrity[];
   rareTechStockpile: number;
   algorithmicLogs: number;
