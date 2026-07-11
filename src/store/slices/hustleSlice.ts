@@ -6,8 +6,10 @@ import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
 import { HUSTLE_BADGES } from '../../config/badges';
 import { enforceStatCaps } from '../../engine/statEngine';
-import { advanceMonth, checkDeathConditions } from '../../engine/advancementEngine';
+import { advanceMonth, checkDeathConditions, processEntertainmentTimelineTick } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
+
+export { processEntertainmentTimelineTick };
 import { getDominantStat } from '../../utils/endingUtils';
 import { getEnding } from '../../config/endings';
 import { showConfetti } from '../../components/effects/Confetti';

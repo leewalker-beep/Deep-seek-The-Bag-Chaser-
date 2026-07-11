@@ -1,181 +1,123 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ProgressBar } from '../ui/ProgressBar';
-import { getScalingMultiplier, getSpawnFactor } from '../../utils/difficulty';
-import type { Tier } from '../../types/game';
+import React, { useState, useEffect } from 'react';
 
-interface RunnerRouteProps {
-  onComplete: (multiplier: number) => void;
-  level?: number;
-  tier?: Tier;
-  title?: string;
-  instruction?: string;
-  icon?: string;
-  obstacleEmoji?: string;
-  playerEmoji?: string;
-  scoreLabel?: string;
+interface ItemNode {
+  id: string;
+  lane: number;
+  yPosition: number;
+  type: 'OBSTACLE' | 'CARGO';
 }
 
-const LANE_POSITIONS = ['16%', '50%', '84%'];
+interface RunnerRouteProps {
+  level?: number;
+  onComplete: (payoutBonus: number) => void;
+  tier?: string;
+}
 
-export const RunnerRoute: React.FC<RunnerRouteProps> = ({
-  onComplete,
-  level = 1,
-  tier = 'MUD',
-  title = "RUNNER ROUTE",
-  instruction = "Dodge the obstacles!",
-  icon = "🚚",
-  obstacleEmoji = "🚧",
-  playerEmoji = "🚚",
-  scoreLabel = "DELIVERIES"
-}) => {
-  const [lane, setLane] = useState(1);
+export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete }) => {
+  const [truckLane, setTruckLane] = useState(1);
+  const [items, setItems] = useState<ItemNode[]>([]);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [gameActive, setGameActive] = useState(true);
-  const [obstacles, setObstacles] = useState<{ id: number; y: number; lane: number }[]>([]);
-  const nextId = useRef(0);
-
-  // Centralized Scaling
-  const scaling = getScalingMultiplier(level, tier);
-  const spawnFactor = getSpawnFactor(level, tier);
-
-  // Difficulty scaling
-  const moveSpeed = (3 + (level - 1) * 0.5) * Math.sqrt(scaling);
-  const spawnRate = Math.max(300, (1000 - (level - 1) * 100) / spawnFactor);
+  const [timeLeft, setTimeLeft] = useState(12);
 
   useEffect(() => {
-    if (!gameActive) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 0.1) {
-          setGameActive(false);
-          return 0;
-        }
-        return prev - 0.1;
+    const engineInterval = setInterval(() => {
+      setItems(prevItems => {
+        return prevItems
+          .map(item => {
+            let currentLane = item.lane;
+            // Level 3: Dynamic horizontal drift (Lane Swapping hazards)
+            if (level === 3 && item.type === 'OBSTACLE' && item.yPosition > 30 && item.yPosition < 35 && Math.random() < 0.15) {
+              const directions = currentLane === 1 ? [-1, 1] : currentLane === 0 ? [1] : [-1];
+              currentLane += directions[Math.floor(Math.random() * directions.length)];
+            }
+            return { ...item, yPosition: item.yPosition + 3.5, lane: currentLane };
+          })
+          // FIX MOBILE CLIPPING PLANE: Keep processing physics until 92% depth before evaluating collisions
+          .filter(item => {
+            if (item.yPosition >= 92) {
+              if (item.lane === truckLane) {
+                if (item.type === 'OBSTACLE') setScore(s => Math.max(0, s - 3));
+                else if (item.type === 'CARGO') setScore(s => s + 5);
+              } else if (item.type === 'CARGO' && level >= 2) {
+                setScore(s => Math.max(0, s - 1));
+              }
+              return false;
+            }
+            return true;
+          });
       });
-    }, 100);
+    }, 40);
 
-    const spawner = setInterval(() => {
-      setObstacles(prev => [...prev, {
-        id: nextId.current++,
-        y: -20,
-        lane: Math.floor(Math.random() * 3)
-      }]);
-    }, spawnRate);
+    const spawnerInterval = setInterval(() => {
+      const targetLane = Math.floor(Math.random() * 3);
+      const spawnType = (level >= 2 && Math.random() > 0.6) ? 'CARGO' : 'OBSTACLE';
+      setItems(prev => [...prev, { id: Math.random().toString(), lane: targetLane, yPosition: 0, type: spawnType }]);
+    }, level === 1 ? 900 : level === 2 ? 700 : 500);
 
     return () => {
-      clearInterval(timer);
-      clearInterval(spawner);
+      clearInterval(engineInterval);
+      clearInterval(spawnerInterval);
     };
-  }, [gameActive, spawnRate]);
+  }, [truckLane, level]);
 
   useEffect(() => {
-    if (!gameActive) return;
-
-    const gravity = setInterval(() => {
-      setObstacles(prev => {
-        const next = prev.map(o => ({ ...o, y: o.y + moveSpeed }));
-
-        // Collision detection
-        const collision = next.find(o => o.y > 75 && o.y < 90 && o.lane === lane);
-        if (collision) {
-          setScore(s => Math.max(0, s - 5));
-          if (navigator.vibrate) navigator.vibrate(100);
-          return next.filter(o => o.id !== collision.id);
-        }
-
-        // Scoring
-        const passed = next.filter(o => o.y > 95);
-        if (passed.length > 0) {
-            setScore(s => s + 1);
-        }
-
-        return next.filter(o => o.y <= 100);
-      });
-    }, 30);
-
-    return () => clearInterval(gravity);
-  }, [gameActive, lane, moveSpeed]);
-
-  useEffect(() => {
-    if (!gameActive) {
+    if (timeLeft <= 0.1) {
+      // Map final score to standard multiplier range
       let multiplier = 0.5;
       if (score >= 20) multiplier = 4.0;
       else if (score >= 12) multiplier = 2.5;
       else if (score >= 5) multiplier = 1.2;
-
-      setTimeout(() => onComplete(multiplier), 1000);
+      onComplete(multiplier);
+      return;
     }
-  }, [gameActive, score, onComplete]);
-
-  const handleLane = (newLane: number) => {
-    if (!gameActive) return;
-    setLane(newLane);
-    if (navigator.vibrate) navigator.vibrate(10);
-  };
+    const cd = setTimeout(() => setTimeLeft(t => t - 0.1), 100);
+    return () => clearTimeout(cd);
+  }, [timeLeft, score, onComplete]);
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
-      <div className="absolute top-12 text-center w-full px-8 z-20">
-        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">{icon} {title} <span className="text-orange-500 text-sm">L{level}</span></h2>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{instruction}</p>
-        <div className="mt-6 text-orange-500 font-mono font-black text-4xl drop-shadow-xl tabular-nums">
-            {scoreLabel}: {score}
-        </div>
-      </div>
-
-      <div className="relative w-full max-w-xs h-[400px] bg-slate-900 border-x-4 border-slate-800 items-end overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
-
-        {/* Lane markers */}
-        <div className="absolute inset-y-0 left-1/3 w-px bg-slate-800" />
-        <div className="absolute inset-y-0 right-1/3 w-px bg-slate-800" />
-
-        {/* Player */}
-        <div
-          style={{ position: 'absolute', left: LANE_POSITIONS[lane], transform: 'translateX(-50%)' }}
-          className="w-16 h-16 bg-orange-500 rounded-xl mb-4 z-10 flex items-center justify-center text-3xl shadow-lg border-t-2 border-white/20 bottom-0 transition-all duration-150"
-        >
-          {playerEmoji}
+      <div className="w-full max-w-md bg-zinc-950 rounded-xl p-3 flex flex-col justify-between overflow-hidden shadow-2xl border border-zinc-800">
+        <div className="flex justify-between items-center text-[10px] font-mono font-bold text-orange-400 mb-2">
+          <span>🚚 RUNNER LOGISTICS L{level}</span>
+          <span>FLOW OUTFLOW: {score} PTS</span>
+          <span>{timeLeft.toFixed(1)}s</span>
         </div>
 
-        {/* Obstacles */}
-        {obstacles.map(o => (
-          <motion.div
-            key={o.id}
-            initial={{ y: '-20%' }}
-            animate={{ y: `${o.y}%` }}
-            style={{ position: 'absolute', left: LANE_POSITIONS[o.lane], transform: 'translateX(-50%)' }}
-            className="absolute top-0 w-16 h-16 bg-slate-700 rounded-xl flex items-center justify-center text-3xl"
+        {/* Track container explicitly encloses the truck asset at the true visual floor */}
+        <div className="w-full h-52 bg-zinc-900 border border-zinc-800 relative flex justify-between rounded-lg overflow-hidden mb-3">
+          <div className="absolute inset-y-0 left-1/3 border-r border-zinc-800/40 border-dashed pointer-events-none" />
+          <div className="absolute inset-y-0 right-1/3 border-l border-zinc-800/40 border-dashed pointer-events-none" />
+          {items.map(item => (
+            <div
+              key={item.id}
+              className="absolute text-sm transition-all duration-75 ease-linear -translate-x-1/2"
+              style={{ left: `${item.lane * 33.33 + 16.66}%`, top: `${item.yPosition}%` }}
+            >
+              {item.type === 'OBSTACLE' ? '🚧' : '📦'}
+            </div>
+          ))}
+          {/* Aligned structurally inside the track relative canvas at bottom-2 */}
+          <div
+            className="absolute bottom-2 text-xl transition-all duration-100 ease-out -translate-x-1/2 bg-orange-600/20 p-1.5 rounded-lg border border-orange-500/40 shadow-glow"
+            style={{ left: `${truckLane * 33.33 + 16.66}%` }}
           >
-            {obstacleEmoji}
-          </motion.div>
-        ))}
-      </div>
+            盒子 🚛
+          </div>
+        </div>
 
-      <div className="mt-8 grid grid-cols-3 gap-4 w-full max-w-xs z-20">
-        {[0, 1, 2].map(l => (
-          <button
-            key={l}
-            onPointerDown={() => handleLane(l)}
-            className={`py-6 rounded-2xl font-black text-xl transition-all ${
-              lane === l ? 'bg-orange-500 text-white scale-95' : 'bg-slate-800 text-slate-500'
-            }`}
-          >
-            {l === 0 ? 'L' : l === 1 ? 'C' : 'R'}
-          </button>
-        ))}
-      </div>
-
-      <div className="absolute bottom-12 w-full max-w-[320px] px-6">
-        <ProgressBar
-          value={timeLeft}
-          max={15}
-          label={`${title} CLEARANCE: ${timeLeft.toFixed(1)}s`}
-          colorClass="bg-orange-500"
-        />
+        <div className="grid grid-cols-3 gap-2">
+          {['L', 'C', 'R'].map((label, index) => (
+            <button
+              key={label}
+              onClick={() => setTruckLane(index)}
+              className={`p-2 rounded font-mono font-bold text-xs ${
+                truckLane === index ? 'bg-orange-500 text-black' : 'bg-zinc-800 text-zinc-400'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

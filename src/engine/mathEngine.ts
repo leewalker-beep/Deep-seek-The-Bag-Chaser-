@@ -74,13 +74,33 @@ export function calculateHustleMath(
     yieldMult *= 1.15;
   }
 
-  const cost = levelData.cost * levelMult * costMult;
-  let yieldCash = Math.floor(levelData.yieldCash * levelMult * yieldMult);
-  let yieldClout = Math.floor(levelData.yieldClout * levelMult * marketYieldMult);
-  let yieldAura = Math.floor(levelData.yieldAura * levelMult * marketYieldMult);
+  const hustle = HUSTLES[hustleId];
+  let rawCost = levelData.cost;
+  let rawYieldCash = levelData.yieldCash;
+  let rawYieldClout = levelData.yieldClout;
+  let rawYieldAura = levelData.yieldAura;
+  let rawMentalHit = levelData.mentalHit;
+
+  if (hustle && (hustle.basePayout !== undefined || hustle.baseClout !== undefined || hustle.mentalHealthCost !== undefined)) {
+    const mult = levelData.multiplier !== undefined ? levelData.multiplier : 1;
+    if (hustle.basePayout !== undefined) {
+      rawYieldCash = Math.floor(hustle.basePayout * mult);
+    }
+    if (hustle.baseClout !== undefined) {
+      rawYieldClout = Math.floor(hustle.baseClout * mult);
+    }
+    if (hustle.mentalHealthCost !== undefined) {
+      rawMentalHit = -hustle.mentalHealthCost;
+    }
+  }
+
+  const cost = rawCost * levelMult * costMult;
+  let yieldCash = Math.floor(rawYieldCash * levelMult * yieldMult);
+  let yieldClout = Math.floor(rawYieldClout * levelMult * marketYieldMult);
+  let yieldAura = Math.floor(rawYieldAura * levelMult * marketYieldMult);
   // Cap minigame impact on mental health to prevent extreme hits or weird gains from negative multipliers
   const mentalMinigameMult = Math.max(0.5, Math.min(2.0, Math.abs(minigameMult)));
-  let mentalHit = levelData.mentalHit * levelMult * (levelData.mentalHit < 0 ? mentalMinigameMult : 1);
+  let mentalHit = rawMentalHit * levelMult * (rawMentalHit < 0 ? mentalMinigameMult : 1);
   let heatHit = (levelData.heatHit !== undefined ? levelData.heatHit : 5) * marketHeatMult;
 
   let isBigWin = false;
