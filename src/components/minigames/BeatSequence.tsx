@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getScalingMultiplier } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
 
 interface BeatSequenceProps {
@@ -10,93 +10,188 @@ interface BeatSequenceProps {
 }
 
 export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 1, tier = 'MUD' }) => {
-  const [sequence, setSequence] = useState<number[]>([]);
-  const [userSequence, setUserSequence] = useState<number[]>([]);
-  const [isDisplaying, setIsDisplaying] = useState(true);
-  const [activeButton, setActiveButton] = useState<number | null>(null);
-  const [round, setRound] = useState(1);
+  const [nodes, setNodes] = useState<{ id: string; position: number; lane: number; targetValue: 'mic' | 'beat' }[]>([]);
+  const [score, setScore] = useState(0);
+  const [totalAttempts, setTotalAttempts] = useState(0);
   const [failed, setFailed] = useState(false);
-  const [feedback, setFeedback] = useState<'hit' | 'fail' | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [feedback, setFeedback] = useState<'hit' | 'miss' | null>(null);
 
-  // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
-  const timerFactor = getTimerFactor(level, tier);
+  const targetScore = 5 + (level * 3); // Level 1 only requires 8 hits now (down from 15)
+  const speed = 1.5 + (level * 0.3) * Math.sqrt(scaling);
 
-  // Difficulty scaling
-  const totalRounds = Math.floor((2 + level) * (1 + (scaling * 0.1)));
-  const baseLength = Math.max(2, Math.floor((1 + level) * (1 + (scaling * 0.05))));
-  const sequenceGrowth = level >= 3 ? 2 : 1;
+  // Keyboard references for visual press states
+  const [activeLanes, setActiveLanes] = useState<Record<number, boolean>>({});
 
+  // Inside your rhythmic node/beat spawner interval loop:
+  const spawnBeatNodes = () => {
+    // Level 1 spawns 1 drop at a time.
+    // Level 2+ randomly schedules 2 to 3 multi-drops or tight successive notes.
+    const dropCount = level === 1 ? 1 : Math.floor(Math.random() * 2) + 2; // yields 2 or 3 drops
+
+    const newNodes: { id: string; position: number; lane: number; targetValue: 'mic' | 'beat' }[] = [];
+    for (let i = 0; i < dropCount; i++) {
+      newNodes.push({
+        id: Math.random().toString(),
+        position: 0, // start line
+        lane: level === 1 ? 0 : Math.floor(Math.random() * 3), // spread across multi-lanes if supported
+        targetValue: Math.random() > 0.5 ? 'mic' : 'beat'
+      });
+    }
+
+    setNodes(prev => [...prev, ...newNodes]);
+  };
+
+  // Node movement loop
   useEffect(() => {
-    startNewRound(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (failed || isCompleted) return;
 
-  const startNewRound = (currentRound: number) => {
-    const length = baseLength + (currentRound - 1) * sequenceGrowth;
-    const newSequence = Array.from({ length }, () => Math.floor(Math.random() * 4));
-    setSequence(newSequence);
-    setUserSequence([]);
-    displaySequence(newSequence);
+    const moveInterval = setInterval(() => {
+      setNodes(prev => {
+        const next = prev.map(node => ({
+          ...node,
+          position: node.position + speed
+        }));
+
+        // Filter out missed nodes (went past 100)
+        const missed = next.filter(node => node.position > 100);
+        if (missed.length > 0) {
+          setTotalAttempts(t => {
+            const nextTotal = t + missed.length;
+            if (nextTotal >= targetScore + 10) {
+              setFailed(true);
+            }
+            return nextTotal;
+          });
+          setFeedback('miss');
+          setTimeout(() => setFeedback(null), 200);
+          if (navigator.vibrate) navigator.vibrate([30, 30]);
+        }
+
+        return next.filter(node => node.position <= 100);
+      });
+    }, 20);
+
+    return () => clearInterval(moveInterval);
+  }, [failed, isCompleted, speed, targetScore]);
+
+  // Spawner interval
+  useEffect(() => {
+    if (failed || isCompleted) return;
+
+    // Spawn every 1.5 to 1.0 seconds
+    const intervalTime = Math.max(800, 1600 - (level * 200));
+    const spawnInterval = setInterval(() => {
+      spawnBeatNodes();
+    }, intervalTime);
+
+    return () => clearInterval(spawnInterval);
+  }, [failed, isCompleted, level]);
+
+  // Handle Lane Hits
+  const handleHit = (laneIndex: number) => {
+    if (failed || isCompleted) return;
+
+    // Target range: position between 70% and 90%
+    const targetRange = [70, 90];
+    const laneNodes = nodes.filter(n => n.lane === laneIndex);
+    const hitNode = laneNodes.find(n => n.position >= targetRange[0] && n.position <= targetRange[1]);
+
+    const newTotal = totalAttempts + 1;
+    let newScore = score;
+
+    if (hitNode) {
+      newScore = score + 1;
+      setScore(newScore);
+      setNodes(prev => prev.filter(n => n.id !== hitNode.id));
+      setFeedback('hit');
+      if (navigator.vibrate) navigator.vibrate(25);
+    } else {
+      setFeedback('miss');
+      if (navigator.vibrate) navigator.vibrate([30, 30]);
+    }
+
+    setTotalAttempts(newTotal);
+    setTimeout(() => setFeedback(null), 200);
+
+    if (newScore >= targetScore) {
+      setIsCompleted(true);
+      const perfBase = 4.0; // max performance on success
+      const multiplier = perfBase * (0.8 + scaling * 0.2);
+      setTimeout(() => onComplete(multiplier), 600);
+    }
   };
 
-  const displaySequence = async (seq: number[]) => {
-    setIsDisplaying(true);
-    // Display speed scales with difficulty
-    const displaySpeed = Math.max(150, (500 - (level - 1) * 100) * timerFactor);
-    const pauseSpeed = Math.max(40, (150 - (level - 1) * 30) * timerFactor);
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (failed || isCompleted) return;
 
-    for (const num of seq) {
-      setActiveButton(num);
-      if (navigator.vibrate) navigator.vibrate(20);
-      await new Promise(resolve => setTimeout(resolve, displaySpeed));
-      setActiveButton(null);
-      await new Promise(resolve => setTimeout(resolve, pauseSpeed));
-    }
-    setIsDisplaying(false);
-  };
-
-  const handleButtonClick = (index: number) => {
-    if (isDisplaying || failed) return;
-
-    const newUserSequence = [...userSequence, index];
-    setUserSequence(newUserSequence);
-
-    if (newUserSequence[newUserSequence.length - 1] !== sequence[newUserSequence.length - 1]) {
-      setFailed(true);
-      setFeedback('fail');
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-      return;
-    }
-
-    setFeedback('hit');
-    if (navigator.vibrate) navigator.vibrate(20);
-    setTimeout(() => setFeedback(null), 150);
-
-    if (newUserSequence.length === sequence.length) {
-      if (round >= totalRounds) {
-        if (navigator.vibrate) navigator.vibrate(100);
-        setTimeout(() => onComplete(4.0), 500);
+      let lane = -1;
+      if (level === 1) {
+        if (e.key === 'a' || e.key === 's' || e.key === 'd' || e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          lane = 0;
+        }
       } else {
-        setRound(prev => prev + 1);
-        setTimeout(() => startNewRound(round + 1), 500);
+        if (e.key === 'a' || e.key === 'ArrowLeft') lane = 0;
+        else if (e.key === 's' || e.key === 'ArrowDown') lane = 1;
+        else if (e.key === 'd' || e.key === 'ArrowRight') lane = 2;
       }
-    }
+
+      if (lane !== -1) {
+        e.preventDefault();
+        setActiveLanes(prev => ({ ...prev, [lane]: true }));
+        handleHit(lane);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      let lane = -1;
+      if (level === 1) {
+        lane = 0;
+      } else {
+        if (e.key === 'a' || e.key === 'ArrowLeft') lane = 0;
+        else if (e.key === 's' || e.key === 'ArrowDown') lane = 1;
+        else if (e.key === 'd' || e.key === 'ArrowRight') lane = 2;
+      }
+
+      if (lane !== -1) {
+        setActiveLanes(prev => ({ ...prev, [lane]: false }));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [nodes, score, totalAttempts, failed, isCompleted, level]);
+
+  // Handle Failure Quit
+  const handleCutTrack = () => {
+    const accuracy = totalAttempts > 0 ? score / totalAttempts : 0;
+    let perfBase = 0.5;
+    if (accuracy >= 0.8) perfBase = 2.5;
+    else if (accuracy >= 0.5) perfBase = 1.2;
+
+    const multiplier = perfBase * (0.8 + scaling * 0.2);
+    onComplete(multiplier);
   };
+
+  const laneCount = level === 1 ? 1 : 3;
 
   if (failed) {
     return (
       <div className="h-[450px] w-full bg-slate-950 border-4 border-red-600 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
         <div className="text-6xl mb-4">🔇</div>
         <h2 className="text-3xl font-black text-red-500 mb-2 italic tracking-tighter uppercase">RHYTHM LOST</h2>
-        <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">FAILED AT ROUND {round} OF {totalRounds}</p>
+        <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">
+          HIT {score} OF THE REQUIRED {targetScore}
+        </p>
         <button
-          onClick={() => {
-            let multiplier = 0.5;
-            if (round > totalRounds * 0.7) multiplier = 2.5;
-            else if (round > totalRounds * 0.4) multiplier = 1.2;
-            onComplete(multiplier);
-          }}
+          onClick={handleCutTrack}
           className="px-10 py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-500 transition-all uppercase tracking-tighter border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
         >
           CUT THE TRACK
@@ -106,60 +201,119 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
   }
 
   return (
-    <div className={`h-[450px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-6 ${
-        feedback === 'hit' ? 'border-emerald-500' :
-        isDisplaying ? 'border-purple-500' : 'border-purple-900/50'
+    <div className={`h-[450px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-between p-6 relative overflow-hidden ${
+      feedback === 'hit' ? 'border-emerald-500' :
+      feedback === 'miss' ? 'border-red-500' :
+      'border-blue-900/50'
     }`}>
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-black text-purple-400 italic tracking-tighter uppercase">BEAT SEQUENCE <span className="text-white text-sm">L{level}</span></h2>
-        <div className="flex items-center justify-center gap-2 mt-1">
-            <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Sample {round} / {totalRounds}</p>
+
+      {/* 1. HEADER SECTION (with clean padding-bottom, explicit block separation, and z-10) */}
+      <div className="text-center flex flex-col items-center gap-1 mb-4 relative z-10">
+        <h1 className="text-xl font-black italic tracking-wider text-blue-400">FLOW STATE L{level}</h1>
+        <div className="bg-zinc-900/80 px-3 py-1 rounded-full border border-zinc-800/60 text-[11px] font-mono text-slate-300">
+          ⚡ TRACK PROFILE: <span className="text-emerald-400 font-bold">{score}</span> / <span className="text-slate-500">{targetScore}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[280px]">
-        {[0, 1, 2, 3].map((num) => (
-          <motion.button
-            key={num}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => handleButtonClick(num)}
-            className={`h-28 rounded-2xl transition-all duration-100 relative ${
-              activeButton === num
-                ? 'bg-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.6)] border-t-2 border-purple-300'
-                : 'bg-slate-900 border-2 border-slate-800 hover:border-purple-500/30'
-            } ${isDisplaying ? 'cursor-default' : 'cursor-pointer active:bg-purple-600'}`}
+      {/* RHYTHM TRACKS BOARD */}
+      <div className="w-full flex-1 max-h-[220px] bg-slate-900/80 rounded-2xl border border-slate-800 relative overflow-hidden flex shadow-inner">
+
+        {/* Target Zone Line overlay */}
+        <div
+          className="absolute left-0 right-0 h-[30px] bg-blue-500/10 border-y border-blue-500/30 pointer-events-none z-10"
+          style={{ top: '80%', transform: 'translateY(-50%)' }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center text-[7px] font-black text-blue-400/40 uppercase tracking-widest">
+            HIT ZONE
+          </div>
+        </div>
+
+        {/* Lanes */}
+        {Array.from({ length: laneCount }).map((_, laneIdx) => (
+          <div
+            key={laneIdx}
+            onClick={() => handleHit(laneIdx)}
+            className={`flex-1 h-full border-r border-slate-800 last:border-r-0 relative flex flex-col justify-end items-center cursor-pointer transition-colors duration-100 ${
+              activeLanes[laneIdx] ? 'bg-blue-950/20' : 'hover:bg-slate-800/20'
+            }`}
           >
-            <div className={`w-3 h-3 rounded-full mx-auto transition-colors duration-200 ${activeButton === num ? 'bg-white' : 'bg-slate-700'}`} />
-            {activeButton === num && (
+            {/* Visual Lane label/key-hint */}
+            <div className="absolute bottom-1 text-[8px] font-mono text-slate-600 font-bold">
+              {level === 1 ? 'SPACE / ANY' : laneIdx === 0 ? 'A / ◄' : laneIdx === 1 ? 'S / ▼' : 'D / ►'}
+            </div>
+
+            {/* Nodes flowing in this lane */}
+            {nodes
+              .filter(n => n.lane === laneIdx)
+              .map(node => (
                 <motion.div
-                    layoutId="glow"
-                    className="absolute inset-0 bg-purple-400/20 rounded-2xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                />
-            )}
-          </motion.button>
+                  key={node.id}
+                  className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-lg font-black border-2 shadow-lg ${
+                    node.targetValue === 'mic'
+                      ? 'bg-blue-600 border-blue-400 text-white shadow-blue-500/30'
+                      : 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/30'
+                  }`}
+                  style={{
+                    top: `${node.position}%`,
+                    transform: 'translateY(-50%)',
+                  }}
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 0.6 }}
+                >
+                  {node.targetValue === 'mic' ? '🎙️' : '🎵'}
+                </motion.div>
+              ))}
+          </div>
         ))}
       </div>
 
-      <div className="mt-8 flex gap-2">
-        {[...Array(totalRounds)].map((_, i) => (
-          <div key={i} className={`w-10 h-1.5 rounded-full transition-colors duration-300 ${i < round - 1 ? 'bg-emerald-500' : i === round - 1 ? 'bg-purple-500 animate-pulse' : 'bg-slate-800'}`} />
+      {/* INPUT TAP BUTTONS */}
+      <div className="w-full flex gap-3 mt-4 z-10">
+        {Array.from({ length: laneCount }).map((_, laneIdx) => (
+          <button
+            key={laneIdx}
+            onTouchStart={() => handleHit(laneIdx)}
+            onMouseDown={() => handleHit(laneIdx)}
+            className={`flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider border-b-4 transition-all duration-700 active:translate-y-1 active:border-b-0 ${
+              activeLanes[laneIdx]
+                ? 'bg-blue-500 text-white border-blue-700'
+                : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-950'
+            }`}
+          >
+            {level === 1 ? 'TAP BEAT' : laneIdx === 0 ? 'LEFT (A)' : laneIdx === 1 ? 'CENTER (S)' : 'RIGHT (D)'}
+          </button>
         ))}
       </div>
-      <p className="mt-4 text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
-        {isDisplaying ? (
-            <>
-                <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 1 }}>🎧</motion.span>
-                <span>MEMORIZING SEQUENCE...</span>
-            </>
+
+      {/* FOOTER MESSAGE */}
+      <div className="mt-2 text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5 z-10">
+        {isCompleted ? (
+          <span className="text-emerald-400 animate-pulse font-bold">🎯 MASTERPIECE RECORDED! RESOLVING...</span>
         ) : (
-            <>
-                <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>🎹</motion.span>
-                <span>LAY THE BEAT ({sequence.length} NOTES)</span>
-            </>
+          <>
+            <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }}>🎹</motion.span>
+            <span>LAY THE BEAT ({targetScore} NOTES TO LOCK IN)</span>
+          </>
         )}
-      </p>
+      </div>
+
+      {/* FEEDBACK OVERLAY */}
+      <AnimatePresence>
+        {feedback && (
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1.2, opacity: 1 }}
+            exit={{ scale: 1.8, opacity: 0 }}
+            className={`absolute font-black text-5xl italic pointer-events-none z-30 ${
+              feedback === 'hit' ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+            }`}
+            style={{ top: '45%' }}
+          >
+            {feedback === 'hit' ? 'PERFECT!' : 'MISS!'}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
