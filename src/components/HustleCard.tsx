@@ -108,6 +108,20 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
     setPendingAction(null);
   };
 
+  const handlePlayHustle = (_hustleId: string, currentLevel: number) => {
+    const store = useGameStore.getState();
+    const playerTier = store.pl.currentTier;
+
+    // Enforce strict tier gating across ALL devices
+    const isLocked = playerTier === 'MUD' && currentLevel >= 3;
+    if (isLocked) {
+      console.warn("🛡️ MOBILE GUARD: Blocked touch execution on gated Level 3 hustle.");
+      return; // Kills execution on touch devices instantly
+    }
+
+    handleAction('EXECUTE', effectiveStats.cost);
+  };
+
   return (
     <div
       className={`${tierClass} border rounded-2xl p-4 mb-4 transition-all relative overflow-hidden`}
@@ -195,14 +209,35 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
         ) : (
           <button
             id="hustle-execute-button"
-            onClick={() => handleAction('EXECUTE', effectiveStats.cost)}
+            onClick={() => handlePlayHustle(hustle.id, currentLevel)}
+            onTouchStart={(e) => {
+              // Prevent default browser behavior and explicitly check gating status
+              if (player.currentTier === 'MUD' && currentLevel >= 3) {
+                e.preventDefault();
+                return;
+              }
+              // Prevent standard click synthesis on touch devices to avoid double execution
+              e.preventDefault();
+              handlePlayHustle(hustle.id, currentLevel);
+            }}
+            disabled={player.currentTier === 'MUD' && currentLevel >= 3}
             className={`w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
-              canAfford
+              player.currentTier === 'MUD' && currentLevel >= 3
+                ? 'bg-red-950/40 text-red-500 border border-red-500/30 cursor-not-allowed opacity-60 pointer-events-none'
+                : canAfford
                 ? 'bg-emerald-600 text-white hover:bg-emerald-500'
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
             }`}
           >
-            {hustle.id === 'r_scrap' ? 'MAGNETIC SWEEP' : (levelData.miniGame || hustle.miniGame ? 'PLAY' : (effectiveStats.cost > 0 ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})` : (EXECUTE_LABEL[player.currentTier] || 'EXECUTE')))}
+            {player.currentTier === 'MUD' && currentLevel >= 3
+              ? '⚠️ GATED BY TIER'
+              : hustle.id === 'r_scrap'
+              ? 'MAGNETIC SWEEP'
+              : levelData.miniGame || hustle.miniGame
+              ? 'PLAY'
+              : effectiveStats.cost > 0
+              ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})`
+              : EXECUTE_LABEL[player.currentTier] || 'EXECUTE'}
           </button>
         )}
 
