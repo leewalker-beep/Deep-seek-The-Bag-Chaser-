@@ -136,6 +136,8 @@ HUSTLES.r_sleep = {
   icon: '😴',
   description: 'Regain mental health',
   startBranchId: 'l1',
+  hasPanel: true,
+  panelType: 'REST',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 1, nextBranches: ['l2'] },
     l2: { level: 2, id: 'l2', name: 'Therapy Session', cost: 200, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },

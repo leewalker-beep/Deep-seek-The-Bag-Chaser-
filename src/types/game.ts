@@ -888,6 +888,7 @@ export interface GameState {
     heatHit: number;
   };
   executeBranch: (hustleId: string, branchId: string) => { success: boolean; message: string };
+  executeHustleWithTimelineTick: (hustleId: string, branchId: string) => { success: boolean; message: string };
   upgradeHustle: (hustleId: string, branchId?: string) => boolean;
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;

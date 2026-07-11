@@ -1,38 +1,45 @@
 import React, { useState, useEffect } from 'react';
 
-interface MindfulRecoverProps {
-  onComplete: (mhBonus: number) => void;
-}
-
-export const MindfulRecover: React.FC<MindfulRecoverProps> = ({ onComplete }) => {
-  const [radius, setRadius] = useState(50);
-  const [expanding, setExpanding] = useState(true);
+export const MindfulRecover: React.FC<{ onComplete: (success: boolean) => void }> = ({ onComplete }) => {
+  const [stage, setStage] = useState<'INHALE' | 'EXHALE'>('INHALE');
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setRadius(prev => {
-        if (prev >= 95) setExpanding(false);
-        if (prev <= 45) setExpanding(true);
-        return expanding ? prev + 1.5 : prev - 1.5;
+      setProgress(p => {
+        if (p >= 1) {
+          setStage(s => s === 'INHALE' ? 'EXHALE' : 'INHALE');
+          return 0;
+        }
+        return p + 0.05;
       });
-    }, 25);
+    }, 150);
     return () => clearInterval(interval);
-  }, [expanding]);
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-zinc-950 rounded-xl border border-zinc-800 w-full select-none">
-      <p className="text-xs font-black text-emerald-400 mb-8 uppercase tracking-[0.2em] h-6 text-center">
-        {expanding ? "💨 Inhale: Expand the lungs" : "😮 Exhale: Release the stress"}
+    <div className="flex flex-col items-center justify-center p-6 space-y-6 text-center select-none">
+      <p className="text-xs font-mono uppercase text-blue-400 tracking-widest transition-all duration-500">
+        {stage === 'INHALE' ? '😮💨 Breathe In...' : '😌 Breathe Out...'}
       </p>
-      <div className="h-48 w-48 flex items-center justify-center relative">
+
+      {/* Therapeutic Breathing Circle */}
+      <div className="w-32 h-32 flex items-center justify-center bg-zinc-950 rounded-full border border-zinc-800 relative">
         <div
-          style={{ width: `${radius * 2}px`, height: `${radius * 2}px` }}
-          className="rounded-full bg-emerald-500/10 border-2 border-emerald-400 transition-all duration-75 flex items-center justify-center cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-          onPointerDown={() => onComplete(expanding ? 12 : 35)}
-        >
-          <span className="text-xs font-black text-white pointer-events-none">TAP MATCH</span>
-        </div>
+          className="bg-blue-500/20 rounded-full transition-all duration-300 ease-out"
+          style={{
+            width: stage === 'INHALE' ? `${progress * 100}%` : `${(1 - progress) * 100}%`,
+            height: stage === 'INHALE' ? `${progress * 100}%` : `${(1 - progress) * 100}%`,
+          }}
+        />
       </div>
+
+      <button
+        onClick={() => onComplete(true)}
+        className="w-full py-2 bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/30 rounded-lg text-xs font-bold transition-colors"
+      >
+        Finish Breathing Session (Pure Bonus)
+      </button>
     </div>
   );
 };
