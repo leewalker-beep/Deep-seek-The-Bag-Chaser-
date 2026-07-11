@@ -128,7 +128,8 @@ describe('Upgrade Bug Regression', () => {
     executeBranch('r_labor', 'l2b');
 
     const finalPl = useGameStore.getState().pl;
-    expect(finalPl.bag).toBe(initialBag - 15000);
+    // Account for automatic month advancement (passive yield 500 - rent 50 = +450)
+    expect(finalPl.bag).toBe(initialBag - 15000 + 450);
     expect(finalPl.actionLog[0].netCash).toBe(-15000);
   });
 });
