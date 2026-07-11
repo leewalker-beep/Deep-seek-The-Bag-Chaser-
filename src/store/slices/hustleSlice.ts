@@ -86,6 +86,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const newPl = enforceStatCaps(getInitialStats(difficulty, backgroundId, categoryId, variationId, currentState.unlockedLegacyUpgradeIds));
     newPl.avatarId = avatarId || 'av_m1';
 
+    if (!newPl.endgameTracks) {
+      newPl.endgameTracks = {
+        realEstateAcquisitions: [],
+        globalFleetCount: 0,
+        automatedHustleIds: [],
+        techStartupValuation: 1000
+      };
+    }
+
     newPl.backgroundId = backgroundId || newPl.backgroundId;
     newPl.categoryId = categoryId || newPl.categoryId;
     newPl.variationId = variationId || newPl.variationId;
@@ -2279,3 +2288,37 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
   },
 });
+
+// 2. REWRITE Concert Completion to evaluate only the chosen artist lineup:
+export const completeConcertPerformanceWithLineup = (draftPl: any, score: number, gigLevel: number, performingArtistIds: string[], newsFeed: string[]) => {
+  if (!draftPl.artists || performingArtistIds.length === 0) return;
+
+  // Filter out the exact artists selected by the player for this gig
+  const lineup = draftPl.artists.filter((a: any) => performingArtistIds.includes(a.id));
+  if (lineup.length === 0) return;
+
+  // Calculate dynamic line-up multiplier based on collective star power/hype
+  const collectiveLineupHype = lineup.reduce((acc: number, curr: any) => acc + (curr.hypeFactor || 1.0), 0);
+
+  // Ticket payout scales directly based on who you put on stage
+  const ticketSalesPayoff = Math.floor(score * gigLevel * 30 * (collectiveLineupHype / lineup.length));
+  draftPl.bag += ticketSalesPayoff;
+
+  // Hype bumps are awarded explicitly to the artists who performed the physical labor of the show
+  const individualHypeBoost = parseFloat((score * 0.02 * gigLevel).toFixed(3));
+
+  draftPl.artists = draftPl.artists.map((artist: any) => {
+    if (performingArtistIds.includes(artist.id)) {
+      const oldHype = artist.hypeFactor || 1.0;
+      const newHype = Math.min(5.0, oldHype + individualHypeBoost);
+      return {
+        ...artist,
+        hypeFactor: newHype,
+        monthlyRevenue: Math.floor(artist.monthlyRevenue * (newHype / oldHype))
+      };
+    }
+    return artist;
+  });
+
+  newsFeed.unshift(`🎉 LIVE WRAP: Show complete! Your chosen lineup generated $${ticketSalesPayoff} in revenue. Performers gained +${individualHypeBoost}x Hype!`);
+};

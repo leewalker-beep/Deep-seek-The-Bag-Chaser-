@@ -1,6 +1,7 @@
 import { useEffect, useState, useReducer, useMemo, useRef, lazy, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from './store/gameStore';
+import { completeConcertPerformanceWithLineup } from './store/slices/hustleSlice';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
 import { NavTabs } from './components/NavTabs';
@@ -453,8 +454,31 @@ function App() {
 
   const tierClass = `${pl.currentTier.toLowerCase()}-tier`;
 
+  const activeMinigame = pl?.activeMinigame;
+
   return (
     <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative`}>
+      {activeMinigame && (
+        <div className="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, (win) => {
+              const resultScore = typeof win === 'number' ? win : (win ? 15 : 5);
+              useGameStore.setState((state: any) => {
+                const performingIds = activeMinigame.performingArtistIds || [];
+                // Create a copy to be mutated safely
+                const draftPl = JSON.parse(JSON.stringify(state.pl));
+                const draftNewsFeed = [...state.news];
+                completeConcertPerformanceWithLineup(draftPl, resultScore, activeMinigame.level, performingIds, draftNewsFeed);
+                draftPl.activeMinigame = null;
+                return {
+                  pl: draftPl,
+                  news: draftNewsFeed
+                };
+              });
+            })}
+          </div>
+        </div>
+      )}
       <AnimatePresence>
         {activeTransition && (
           <CinematicTransition

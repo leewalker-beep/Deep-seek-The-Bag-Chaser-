@@ -662,7 +662,17 @@ export interface PlayerStats {
   mentalShieldTurns: number;
   artists: RecordLabelArtist[];
   scoutedTalentPool: RecordLabelArtist[];
-  activeMinigame?: { panelType: string; level: number } | null;
+  activeMinigame?: { panelType: string; level: number; initialHype?: number; performingArtistIds?: string[] } | null;
+  endgameTracks?: {
+    realEstateAcquisitions: string[];
+    globalFleetCount: number;
+    automatedHustleIds: string[];
+    techStartupValuation: number;
+  };
+  synergyPool?: {
+    grassrootsMarketing?: number;
+    logisticsBonus?: number;
+  };
   rolodex: RolodexCelebrity[];
   rareTechStockpile: number;
   algorithmicLogs: number;

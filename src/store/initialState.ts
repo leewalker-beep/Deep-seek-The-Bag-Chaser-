@@ -42,6 +42,12 @@ export const getInitialStats = (
     artists: [],
     scoutedTalentPool: [],
     activeMinigame: null,
+    endgameTracks: {
+      realEstateAcquisitions: [],
+      globalFleetCount: 0,
+      automatedHustleIds: [],
+      techStartupValuation: 1000
+    },
     rolodex: [],
     rareTechStockpile: 0,
     algorithmicLogs: 0,
