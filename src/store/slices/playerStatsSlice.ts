@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PlayerStats, Artist, RecordLabelArtist } from '../../types/game';
+import type { GameState, PlayerStats, RecordLabelArtist } from '../../types/game';
 import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
