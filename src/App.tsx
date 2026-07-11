@@ -66,6 +66,12 @@ const SequenceRecall = lazy(() => import('./components/minigames/SequenceRecall'
 const PresidentialCampaign = lazy(() => import('./components/minigames/PresidentialCampaign').then(m => ({ default: m.PresidentialCampaign })));
 const SimpleFallback = lazy(() => import('./components/minigames/SimpleFallback').then(m => ({ default: m.SimpleFallback })));
 
+const CaptchaDrone = lazy(() => import('./components/minigames/CaptchaDrone').then(m => ({ default: m.CaptchaDrone })));
+const ClickbaitGame = lazy(() => import('./components/minigames/ClickbaitGame').then(m => ({ default: m.ClickbaitGame })));
+const SignSpinner = lazy(() => import('./components/minigames/SignSpinner').then(m => ({ default: m.SignSpinner })));
+const ReviewFarm = lazy(() => import('./components/minigames/ReviewFarm').then(m => ({ default: m.ReviewFarm })));
+const ConcertJam = lazy(() => import('./components/minigames/ConcertJam').then(m => ({ default: m.ConcertJam })));
+
 // Thematic Wrappers
 const FestivalCrowdSurge = lazy(() => import('./components/hustles/panels/FestivalCrowdSurge').then(m => ({ default: m.FestivalCrowdSurge })));
 const CryptoMineRush = lazy(() => import('./components/hustles/panels/CryptoMineRush').then(m => ({ default: m.CryptoMineRush })));
@@ -117,6 +123,44 @@ import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier, AppTab } from './types/game';
+
+const renderHustlePanel = (panelType: string, currentLevel: number, handleGameFinished: (result: any) => void) => {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center p-6 bg-zinc-950 rounded-xl border border-zinc-900 font-mono text-[10px] text-zinc-500">
+        <div className="w-4 h-4 border-2 border-zinc-700 border-t-purple-500 rounded-full animate-spin mb-2" />
+        INITIALIZING HUSTLE INTERFACE...
+      </div>
+    }>
+      {(() => {
+        switch (panelType) {
+          case 'CAPTCHA_GAME':
+            return <CaptchaDrone level={currentLevel} onComplete={handleGameFinished} />;
+
+          case 'CLICKBAIT_GAME':
+          case 'TALENT_AGENT_GAME':
+            return <ClickbaitGame level={currentLevel} onComplete={handleGameFinished} />;
+
+          case 'SIGN_SPINNER_GAME':
+            return <SignSpinner level={currentLevel} onComplete={handleGameFinished} />;
+
+          case 'REVIEW_FARM_GAME':
+            return <ReviewFarm level={currentLevel} onComplete={handleGameFinished} />;
+
+          case 'CONCERT_JAM_GAME':
+            return <ConcertJam level={currentLevel} onComplete={handleGameFinished} />;
+
+          default:
+            return (
+              <div className="p-4 text-center text-xs text-zinc-500 font-mono bg-zinc-900 rounded-lg">
+                ⚠️ Interface module [ {panelType} ] is currently booting down.
+              </div>
+            );
+        }
+      })()}
+    </Suspense>
+  );
+};
 
 function App() {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -840,6 +884,12 @@ function App() {
                   );
                 }
 
+                if (activeMiniGame === 'CaptchaDrone' || activeMiniGame === 'CAPTCHA_GAME') return <CaptchaDrone onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+                if (activeMiniGame === 'ClickbaitGame' || activeMiniGame === 'CLICKBAIT_GAME') return <ClickbaitGame onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+                if (activeMiniGame === 'SignSpinner' || activeMiniGame === 'SIGN_SPINNER_GAME') return <SignSpinner onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+                if (activeMiniGame === 'ReviewFarm' || activeMiniGame === 'REVIEW_FARM_GAME') return <ReviewFarm onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+                if (activeMiniGame === 'ConcertJam' || activeMiniGame === 'CONCERT_JAM_GAME') return <ConcertJam onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+
                 // Fallback for unknown minigames
                 return <SimpleFallback name={activeMiniGame} onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 };
@@ -910,6 +960,30 @@ function App() {
                       onClose={() => setActiveHustleView(null)}
                     />
                   );
+                }
+
+                const customPanelTypes = ['CAPTCHA_GAME', 'CLICKBAIT_GAME', 'SIGN_SPINNER_GAME', 'REVIEW_FARM_GAME', 'CONCERT_JAM_GAME', 'TALENT_AGENT_GAME'];
+                if (customPanelTypes.includes(hustle.panelType || '')) {
+                  const hustleLevel = pl.hustleLevels[hustle.id] || 1;
+                  return renderHustlePanel(hustle.panelType!, hustleLevel, (win) => {
+                    const multiplier = win ? 1.5 : 0.5;
+                    const result = executeHustle(hustle.id, multiplier);
+                    if (result.success) {
+                      setActiveHustleResult({
+                        hustleId: hustle.id,
+                        success: result.success,
+                        netChange: result.netChange,
+                        cost: result.cost,
+                        yieldCash: result.yieldCash,
+                        yieldClout: result.yieldClout,
+                        yieldAura: result.yieldAura,
+                        mentalHit: result.mentalHit,
+                        heatHit: result.heatHit,
+                      });
+                      forceUpdate();
+                    }
+                    setActiveHustleView(null);
+                  });
                 }
               }
 
