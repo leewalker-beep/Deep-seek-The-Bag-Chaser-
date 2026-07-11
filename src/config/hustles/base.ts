@@ -17,11 +17,14 @@ export interface HustleLevel {
   maxRepeat?: number;
   miniGame?: string;
   minimumYield?: number;
+  reqClout?: number;
+  multiplier?: number;
 }
 
 export interface Hustle {
   id: string;
   name: string;
+  title?: string;
   tier: string;
   icon: string;
   description: string;
@@ -34,6 +37,9 @@ export interface Hustle {
   hasPanel?: boolean;
   panelType?: string;
   miniGame?: string;
+  basePayout?: number;
+  baseClout?: number;
+  mentalHealthCost?: number;
 }
 
 export const HUSTLES: Record<string, Hustle> = {};
@@ -191,6 +197,25 @@ HUSTLES.cleaning = {
   }
 };
 
+HUSTLES.h_sign_spinner = {
+  id: 'h_sign_spinner',
+  name: 'Human Billboard',
+  title: 'Human Billboard',
+  description: 'Dress up like a giant taco and spin directional signs to drive traffic to dying local bistros.',
+  tier: 'MUD',
+  icon: '🪧',
+  hasPanel: true,
+  panelType: 'SIGN_SPINNER_GAME',
+  basePayout: 15,
+  baseClout: 3,
+  mentalHealthCost: 5,
+  levels: [
+    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 2, reqClout: 60, cloutReq: 60, multiplier: 1.4, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 3, reqClout: 180, cloutReq: 180, multiplier: 1.9, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 }
+  ]
+};
+
 // STREET Tier Hustles (Target: ~$3,000 profit/month, ~30 months)
 HUSTLES.cc = {
   id: 'cc',
@@ -221,21 +246,6 @@ HUSTLES.pod = {
     l3: { level: 3, id: 'l3', name: 'Spotify Exclusive', cost: 120000, yieldCash: 280000, yieldClout: 28, yieldAura: 15, mentalHit: -20, cloutReq: 300, auraReq: 150, passiveYield: 3000, nextBranches: ['l4'], miniGame: 'PodcastFlowState' },
     l4: { level: 4, id: 'l4', name: 'Global Network', cost: 500000, yieldCash: 1100000, yieldClout: 85, yieldAura: 45, mentalHit: -35, cloutReq: 800, auraReq: 400, passiveYield: 15000, miniGame: 'PodcastFlowState' }
   },
-};
-
-HUSTLES.drop = {
-  id: 'drop',
-  name: 'Dropshipping',
-  tier: 'STREET',
-  icon: '📦',
-  description: 'Middleman your way to wealth',
-  miniGame: 'SwipeAuthentic',
-  startBranchId: 'l1',
-  branches: {
-    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 4000, yieldCash: 15000, yieldClout: 2, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeAuthentic' },
-    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 30000, yieldCash: 85000, yieldClout: 6, yieldAura: 4, mentalHit: -18, cloutReq: 80, auraReq: 40, nextBranches: ['l3'], miniGame: 'SwipeAuthentic' },
-    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 200000, yieldCash: 500000, yieldClout: 18, yieldAura: 10, mentalHit: -25, cloutReq: 250, auraReq: 150, miniGame: 'SwipeAuthentic' }
-  }
 };
 
 HUSTLES.vintage = {
@@ -313,7 +323,41 @@ HUSTLES.power_nap = {
   },
 };
 
+HUSTLES.h_review_farm = {
+  id: 'h_review_farm',
+  name: 'Reputation Laundry',
+  title: 'Reputation Laundry',
+  description: 'Manage a click-farm botnet to post 5-star review spam for shady clients and review-bomb rivals.',
+  tier: 'STREET',
+  icon: '🤖',
+  hasPanel: true,
+  panelType: 'REVIEW_FARM_GAME',
+  basePayout: 210,
+  baseClout: 30,
+  mentalHealthCost: 9,
+  levels: [
+    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 2, reqClout: 400, cloutReq: 400, multiplier: 1.5, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 3, reqClout: 1000, cloutReq: 1000, multiplier: 2.1, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 }
+  ]
+};
+
 // STARTUP Tier Hustles (Target: ~$25,000 profit/month, ~30 months)
+HUSTLES.drop = {
+  id: 'drop',
+  name: 'Dropshipping',
+  tier: 'STARTUP',
+  icon: '📦',
+  description: 'Middleman your way to wealth',
+  miniGame: 'SwipeAuthentic',
+  startBranchId: 'l1',
+  branches: {
+    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 4000, yieldCash: 15000, yieldClout: 2, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeAuthentic' },
+    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 30000, yieldCash: 85000, yieldClout: 6, yieldAura: 4, mentalHit: -18, cloutReq: 80, auraReq: 40, nextBranches: ['l3'], miniGame: 'SwipeAuthentic' },
+    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 200000, yieldCash: 500000, yieldClout: 18, yieldAura: 10, mentalHit: -25, cloutReq: 250, auraReq: 150, miniGame: 'SwipeAuthentic' }
+  }
+};
+
 HUSTLES.sw = {
   id: 'sw',
   name: 'Streetwear',
@@ -432,6 +476,25 @@ HUSTLES.therapy_session = {
   branches: {
     l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 10000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
   },
+};
+
+HUSTLES.h_talent_agent = {
+  id: 'h_talent_agent',
+  name: 'Boutique Talent Agency',
+  title: 'Boutique Talent Agency',
+  description: 'Sign unpolished local creators and high-school athletes. Exploit their image rights for massive percentages.',
+  tier: 'STARTUP',
+  icon: '🎭',
+  hasPanel: true,
+  panelType: 'TALENT_AGENT_GAME',
+  basePayout: 450,
+  baseClout: 80,
+  mentalHealthCost: 12,
+  levels: [
+    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 2, reqClout: 1500, cloutReq: 1500, multiplier: 1.6, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 },
+    { level: 3, reqClout: 3500, cloutReq: 3500, multiplier: 2.2, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 }
+  ]
 };
 
 // CORPORATE Tier Hustles (Target: ~$250,000 profit/month, ~40 months)

@@ -343,34 +343,7 @@ export function advanceMonth(
   newPl.bag = newPl.bag + passiveIncome - totalRent;
 
   // New Record Label Artists handling (contract countdown, poaching alerts, revenue/retainer calculations)
-  newPl.artists = newPl.artists.map(artist => {
-    const currentContract = artist.contractMonthsLeft !== undefined ? artist.contractMonthsLeft : 120;
-    const nextContract = currentContract - 1;
-    let isTargetedByRival = artist.isTargetedByRival || false;
-
-    if (nextContract <= 0 && currentContract > 0) {
-      news.push(`🎤 Contract Expired: ${artist.name}'s contract has expired!`);
-    } else if (nextContract < 24 && nextContract > 0) {
-      if (Math.random() < 0.08) {
-        isTargetedByRival = true;
-        news.push(`⚠️ Rival Poaching Alert: Rivals are attempting to poach ${artist.name}!`);
-      }
-    }
-
-    return {
-      ...artist,
-      contractMonthsLeft: nextContract,
-      isTargetedByRival
-    };
-  });
-
-  let artistsNet = 0;
-  newPl.artists.forEach(artist => {
-    const revenue = artist.monthlyRevenue !== undefined ? artist.monthlyRevenue : 0;
-    const retainer = artist.monthlyRetainer !== undefined ? artist.monthlyRetainer : 0;
-    artistsNet += (revenue - retainer);
-  });
-  newPl.bag = Math.max(0, newPl.bag + artistsNet);
+  processEntertainmentTimelineTick(newPl, news as string[]);
 
   const FLEX_THRESHOLDS: Record<number, string> = {
     10000:       'watch',
@@ -908,3 +881,35 @@ export function advanceMonth(
     passiveBreakdown
   };
 }
+
+export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[]) => {
+  if (!draftPl.artists) draftPl.artists = [];
+  if (!draftPl.scoutedTalentPool) draftPl.scoutedTalentPool = [];
+  if (!draftPl.rolodex) draftPl.rolodex = [];
+
+  let totalRetainerDrain = 0;
+  let totalStreamingYield = 0;
+
+  draftPl.artists = draftPl.artists.map((artist: any) => {
+    // Tally monthly financial streams
+    totalRetainerDrain += artist.monthlyRetainer;
+    totalStreamingYield += artist.monthlyRevenue;
+
+    // Decrement 10-year countdown metrics clock
+    const updatedClock = Math.max(0, artist.contractMonthsLeft - 1);
+    if (updatedClock === 0) {
+      newsFeed.unshift(`🚨 ROSTER CRISIS: ${artist.name}'s 10-year contract has expired! Re-sign them on your dashboard.`);
+    }
+
+    // Evaluate random poaching ambushes from competitor labels
+    if (updatedClock < 24 && !artist.isTargetedByRival && Math.random() < 0.08) {
+      artist.isTargetedByRival = true;
+      newsFeed.unshift(`🦹 INDUSTRIAL THREAT: Chen MegaRecords is offering a backdoor buyout deal to ${artist.name}!`);
+    }
+
+    return { ...artist, contractMonthsLeft: updatedClock };
+  });
+
+  const operationalNet = totalStreamingYield - totalRetainerDrain;
+  draftPl.bag = Math.max(0, draftPl.bag + operationalNet);
+};
