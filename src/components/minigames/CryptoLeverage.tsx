@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getScalingMultiplier } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
 
-interface SlotMachineProps {
+interface CryptoLeverageProps {
   onComplete: (multiplier: number) => void;
   level?: number;
   tier?: Tier;
 }
 
-const SYMBOLS = ['💰', '💎', '🎰', '📈', '🔥', '🃏', '👑', '💸'];
+const SYMBOLS = ['🪙 BTC', '💎', '🎰', '📈', '🚀 LONG', '📉 LIQ', '👑', '💸'];
 
-export const SlotMachine: React.FC<SlotMachineProps> = ({
+export const CryptoLeverage: React.FC<CryptoLeverageProps> = ({
     onComplete,
     level = 1,
     tier = 'MUD'
@@ -106,13 +106,6 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
     return () => window.removeEventListener('devicemotion', handleMotion);
   }, [isSpinning, spinsLeft, spin, gameActive, permissionGranted]);
 
-  useEffect(() => {
-    if (!isSpinning && result === null && feedback === null) {
-      // Check if we actually spun (spinsLeft decreased)
-      // This is a bit tricky with the initial state, but we only show result if we've spun.
-    }
-  }, [isSpinning, reels, spinsLeft, jackpotMultiplier, bigWinMultiplier]);
-
   // Handle result logic after a spin completes
   useEffect(() => {
       if (!isSpinning && gameActive) {
@@ -166,9 +159,9 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
         </div>
       )}
       <div className="flex justify-between items-center mb-6 px-4">
-        <motion.div animate={isSpinning ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">🎰</motion.div>
-        <h2 className="text-2xl font-black text-yellow-500 uppercase tracking-tighter italic">MUSIC FESTIVAL <span className="text-white text-xs">L{level}</span></h2>
-        <motion.div animate={isSpinning ? { rotate: -360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">🎰</motion.div>
+        <motion.div animate={isSpinning ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">📈</motion.div>
+        <h2 className="text-sm font-black text-yellow-500 uppercase tracking-tighter italic">DEGENERATE LEVERAGE TERMINAL (CROSS-MARGIN) <span className="text-white text-xs">L{level}</span></h2>
+        <motion.div animate={isSpinning ? { rotate: -360 } : {}} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500 text-2xl">📈</motion.div>
       </div>
 
       <div className="bg-black border-4 border-yellow-900/50 rounded-2xl p-6 mb-8 relative shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
@@ -189,7 +182,9 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
                   feedback === 'jackpot' ? 'border-yellow-400' : 'border-slate-800'
               }`}
             >
-              {symbol}
+              <span className={symbol.length > 2 ? "text-[14px] font-black uppercase tracking-tighter" : "text-5xl"}>
+                {symbol}
+              </span>
             </motion.div>
           ))}
         </div>
@@ -218,7 +213,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
                     animate={{ opacity: 1 }}
                     className="text-yellow-500 font-black animate-pulse uppercase tracking-[0.3em] text-sm"
                 >
-                    RANDOMIZING REELS...
+                    ROUTING TRADES...
                 </motion.div>
             )}
         </AnimatePresence>
@@ -234,7 +229,7 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({
               : 'bg-yellow-500 text-black border-yellow-700 shadow-[0_0_30px_rgba(234,179,8,0.2)]'
           }`}
         >
-          {isSpinning ? 'SPINNING...' : `PULL LEVER (${spinsLeft} LEFT)`}
+          {isSpinning ? 'ORDER ROUTING...' : `EXECUTE MARKET ORDER (${spinsLeft} LEFT)`}
         </button>
 
         <AnimatePresence>

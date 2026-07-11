@@ -34,6 +34,46 @@ export const SignSpinner: React.FC<{ level: number; onComplete: (win: boolean) =
         <button onClick={() => setBalance(b => Math.max(0, b - 12))} className="p-2 bg-zinc-900 border border-zinc-800 rounded font-black text-amber-400 active:scale-95">◀ LEAN LEFT</button>
         <button onClick={() => setBalance(b => Math.min(100, b + 12))} className="p-2 bg-zinc-900 border border-zinc-800 rounded font-black text-amber-400 active:scale-95">LEAN RIGHT ▶</button>
       </div>
+
+      <div className="flex-1 min-h-[140px] bg-zinc-950 border border-zinc-900 rounded-xl p-3 font-mono text-[9px] flex flex-col justify-between overflow-hidden mt-3 text-left">
+        <div className="flex justify-between border-b border-zinc-900 pb-1.5 text-amber-500 font-bold">
+          <span>💨 STREET-LEVEL TURBULENCE INDICATOR</span>
+          <span className="text-zinc-500">LOC: 7TH & BROADWAY</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 py-2">
+          <div className="space-y-1 bg-zinc-900/40 p-2 rounded-lg border border-zinc-900">
+            <span className="text-zinc-600 block uppercase text-[8px]">Wind Velocity Vector</span>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs font-bold text-zinc-300 animate-pulse">
+                {(14 + Math.random() * 8).toFixed(1)} MPH
+              </span>
+              <span className="text-amber-600 font-bold text-[8px]">CROSSWIND</span>
+            </div>
+            <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden mt-1">
+              <div className="bg-amber-500 h-full transition-all duration-200" style={{ width: '65%' }} />
+            </div>
+          </div>
+
+          <div className="space-y-1 bg-zinc-900/40 p-2 rounded-lg border border-zinc-900">
+            <span className="text-zinc-600 block uppercase text-[8px]">Angular Sign Torque</span>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs font-bold text-zinc-300">
+                {(Math.random() * 15).toFixed(0)}° / SEC
+              </span>
+              <span className="text-emerald-500 font-bold text-[8px]">STABLE RANGE</span>
+            </div>
+            <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden mt-1">
+              <div className="bg-emerald-500 h-full transition-all duration-200" style={{ width: '38%' }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-zinc-900/60 pt-1.5 text-[8px] text-zinc-600 flex justify-between uppercase tracking-wider">
+          <span>Target Impressions: +14% Clout Flux</span>
+          <span className="animate-pulse text-amber-500/70">● CAPTURING EYE-TRAFFIC</span>
+        </div>
+      </div>
     </div>
   );
 };
