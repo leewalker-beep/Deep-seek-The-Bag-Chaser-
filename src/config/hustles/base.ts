@@ -328,7 +328,7 @@ HUSTLES.h_review_farm = {
   name: 'Reputation Laundry',
   title: 'Reputation Laundry',
   description: 'Manage a click-farm botnet to post 5-star review spam for shady clients and review-bomb rivals.',
-  tier: 'STREET',
+  tier: 'STARTUP',
   icon: '🤖',
   hasPanel: true,
   panelType: 'REVIEW_FARM_GAME',
@@ -483,7 +483,7 @@ HUSTLES.h_talent_agent = {
   name: 'Boutique Talent Agency',
   title: 'Boutique Talent Agency',
   description: 'Sign unpolished local creators and high-school athletes. Exploit their image rights for massive percentages.',
-  tier: 'STARTUP',
+  tier: 'CORPORATE',
   icon: '🎭',
   hasPanel: true,
   panelType: 'TALENT_AGENT_GAME',
@@ -888,7 +888,7 @@ HUSTLES.open_movie = {
 HUSTLES.unique_hustle_deli = {
   id: 'unique_hustle_deli',
   name: 'Family Deli',
-  tier: 'MUD',
+  tier: 'STREET',
   icon: '🥪',
   description: 'A legacy of sandwiches. Stable and respected.',
   miniGame: 'FamilyDeli',
@@ -898,4 +898,18 @@ HUSTLES.unique_hustle_deli = {
     l2: { level: 2, id: 'l2', name: 'Catering Service', cost: 5000, yieldCash: 8000, yieldClout: 10, yieldAura: 15, mentalHit: -8, cloutReq: 30, auraReq: 40, passiveYield: 1000, nextBranches: ['l3'], miniGame: 'FamilyDeli' },
     l3: { level: 3, id: 'l3', name: 'City Institution', cost: 50000, yieldCash: 60000, yieldClout: 50, yieldAura: 100, mentalHit: -10, cloutReq: 150, auraReq: 200, passiveYield: 5000, miniGame: 'FamilyDeli' },
   }
+};
+
+HUSTLES.h_global_conglomerate = {
+  id: 'h_global_conglomerate',
+  name: 'Global Conglomerate',
+  tier: 'ELITE',
+  icon: '🏢',
+  description: 'Manage a massive global conglomerate with extensive industrial and retail operations.',
+  basePayout: 45000,
+  baseClout: 500,
+  mentalHealthCost: 20,
+  levels: [
+    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 }
+  ]
 };
