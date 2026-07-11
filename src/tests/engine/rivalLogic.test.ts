@@ -60,6 +60,7 @@ describe('Rival Logic Mechanical Impact', () => {
     it('penalizes 10% bag when challenge expires', () => {
       const pl = getInitialStats(3);
       pl.bag = 10000;
+      pl.rivals = [];
       pl.activeChallenges = [{
         rivalId: 'r1',
         rivalName: 'Rival',

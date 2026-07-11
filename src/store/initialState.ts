@@ -40,6 +40,10 @@ export const getInitialStats = (
     passiveLaborYield: 0,
     mentalShieldTurns: 0,
     artists: [],
+    scoutedTalentPool: [],
+    rolodex: [],
+    rareTechStockpile: 0,
+    algorithmicLogs: 0,
     grammyCount: 0,
     recordLabelLevel: 1,
     festivalChoices: {
