@@ -175,6 +175,7 @@ export const getInitialStats = (
     totalChallengesCompleted: 0,
     totalHustlesCompleted: 0,
     inJail: false,
+    isIncarcerated: false,
     jailMonthsRemaining: 0,
     jailSentenceTotal: 0,
     jailCharge: '',

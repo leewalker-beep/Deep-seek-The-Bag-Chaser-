@@ -38,7 +38,7 @@ describe('Jail System', () => {
     const newPl = result.newPl;
 
     expect(newPl.jailMonthsRemaining).toBe(4);
-    expect(newPl.clout).toBe(100 - sentence.cloutLossPerMonth);
+    expect(newPl.clout).toBe(100 - sentence.cloutLossPerMonth - 4); // Accounts for sentence-based clout decay and hard-mode bars erosion
     expect(newPl.bag).toBeLessThan(10000);
   });
 

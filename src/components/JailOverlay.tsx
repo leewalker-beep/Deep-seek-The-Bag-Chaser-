@@ -5,16 +5,16 @@ import { motion } from 'framer-motion';
 export const JailOverlay: React.FC = () => {
   const { pl, serveMonth } = useGameStore();
 
-  if (!pl.inJail) return null;
+  if (!pl.inJail && !pl.isIncarcerated) return null;
 
   const progress = ((pl.jailSentenceTotal - pl.jailMonthsRemaining) / pl.jailSentenceTotal) * 100;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md">
+    <div className="w-full flex justify-center py-2 animate-in fade-in duration-300">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-sm bg-slate-900 border-2 border-red-900/50 rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-md bg-slate-900 border-2 border-red-900/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
       >
         {/* Background Decoration */}
         <div className="absolute top-0 left-0 w-full h-1 bg-red-600"></div>

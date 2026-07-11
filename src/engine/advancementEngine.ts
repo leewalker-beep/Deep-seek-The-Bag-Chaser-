@@ -101,6 +101,7 @@ export function advanceMonth(
 ): AdvancementResult {
   const news: (string | TickerMessage)[] = [];
   const newPl = { ...pl };
+  newPl.isIncarcerated = newPl.inJail;
   let newMarket = currentMarket;
 
   // Calculate rent based on tier
@@ -282,6 +283,7 @@ export function advanceMonth(
   });
 
   // --- MULTIPLIERS ---
+  const isJailed = newPl.inJail === true || newPl.isIncarcerated === true;
   const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
   let legacyBoost = 1.0;
   if (unlockedLegacyUpgrades.includes('passive_boost')) legacyBoost = 1.1;
@@ -297,7 +299,7 @@ export function advanceMonth(
     }
   }
 
-  const finalTotal = Math.floor(baseTotal * legacyMultiplier * legacyBoost * marketYieldMult * specMultiplier);
+  const finalTotal = isJailed ? 0 : Math.floor(baseTotal * legacyMultiplier * legacyBoost * marketYieldMult * specMultiplier);
 
   const passiveBreakdown: PassiveBreakdown = {
       sources,
@@ -384,6 +386,7 @@ export function advanceMonth(
   if (pl.heat >= 100 && !newPl.inJail) {
     const sentence = getSentence(newPl.currentTier);
     newPl.inJail = true;
+    newPl.isIncarcerated = true;
     newPl.jailMonthsRemaining = sentence.months;
     newPl.jailSentenceTotal = sentence.months;
     newPl.jailCharge = sentence.charge;
@@ -403,7 +406,7 @@ export function advanceMonth(
   else if (newPl.inJail && newPl.jailMonthsRemaining > 0) {
     const sentence = getSentence(newPl.currentTier);
 
-    // Passive losses while inside
+    // Passive losses while inside (no longer double deducting bag here because processEntertainmentTimelineTick handles drains)
     newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
     newPl.clout = Math.max(0, newPl.clout - sentence.cloutLossPerMonth);
 
@@ -411,6 +414,7 @@ export function advanceMonth(
 
     if (newPl.jailMonthsRemaining <= 0) {
       newPl.inJail = false;
+      newPl.isIncarcerated = false;
       news.push({
         text: `🔓 RELEASED. You served your time for ${newPl.jailCharge}.`,
         colorClass: 'text-emerald-400 font-black'
@@ -883,17 +887,27 @@ export function advanceMonth(
 }
 
 export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[]) => {
+  const isJailed = draftPl.inJail === true || draftPl.isIncarcerated === true;
+  let positiveYields = 0;
+  let negativeDrains = 0;
+
   if (!draftPl.artists) draftPl.artists = [];
   if (!draftPl.scoutedTalentPool) draftPl.scoutedTalentPool = [];
   if (!draftPl.rolodex) draftPl.rolodex = [];
 
-  let totalRetainerDrain = 0;
-  let totalStreamingYield = 0;
-
   draftPl.artists = draftPl.artists.map((artist: any) => {
-    // Tally monthly financial streams
-    totalRetainerDrain += artist.monthlyRetainer;
-    totalStreamingYield += artist.monthlyRevenue;
+    negativeDrains += artist.monthlyRetainer; // Retainers must be honored to prevent legal abandonment
+
+    if (!isJailed) {
+      positiveYields += artist.monthlyRevenue; // Passive collection only occurs if free
+    } else {
+      // PREDATORY PRISON EXPLOITATION EVENTS:
+      // Rivals strip market share and undercut client exposure while you cannot file counter-injunctions
+      if (Math.random() < 0.15) {
+        artist.monthlyRevenue = Math.max(0, artist.monthlyRevenue - 75);
+        newsFeed.unshift(`🚨 PRISON EXPLOIT: Competitors undercut ${artist.name}'s streaming visibility while you are locked away.`);
+      }
+    }
 
     // Decrement 10-year countdown metrics clock
     const updatedClock = Math.max(0, artist.contractMonthsLeft - 1);
@@ -910,6 +924,25 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     return { ...artist, contractMonthsLeft: updatedClock };
   });
 
-  const operationalNet = totalStreamingYield - totalRetainerDrain;
-  draftPl.bag = Math.max(0, draftPl.bag + operationalNet);
+  // Real-estate maintenance costs stay active regardless of incarceration status
+  negativeDrains += draftPl.currentRentObligations || 0;
+
+  if (isJailed) {
+    // Lock out incoming revenue streams entirely, processing only operational drains
+    draftPl.bag = Math.max(0, draftPl.bag - negativeDrains);
+
+    // Eroding public influence and presence metrics behind bars
+    draftPl.clout = Math.max(0, draftPl.clout - 4);
+    draftPl.aura = Math.max(0, draftPl.aura - 8);
+
+    // Random legal fine discoveries processing tick
+    if (Math.random() < 0.12) {
+      const legalFine = 500 + Math.floor(Math.random() * 1500);
+      draftPl.bag = Math.max(0, draftPl.bag - legalFine);
+      newsFeed.unshift(`⚖️ COURT FORFEITURE: State prosecutors freeze asset capital for courtroom discovery processing. Lost $${legalFine}.`);
+    }
+  } else {
+    // Normal career logic processing for free players
+    draftPl.bag = Math.max(0, draftPl.bag + positiveYields - negativeDrains);
+  }
 };

@@ -59,6 +59,7 @@ export const ScoopThePoop: React.FC<ScoopThePoopProps> = ({
               aura: Math.max(0, store.pl.aura - 15),
               // Trigger intensive care unit isolation lockout
               inJail: true,
+              isIncarcerated: true,
               jailMonthsRemaining: 3,
               jailSentenceTotal: 3,
               jailCharge: "Severe Toxemia Isolation Hospitalization"

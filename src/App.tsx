@@ -591,20 +591,24 @@ function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="-mt-px">
-        <NavTabs
-          activeTab={activeTab}
-        currentTier={pl.currentTier}
-          onTabChange={(tab) => {
-            setActiveTab(tab as AppTab);
-            setShowMinigame(false);
-          }}
-        />
-      </div>
+      {!(pl.inJail || pl.isIncarcerated) && (
+        <div className="-mt-px">
+          <NavTabs
+            activeTab={activeTab}
+            currentTier={pl.currentTier}
+            onTabChange={(tab) => {
+              setActiveTab(tab as AppTab);
+              setShowMinigame(false);
+            }}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-md mx-auto px-4 py-3 pb-24">
-        {activeTab === 'PRESIDENCY' ? (
+        {pl.inJail || pl.isIncarcerated ? (
+          <JailOverlay />
+        ) : activeTab === 'PRESIDENCY' ? (
           <Suspense fallback={<PremiumLoader message="Preparing the Situation Room..." subtitle="Briefing the Cabinet" />}>
             <PresidentDashboard />
           </Suspense>
@@ -1114,7 +1118,6 @@ function App() {
       <SpecializationModal />
       <NarrativeEventModal />
       <LiveWorldEventModal />
-      <JailOverlay />
 
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />
