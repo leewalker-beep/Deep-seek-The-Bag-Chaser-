@@ -76,15 +76,19 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hust
           </div>
         ) : (
           pl.artists.map(artist => (
-            <div key={artist.id} className="bg-slate-950/80 rounded-xl p-3 border border-slate-800/50 flex justify-between items-center group">
+            <div key={artist.id} className="p-3 bg-zinc-900 border border-zinc-850 rounded-xl flex items-center gap-3 transition-all group">
+              {/* Character Face Container */}
+              <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl shadow-inner relative overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-500/5 to-transparent pointer-events-none" />
+                <span>{artist.avatar || '🎤'}</span>
+              </div>
+
+              {/* Existing Identity & Stats Stack */}
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-white text-sm">{artist.name}</span>
-                  <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase font-black ${
-                    artist.tier === 'global' ? 'bg-yellow-500 text-black' :
-                    artist.tier === 'regional' ? 'bg-purple-500 text-white' : 'bg-blue-500 text-white'
-                  }`}>
-                    {artist.tier}
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="font-black text-sm text-zinc-100">{artist.name}</span>
+                  <span className="text-[7px] px-1.5 py-0.5 bg-purple-900/30 text-purple-400 border border-purple-500/20 font-mono font-bold rounded uppercase tracking-wider">
+                    {artist.status === 'IN STUDIO' ? 'REGIONAL' : artist.tier}
                   </span>
                   {artist.isGrammyWinner && <span className="text-[10px]">🏆</span>}
                 </div>

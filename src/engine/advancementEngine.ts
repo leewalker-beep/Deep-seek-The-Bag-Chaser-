@@ -248,6 +248,7 @@ export function advanceMonth(
     artist.monthsActive++;
     if (artist.monthsActive % 12 === 0) {
       artist.hasReleased = true;
+      artist.status = 'ACTIVE';
     }
   });
   if (totalRoyalties > 0) {
