@@ -65,4 +65,52 @@ describe('Regression Tests', () => {
     const endingB = getEnding(pl.legacyPoints, dominantB);
     expect(endingB.title).toBe('The Mayor');
   });
+
+  it('scouts artist and assigns correct tier avatar and status', () => {
+    // Mock Math.random to always succeed (value < successRate)
+    const originalRandom = Math.random;
+    Math.random = vi.fn().mockReturnValue(0.01);
+
+    useGameStore.setState((state) => ({
+      pl: {
+        ...state.pl,
+        bag: 1000000,
+        artists: [],
+      }
+    }));
+
+    const store = useGameStore.getState();
+
+    try {
+      // Scout local
+      const localResult = store.scoutArtist('local');
+      expect(localResult.success).toBe(true);
+      expect(localResult.artist).toBeDefined();
+      if (localResult.artist) {
+        expect(['🎤', '🧢', '🎧', '🎸']).toContain(localResult.artist.avatar);
+        expect(localResult.artist.status).toBe('IN STUDIO');
+      }
+
+      // Scout regional
+      const regionalResult = store.scoutArtist('regional');
+      expect(regionalResult.success).toBe(true);
+      expect(regionalResult.artist).toBeDefined();
+      if (regionalResult.artist) {
+        expect(['🥷', '🕶️', '🔥', '🕷️', '🦊']).toContain(regionalResult.artist.avatar);
+        expect(regionalResult.artist.status).toBe('IN STUDIO');
+      }
+
+      // Scout global
+      const globalResult = store.scoutArtist('global');
+      expect(globalResult.success).toBe(true);
+      expect(globalResult.artist).toBeDefined();
+      if (globalResult.artist) {
+        expect(['👑', '🌟', '💎', '🚀', '🔮']).toContain(globalResult.artist.avatar);
+        expect(globalResult.artist.status).toBe('IN STUDIO');
+      }
+    } finally {
+      // Restore Math.random
+      Math.random = originalRandom;
+    }
+  });
 });

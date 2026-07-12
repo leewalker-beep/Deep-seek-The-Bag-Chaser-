@@ -186,10 +186,20 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul', 'Star', 'Flow', 'Beat'];
     const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
 
+    const getTierAvatar = (tierName: string): string => {
+      const pools: Record<string, string[]> = {
+        LOCAL: ['🎤', '🧢', '🎧', '🎸'],
+        REGIONAL: ['🥷', '🕶️', '🔥', '🕷️', '🦊'],
+        GLOBAL: ['👑', '🌟', '💎', '🚀', '🔮']
+      };
+      const pool = pools[tierName.toUpperCase()] || pools.LOCAL;
+      return pool[Math.floor(Math.random() * pool.length)];
+    };
+
     const newArtist: RecordLabelArtist = {
       id: Math.random().toString(36).substring(7),
       name,
-      avatar: `av_artist_${Math.floor(Math.random() * 5) + 1}`,
+      avatar: getTierAvatar(tier),
       contractMonthsLeft: 120,
       monthlyRetainer: Math.floor(royalty * 0.2),
       monthlyRevenue: Math.floor(royalty * 1.2),
@@ -199,6 +209,7 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       royaltyRate: royalty,
       monthsActive: 0,
       hasReleased: false,
+      status: 'IN STUDIO',
     };
 
     set({

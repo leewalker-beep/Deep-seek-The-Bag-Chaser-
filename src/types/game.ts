@@ -273,6 +273,7 @@ export interface Artist {
   monthsActive: number;
   hasReleased: boolean;
   isGrammyWinner?: boolean;
+  status?: string;
 }
 
 export interface RecordLabelArtist extends Artist {
