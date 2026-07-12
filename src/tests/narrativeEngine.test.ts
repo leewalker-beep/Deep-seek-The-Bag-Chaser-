@@ -3,6 +3,7 @@ import { evolveWorldNPCs } from '../utils/narrativeEngine';
 import type { PersistentNPC } from '../types/game';
 import { advanceMonth } from '../engine/advancementEngine';
 import { getInitialStats } from '../store/initialState';
+import { triggerMonthlyNarrativeEvent } from '../engine/eventEngine';
 
 describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
   it('should naturally drift relationship disposition and reputation over time', () => {
@@ -155,5 +156,124 @@ describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
     const result = advanceMonth(basePl, 'NORMAL');
     expect(result.newPl.npcs).toBeDefined();
     expect(result.newPl.npcs![0].disposition).toBe(81); // disposition 80 should drift up to 81
+  });
+
+  describe('Patch 34: triggerMonthlyNarrativeEvent', () => {
+    it('should trigger corporate sabotage if rival is present and player is in CORPORATE tier', () => {
+      const player = getInitialStats(3, undefined, undefined, undefined, []);
+      player.currentTier = 'CORPORATE';
+      player.npcs = [
+        {
+          id: 'rival_1',
+          name: 'Bitter Enemy',
+          avatar: '👺',
+          reputation: 50,
+          disposition: -45, // <= -40
+          currentRole: 'RIVAL',
+          interactionLog: [],
+          originHustleId: 'music_label_studio'
+        }
+      ];
+
+      const event = triggerMonthlyNarrativeEvent(player);
+      expect(event.title).toBe("🚨 CORPORATE SABOTAGE");
+      expect(event.description).toContain("Bitter Enemy");
+      expect(event.description).toContain("studio");
+
+      // Test effect
+      let cash = player.bag;
+      let heat = player.heat;
+      const mockState = {
+        updateCash: (amount: number) => { cash += amount; },
+        updateHeat: (amount: number) => { heat += amount; }
+      };
+      event.effect(mockState);
+      expect(cash).toBe(player.bag - 75000);
+      expect(heat).toBe(player.heat + 20);
+    });
+
+    it('should trigger campaign boost if political ally is present and player is in ELITE tier', () => {
+      const player = getInitialStats(3, undefined, undefined, undefined, []);
+      player.currentTier = 'ELITE';
+      player.npcs = [
+        {
+          id: 'ally_1',
+          name: 'Loyal Companion',
+          avatar: '🌟',
+          reputation: 80,
+          disposition: 85, // >= 75
+          currentRole: 'POLITICAL_RUNNING_MATE',
+          interactionLog: [],
+          originAge: 18
+        }
+      ];
+
+      const event = triggerMonthlyNarrativeEvent(player);
+      expect(event.title).toBe("🗳️ THE TICKET IS LOCKED");
+      expect(event.description).toContain("Loyal Companion");
+      expect(event.description).toContain("age 18");
+
+      // Test effect
+      let clout = player.clout;
+      let aura = player.aura;
+      const mockState = {
+        updateClout: (amount: number) => { clout += amount; },
+        updateAura: (amount: number) => { aura += amount; }
+      };
+      event.effect(mockState);
+      expect(clout).toBe(player.clout + 5000);
+      expect(aura).toBe(player.aura + 500);
+    });
+
+    it('should fall back to market correction under generic conditions', () => {
+      const player = getInitialStats(3, undefined, undefined, undefined, []);
+      player.currentTier = 'STREET';
+      player.npcs = [];
+
+      const event = triggerMonthlyNarrativeEvent(player);
+      expect(event.title).toBe("📈 MARKET CORRECTION");
+
+      // Test effect
+      let cash = player.bag;
+      const mockState = {
+        updateCash: (amount: number) => { cash += amount; }
+      };
+      event.effect(mockState);
+      expect(cash).toBe(player.bag + 15000);
+    });
+
+    it('should integrate with advanceMonth and apply effects to player state', () => {
+      const player = getInitialStats(3, undefined, undefined, undefined, []);
+      player.currentTier = 'CORPORATE';
+      player.npcs = [
+        {
+          id: 'rival_1',
+          name: 'Bitter Enemy',
+          avatar: '👺',
+          reputation: 50,
+          disposition: -50,
+          currentRole: 'RIVAL',
+          interactionLog: [],
+          originHustleId: 'music_label_studio'
+        }
+      ];
+      player.bag = 100000;
+      player.heat = 10;
+
+      const result = advanceMonth(player, 'NORMAL');
+
+      // Since it's corporate sabotage, player should lose $75k and gain 20 heat.
+      // Note: Rent for CORPORATE tier is $20000. So final bag should reflect both rent and corporate sabotage.
+      // Starting bag: 100000
+      // Sabotage: -75000
+      // Rent: -20000
+      // Passive: 0
+      // Expected bag: 100000 - 75000 - 20000 = 5000
+      expect(result.newPl.bag).toBe(5000);
+      expect(result.newPl.heat).toBe(20); // 10 starting + 20 from sabotage - 10 heat decay
+
+      const newsTexts = result.news.map(n => typeof n === 'string' ? n : n.text);
+      expect(newsTexts.some(text => text.includes("🚨 CORPORATE SABOTAGE"))).toBe(true);
+    });
   });
 });

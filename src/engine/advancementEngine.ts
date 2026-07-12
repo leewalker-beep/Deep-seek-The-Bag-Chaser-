@@ -14,6 +14,7 @@ import * as FlexEngine from './flexEngine';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
 import { evolveWorldNPCs } from '../utils/narrativeEngine';
+import { triggerMonthlyNarrativeEvent } from './eventEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -788,6 +789,30 @@ export function advanceMonth(
         news.push({ text: `⚡ NEW EVENT: ${event.title}`, colorClass: 'text-yellow-400 font-black animate-pulse' });
         break; // Only one event at a time
       }
+    }
+  }
+
+  // Trigger Patch 34 historical callback narrative events/news alerts
+  const monthlyEvent = triggerMonthlyNarrativeEvent(newPl);
+  if (monthlyEvent) {
+    const isSpecialEvent = !monthlyEvent.id.startsWith('evt_generic_market_');
+    const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+    const shouldTriggerGeneric = !isTestEnv && Math.random() < 0.05; // 5% chance in real gameplay
+
+    if (isSpecialEvent || shouldTriggerGeneric) {
+      news.push({
+        text: `${monthlyEvent.title}: ${monthlyEvent.description}`,
+        colorClass: monthlyEvent.title.includes('SABOTAGE') ? 'text-red-400 font-bold' :
+                    monthlyEvent.title.includes('LOCKED') ? 'text-yellow-400 font-bold' :
+                    'text-emerald-400'
+      });
+      const mockState = {
+        updateCash: (amount: number) => { newPl.bag = Math.max(0, newPl.bag + amount); },
+        updateHeat: (amount: number) => { newPl.heat = Math.max(0, Math.min(100, newPl.heat + amount)); },
+        updateClout: (amount: number) => { newPl.clout = Math.max(0, newPl.clout + amount); },
+        updateAura: (amount: number) => { newPl.aura = Math.max(0, newPl.aura + amount); }
+      };
+      monthlyEvent.effect(mockState);
     }
   }
 

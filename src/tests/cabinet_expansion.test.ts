@@ -8,6 +8,7 @@ describe('Cabinet Expansion - Engine Logic', () => {
   let mockPlayer: PlayerStats;
 
   beforeEach(() => {
+    vi.restoreAllMocks();
     mockPlayer = {
       runId: 'test-run',
       avatarId: 'av_m1',
@@ -102,6 +103,7 @@ describe('Cabinet Expansion - Engine Logic', () => {
       tutorialStep: 6,
       isTutorialSkipped: true,
     };
+    useGameStore.setState({ currentMarket: 'NORMAL' });
   });
 
   describe('generateCandidatePool', () => {
