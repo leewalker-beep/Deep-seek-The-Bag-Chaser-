@@ -13,6 +13,7 @@ import { getSentence } from '../config/jailSentences';
 import * as FlexEngine from './flexEngine';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
+import { evolveWorldNPCs } from '../utils/narrativeEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -377,6 +378,12 @@ export function advanceMonth(
 
   newPl.month += 1;
   newPl.monthsSinceLastEvent = (newPl.monthsSinceLastEvent || 0) + 1;
+
+  // Evolve world NPCs as part of the background progression loop
+  if (newPl.npcs && newPl.npcs.length > 0) {
+    const playerAgeStr = `${Math.floor(newPl.month / 12) + 18}Y ${newPl.month % 12}M`;
+    newPl.npcs = evolveWorldNPCs(newPl.npcs, playerAgeStr, newPl.currentTier);
+  }
 
   // Narrative Cooldown decrement
   if (newPl.narrativeCooldown > 0) {

@@ -49,6 +49,7 @@ export const getInitialStats = (
       techStartupValuation: 1000
     },
     rolodex: [],
+    npcs: [],
     rareTechStockpile: 0,
     algorithmicLogs: 0,
     grammyCount: 0,

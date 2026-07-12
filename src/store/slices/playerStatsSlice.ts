@@ -1,10 +1,11 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PlayerStats, RecordLabelArtist } from '../../types/game';
+import type { GameState, PlayerStats, RecordLabelArtist, PersistentNPC } from '../../types/game';
 import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
 import * as Bio from '../../engine/biographyEngine';
+import { generateGlobalNPC } from '../../config/world/npcRegistry';
 
 export interface PlayerStatsSlice {
   pl: PlayerStats;
@@ -182,10 +183,6 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       return { success: false, message: 'Scouting failed' };
     }
 
-    const firstNames = ['Lil', 'Yung', 'Big', 'MC', 'DJ', 'The', 'Kid', 'Bad', 'Rich', 'Ice', 'A$AP', 'Cardi', 'Megan'];
-    const lastNames = ['Bag', 'Chain', 'Ghost', 'Money', 'Wave', 'Vibe', 'Flex', 'Chaser', 'Mogul', 'Star', 'Flow', 'Beat'];
-    const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
-
     const getTierAvatar = (tierName: string): string => {
       const pools: Record<string, string[]> = {
         LOCAL: ['🎤', '🧢', '🎧', '🎸'],
@@ -196,10 +193,15 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       return pool[Math.floor(Math.random() * pool.length)];
     };
 
+    const tierAvatar = getTierAvatar(tier);
+
+    // 1. Generate a consistent structural character profile from the engine
+    const npcProfile = generateGlobalNPC('CREATOR', undefined, tierAvatar);
+
     const newArtist: RecordLabelArtist = {
-      id: Math.random().toString(36).substring(7),
-      name,
-      avatar: getTierAvatar(tier),
+      id: npcProfile.id,
+      name: npcProfile.name,
+      avatar: npcProfile.avatar,
       contractMonthsLeft: 120,
       monthlyRetainer: Math.floor(royalty * 0.2),
       monthlyRevenue: Math.floor(royalty * 1.2),
@@ -212,15 +214,37 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       status: 'IN STUDIO',
     };
 
+    // 2. Persist this character to the global NPC database so they exist in world history
+    const persistentArtistNPC: PersistentNPC = {
+      id: npcProfile.id,
+      name: npcProfile.name,
+      avatar: npcProfile.avatar,
+      reputation: npcProfile.reputation,
+      disposition: npcProfile.disposition,
+      currentRole: npcProfile.role === 'INTERN' ? 'STREET_INTERN' : npcProfile.role,
+      interactionLog: ['SCOUTED_BY_PLAYER'],
+      originAge: plAfterCost.month,
+      originHustleId: 'music_label_studio',
+      currentHustleId: npcProfile.currentHustleId
+    };
+
+    const currentNpcs = plAfterCost.npcs || [];
+    const alreadyExists = currentNpcs.some(n => n.id === persistentArtistNPC.id);
+    const updatedNpcs = alreadyExists ? currentNpcs : [
+      ...currentNpcs,
+      persistentArtistNPC
+    ];
+
     set({
       pl: enforceStatCaps({
         ...plAfterCost,
         artists: [...plAfterCost.artists, newArtist],
+        npcs: updatedNpcs,
       }),
-      news: [`🎤 SUCCESS! Signed ${tier} artist: ${name}`, ...state.news.slice(0, 49)]
+      news: [`🎤 SUCCESS! Signed ${tier} artist: ${npcProfile.name}`, ...state.news.slice(0, 49)]
     });
 
-    get().logEvent('INVESTMENT_MADE', { type: 'ARTIST_SCOUT', tier, artistName: name, cost });
+    get().logEvent('INVESTMENT_MADE', { type: 'ARTIST_SCOUT', tier, artistName: npcProfile.name, cost });
 
     return { success: true, artist: newArtist, message: 'Success' };
   },
