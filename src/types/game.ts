@@ -634,6 +634,19 @@ export interface OriginBonus {
   description: string;
 }
 
+export interface PersistentNPC {
+  id: string;
+  name: string;
+  avatar: string;
+  reputation: number;
+  disposition: number;
+  currentRole: string;
+  interactionLog: string[];
+  currentHustleId?: string;
+  originAge?: number;
+  originHustleId?: string;
+}
+
 export interface PlayerStats {
   runId: string;
   name?: string;
@@ -675,6 +688,7 @@ export interface PlayerStats {
     logisticsBonus?: number;
   };
   rolodex: RolodexCelebrity[];
+  npcs?: PersistentNPC[];
   rareTechStockpile: number;
   algorithmicLogs: number;
   grammyCount: number;
