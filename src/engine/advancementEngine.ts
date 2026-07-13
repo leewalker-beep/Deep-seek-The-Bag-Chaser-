@@ -327,7 +327,8 @@ export function advanceMonth(
     }
   }
 
-  const passiveIncome = finalTotal;
+  const chosenOneBoost = newPl.chosenBackground === 'lc_chosen' ? 1.10 : 1.0;
+  const passiveIncome = Math.floor(finalTotal * chosenOneBoost);
 
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly
@@ -397,8 +398,14 @@ export function advanceMonth(
     const sentence = getSentence(newPl.currentTier);
     newPl.inJail = true;
     newPl.isIncarcerated = true;
-    newPl.jailMonthsRemaining = sentence.months;
-    newPl.jailSentenceTotal = sentence.months;
+
+    let sentenceMonths = sentence.months;
+    if (newPl.chosenBackgroundCategory === 'street_kid') {
+      sentenceMonths = Math.max(1, Math.floor(sentenceMonths * 0.85));
+    }
+
+    newPl.jailMonthsRemaining = sentenceMonths;
+    newPl.jailSentenceTotal = sentenceMonths;
     newPl.jailCharge = sentence.charge;
     newPl.arrestCount = (newPl.arrestCount || 0) + 1;
     const bioUpdate = Bio.recordScandal(newPl, 'ARREST');

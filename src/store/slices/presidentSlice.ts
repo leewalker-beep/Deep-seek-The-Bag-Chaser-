@@ -232,9 +232,14 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const bioUpdate = Bio.recordCabinetAppointment(state.pl, member.name, member.role);
 
     set((state) => {
+      const updatedMember = { ...member };
+      if (state.pl.chosenBackgroundCategory === 'benefactor') {
+        updatedMember.loyalty = Math.min(100, updatedMember.loyalty + 15);
+      }
+
       const newPl = {
         ...state.pl,
-        cabinet: { ...state.pl.cabinet, [member.id]: member }
+        cabinet: { ...state.pl.cabinet, [member.id]: updatedMember }
       };
 
       if (bioUpdate) {
@@ -466,6 +471,13 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     cabinetMembers.forEach(roleId => {
       const member = { ...newCabinet[roleId] };
       let resigned = false;
+
+      // Cabinet Loyalty affected by player Aura
+      if (pl.aura > 750) {
+        member.loyalty = Math.min(100, member.loyalty + 1);
+      } else if (pl.aura < 300) {
+        member.loyalty = Math.max(0, member.loyalty - 2);
+      }
 
       // Fallback for legacy saves
       const corruptionRisk = member.corruptionRisk ?? 20;
@@ -800,6 +812,15 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     updatedPl.federalBudget += taxRevenue;
     state.addTickerMessage(`TREASURY: Monthly tax revenue of $${(taxRevenue/1000000).toFixed(1)}M collected.`, 'text-emerald-500/80 text-[10px]');
+
+    // Calculate Cabinet average integrity to affect Scandal / Crisis risk
+    const cabinetListForIntegrity = Object.values(updatedPl.cabinet);
+    if (cabinetListForIntegrity.length > 0) {
+      const avgIntegrity = cabinetListForIntegrity.reduce((sum, m) => sum + (m.integrity ?? 70), 0) / cabinetListForIntegrity.length;
+      if (avgIntegrity < 40) {
+        updatedPl.scandalRiskBonus = (updatedPl.scandalRiskBonus || 0) + 0.15;
+      }
+    }
 
     // 3. Generate new crisis
     const newCrisis = generateCrisis(updatedPl.isSecondTerm, updatedPl.nationalDebt, updatedPl.scandalRiskBonus || 0);

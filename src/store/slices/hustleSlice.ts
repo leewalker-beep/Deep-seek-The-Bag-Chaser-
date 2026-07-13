@@ -2164,7 +2164,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       return;
     }
 
-    const success = Math.random() < 0.75;
+    const successChance = state.pl.chosenBackgroundCategory === 'street_kid' ? 0.85 : 0.75;
+    const success = Math.random() < successChance;
     let nextPl = { ...state.pl, bag: state.pl.bag - cost };
 
     if (success) {

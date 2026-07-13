@@ -626,6 +626,20 @@ export const executeHustleAction = (
     effective.heatHit -= 1;
   }
 
+  // --- Careless Mistakes based on Stress ---
+  const stressChance = (100 - state.mentalHealth) * 0.002; // Up to 20% chance of a slip-up
+  const finalTickerMessages = [...(result.tickerMessages || [])];
+  if (result.success && Math.random() < stressChance) {
+    const penaltyAmount = 100 * currentLevel;
+    effective.yieldCash = Math.max(0, effective.yieldCash - penaltyAmount);
+    effective.heatHit += 10;
+    finalTickerMessages.push({
+      text: `⚠️ CARELESS MISTAKE: High stress caused a critical slip-up! -$${penaltyAmount.toLocaleString()} yield & +10 Heat.`,
+      colorClass: "text-red-400 font-semibold",
+      tier: state.currentTier
+    });
+  }
+
   return {
     ...result,
     cost: effective.cost,
@@ -639,6 +653,7 @@ export const executeHustleAction = (
     approvalBonus: effective.approvalBonus,
     isRare: effective.isBigWin,
     bigWinMessage: effective.bigWinMessage,
+    tickerMessages: finalTickerMessages,
     deathBreakdown: {
       baseDamage: levelData.mentalHit * (LEVEL_MULTIPLIERS[currentLevel] || 1),
       multipliers: {
