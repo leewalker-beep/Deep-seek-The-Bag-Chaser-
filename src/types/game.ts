@@ -930,6 +930,7 @@ export interface GameState {
   setTutorialStep: (step: number) => void;
   selectSpecialization: (specializationId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
+  resolveInteractiveStoryEvent: (choiceIndex: number) => void;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;

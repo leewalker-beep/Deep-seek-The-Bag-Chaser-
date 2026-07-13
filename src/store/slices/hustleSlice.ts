@@ -9,6 +9,7 @@ import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions, processEntertainmentTimelineTick } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
 import { triggerMonthlyNarrativeEvent } from '../../engine/eventEngine';
+import { checkAndGenerateChoiceModal } from '../../engine/legacyStoryEvents';
 
 export { processEntertainmentTimelineTick };
 import { getDominantStat } from '../../utils/endingUtils';
@@ -45,6 +46,7 @@ export interface HustleSlice {
   sabotageRival: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
+  resolveInteractiveStoryEvent: (choiceIndex: number) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
   checkMilestones: () => void;
@@ -2290,6 +2292,96 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
   },
 
+  resolveInteractiveStoryEvent: (choiceIndex) => {
+    const state = get();
+    const event = state.activeModalEvent;
+    if (!event || !event.options || !event.options[choiceIndex]) return;
+
+    const option = event.options[choiceIndex];
+
+    set((s) => {
+      const updatedPlayer = { ...(s.player || s.pl) };
+      updatedPlayer.cash = updatedPlayer.bag;
+      updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
+
+      const stateMutators = {
+        pl: updatedPlayer,
+        player: updatedPlayer,
+        updateCash: (amount: number) => {
+          updatedPlayer.cash = Math.max(0, (updatedPlayer.cash || 0) + amount);
+          updatedPlayer.bag = Math.max(0, updatedPlayer.bag + amount);
+        },
+        updateHeat: (amount: number) => {
+          updatedPlayer.heat = Math.max(0, Math.min(100, updatedPlayer.heat + amount));
+        },
+        updateClout: (amount: number) => {
+          updatedPlayer.clout = Math.max(0, updatedPlayer.clout + amount);
+        },
+        updateAura: (amount: number) => {
+          updatedPlayer.aura = Math.max(0, updatedPlayer.aura + amount);
+        }
+      };
+
+      if (typeof option.effect === 'function') {
+        option.effect(stateMutators);
+      }
+
+      // Format ticker news and append to news feed
+      const newsFeedList = s.newsFeed || [];
+      const updatedFeed = [
+        {
+          id: `${event.id}_option_${choiceIndex}_${Date.now()}`,
+          title: event.title,
+          text: `Selected: ${option.text}`,
+          timestamp: updatedPlayer.age,
+          type: 'NEWS'
+        },
+        ...newsFeedList
+      ];
+
+      const standardTickerNews = [
+        {
+          text: `🎭 DECISION: ${option.text}`,
+          colorClass: 'text-blue-400 font-bold'
+        },
+        ...s.news
+      ];
+
+      // Check death conditions
+      const deathResult = checkDeathConditions(updatedPlayer);
+      let finalPh = s.ph;
+      let finalDeathBadge = s.deathBadge;
+      let finalFatalCause = s.fatalCause;
+
+      if (deathResult.shouldDie) {
+        finalPh = 'POST_MORTEM';
+        finalDeathBadge = 'DEFAULT';
+        finalFatalCause = deathResult.deathCause;
+        updatedPlayer.deathContext = {
+          mentalHealthAtDeath: Math.floor(updatedPlayer.mentalHealth),
+          lastHustleMentalHit: 0,
+          lastHustleName: event.title,
+          heatAtDeath: Math.floor(updatedPlayer.heat),
+          monthsPlayed: updatedPlayer.month,
+          tier: updatedPlayer.currentTier,
+          fatalStat: deathResult.fatalStat,
+          fatalStatValue: deathResult.fatalStatValue
+        };
+      }
+
+      return {
+        pl: updatedPlayer,
+        player: updatedPlayer,
+        news: standardTickerNews.slice(0, 50),
+        newsFeed: updatedFeed.slice(0, 50),
+        activeModalEvent: null,
+        ph: finalPh,
+        deathBadge: finalDeathBadge,
+        fatalCause: finalFatalCause
+      };
+    });
+  },
+
   advanceMonthAction: () => {
     set((state) => {
       // 1. Run your existing monthly value increments/decay logic first
@@ -2309,7 +2401,49 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       advancedPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
       const finalCurrentMarket = advancementResult.newMarket;
 
-      // 2. Generate our narrative or fallback macroeconomic event
+      // 2. Check for active legacy story choice events first!
+      const choiceModal = checkAndGenerateChoiceModal(advancedPl);
+
+      if (choiceModal) {
+        const updatedPlayer = { ...advancedPl };
+        updatedPlayer.cash = updatedPlayer.bag;
+        updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
+
+        // Check for death conditions
+        const deathResult = checkDeathConditions(updatedPlayer);
+        let finalPh = state.ph;
+        let finalDeathBadge = state.deathBadge;
+        let finalFatalCause = state.fatalCause;
+
+        if (deathResult.shouldDie) {
+          finalPh = 'POST_MORTEM';
+          finalDeathBadge = 'DEFAULT';
+          finalFatalCause = deathResult.deathCause;
+          updatedPlayer.deathContext = {
+            mentalHealthAtDeath: Math.floor(updatedPlayer.mentalHealth),
+            lastHustleMentalHit: 0,
+            lastHustleName: 'Monthly Advancement',
+            heatAtDeath: Math.floor(updatedPlayer.heat),
+            monthsPlayed: updatedPlayer.month,
+            tier: updatedPlayer.currentTier,
+            fatalStat: deathResult.fatalStat,
+            fatalStatValue: deathResult.fatalStatValue
+          };
+        }
+
+        return {
+          pl: updatedPlayer,
+          player: updatedPlayer,
+          currentMarket: finalCurrentMarket,
+          news: [...advancementResult.news, ...state.news].slice(0, 50),
+          activeModalEvent: choiceModal,
+          ph: finalPh,
+          deathBadge: finalDeathBadge,
+          fatalCause: finalFatalCause
+        };
+      }
+
+      // Generate our narrative or fallback macroeconomic event
       const monthlyEvent = triggerMonthlyNarrativeEvent(advancedPl);
 
       // 3. Prepare the new player state clone to apply mutations
@@ -2320,6 +2454,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       // Create localized state mutators matching Patch 34's expected context parameters
       const stateMutators = {
+        pl: updatedPlayer,
+        player: updatedPlayer,
         updateCash: (amount: number) => {
           updatedPlayer.cash = Math.max(0, (updatedPlayer.cash || 0) + amount);
           updatedPlayer.bag = Math.max(0, updatedPlayer.bag + amount);
