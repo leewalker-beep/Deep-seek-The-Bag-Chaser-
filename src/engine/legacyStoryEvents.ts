@@ -31,9 +31,9 @@ export const checkAndGenerateChoiceModal = (player: any): InteractiveStoryModal 
       options: [
         {
           text: "💵 Pay the Hush Money (-$25,000, -10 Heat)",
-          requirementCheck: (p) => p.cash >= 25000 || p.bag >= 25000,
+          requirementCheck: (p) => p.bag >= 25000,
           effect: (state) => {
-            state.updateCash(-25000);
+            state.updateBag(-25000);
             state.updateHeat(-10);
             // Access the target NPC via store state lookup to settle the score
             const target = state.player.npcs.find((n: any) => n.id === deliGrudgeNPC.id);

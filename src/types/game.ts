@@ -650,7 +650,6 @@ export interface PersistentNPC {
 export interface PlayerStats {
   runId: string;
   name?: string;
-  cash?: number;
   age?: string;
   worldFeed?: WorldFeedItem[];
   activeLiveEvent?: LiveWorldEvent | null;

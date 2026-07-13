@@ -15,7 +15,7 @@ export const triggerMonthlyNarrativeEvent = (player: any) => {
       description: `${activeRival.name} (${activeRival.avatar}), who remembers your humble beginnings back at the ${activeRival.originHustleId === 'music_label_studio' ? 'studio' : 'streets'}, has leaked altered financial books to short-sellers!`,
       effect: (state: any) => {
         // Adjust values directly against your clean Zustand state mutators
-        state.updateCash(-75000);
+        state.updateBag(-75000);
         state.updateHeat(20);
       }
     };
@@ -39,7 +39,7 @@ export const triggerMonthlyNarrativeEvent = (player: any) => {
     title: "📈 MARKET CORRECTION",
     description: "Standard macroeconomic cyclical adjustments apply to your active retail holdings.",
     effect: (state: any) => {
-      state.updateCash(15000);
+      state.updateBag(15000);
     }
   };
 };

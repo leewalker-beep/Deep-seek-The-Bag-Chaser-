@@ -772,7 +772,20 @@ function App() {
                 if (activeMiniGame === 'ShakeToInfluence') return <ShakeToInfluence onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'PinchToZoom') return <PinchToZoom onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'CryptoLeverage' || activeMiniGame === 'SlotMachine') return <CryptoLeverage onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
-                if (activeMiniGame === 'BioFeedbackRetreat') return <BioFeedbackRetreat level={hustleLevel} onComplete={(healAmount) => onComplete(healAmount >= 50 ? 1.5 : 0.5)} />;
+                if (activeMiniGame === 'BioFeedbackRetreat') {
+                  return (
+                    <BioFeedbackRetreat
+                      level={hustleLevel}
+                      onComplete={(healAmount) => {
+                        const threshold = 30 + (hustleLevel * 5);
+                        onComplete(
+                          healAmount >= threshold ? 1.5 :
+                          healAmount >= threshold * 0.5 ? 1.0 : 0.5
+                        );
+                      }}
+                    />
+                  );
+                }
                 if (activeMiniGame === 'HigherLower') return <HigherLower onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'Blackjack') return <Blackjack onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'Roulette') return <Roulette onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
