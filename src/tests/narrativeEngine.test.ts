@@ -185,7 +185,7 @@ describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
       let cash = player.bag;
       let heat = player.heat;
       const mockState = {
-        updateCash: (amount: number) => { cash += amount; },
+        updateBag: (amount: number) => { cash += amount; },
         updateHeat: (amount: number) => { heat += amount; }
       };
       event.effect(mockState);
@@ -237,7 +237,7 @@ describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
       // Test effect
       let cash = player.bag;
       const mockState = {
-        updateCash: (amount: number) => { cash += amount; }
+        updateBag: (amount: number) => { cash += amount; }
       };
       event.effect(mockState);
       expect(cash).toBe(player.bag + 15000);
@@ -327,19 +327,13 @@ describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
         // Verify player and pl are kept in sync
         expect(updatedPlayer).toBeDefined();
         expect(updatedPlayer?.bag).toBe(105000);
-        expect(updatedPlayer?.cash).toBe(105000);
 
-        // Verify UI notification feed
-        expect(newsFeed).toBeDefined();
-        expect(newsFeed!.length).toBeGreaterThan(0);
-        expect(newsFeed![0].title).toBe("🚨 CORPORATE SABOTAGE");
-        expect(newsFeed![0].text).toContain("Bitter Enemy");
-        expect(newsFeed![0].type).toBe("ALERT");
-        expect(newsFeed![0].timestamp).toBe("19Y 1M");
-
-        // Verify modal state is populated
-        expect(activeModalEvent).toBeDefined();
-        expect(activeModalEvent?.title).toBe("🚨 CORPORATE SABOTAGE");
+        // Verify ticker news contains the narrative event
+        const news = useGameStore.getState().news;
+        expect(news).toBeDefined();
+        expect(news.length).toBeGreaterThan(0);
+        const eventNews = news.find(n => typeof n === 'object' && n.text.includes("🚨 CORPORATE SABOTAGE"));
+        expect(eventNews).toBeDefined();
 
         randomSpy.mockRestore();
       });

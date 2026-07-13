@@ -809,7 +809,7 @@ export function advanceMonth(
                       'text-emerald-400'
         });
         const mockState = {
-          updateCash: (amount: number) => { newPl.bag = Math.max(0, newPl.bag + amount); },
+          updateBag: (amount: number) => { newPl.bag = Math.max(0, newPl.bag + amount); },
           updateHeat: (amount: number) => { newPl.heat = Math.max(0, Math.min(100, newPl.heat + amount)); },
           updateClout: (amount: number) => { newPl.clout = Math.max(0, newPl.clout + amount); },
           updateAura: (amount: number) => { newPl.aura = Math.max(0, newPl.aura + amount); }

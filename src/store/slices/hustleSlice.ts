@@ -8,7 +8,6 @@ import { HUSTLE_BADGES } from '../../config/badges';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions, processEntertainmentTimelineTick } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
-import { triggerMonthlyNarrativeEvent } from '../../engine/eventEngine';
 import { checkAndGenerateChoiceModal } from '../../engine/legacyStoryEvents';
 
 export { processEntertainmentTimelineTick };
@@ -2301,14 +2300,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     set((s) => {
       const updatedPlayer = { ...(s.player || s.pl) };
-      updatedPlayer.cash = updatedPlayer.bag;
       updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
 
       const stateMutators = {
         pl: updatedPlayer,
         player: updatedPlayer,
-        updateCash: (amount: number) => {
-          updatedPlayer.cash = Math.max(0, (updatedPlayer.cash || 0) + amount);
+        updateBag: (amount: number) => {
           updatedPlayer.bag = Math.max(0, updatedPlayer.bag + amount);
         },
         updateHeat: (amount: number) => {
@@ -2394,7 +2391,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         playerToUse,
         state.currentMarket,
         state.unlockedLegacyUpgradeIds,
-        true
+        false
       );
 
       const advancedPl = enforceStatCaps(advancementResult.newPl);
@@ -2406,7 +2403,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       if (choiceModal) {
         const updatedPlayer = { ...advancedPl };
-        updatedPlayer.cash = updatedPlayer.bag;
         updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
 
         // Check for death conditions
@@ -2443,61 +2439,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         };
       }
 
-      // Generate our narrative or fallback macroeconomic event
-      const monthlyEvent = triggerMonthlyNarrativeEvent(advancedPl);
-
       // 3. Prepare the new player state clone to apply mutations
       const updatedPlayer = { ...advancedPl };
-      // Keep cash & bag in sync, also age field
-      updatedPlayer.cash = updatedPlayer.bag;
       updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
-
-      // Create localized state mutators matching Patch 34's expected context parameters
-      const stateMutators = {
-        pl: updatedPlayer,
-        player: updatedPlayer,
-        updateCash: (amount: number) => {
-          updatedPlayer.cash = Math.max(0, (updatedPlayer.cash || 0) + amount);
-          updatedPlayer.bag = Math.max(0, updatedPlayer.bag + amount);
-        },
-        updateHeat: (amount: number) => {
-          updatedPlayer.heat = Math.max(0, Math.min(100, updatedPlayer.heat + amount));
-        },
-        updateClout: (amount: number) => {
-          updatedPlayer.clout = Math.max(0, updatedPlayer.clout + amount);
-        },
-        updateAura: (amount: number) => {
-          updatedPlayer.aura = Math.max(0, updatedPlayer.aura + amount);
-        }
-      };
-
-      // 4. Fire the event's functional payload directly against our state modifiers
-      if (monthlyEvent && typeof monthlyEvent.effect === 'function') {
-        monthlyEvent.effect(stateMutators);
-      }
-
-      // 5. Append the narrative event to the visible UI feed or trigger a popup modal
-      const newsFeedList = state.newsFeed || [];
-      const updatedFeed = [
-        {
-          id: monthlyEvent.id,
-          title: monthlyEvent.title,
-          text: monthlyEvent.description,
-          timestamp: updatedPlayer.age, // Stamped with current age tracker e.g., "21Y 2M"
-          type: monthlyEvent.title.includes('🚨') ? 'ALERT' : 'NEWS'
-        },
-        ...newsFeedList
-      ];
-
-      // Format standard game news as well so existing UI features show this event
-      const standardTickerNews = [
-        {
-          text: `${monthlyEvent.title}: ${monthlyEvent.description}`,
-          colorClass: monthlyEvent.title.includes('🚨') ? 'text-red-400 font-bold' : 'text-emerald-400'
-        },
-        ...advancementResult.news,
-        ...state.news
-      ];
 
       // Check for death conditions
       const deathResult = checkDeathConditions(updatedPlayer);
@@ -2525,9 +2469,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         pl: updatedPlayer,
         player: updatedPlayer,
         currentMarket: finalCurrentMarket,
-        news: standardTickerNews.slice(0, 50),
-        newsFeed: updatedFeed.slice(0, 50), // Keep the feed capped to prevent memory leaks
-        activeModalEvent: monthlyEvent, // Forces a high-priority card popup if your UI supports it
+        news: [...advancementResult.news, ...state.news].slice(0, 50),
         ph: finalPh,
         deathBadge: finalDeathBadge,
         fatalCause: finalFatalCause
