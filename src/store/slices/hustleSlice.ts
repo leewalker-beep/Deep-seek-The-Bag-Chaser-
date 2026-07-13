@@ -2324,6 +2324,37 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         nextPl.activeSpecializationId = cons.specializationLock;
     }
 
+    // Create Consequence(s) from choice
+    if (choice.createConsequences) {
+      if (!nextPl.consequences) nextPl.consequences = [];
+      nextPl.consequences.push(...choice.createConsequences);
+    }
+
+    // Modify Consequence(s) from choice
+    if (choice.modifyConsequences) {
+      nextPl.consequences = (nextPl.consequences || []).map(c => {
+        const mod = choice.modifyConsequences?.find(m => m.source === c.source);
+        if (mod) {
+          const updated = { ...c };
+          if (mod.delay !== undefined) updated.delay = mod.delay;
+          if (mod.expiry !== undefined) updated.expiry = mod.expiry;
+          if (mod.severity !== undefined) updated.severity = mod.severity;
+          return updated;
+        }
+        return c;
+      });
+    }
+
+    // Resolve Consequence(s) from choice
+    if (choice.resolveConsequences) {
+      nextPl.consequences = (nextPl.consequences || []).map(c => {
+        if (choice.resolveConsequences?.includes(c.source)) {
+          return { ...c, status: 'resolved' as const };
+        }
+        return c;
+      }).filter(c => c.status !== 'resolved');
+    }
+
     // Clean up
     nextPl.activeNarrative = null;
     if (!nextPl.completedNarrativeEvents) nextPl.completedNarrativeEvents = [];

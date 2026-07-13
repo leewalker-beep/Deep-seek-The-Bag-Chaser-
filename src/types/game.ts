@@ -363,6 +363,20 @@ export interface Challenge {
   monthsRemaining: number;
 }
 
+export interface Consequence {
+  id: string;
+  source: string; // unique identifier/source e.g., "sabotage_retaliation"
+  triggerCondition: string; // descriptive condition under which it triggers
+  delay: number; // months remaining until it triggers/activates
+  severity: 'minor' | 'moderate' | 'severe' | 'extreme';
+  expiry: number; // months remaining once activated (negative for permanent)
+  affectedSystems: string[]; // systems affected, e.g. ["businesses", "real_estate", "politics", "clout", "aura", "mental_health"]
+  status: 'pending' | 'active' | 'resolved' | 'expired';
+  description: string; // user-visible explanation of the active/impending consequence
+  effectModifier?: Record<string, number>; // numeric adjustments (e.g. { yieldCashMult: 0.75 })
+  newsTemplates?: string[]; // news feed messages
+}
+
 export interface NarrativeChoice {
   id: string;
   label: string;
@@ -385,6 +399,9 @@ export interface NarrativeChoice {
     background?: string[];
     specialization?: string[];
   };
+  createConsequences?: Consequence[];
+  modifyConsequences?: { source: string; delay?: number; expiry?: number; severity?: 'minor' | 'moderate' | 'severe' | 'extreme' }[];
+  resolveConsequences?: string[]; // source names to resolve
 }
 
 export type NarrativePacingCategory = 'MAJOR' | 'CHARACTER' | 'RIVAL' | 'PRESIDENCY';
@@ -678,6 +695,7 @@ export interface PlayerStats {
   name?: string;
   age?: string;
   worldFeed?: WorldFeedItem[];
+  consequences?: Consequence[];
   activeLiveEvent?: LiveWorldEvent | null;
   completedLiveEvents?: string[];
   avatarId: string;

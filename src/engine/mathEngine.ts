@@ -8,6 +8,7 @@ import { WORLD_EVENTS } from '../config/worldEvents';
 import { getMasteryCount } from '../utils/masteryUtils';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { SPECIALIZATIONS } from '../config/specializations';
+import { getConsequenceMultiplier } from './consequenceEngine';
 
 interface SynergyContext {
   backgroundId: string;
@@ -403,6 +404,26 @@ export function calculateHustleStatsAdditive(
   // --- Clamp Clout/Aura yields ---
   effectiveResult.yieldClout = Math.floor(Math.max(0, Math.min(1000, effectiveResult.yieldClout)));
   effectiveResult.yieldAura = Math.floor(Math.max(0, Math.min(1000, effectiveResult.yieldAura)));
+
+  // --- Consequence Multipliers ---
+  const sector = HUSTLE_SECTORS[hustleId];
+  const consCashMult = sector === 'Real Estate'
+    ? getConsequenceMultiplier(player, 'real_estate', 'rentMult', 1.0)
+    : getConsequenceMultiplier(player, 'businesses', 'yieldCashMult', 1.0);
+
+  const consCloutMult = getConsequenceMultiplier(player, 'clout', 'cloutGainMult', 1.0);
+  const consAuraMult = getConsequenceMultiplier(player, 'aura', 'auraGainMult', 1.0);
+  const consMentalMult = getConsequenceMultiplier(player, 'mental_health', 'mentalHitMult', 1.0);
+  const consHeatMult = getConsequenceMultiplier(player, 'heat', 'heatGainMult', 1.0);
+
+  effectiveResult.yieldCash = Math.floor(effectiveResult.yieldCash * consCashMult);
+  effectiveResult.yieldClout = Math.floor(effectiveResult.yieldClout * consCloutMult);
+  effectiveResult.yieldAura = Math.floor(effectiveResult.yieldAura * consAuraMult);
+
+  if (effectiveResult.mentalHit < 0) {
+    effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * consMentalMult);
+  }
+  effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * consHeatMult);
 
   return effectiveResult;
 }

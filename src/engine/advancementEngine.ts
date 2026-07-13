@@ -16,6 +16,7 @@ import * as Bio from './biographyEngine';
 import { evolveWorldNPCs } from '../utils/narrativeEngine';
 import { triggerMonthlyNarrativeEvent } from './eventEngine';
 import { simulateRivals } from './rivalSimEngine';
+import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier, isConsequenceActive } from './consequenceEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -104,9 +105,25 @@ export function advanceMonth(
   skipNarrativeEvent: boolean = false
 ): AdvancementResult {
   const news: (string | TickerMessage)[] = [];
-  const newPl = { ...pl };
+  let newPl = { ...pl };
   newPl.isIncarcerated = newPl.inJail;
   let newMarket = currentMarket;
+
+  // Process Consequences
+  newPl = detectAndCreateConsequences(newPl, news);
+  newPl = tickConsequences(newPl, news);
+
+  // Apply active monthly stat updates from consequences
+  if (isConsequenceActive(newPl, 'sabotage_retaliation')) {
+    newPl.clout = Math.max(0, newPl.clout - 15);
+    newPl.aura = Math.max(0, newPl.aura - 15);
+    newPl.approvalRating = Math.max(0, newPl.approvalRating - 2);
+  }
+  if (isConsequenceActive(newPl, 'philanthropic_halo')) {
+    newPl.clout = Math.min(10000, newPl.clout + 10);
+    newPl.aura = Math.min(10000, newPl.aura + 20);
+    newPl.approvalRating = Math.min(100, newPl.approvalRating + 1.5);
+  }
 
   // Calculate rent based on tier
   const rent = rentByTier[newPl.currentTier];
@@ -159,6 +176,10 @@ export function advanceMonth(
         }
       }
 
+      // Apply consequence multipliers to business yields
+      const bizMult = getConsequenceMultiplier(newPl, 'businesses', 'yieldCashMult', 1.0);
+      yieldAmount = Math.floor(yieldAmount * bizMult);
+
       baseTotal += yieldAmount;
       sources.push({
         id: hustleId,
@@ -185,6 +206,10 @@ export function advanceMonth(
     if (activeWorldEvent && activeWorldEvent.sectorModifiers['Real Estate']) {
         yieldAmount = Math.floor(yieldAmount * (1 + activeWorldEvent.sectorModifiers['Real Estate']!));
     }
+
+    // Apply consequence multipliers to real estate yields
+    const rentMult = getConsequenceMultiplier(newPl, 'real_estate', 'rentMult', 1.0);
+    yieldAmount = Math.floor(yieldAmount * rentMult);
 
     baseTotal += yieldAmount;
     sources.push({

@@ -3,6 +3,7 @@ import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath, getEffectiveHustleStats, LEVEL_MULTIPLIERS } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
+import { isConsequenceActive } from './consequenceEngine';
 
 export interface HustleExecutionResult {
   success: boolean;
@@ -629,7 +630,8 @@ export const executeHustleAction = (
   // --- Careless Mistakes based on Stress ---
   const stressChance = (100 - state.mentalHealth) * 0.002; // Up to 20% chance of a slip-up
   const finalTickerMessages = [...(result.tickerMessages || [])];
-  if (result.success && Math.random() < stressChance) {
+  const isImmune = isConsequenceActive(state, 'burnout_immunity');
+  if (result.success && Math.random() < stressChance && !isImmune) {
     const penaltyAmount = 100 * currentLevel;
     effective.yieldCash = Math.max(0, effective.yieldCash - penaltyAmount);
     effective.heatHit += 10;
