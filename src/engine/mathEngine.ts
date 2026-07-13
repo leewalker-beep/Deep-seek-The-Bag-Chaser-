@@ -345,18 +345,59 @@ export function calculateHustleStatsAdditive(
   effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * finalMentalMult);
   effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * finalHeatMult);
 
+  // --- Enduring Background Modifiers ---
+  let bgYieldBonus = 0;
+  if (player.chosenBackgroundCategory === 'dropout') {
+    const isDropoutSector = ['venture_capital', 'techFlip', 'media_empire', 'film_studio', 'saas_mvp', 'drop'].includes(hustleId);
+    if (isDropoutSector) {
+      bgYieldBonus += 0.15;
+    }
+  }
+  if (player.chosenBackground === 'lc_chosen') {
+    bgYieldBonus += 0.10;
+  }
+  if (player.chosenBackgroundCategory === 'street_kid') {
+    if (hustleId === 'r_sleep' || hustleId === 'power_nap') {
+      if (effectiveResult.mentalHit > 0) {
+        effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.15);
+      }
+    }
+  }
+
+  // --- Specialization Sector Matching ---
+  let specMatchingBonus = 1.0;
+  if (player.activeSpecializationId) {
+    const sector = HUSTLE_SECTORS[hustleId];
+    if (sector) {
+      if (player.activeSpecializationId === 'institutional' && (sector === 'Finance' || sector === 'Real Estate')) specMatchingBonus = 1.10;
+      if (player.activeSpecializationId === 'influencer' && (sector === 'Entertainment' || sector === 'Retail')) specMatchingBonus = 1.10;
+      if (player.activeSpecializationId === 'shadow' && (sector === 'Technology' || sector === 'Transport')) specMatchingBonus = 1.10;
+      if (player.activeSpecializationId === 'vanguard' && sector === 'Technology') specMatchingBonus = 1.10;
+    }
+  }
+
+  // --- Campaign Cost Rebate based on Clout ---
+  if (hustleId === 'president_campaign') {
+    const cloutRebate = Math.min(0.25, player.clout / 40000);
+    effectiveResult.cost = Math.floor(effectiveResult.cost * (1 - cloutRebate));
+  }
+
   // --- Centralized Cash Yield Linear Multiplier ---
   const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
   const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
 
-  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus;
-  effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * totalMultiplier));
+  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus;
+
+  // Stress / Mental Health work efficiency impact
+  const efficiencyMult = player.mentalHealth < 50 ? 0.75 + 0.25 * (player.mentalHealth / 50) : 1.0;
+
+  effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * totalMultiplier * specMatchingBonus * efficiencyMult));
 
   // --- Centralized Clout/Aura Yield Linear Multiplier ---
-  const totalCloutMultiplier = 1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus;
+  const totalCloutMultiplier = (1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus) * specMatchingBonus * efficiencyMult;
   effectiveResult.yieldClout = Math.max(0, Math.floor(result.yieldClout * totalCloutMultiplier));
 
-  const totalAuraMultiplier = 1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus;
+  const totalAuraMultiplier = (1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus) * specMatchingBonus * efficiencyMult;
   effectiveResult.yieldAura = Math.max(0, Math.floor(result.yieldAura * totalAuraMultiplier));
 
   // --- Clamp Clout/Aura yields ---
