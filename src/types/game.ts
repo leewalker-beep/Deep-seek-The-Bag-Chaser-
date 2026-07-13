@@ -650,6 +650,8 @@ export interface PersistentNPC {
 export interface PlayerStats {
   runId: string;
   name?: string;
+  cash?: number;
+  age?: string;
   worldFeed?: WorldFeedItem[];
   activeLiveEvent?: LiveWorldEvent | null;
   completedLiveEvents?: string[];
@@ -875,6 +877,10 @@ import { type HeroArtwork } from '../config/heroArtwork';
 
 export interface GameState {
   pl: PlayerStats;
+  player?: PlayerStats;
+  newsFeed?: any[];
+  activeModalEvent?: any;
+  advanceMonthAction?: () => void;
   ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP';
   currentMarket: MarketType;
   news: (string | TickerMessage)[];

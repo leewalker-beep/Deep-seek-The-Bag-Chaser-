@@ -4,6 +4,7 @@ import type { PersistentNPC } from '../types/game';
 import { advanceMonth } from '../engine/advancementEngine';
 import { getInitialStats } from '../store/initialState';
 import { triggerMonthlyNarrativeEvent } from '../engine/eventEngine';
+import { useGameStore } from '../store/gameStore';
 
 describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
   it('should naturally drift relationship disposition and reputation over time', () => {
@@ -274,6 +275,74 @@ describe('Lifespan Evolution Engine (evolveWorldNPCs)', () => {
 
       const newsTexts = result.news.map(n => typeof n === 'string' ? n : n.text);
       expect(newsTexts.some(text => text.includes("🚨 CORPORATE SABOTAGE"))).toBe(true);
+    });
+
+    describe('Patch 35: advanceMonthAction', () => {
+      it('should execute advanceMonthAction to trigger narrative events directly on game state and populate UI feeds', () => {
+        const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+        const player = getInitialStats(3, undefined, undefined, undefined, []);
+        player.currentTier = 'CORPORATE';
+        player.npcs = [
+          {
+            id: 'rival_1',
+            name: 'Bitter Enemy',
+            avatar: '👺',
+            reputation: 50,
+            disposition: -50,
+            currentRole: 'RIVAL',
+            interactionLog: [],
+            originHustleId: 'music_label_studio'
+          }
+        ];
+        player.bag = 200000;
+        player.heat = 10;
+        player.month = 12;
+
+        useGameStore.setState({
+          pl: player,
+          player: player,
+          currentMarket: 'NORMAL',
+          news: [],
+          newsFeed: []
+        });
+
+        const { advanceMonthAction } = useGameStore.getState();
+        expect(advanceMonthAction).toBeDefined();
+
+        advanceMonthAction();
+
+        const updatedPl = useGameStore.getState().pl;
+        const updatedPlayer = useGameStore.getState().player;
+        const newsFeed = useGameStore.getState().newsFeed;
+        const activeModalEvent = useGameStore.getState().activeModalEvent;
+
+        // Sabotage event: -$75,000 cash, +20 heat
+        // Corporate Tier Rent: -$20,000
+        // Net cash: 200000 - 75000 - 20000 = 105000
+        // Net heat: 10 + 20 - 10 heat decay = 20
+        expect(updatedPl.bag).toBe(105000);
+        expect(updatedPl.heat).toBe(20);
+
+        // Verify player and pl are kept in sync
+        expect(updatedPlayer).toBeDefined();
+        expect(updatedPlayer?.bag).toBe(105000);
+        expect(updatedPlayer?.cash).toBe(105000);
+
+        // Verify UI notification feed
+        expect(newsFeed).toBeDefined();
+        expect(newsFeed!.length).toBeGreaterThan(0);
+        expect(newsFeed![0].title).toBe("🚨 CORPORATE SABOTAGE");
+        expect(newsFeed![0].text).toContain("Bitter Enemy");
+        expect(newsFeed![0].type).toBe("ALERT");
+        expect(newsFeed![0].timestamp).toBe("19Y 1M");
+
+        // Verify modal state is populated
+        expect(activeModalEvent).toBeDefined();
+        expect(activeModalEvent?.title).toBe("🚨 CORPORATE SABOTAGE");
+
+        randomSpy.mockRestore();
+      });
     });
   });
 });

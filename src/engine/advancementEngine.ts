@@ -99,7 +99,8 @@ export function checkDeathConditions(pl: PlayerStats): {
 export function advanceMonth(
   pl: PlayerStats,
   currentMarket: MarketType,
-  unlockedLegacyUpgrades: string[] = []
+  unlockedLegacyUpgrades: string[] = [],
+  skipNarrativeEvent: boolean = false
 ): AdvancementResult {
   const news: (string | TickerMessage)[] = [];
   const newPl = { ...pl };
@@ -793,26 +794,28 @@ export function advanceMonth(
   }
 
   // Trigger Patch 34 historical callback narrative events/news alerts
-  const monthlyEvent = triggerMonthlyNarrativeEvent(newPl);
-  if (monthlyEvent) {
-    const isSpecialEvent = !monthlyEvent.id.startsWith('evt_generic_market_');
-    const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
-    const shouldTriggerGeneric = !isTestEnv && Math.random() < 0.05; // 5% chance in real gameplay
+  if (!skipNarrativeEvent) {
+    const monthlyEvent = triggerMonthlyNarrativeEvent(newPl);
+    if (monthlyEvent) {
+      const isSpecialEvent = !monthlyEvent.id.startsWith('evt_generic_market_');
+      const isTestEnv = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
+      const shouldTriggerGeneric = !isTestEnv && Math.random() < 0.05; // 5% chance in real gameplay
 
-    if (isSpecialEvent || shouldTriggerGeneric) {
-      news.push({
-        text: `${monthlyEvent.title}: ${monthlyEvent.description}`,
-        colorClass: monthlyEvent.title.includes('SABOTAGE') ? 'text-red-400 font-bold' :
-                    monthlyEvent.title.includes('LOCKED') ? 'text-yellow-400 font-bold' :
-                    'text-emerald-400'
-      });
-      const mockState = {
-        updateCash: (amount: number) => { newPl.bag = Math.max(0, newPl.bag + amount); },
-        updateHeat: (amount: number) => { newPl.heat = Math.max(0, Math.min(100, newPl.heat + amount)); },
-        updateClout: (amount: number) => { newPl.clout = Math.max(0, newPl.clout + amount); },
-        updateAura: (amount: number) => { newPl.aura = Math.max(0, newPl.aura + amount); }
-      };
-      monthlyEvent.effect(mockState);
+      if (isSpecialEvent || shouldTriggerGeneric) {
+        news.push({
+          text: `${monthlyEvent.title}: ${monthlyEvent.description}`,
+          colorClass: monthlyEvent.title.includes('SABOTAGE') ? 'text-red-400 font-bold' :
+                      monthlyEvent.title.includes('LOCKED') ? 'text-yellow-400 font-bold' :
+                      'text-emerald-400'
+        });
+        const mockState = {
+          updateCash: (amount: number) => { newPl.bag = Math.max(0, newPl.bag + amount); },
+          updateHeat: (amount: number) => { newPl.heat = Math.max(0, Math.min(100, newPl.heat + amount)); },
+          updateClout: (amount: number) => { newPl.clout = Math.max(0, newPl.clout + amount); },
+          updateAura: (amount: number) => { newPl.aura = Math.max(0, newPl.aura + amount); }
+        };
+        monthlyEvent.effect(mockState);
+      }
     }
   }
 

@@ -8,6 +8,7 @@ import { HUSTLE_BADGES } from '../../config/badges';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions, processEntertainmentTimelineTick } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
+import { triggerMonthlyNarrativeEvent } from '../../engine/eventEngine';
 
 export { processEntertainmentTimelineTick };
 import { getDominantStat } from '../../utils/endingUtils';
@@ -30,6 +31,7 @@ import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 
 export interface HustleSlice {
   unlockedHustles: Record<string, boolean>;
+  advanceMonthAction?: () => void;
 
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => HustleExecutionResult;
   executeHustleWithTimelineTick: (hustleId: string, branchId: string) => { success: boolean; message: string };
@@ -2286,6 +2288,115 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
+  },
+
+  advanceMonthAction: () => {
+    set((state) => {
+      // 1. Run your existing monthly value increments/decay logic first
+      // (e.g., aging the player, updating passive yields, evolving NPCs)
+      const playerToUse = state.player || state.pl;
+      if (!playerToUse) return {};
+
+      // Calculate new advanced month/rent/passive yield etc.
+      const advancementResult = advanceMonth(
+        playerToUse,
+        state.currentMarket,
+        state.unlockedLegacyUpgradeIds,
+        true
+      );
+
+      const advancedPl = enforceStatCaps(advancementResult.newPl);
+      advancedPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+      const finalCurrentMarket = advancementResult.newMarket;
+
+      // 2. Generate our narrative or fallback macroeconomic event
+      const monthlyEvent = triggerMonthlyNarrativeEvent(advancedPl);
+
+      // 3. Prepare the new player state clone to apply mutations
+      const updatedPlayer = { ...advancedPl };
+      // Keep cash & bag in sync, also age field
+      updatedPlayer.cash = updatedPlayer.bag;
+      updatedPlayer.age = `${Math.floor(updatedPlayer.month / 12) + 18}Y ${updatedPlayer.month % 12}M`;
+
+      // Create localized state mutators matching Patch 34's expected context parameters
+      const stateMutators = {
+        updateCash: (amount: number) => {
+          updatedPlayer.cash = Math.max(0, (updatedPlayer.cash || 0) + amount);
+          updatedPlayer.bag = Math.max(0, updatedPlayer.bag + amount);
+        },
+        updateHeat: (amount: number) => {
+          updatedPlayer.heat = Math.max(0, Math.min(100, updatedPlayer.heat + amount));
+        },
+        updateClout: (amount: number) => {
+          updatedPlayer.clout = Math.max(0, updatedPlayer.clout + amount);
+        },
+        updateAura: (amount: number) => {
+          updatedPlayer.aura = Math.max(0, updatedPlayer.aura + amount);
+        }
+      };
+
+      // 4. Fire the event's functional payload directly against our state modifiers
+      if (monthlyEvent && typeof monthlyEvent.effect === 'function') {
+        monthlyEvent.effect(stateMutators);
+      }
+
+      // 5. Append the narrative event to the visible UI feed or trigger a popup modal
+      const newsFeedList = state.newsFeed || [];
+      const updatedFeed = [
+        {
+          id: monthlyEvent.id,
+          title: monthlyEvent.title,
+          text: monthlyEvent.description,
+          timestamp: updatedPlayer.age, // Stamped with current age tracker e.g., "21Y 2M"
+          type: monthlyEvent.title.includes('🚨') ? 'ALERT' : 'NEWS'
+        },
+        ...newsFeedList
+      ];
+
+      // Format standard game news as well so existing UI features show this event
+      const standardTickerNews = [
+        {
+          text: `${monthlyEvent.title}: ${monthlyEvent.description}`,
+          colorClass: monthlyEvent.title.includes('🚨') ? 'text-red-400 font-bold' : 'text-emerald-400'
+        },
+        ...advancementResult.news,
+        ...state.news
+      ];
+
+      // Check for death conditions
+      const deathResult = checkDeathConditions(updatedPlayer);
+      let finalPh = state.ph;
+      let finalDeathBadge = state.deathBadge;
+      let finalFatalCause = state.fatalCause;
+
+      if (deathResult.shouldDie) {
+        finalPh = 'POST_MORTEM';
+        finalDeathBadge = 'DEFAULT';
+        finalFatalCause = deathResult.deathCause;
+        updatedPlayer.deathContext = {
+          mentalHealthAtDeath: Math.floor(updatedPlayer.mentalHealth),
+          lastHustleMentalHit: 0,
+          lastHustleName: 'Monthly Advancement',
+          heatAtDeath: Math.floor(updatedPlayer.heat),
+          monthsPlayed: updatedPlayer.month,
+          tier: updatedPlayer.currentTier,
+          fatalStat: deathResult.fatalStat,
+          fatalStatValue: deathResult.fatalStatValue
+        };
+      }
+
+      return {
+        pl: updatedPlayer,
+        player: updatedPlayer,
+        currentMarket: finalCurrentMarket,
+        news: standardTickerNews.slice(0, 50),
+        newsFeed: updatedFeed.slice(0, 50), // Keep the feed capped to prevent memory leaks
+        activeModalEvent: monthlyEvent, // Forces a high-priority card popup if your UI supports it
+        ph: finalPh,
+        deathBadge: finalDeathBadge,
+        fatalCause: finalFatalCause
+      };
+    });
   },
 });
 
