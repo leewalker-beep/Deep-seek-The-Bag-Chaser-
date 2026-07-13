@@ -1,4 +1,4 @@
-import { PersistentNPC } from '../types/game';
+import type { PersistentNPC } from '../types/game';
 
 export const triggerMonthlyNarrativeEvent = (player: any) => {
   const npcs: PersistentNPC[] = player.npcs || [];

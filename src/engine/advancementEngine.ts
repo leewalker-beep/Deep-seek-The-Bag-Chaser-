@@ -798,7 +798,7 @@ export function advanceMonth(
     const monthlyEvent = triggerMonthlyNarrativeEvent(newPl);
     if (monthlyEvent) {
       const isSpecialEvent = !monthlyEvent.id.startsWith('evt_generic_market_');
-      const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+      const isTestEnv = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
       const shouldTriggerGeneric = !isTestEnv && Math.random() < 0.05; // 5% chance in real gameplay
 
       if (isSpecialEvent || shouldTriggerGeneric) {
