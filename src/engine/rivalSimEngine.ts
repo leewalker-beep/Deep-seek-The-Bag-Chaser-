@@ -1,4 +1,5 @@
 import type { Rival, PlayerStats, MarketType } from '../types/game';
+import { isConsequenceActive } from './consequenceEngine';
 
 // Helper to pick a random item from an array
 const randomChoice = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -267,8 +268,15 @@ export const simulateRivals = (
     }
 
     // --- 4. REACTIVE PLAYER MEMORY & GRUDGES ---
+    const isRetaliationActive = isConsequenceActive(pl, 'sabotage_retaliation');
+    const isHaloActive = isConsequenceActive(pl, 'philanthropic_halo');
+
     // Sabotage retaliation logic
-    if (r.sabotagedCount! > 0 && Math.random() < (0.2 + r.aggression! * 0.15)) {
+    let sabotageChance = (0.2 + r.aggression! * 0.15);
+    if (isRetaliationActive) sabotageChance *= 1.5;
+    if (isHaloActive) sabotageChance *= 0.5;
+
+    if (r.sabotagedCount! > 0 && Math.random() < sabotageChance) {
       r.relationshipWithPlayer = Math.max(-100, r.relationshipWithPlayer! - 5);
       const retaliations = ['POACH_REVENUE', 'TALK_RUMOURS', 'DIRECT_SABOTAGE'];
       const act = randomChoice(retaliations);
@@ -317,7 +325,10 @@ export const simulateRivals = (
 
     // Bidding behavior logic using standard system
     let currentBid = 0;
-    const bidChance = 0.05 * (r.vengeance ?? 1);
+    let bidChance = 0.05 * (r.vengeance ?? 1);
+    if (isRetaliationActive) bidChance *= 1.5;
+    if (isHaloActive) bidChance *= 0.5;
+
     if (r.tier === pl.currentTier && Math.random() < bidChance) {
       currentBid = Math.floor(r.netWorth * (0.05 + Math.random() * 0.1));
       news.push(`⚠️ RIVAL ALERT: ${r.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`);
