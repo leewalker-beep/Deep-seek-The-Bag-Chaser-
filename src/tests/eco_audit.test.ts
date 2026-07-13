@@ -18,6 +18,10 @@ describe('Economy-Wide Multiplier Audit', () => {
     } as any;
   });
 
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('runs the eco-audit and verifies that payouts use clean linear accumulation', () => {
     console.log("=== 📊 MASTER ECONOMY MULTIPLIER AUDIT LOG ===");
 

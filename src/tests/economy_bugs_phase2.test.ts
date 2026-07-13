@@ -73,7 +73,9 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         tierBadges: [],
         streak: 0,
         rivalThreats: {},
-        activeSentiment: null
+        activeSentiment: null,
+        activeWorldEvent: null,
+        marketLeaderTiers: []
       }
     }));
     const resultNoBonus = executeHustle('r_labor', 1, true);
@@ -96,7 +98,9 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         tierBadges: [],
         streak: 0,
         rivalThreats: {},
-        activeSentiment: null
+        activeSentiment: null,
+        activeWorldEvent: null,
+        marketLeaderTiers: []
       }
     }));
     const resultSomeBonus = executeHustle('r_labor', 1, true);
@@ -120,7 +124,9 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         tierBadges: [],
         streak: 0,
         rivalThreats: {},
-        activeSentiment: null
+        activeSentiment: null,
+        activeWorldEvent: null,
+        marketLeaderTiers: []
       }
     }));
 

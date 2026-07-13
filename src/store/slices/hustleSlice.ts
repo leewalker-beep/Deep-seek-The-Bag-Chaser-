@@ -2129,7 +2129,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       ...state.pl,
       bag: state.pl.bag - cost,
       rivals: state.pl.rivals.map(r =>
-        r.id === rivalId ? { ...r, netWorth: Math.floor(r.netWorth * 0.4) } : r
+        r.id === rivalId ? {
+          ...r,
+          netWorth: Math.floor(r.netWorth * 0.4),
+          relationshipWithPlayer: Math.max(-100, (r.relationshipWithPlayer ?? 0) - 20)
+        } : r
       )
     });
 
@@ -2174,14 +2178,22 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
           ...r,
           netWorth: Math.floor(r.netWorth * 0.8),
           lastSabotagedMonth: state.pl.month,
-          vengeance: (r.vengeance || 1) + 1
+          vengeance: (r.vengeance || 1) + 1,
+          sabotagedCount: (r.sabotagedCount ?? 0) + 1,
+          relationshipWithPlayer: Math.max(-100, (r.relationshipWithPlayer ?? 0) - 30)
         } : r
       );
       nextPl.aura += 50;
       get().addTickerMessage(`🎯 SABOTAGE SUCCESS: ${rival.name}'s operations disrupted! Net worth -20%.`, "text-emerald-400 font-bold");
     } else {
       nextPl.rivals = nextPl.rivals.map(r =>
-        r.id === rivalId ? { ...r, lastSabotagedMonth: state.pl.month, vengeance: (r.vengeance || 1) + 0.5 } : r
+        r.id === rivalId ? {
+          ...r,
+          lastSabotagedMonth: state.pl.month,
+          vengeance: (r.vengeance || 1) + 0.5,
+          sabotagedCount: (r.sabotagedCount ?? 0) + 1,
+          relationshipWithPlayer: Math.max(-100, (r.relationshipWithPlayer ?? 0) - 15)
+        } : r
       );
       nextPl.heat += 25;
       nextPl.aura -= 100;
@@ -2190,6 +2202,43 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     set({ pl: enforceStatCaps(nextPl) });
     get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_SABOTAGE', rivalId, success, cost });
+  },
+
+  helpRival: (rivalId: string) => {
+    const state = get();
+    const rival = state.pl.rivals.find(r => r.id === rivalId);
+    if (!rival) return;
+
+    // Cost to help/partner scales based on the tier
+    const costs: Record<string, number> = {
+      MUD: 1000, STREET: 10000, STARTUP: 100000, CORPORATE: 1000000, ELITE: 10000000, MOGUL: 20000000, PRESIDENT: 50000000, OPEN: 100000000
+    };
+    const cost = costs[rival.tier] || 10000;
+
+    if (state.pl.bag < cost) {
+      get().addTickerMessage(`Need $${cost.toLocaleString()} to partner with ${rival.name}!`, "text-red-400");
+      return;
+    }
+
+    const nextPl = enforceStatCaps({
+      ...state.pl,
+      bag: state.pl.bag - cost,
+      aura: state.pl.aura + 25,
+      rivals: state.pl.rivals.map(r =>
+        r.id === rivalId ? {
+          ...r,
+          helpedCount: (r.helpedCount ?? 0) + 1,
+          relationshipWithPlayer: Math.min(100, (r.relationshipWithPlayer ?? 0) + 25)
+        } : r
+      )
+    });
+
+    set({
+      pl: nextPl,
+      news: [{ text: `🤝 PARTNERSHIP ESTABLISHED: You backed ${rival.name}'s strategy with a $${cost.toLocaleString()} seed loan. Relationship surged!`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'INVESTMENT_MADE', cost });
   },
 
   counterBid: (rivalId) => {

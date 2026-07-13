@@ -413,7 +413,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.3 }}
               whileHover={{ opacity: 0.8 }}
-              onClick={() => setPh('ch1_intro')}
+              onClick={() => setPh('character_select')}
               className="text-[9px] uppercase tracking-widest text-slate-500 font-bold hover:text-white transition-all pt-12"
             >
               Skip Prologue →
