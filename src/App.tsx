@@ -85,6 +85,7 @@ import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
 import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { LiveWorldEventModal } from './components/LiveWorldEventModal';
+import { InteractiveStoryModal } from './components/InteractiveStoryModal';
 import { EndgameSummary } from './components/EndgameSummary';
 
 // Heavy Screens
@@ -1144,6 +1145,7 @@ function App() {
       <SpecializationModal />
       <NarrativeEventModal />
       <LiveWorldEventModal />
+      <InteractiveStoryModal />
 
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />
