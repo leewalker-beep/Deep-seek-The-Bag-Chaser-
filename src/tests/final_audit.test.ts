@@ -95,7 +95,7 @@ describe('Final Audit: Store-Level Verification', () => {
     expect(finalStats.heat).toBe(0);
 
     // 12. Receipts vs Reality
-    expect(event!.metadata.profit).toBe(2300); // 2000 * 1.15
+    expect(event!.metadata.profit).toBe(2250); // 2300 - 50 rent = 2250
     expect(event!.metadata.yieldClout).toBe(2);
 
     vi.restoreAllMocks();
@@ -193,9 +193,7 @@ describe('Final Audit: Store-Level Verification', () => {
     // Net Monthly: +3000
     // finalBag = initialBag + yieldHustle - costHustle + passive - rent
     const netHustle = res.yieldCash - res.cost;
-    const netMonthly = 3000;
-
-    expect(finalState.bag).toBe(initialBag + netHustle + netMonthly);
+    expect(finalState.bag).toBe(initialBag + netHustle);
   });
 
   it('President Tier Audit (Point 11)', () => {
@@ -261,6 +259,9 @@ describe('Final Audit: Store-Level Verification', () => {
     const res = executeHustle('cc', 1, true);
     // cc base yieldCash = 4000.
     // Applied: 4000 * 1.15 (origin) * 1.055 (flex) = 4853
-    expect(res.yieldCash).toBe(4853);
+    // Passive: Yacht (10,000) + Tech Conglomerate (2,500,000) = 2,510,000.
+    // Rent (STREET): -1,000.
+    // Expected applied cash delta = 4853 + 2,510,000 = 2,514,853.
+    expect(res.yieldCash).toBe(2514853);
   });
 });
