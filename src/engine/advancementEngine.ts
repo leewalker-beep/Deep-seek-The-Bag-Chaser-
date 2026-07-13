@@ -15,6 +15,7 @@ import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
 import { evolveWorldNPCs } from '../utils/narrativeEngine';
 import { triggerMonthlyNarrativeEvent } from './eventEngine';
+import { simulateRivals } from './rivalSimEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -458,28 +459,42 @@ export function advanceMonth(
     newPl.heat = Math.max(0, newPl.heat - heatDecay);
   }
 
-  // Rival AI Updates
+  // Rival AI Updates (Simulated via new robust emergent rivalSimEngine)
   if (newPl.rivals) {
     newPl.rivalThreats = {};
-    newPl.rivals = newPl.rivals.map(rival => {
-      // Tiered growth rates
-      const growthMult = {
-        MUD: 0.04,
-        STREET: 0.05,
-        STARTUP: 0.06,
-        CORPORATE: 0.07,
-        ELITE: 0.08,
-        MOGUL: 0.10,
-        PRESIDENT: 0.12,
-        OPEN: 0.15
-      }[rival.tier] || 0.05;
+    const simResult = simulateRivals(newPl, currentMarket);
 
-      // Net worth fluctuations (-2% to growthMult)
-      const fluctuation = 1 + (Math.random() * (growthMult + 0.02) - 0.02);
-      const newNetWorth = Math.floor(rival.netWorth * fluctuation);
+    // Apply simulated changes to rivals list
+    newPl.rivals = simResult.updatedRivals;
 
-      // Update threat level
-      const ratio = newNetWorth / Math.max(1, newPl.bag);
+    // Apply player updates from the rival interactions
+    if (simResult.playerStatsUpdates.bag !== undefined) {
+      newPl.bag = Math.max(0, simResult.playerStatsUpdates.bag);
+    }
+    if (simResult.playerStatsUpdates.heat !== undefined) {
+      newPl.heat = Math.max(0, Math.min(100, simResult.playerStatsUpdates.heat));
+    }
+    if (simResult.playerStatsUpdates.aura !== undefined) {
+      newPl.aura = Math.max(0, Math.min(100, simResult.playerStatsUpdates.aura));
+    }
+    if (simResult.playerStatsUpdates.clout !== undefined) {
+      newPl.clout = Math.max(0, simResult.playerStatsUpdates.clout);
+    }
+    if (simResult.playerStatsUpdates.dynamicPassives !== undefined) {
+      newPl.dynamicPassives = { ...newPl.dynamicPassives, ...simResult.playerStatsUpdates.dynamicPassives };
+    }
+    if (simResult.playerStatsUpdates.approvalRating !== undefined) {
+      newPl.approvalRating = Math.max(0, Math.min(100, simResult.playerStatsUpdates.approvalRating));
+    }
+
+    // Merge news ticker events from rival simulation
+    simResult.news.forEach(msg => {
+      news.push({ text: msg, colorClass: msg.includes('🚨') || msg.includes('💥') || msg.includes('🔥') ? 'text-red-400 font-bold' : 'text-slate-300' });
+    });
+
+    // Re-evaluate threats and trigger milestones / challenges
+    newPl.rivals.forEach(rival => {
+      const ratio = rival.netWorth / Math.max(1, newPl.bag);
       let threat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL';
 
       if (ratio > 2) {
@@ -515,64 +530,6 @@ export function advanceMonth(
       }
 
       newPl.rivalThreats[rival.tier] = threat;
-
-      // Random bidding challenge (Increased by vengeance)
-      let currentBid = 0;
-      const baseBidChance = 0.05;
-      const bidChance = baseBidChance * (rival.vengeance || 1);
-
-      const isCorrectTier = rival.tier === newPl.currentTier;
-
-      if (isCorrectTier && Math.random() < bidChance) {
-        // Rivals bid based on their scale
-        currentBid = Math.floor(newNetWorth * (0.05 + Math.random() * 0.1));
-        news.push({ text: `⚠️ RIVAL ALERT: ${rival.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`, colorClass: 'text-red-400 font-bold' });
-      }
-
-      const threatRoll = Math.random();
-
-      if (rival.tier === newPl.currentTier && threatRoll < 0.15) {
-        const actionRoll = Math.random();
-
-        if (actionRoll < 0.33) {
-          // Rival poaches your passive income
-          const hustleIds = Object.keys(newPl.dynamicPassives).filter(k => !k.startsWith('counter_bid'));
-
-          if (hustleIds.length > 0) {
-            const target = hustleIds[Math.floor(Math.random() * hustleIds.length)];
-            newPl.dynamicPassives[target] = Math.floor((newPl.dynamicPassives[target] || 0) * 0.8);
-            news.push({
-              text: `⚔️ ${rival.name} cut into your ${target.replace(/_/g,' ')} operation. Passive down 20% this month.`,
-              colorClass: 'text-red-400 font-bold'
-            });
-          }
-
-        } else if (actionRoll < 0.66) {
-          // Rival spreads rumours — heat +5
-          newPl.heat = Math.min(100, newPl.heat + 5);
-          news.push({
-            text: `🗣️ ${rival.name} is talking about you. Heat +5%.`,
-            colorClass: 'text-orange-400 font-bold'
-          });
-
-        } else {
-          // Rival power move — clout battle
-          if (newPl.clout <= (rival.clout || 100)) {
-            newPl.clout = Math.max(0, newPl.clout - 10);
-            news.push({
-              text: `👑 ${rival.name} flexed on you. -10 Clout.`,
-              colorClass: 'text-purple-400 font-bold'
-            });
-          } else {
-            news.push({
-              text: `💪 ${rival.name} tried it. Your clout held them off.`,
-              colorClass: 'text-emerald-400 font-bold'
-            });
-          }
-        }
-      }
-
-      return { ...rival, netWorth: newNetWorth, currentBid };
     });
   }
 

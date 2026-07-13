@@ -12,12 +12,23 @@ interface RivalLeaderboardProps {
   rivals: Rival[];
 }
 
+const TIER_HELP_COSTS: Record<string, number> = {
+  MUD: 1000,
+  STREET: 10000,
+  STARTUP: 100000,
+  CORPORATE: 1000000,
+  ELITE: 10000000,
+  MOGUL: 20000000,
+  PRESIDENT: 50000000,
+  OPEN: 100000000
+};
+
 export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerBag,
   playerName,
   rivals = []
 }) => {
-  const { pl, retaliateRival, sabotageRival, counterBid } = useGameStore();
+  const { pl, retaliateRival, sabotageRival, helpRival, counterBid } = useGameStore();
   const allParticipants = [
     ...(rivals || []),
     { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false, tier: pl.currentTier }
@@ -25,6 +36,12 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
 
   const handleSabotage = (rivalId: string) => {
     sabotageRival(rivalId);
+  };
+
+  const handleHelp = (rivalId: string) => {
+    if (helpRival) {
+      helpRival(rivalId);
+    }
   };
 
   const tierLabel = pl.currentTier || 'STREET';
@@ -105,8 +122,13 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     </div>
 
                     {!isPlayer && (
-                      <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">
-                        {pAsRival.currentHustle || pAsRival.specialty || `${pAsRival.tier} OPERATOR`}
+                      <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5 flex items-center gap-2">
+                        <span>{pAsRival.currentHustle || pAsRival.specialty || `${pAsRival.tier} OPERATOR`}</span>
+                        {pAsRival.relationshipWithPlayer !== undefined && (
+                          <span className="text-[9px] text-slate-400 font-bold bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700/50">
+                            Rel: <span className={pAsRival.relationshipWithPlayer >= 0 ? "text-emerald-400" : "text-red-400"}>{pAsRival.relationshipWithPlayer}</span>
+                          </span>
+                        )}
                       </div>
                     )}
 
@@ -159,6 +181,15 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                         onClick={() => handleSabotage(p.id)}
                       >
                         ⚔️ {pAsRival.lastSabotagedMonth === pl.month ? 'SABOTAGED' : `SABOTAGE ACTIVE · $${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K`}
+                      </button>
+                    )}
+
+                    {helpRival && !isPlayer && (
+                      <button
+                        className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 rounded px-2 py-0.5"
+                        onClick={() => handleHelp(p.id)}
+                      >
+                        🤝 PARTNER (${((TIER_HELP_COSTS[pAsRival.tier] || 10000) / 1000).toLocaleString()}K)
                       </button>
                     )}
 

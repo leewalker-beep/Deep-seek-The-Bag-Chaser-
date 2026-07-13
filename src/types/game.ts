@@ -305,6 +305,32 @@ export interface Rival {
   vengeance?: number; // Multiplier for aggressive bidding chance
   currentHustle?: string;
   specialty?: string;
+
+  // Persistent personality traits
+  riskTolerance?: number;       // 0 to 1
+  aggression?: number;          // 0 to 1
+  intelligence?: number;        // 0 to 1
+  ambition?: number;            // 0 to 1
+  ethics?: number;              // 0 to 1
+  politicalLeaning?: 'left' | 'right' | 'center' | 'libertarian';
+  preferredIndustries?: string[];
+
+  // Trait/state trackers
+  relationshipWithPlayer?: number; // -100 to 100
+  sabotagedCount?: number;
+  helpedCount?: number;
+
+  // Simulated assets/actions using existing systems or mimicking them logically
+  businesses?: string[];          // e.g. ["Deli", "Logistics"]
+  propertiesOwned?: number;       // e.g. Real Estate rental properties
+  companiesAcquired?: string[];   // e.g. Company names or types
+  mediaCompaniesOwned?: number;   // count
+  employeesHired?: number;        // count
+  politicalInfluence?: number;    // Clout/campaign value
+  isCandidate?: boolean;
+  campaignProgress?: number;      // 0 to 100
+  industries?: string[];          // expanded industries
+  passiveIncome?: number;         // simulated monthly passive income
 }
 
 export type CharacterStatus = 'alive' | 'disappeared' | 'rival' | 'ally' | 'deceased';
@@ -992,6 +1018,7 @@ export interface GameState {
   unlockAchievement: (id: string) => void;
   retaliateRival: (rivalId: string) => void;
   sabotageRival: (rivalId: string) => void;
+  helpRival?: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
   setTutorialSkipped: (skipped: boolean) => void;
   bankedLegacyPoints: number;
