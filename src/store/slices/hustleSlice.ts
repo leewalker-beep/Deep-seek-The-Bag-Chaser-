@@ -509,17 +509,26 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       news: [...tickNews, `😴 Rested: ${branch.name} (-$${branch.cost.toLocaleString()})`, ...state.news].slice(0, 50),
     });
 
+    const appliedCash = finalNextPl.bag - state.pl.bag;
+    const appliedClout = finalNextPl.clout - state.pl.clout;
+    const appliedAura = finalNextPl.aura - state.pl.aura;
+    const appliedMental = finalNextPl.mentalHealth - state.pl.mentalHealth;
+    const appliedHeat = finalNextPl.heat - state.pl.heat;
+
     get().logEvent('HUSTLE_COMPLETED', {
       hustleId,
       hustleName: hustle.name,
       success: true,
-      profit: -branch.cost,
-      yieldClout: branch.yieldClout,
-      yieldAura: branch.yieldAura,
-      mentalHit: branch.mentalHit,
-      heatHit: 0,
+      profit: appliedCash,
+      yieldClout: appliedClout,
+      yieldAura: appliedAura,
+      mentalHit: appliedMental,
+      heatHit: appliedHeat,
       branchId,
-      multiplier: 1.0
+      multiplier: 1.0,
+      rentDeducted: advancementResult.totalRent,
+      passiveIncomeTotal: advancementResult.passiveIncome,
+      passiveBreakdown: advancementResult.passiveBreakdown
     });
 
     get().logAction({
@@ -534,7 +543,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       yieldCash: 0,
       yieldClout: branch.yieldClout,
       yieldAura: branch.yieldAura,
-      netCash: -branch.cost,
+      netCash: appliedCash,
       success: true,
       passiveAdded: branch.passiveYield || 0,
       marketMult: { yield: 1, expense: 1, heat: 1 },
@@ -802,9 +811,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const isTimelineTick = branchId === 'vending' || hustleId === 'r_vending' || (branchId === 'l2b' && hustleId === 'r_labor') || (branchId === 'l1' && hustleId === 'r_labor');
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
+    let advancementResult: any = null;
 
     if (isTimelineTick) {
-      const advancementResult = advanceMonth(
+      advancementResult = advanceMonth(
         finalNextPl,
         state.currentMarket,
         state.unlockedLegacyUpgradeIds
@@ -906,18 +916,27 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     sideEvents.forEach(e => get().logEvent(e.type, e.metadata));
 
+    const appliedCash = finalNextPl.bag - state.pl.bag;
+    const appliedClout = finalNextPl.clout - state.pl.clout;
+    const appliedAura = finalNextPl.aura - state.pl.aura;
+    const appliedMental = finalNextPl.mentalHealth - state.pl.mentalHealth;
+    const appliedHeat = finalNextPl.heat - state.pl.heat;
+
     get().logEvent('HUSTLE_COMPLETED', {
       hustleId,
       hustleName: hustle.name,
       success: true,
-      profit: -result.cost,
-      yieldClout: result.yieldClout,
-      yieldAura: result.yieldAura,
-      mentalHit: result.mentalHit,
-      heatHit: result.heatHit,
+      profit: appliedCash,
+      yieldClout: appliedClout,
+      yieldAura: appliedAura,
+      mentalHit: appliedMental,
+      heatHit: appliedHeat,
       branchId,
       miniGame: hustle.miniGame || branch.miniGame,
-      multiplier: 1.0
+      multiplier: 1.0,
+      rentDeducted: isTimelineTick ? (advancementResult?.totalRent) : 0,
+      passiveIncomeTotal: isTimelineTick ? (advancementResult?.passiveIncome) : 0,
+      passiveBreakdown: isTimelineTick ? (advancementResult?.passiveBreakdown) : undefined
     });
 
     const { updateChallengeProgress } = get();
@@ -938,7 +957,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       yieldCash: 0,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
-      netCash: -result.cost,
+      netCash: appliedCash,
       success: true,
       passiveAdded: branch.passiveYield || 0,
       marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },
@@ -958,6 +977,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0, heatHit: 0
       };
     }
+    const initialBag = state.pl.bag;
+    const initialClout = state.pl.clout;
+    const initialAura = state.pl.aura;
+    const initialMental = state.pl.mentalHealth;
+    const initialHeat = state.pl.heat;
+
     const hustle = HUSTLES[hustleId];
 
     if (!hustle) {
@@ -1169,6 +1194,84 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     let plFinal = enforceStatCaps(newPl);
     plFinal.lastPassiveBreakdown = passiveBreakdown;
 
+    // Update active challenges
+    if (result.success && state.pl.activeChallenges.length > 0) {
+      const updatedChallenges = state.pl.activeChallenges.map(c => {
+        if (c.tier === hustle.tier) {
+          const newCompleted = c.hustlesCompleted + 1;
+          if (newCompleted >= c.hustlesRequired) {
+            // Challenge Won
+            const bonus = Math.floor(state.pl.bag * 0.1);
+            get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
+
+            const bioUpdate = Bio.recordRivalDefeat(plFinal, c.rivalName, c.tier);
+            plFinal = {
+              ...plFinal,
+              bag: plFinal.bag + bonus,
+              biography: bioUpdate ? [...(plFinal.biography || []), bioUpdate.entry] : plFinal.biography,
+              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(plFinal.recordedBioKeys || []), bioUpdate.key] : plFinal.recordedBioKeys,
+              crushedRivals: [...plFinal.crushedRivals, c.rivalId]
+            };
+            sideEvents.push({ type: 'RIVAL_DEFEATED', metadata: { rivalId: c.rivalId, rivalName: c.rivalName, bonus } });
+            return null; // Remove challenge
+          }
+          return { ...c, hustlesCompleted: newCompleted };
+        }
+        return c;
+      }).filter(Boolean) as Challenge[];
+
+      plFinal = { ...plFinal, activeChallenges: updatedChallenges };
+    }
+
+    let reactedPl = plFinal;
+    if (newPl.inJail && !runningPl.inJail) {
+      reactedPl = processWorldReaction(reactedPl, 'ARREST', {}).updatedPl;
+    } else if (shouldDie && fatalStat === 'bag') {
+      reactedPl = processWorldReaction(reactedPl, 'BANKRUPTCY', {}).updatedPl;
+    } else if (result.success) {
+      const netChange = result.yieldCash - result.cost;
+      if (hustleId === 'philanthropy_empire') {
+        reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
+      } else {
+        if ((state.pl.hustlePlays[hustleId] || 0) === 0) {
+          reactedPl = processWorldReaction(reactedPl, 'BUSINESS_LAUNCH', { hustleName: hustle.name, cost: result.cost }).updatedPl;
+        }
+        if (netChange >= 50000) {
+          reactedPl = processWorldReaction(reactedPl, 'HUGE_PROFIT', { profit: netChange, hustleName: hustle.name }).updatedPl;
+        } else if (netChange < -10000) {
+          reactedPl = processWorldReaction(reactedPl, 'MAJOR_LOSS', { profit: netChange, hustleName: hustle.name }).updatedPl;
+        }
+      }
+    } else {
+      reactedPl = processWorldReaction(reactedPl, 'BUSINESS_FAILURE', { hustleName: hustle.name }).updatedPl;
+    }
+
+    plFinal = reactedPl;
+
+    // --- SINGLE SOURCE OF TRUTH TRANSACTION CALCULATIONS ---
+    const appliedCashDelta = plFinal.bag - initialBag;
+    const appliedCloutDelta = plFinal.clout - initialClout;
+    const appliedAuraDelta = plFinal.aura - initialAura;
+    const appliedMentalDelta = plFinal.mentalHealth - initialMental;
+    const appliedHeatDelta = plFinal.heat - initialHeat;
+
+    // Synchronize result values with exact finalized applied deltas so the UI consumes the final state of the transaction
+    result.netChange = appliedCashDelta;
+    result.yieldCash = appliedCashDelta + result.cost; // ensures yieldCash - cost equals appliedCashDelta exactly!
+    result.yieldClout = appliedCloutDelta;
+    result.yieldAura = appliedAuraDelta;
+    result.mentalHit = appliedMentalDelta;
+    result.heatHit = appliedHeatDelta;
+
+    // Update play statistics and trackers with finalized applied transaction yields
+    if (plFinal.stats) {
+      plFinal.stats.lifetimeEarnings = (state.pl.stats?.lifetimeEarnings || 0) + Math.max(0, appliedCashDelta);
+    }
+    if (plFinal.tierStats?.[tier]) {
+      plFinal.tierStats[tier].earnings = (state.pl.tierStats?.[tier]?.earnings || 0) + Math.max(0, appliedCashDelta);
+    }
+    plFinal.annualCashEarned = state.pl.annualCashEarned + Math.max(0, appliedCashDelta);
+
     const actionLogData: Omit<GameAction, 'id' | 'timestamp'> = {
       month: state.pl.month,
       tier: state.pl.currentTier,
@@ -1181,7 +1284,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       yieldCash: result.yieldCash,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
-      netCash: result.yieldCash - result.cost,
+      netCash: result.netChange,
       success: result.success,
       passiveAdded: result.passiveAdded !== undefined ? result.passiveAdded : (levelData.passiveYield || 0),
       rentDeducted: totalRent,
@@ -1214,7 +1317,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
     }
 
-    const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${(newBag - state.pl.bag).toLocaleString()}`, tier: plFinal.currentTier };
+    const executionNews = { text: ` ${result.success ? '✅' : '❌'} ${hustle.name}: ${result.success ? 'Success' : 'Failure'} - Net $${appliedCashDelta.toLocaleString()}`, tier: plFinal.currentTier };
     const finalNews = [
       ...monthNews,
       ...(result.bigWinMessage ? [{ text: result.bigWinMessage, colorClass: 'text-emerald-400 font-black animate-bounce', tier: plFinal.currentTier }] : []),
@@ -1240,7 +1343,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       plFinal.deathContext = {
         mentalHealthAtDeath: Math.floor(plFinal.mentalHealth),
-        lastHustleMentalHit: Math.abs(result.mentalHit || 0),
+        lastHustleMentalHit: Math.abs(appliedMentalDelta),
         lastHustleName: levelData.name || hustle.name,
         heatAtDeath: Math.floor(plFinal.heat),
         monthsPlayed: plFinal.month,
@@ -1323,11 +1426,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         hustleId,
         hustleName: hustle.name,
         success: result.success,
-        profit: result.yieldCash - result.cost,
-        yieldClout: result.yieldClout,
-        yieldAura: result.yieldAura,
-        mentalHit: result.mentalHit,
-        heatHit: result.heatHit,
+        profit: appliedCashDelta,
+        yieldClout: appliedCloutDelta,
+        yieldAura: appliedAuraDelta,
+        mentalHit: appliedMentalDelta,
+        heatHit: appliedHeatDelta,
         level: currentLevel,
         miniGame: hustle.miniGame || levelData.miniGame,
         multiplier: minigameMultiplier,
@@ -1336,60 +1439,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         passiveBreakdown
       }
     };
-
-    // Update active challenges
-    if (result.success && state.pl.activeChallenges.length > 0) {
-      const updatedChallenges = state.pl.activeChallenges.map(c => {
-        if (c.tier === hustle.tier) {
-          const newCompleted = c.hustlesCompleted + 1;
-          if (newCompleted >= c.hustlesRequired) {
-            // Challenge Won
-            const bonus = Math.floor(state.pl.bag * 0.1);
-            get().addTickerMessage(`🏆 CHALLENGE WON: You defeated ${c.rivalName}! +$${bonus.toLocaleString()} (10% of bag).`, 'text-emerald-400 font-bold');
-
-            const bioUpdate = Bio.recordRivalDefeat(plFinal, c.rivalName, c.tier);
-            plFinal = {
-              ...plFinal,
-              bag: plFinal.bag + bonus,
-              biography: bioUpdate ? [...(plFinal.biography || []), bioUpdate.entry] : plFinal.biography,
-              recordedBioKeys: (bioUpdate && bioUpdate.key) ? [...(plFinal.recordedBioKeys || []), bioUpdate.key] : plFinal.recordedBioKeys,
-              crushedRivals: [...plFinal.crushedRivals, c.rivalId]
-            };
-            sideEvents.push({ type: 'RIVAL_DEFEATED', metadata: { rivalId: c.rivalId, rivalName: c.rivalName, bonus } });
-            return null; // Remove challenge
-          }
-          return { ...c, hustlesCompleted: newCompleted };
-        }
-        return c;
-      }).filter(Boolean) as Challenge[];
-
-      plFinal = { ...plFinal, activeChallenges: updatedChallenges };
-    }
-
-    let reactedPl = plFinal;
-    if (newPl.inJail && !runningPl.inJail) {
-      reactedPl = processWorldReaction(reactedPl, 'ARREST', {}).updatedPl;
-    } else if (shouldDie && fatalStat === 'bag') {
-      reactedPl = processWorldReaction(reactedPl, 'BANKRUPTCY', {}).updatedPl;
-    } else if (result.success) {
-      const netChange = result.yieldCash - result.cost;
-      if (hustleId === 'philanthropy_empire') {
-        reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
-      } else {
-        if ((state.pl.hustlePlays[hustleId] || 0) === 0) {
-          reactedPl = processWorldReaction(reactedPl, 'BUSINESS_LAUNCH', { hustleName: hustle.name, cost: result.cost }).updatedPl;
-        }
-        if (netChange >= 50000) {
-          reactedPl = processWorldReaction(reactedPl, 'HUGE_PROFIT', { profit: netChange, hustleName: hustle.name }).updatedPl;
-        } else if (netChange < -10000) {
-          reactedPl = processWorldReaction(reactedPl, 'MAJOR_LOSS', { profit: netChange, hustleName: hustle.name }).updatedPl;
-        }
-      }
-    } else {
-      reactedPl = processWorldReaction(reactedPl, 'BUSINESS_FAILURE', { hustleName: hustle.name }).updatedPl;
-    }
-
-    plFinal = reactedPl;
 
     set({
       pl: plFinal,
@@ -1599,13 +1648,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     let finalNextPl = newPl;
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
+    let advancementResult: any = null;
 
     let finalPh = state.ph;
     let finalDeathBadge = state.deathBadge;
     let finalFatalCause = state.fatalCause;
 
     if (isTimelineTick) {
-      const advancementResult = advanceMonth(
+      advancementResult = advanceMonth(
         finalNextPl,
         state.currentMarket,
         state.unlockedLegacyUpgradeIds
@@ -1781,17 +1831,26 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         : [executionNewsStr, ...state.news.slice(0, 49)]
     });
 
+    const appliedCash = finalNextPl.bag - state.pl.bag;
+    const appliedClout = finalNextPl.clout - state.pl.clout;
+    const appliedAura = finalNextPl.aura - state.pl.aura;
+    const appliedMental = finalNextPl.mentalHealth - state.pl.mentalHealth;
+    const appliedHeat = finalNextPl.heat - state.pl.heat;
+
     get().logEvent('HUSTLE_COMPLETED', {
       hustleId,
       hustleName: hustle.name,
       success: true,
-      profit: -result.cost,
-      yieldClout: result.yieldClout,
-      yieldAura: result.yieldAura,
-      mentalHit: result.mentalHit,
-      heatHit: result.heatHit,
+      profit: appliedCash,
+      yieldClout: appliedClout,
+      yieldAura: appliedAura,
+      mentalHit: appliedMental,
+      heatHit: appliedHeat,
       level: targetNodeData.level,
-      multiplier: 1.0
+      multiplier: 1.0,
+      rentDeducted: isTimelineTick ? (advancementResult?.totalRent) : 0,
+      passiveIncomeTotal: isTimelineTick ? (advancementResult?.passiveIncome) : 0,
+      passiveBreakdown: isTimelineTick ? (advancementResult?.passiveBreakdown) : undefined
     });
 
     get().logAction({
@@ -1806,7 +1865,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       yieldCash: 0,
       yieldClout: result.yieldClout,
       yieldAura: result.yieldAura,
-      netCash: -result.cost,
+      netCash: appliedCash,
       success: true,
       passiveAdded: targetNodeData.passiveYield || 0,
       marketMult: { yield: market.yieldMultiplier, expense: market.expenseMultiplier, heat: market.heatMultiplier },

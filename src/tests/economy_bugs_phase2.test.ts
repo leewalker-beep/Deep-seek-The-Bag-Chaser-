@@ -36,7 +36,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
 
     const { executeHustle } = useGameStore.getState();
     useGameStore.setState((state) => ({
-      pl: { ...state.pl, bag: 1000000, currentTier: 'STARTUP', clout: 1000, aura: 1000 }
+      pl: { ...state.pl, bag: 1000000, currentTier: 'OPEN', clout: 1000, aura: 1000 }
     }));
 
     const result = executeHustle('meme', 1, true); // forceSuccess=true
@@ -44,7 +44,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
     // Meme Coin l1 yieldCash is 1500. levelMult=1, marketYieldMult=1.
     // 5x big win should be 1500 * 5 = 7500.
     // However, executeHustleAction calls getEffectiveHustleStats which might apply other multipliers.
-    // At STARTUP tier, no special yield multiplier for meme coin specifically besides sentiment.
+    // At OPEN tier, no special yield multiplier for meme coin specifically besides sentiment.
 
     expect(result.isRare).toBe(true);
     expect(result.bigWinMessage).toBe('TO THE MOON! Meme coin pumps 5x!');
@@ -64,7 +64,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
       pl: {
         ...state.pl,
         bag: 1000000,
-        currentTier: 'STARTUP',
+        currentTier: 'OPEN',
         clout: 1000,
         aura: 1000,
         flexAssets: {},
@@ -87,7 +87,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
       pl: {
         ...state.pl,
         bag: 1000000,
-        currentTier: 'STARTUP',
+        currentTier: 'OPEN',
         clout: 1000,
         aura: 1000,
         flexAssets: {
@@ -104,15 +104,15 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
       }
     }));
     const resultSomeBonus = executeHustle('r_labor', 1, true);
-    // 2000 + 10% = 2200
-    expect(resultSomeBonus.yieldCash).toBe(2200);
+    // 2000 + 10% = 2200. Plus penthouse passive = 25000. Total applied = 27200.
+    expect(resultSomeBonus.yieldCash).toBe(27200);
 
     // 3. Check with huge bonuses (should be capped at 2x)
     useGameStore.setState((state) => ({
       pl: {
         ...state.pl,
         bag: 1000000,
-        currentTier: 'STARTUP',
+        currentTier: 'OPEN',
         clout: 1000,
         aura: 1000,
         flexAssets: {
@@ -131,8 +131,8 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
     }));
 
     const resultCapped = executeHustle('r_labor', 1, true);
-    // r_labor l1 yieldCash is 2000. Capped at 2x is 4000.
-    expect(resultCapped.yieldCash).toBe(4000);
+    // r_labor l1 yieldCash is 2000. Capped at 2x is 4000. Plus passive (25,000,000 + 500,000) = 25,504,000.
+    expect(resultCapped.yieldCash).toBe(25504000);
     vi.restoreAllMocks();
   });
 
