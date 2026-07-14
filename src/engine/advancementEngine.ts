@@ -18,6 +18,7 @@ import { triggerMonthlyNarrativeEvent } from './eventEngine';
 import { simulateRivals } from './rivalSimEngine';
 import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier, isConsequenceActive } from './consequenceEngine';
 import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
+import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -917,6 +918,11 @@ export function advanceMonth(
       news.push(picked);
     }
   }
+
+  // Evaluate and update Ambitions system
+  const ambitionRes = checkAmbitionTriggersAndCompletions(newPl);
+  newPl = ambitionRes.updatedPl;
+  news.push(...ambitionRes.news);
 
   // Convert all news to TickerMessage objects and stamp current tier
   const stampedNews = news.map(m => {

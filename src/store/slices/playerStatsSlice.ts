@@ -32,6 +32,9 @@ export interface PlayerStatsSlice {
   dropArtist: (artistId: string) => void;
   unlockLegacyUpgrade: (upgradeId: string) => void;
   updatePl: (updates: Partial<PlayerStats>) => void;
+  acceptAmbition: (id: string) => void;
+  ignoreAmbition: (id: string) => void;
+  replaceAmbition: (id: string, withId: string) => void;
 }
 
 export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStatsSlice> = (set, get) => ({
@@ -267,5 +270,64 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     set((state) => ({
       pl: enforceStatCaps({ ...state.pl, ...updates })
     }));
+  },
+
+  acceptAmbition: (id) => {
+    const state = get();
+    const ambitions = state.pl.ambitions || [];
+    const updated = ambitions.map(a => a.id === id ? { ...a, status: 'ACTIVE' as const } : a);
+    const target = updated.find(a => a.id === id);
+    const name = target ? target.title : id;
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        ambitions: updated
+      }),
+      news: [{ text: `🎯 Ambition Accepted: "${name}". Let's chase it!`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+  },
+
+  ignoreAmbition: (id) => {
+    const state = get();
+    const ambitions = state.pl.ambitions || [];
+    const updated = ambitions.map(a => a.id === id ? { ...a, status: 'IGNORED' as const } : a);
+    const target = updated.find(a => a.id === id);
+    const name = target ? target.title : id;
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        ambitions: updated
+      }),
+      news: [{ text: `🚫 Ambition Ignored: "${name}".`, colorClass: 'text-slate-400' }, ...state.news.slice(0, 49)]
+    });
+  },
+
+  replaceAmbition: (id, withId) => {
+    const state = get();
+    const ambitions = state.pl.ambitions || [];
+    const updated = ambitions.map(a => {
+      if (a.id === id) {
+        return { ...a, status: 'IGNORED' as const };
+      }
+      if (a.id === withId) {
+        return { ...a, status: 'ACTIVE' as const };
+      }
+      return a;
+    });
+
+    const oldAmb = ambitions.find(a => a.id === id);
+    const newAmb = ambitions.find(a => a.id === withId);
+    const oldName = oldAmb ? oldAmb.title : id;
+    const newName = newAmb ? newAmb.title : withId;
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        ambitions: updated
+      }),
+      news: [{ text: `🔄 Ambition Replaced: "${oldName}" with "${newName}".`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
   },
 });

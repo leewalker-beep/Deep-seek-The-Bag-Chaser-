@@ -690,9 +690,21 @@ export interface PersistentNPC {
   originHustleId?: string;
 }
 
+export interface PlayerAmbition {
+  id: string;
+  title: string;
+  description: string;
+  status: 'SUGGESTED' | 'ACTIVE' | 'IGNORED' | 'COMPLETED';
+  progress: number;
+  target: number;
+  progressText: string;
+  rewardDescription: string;
+}
+
 export interface PlayerStats {
   runId: string;
   name?: string;
+  ambitions?: PlayerAmbition[];
   age?: string;
   worldFeed?: WorldFeedItem[];
   consequences?: Consequence[];
@@ -1045,4 +1057,7 @@ export interface GameState {
   updatePl: (updates: Partial<PlayerStats>) => void;
   triggerTransition: (artwork: HeroArtwork) => void;
   clearTransition: () => void;
+  acceptAmbition: (id: string) => void;
+  ignoreAmbition: (id: string) => void;
+  replaceAmbition: (id: string, withId: string) => void;
 }
