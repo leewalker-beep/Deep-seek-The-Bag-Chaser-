@@ -87,6 +87,7 @@ import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { LiveWorldEventModal } from './components/LiveWorldEventModal';
 import { InteractiveStoryModal } from './components/InteractiveStoryModal';
 import { EndgameSummary } from './components/EndgameSummary';
+import { StrategicAdvisorModal } from './components/StrategicAdvisorModal';
 
 // Heavy Screens
 const HallOfFame = lazy(() => import('./components/HallOfFame').then(m => ({ default: m.HallOfFame })));
@@ -217,6 +218,7 @@ function App() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
   const [showPhoneFeed, setShowPhoneFeed] = useState(false);
+  const [showAdvisor, setShowAdvisor] = useState(false);
 
   const {
     pl,
@@ -581,6 +583,12 @@ function App() {
                 className="text-[9px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 flex items-center gap-1"
               >
                 📱 Feed
+              </button>
+              <button
+                onClick={() => setShowAdvisor(true)}
+                className="text-[9px] bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20 flex items-center gap-1"
+              >
+                🧠 Advisor
               </button>
             </div>
           </div>
@@ -1145,6 +1153,7 @@ function App() {
       )}
 
       {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
+      {showAdvisor && <StrategicAdvisorModal onClose={() => setShowAdvisor(false)} />}
       {activeTierBadge && (
         <TierBadgeCelebration
           tier={activeTierBadge}
