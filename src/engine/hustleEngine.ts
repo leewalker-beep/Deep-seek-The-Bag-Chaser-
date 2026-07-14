@@ -661,7 +661,7 @@ export const executeHustleAction = (
       multipliers: {
         'Market': (MARKET_CONFIGS[market]?.heatMultiplier || 1), // Proxy for damage-relevant market mults
         'Skill': minigameMultiplier,
-        'Legacy': 1 + ((state.legacyPoints || 0) * 0.001)
+        'Legacy': 1 + Math.min(2.0, (state.legacyPoints || 0) * 0.001)
       },
       finalDamage: effective.mentalHit
     }
