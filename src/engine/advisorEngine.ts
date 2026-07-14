@@ -574,6 +574,41 @@ export function generateStrategicAdvice(
     });
   }
 
+  // --- AMBITIONS ADVISOR RECOGNITION ---
+  const ambitions = pl.ambitions || [];
+  const activeAmb = ambitions.filter(a => a.status === 'ACTIVE');
+  const completedAmb = ambitions.filter(a => a.status === 'COMPLETED');
+
+  if (activeAmb.length > 0) {
+    activeAmb.forEach(amb => {
+      insights.push({
+        id: `advisor_ambition_active_${amb.id}`,
+        category: 'Legacy',
+        priority: 'Opportunity',
+        title: `Active Pursuit: ${amb.title}`,
+        whatIsHappening: `Your character is actively chasing the grand life ambition: "${amb.title}".`,
+        whyItHappened: `You accepted this ambition from your strategic advisor console.`,
+        recommendation: `Focus on progress: ${amb.progressText}. Completing it unlocks profound narrative legacy rewards and unique biographies.`,
+        confidence: 100,
+      });
+    });
+  }
+
+  if (completedAmb.length > 0) {
+    completedAmb.forEach(amb => {
+      insights.push({
+        id: `advisor_ambition_completed_${amb.id}`,
+        category: 'Legacy',
+        priority: 'Information',
+        title: `Historic Achievement: ${amb.title}`,
+        whatIsHappening: `You have successfully completed "${amb.title}"!`,
+        whyItHappened: `You fulfilled the dynamic progression thresholds and locked in permanent recognition.`,
+        recommendation: `This historical landmark continues to inspire persistent NPCs and fuel your permanent Hall of Fame biography rating.`,
+        confidence: 100,
+      });
+    });
+  }
+
   // --- DERIVE SUMMARIES AND KEY INSIGHTS ---
   // Prioritize list: Critical, then Important, then Opportunity, then Information
   const sortedInsights = [...insights].sort((a, b) => {

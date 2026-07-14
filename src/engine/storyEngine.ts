@@ -99,6 +99,32 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
     });
   }
 
+  // 7. Completed Ambitions Stories
+  const completedAmbitions = pl.ambitions?.filter(a => a.status === 'COMPLETED') || [];
+  completedAmbitions.forEach(amb => {
+    if (amb.id === 'property_empire' || amb.id === 'prop_legacy' || amb.id === 'prop_baron') {
+      stories.push({
+        text: `📰 Property Monopoly: Districts consolidated by ${pName} report flawless management and standard 99% tenant retention.`,
+        colorClass: 'text-emerald-400 font-extrabold',
+        tier: pl.currentTier,
+      });
+    }
+    if (amb.id === 'silicon_sovereign') {
+      stories.push({
+        text: `📰 Cyber-Sovereignty: Big data algorithms pioneered by ${pName} are now integrated directly into national financial hubs.`,
+        colorClass: 'text-cyan-400 font-extrabold',
+        tier: pl.currentTier,
+      });
+    }
+    if (amb.id === 'leave_better_society') {
+      stories.push({
+        text: `📰 Philanthropic Halo: Crowds in local districts continue to praise the universal humanitarian aid funded by ${pName}.`,
+        colorClass: 'text-emerald-300 font-extrabold',
+        tier: pl.currentTier,
+      });
+    }
+  });
+
   return stories;
 }
 
@@ -141,6 +167,25 @@ export function generateHistoricalStories(pl: PlayerStats): TickerMessage[] {
       });
     }
   }
+
+  // Completed Ambitions Retrospective (NPC references and historical summaries)
+  const completedAmb = pl.ambitions?.filter(a => a.status === 'COMPLETED') || [];
+  completedAmb.forEach(amb => {
+    stories.push({
+      text: `📰 Legendary Retrospective: Society remembers how ${pl.name || 'You'} rose to complete the "${amb.title}" ambition, altering city history.`,
+      colorClass: 'text-yellow-400 italic',
+      tier: pl.currentTier,
+    });
+    // NPC references
+    if (pl.npcs && pl.npcs.length > 0) {
+      const npc = pl.npcs[0];
+      stories.push({
+        text: `📰 World Memory: Insiders report ${npc.name} was heard praising ${pl.name || 'You'}'s dedication to "${amb.title}" in executive channels.`,
+        colorClass: 'text-slate-300 font-bold',
+        tier: pl.currentTier,
+      });
+    }
+  });
 
   return stories;
 }
