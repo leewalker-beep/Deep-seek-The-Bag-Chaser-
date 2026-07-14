@@ -319,7 +319,7 @@ export function calculateHustleStatsAdditive(
   }
 
   // --- Legacy Multiplier ---
-  const legacyBonus = (player.legacyPoints || 0) * 0.001;
+  const legacyBonus = Math.min(2.0, (player.legacyPoints || 0) * 0.001);
 
   // --- Specialization Bonuses ---
   let specBonus = 0;

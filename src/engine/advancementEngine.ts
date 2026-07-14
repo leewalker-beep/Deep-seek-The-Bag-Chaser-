@@ -316,7 +316,7 @@ export function advanceMonth(
 
   // --- MULTIPLIERS ---
   const isJailed = newPl.inJail === true || newPl.isIncarcerated === true;
-  const legacyMultiplier = 1 + ((newPl.legacyPoints || 0) * 0.001);
+  const legacyMultiplier = 1 + Math.min(2.0, (newPl.legacyPoints || 0) * 0.001);
   let legacyBoost = 1.0;
   if (unlockedLegacyUpgrades.includes('passive_boost')) legacyBoost = 1.1;
 
