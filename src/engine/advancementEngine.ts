@@ -17,6 +17,7 @@ import { evolveWorldNPCs } from '../utils/narrativeEngine';
 import { triggerMonthlyNarrativeEvent } from './eventEngine';
 import { simulateRivals } from './rivalSimEngine';
 import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier, isConsequenceActive } from './consequenceEngine';
+import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -887,6 +888,34 @@ export function advanceMonth(
       fatalStat,
       fatalStatValue,
     };
+  }
+
+  // 1. Generate monthly summary item and push to worldFeed
+  const summaryItem = generateMonthlySummaryItem(newPl, passiveIncome, totalRent, newMarket);
+  newPl.worldFeed = [summaryItem, ...(newPl.worldFeed || [])].slice(0, 100);
+
+  // 2. Add ticker alert that Monthly Summary has been compiled
+  news.push({
+    text: `📊 Month ${newPl.month} Simulation Report compiled! Open your Phone Feed to review.`,
+    colorClass: 'text-indigo-400 font-bold'
+  });
+
+  // 3. Occasionally generate dynamic state observations (~25% chance)
+  if (Math.random() < 0.25) {
+    const dynamicStories = generateDynamicStoryNews(newPl);
+    if (dynamicStories.length > 0) {
+      const picked = dynamicStories[Math.floor(Math.random() * dynamicStories.length)];
+      news.push(picked);
+    }
+  }
+
+  // 4. Occasionally generate historical references (~15% chance)
+  if (Math.random() < 0.15) {
+    const historicalStories = generateHistoricalStories(newPl);
+    if (historicalStories.length > 0) {
+      const picked = historicalStories[Math.floor(Math.random() * historicalStories.length)];
+      news.push(picked);
+    }
   }
 
   // Convert all news to TickerMessage objects and stamp current tier
