@@ -23,7 +23,7 @@ export const auditCabinetIntegrity = (members: CabinetMember[]): IntegrityAudit 
 
   return { approvalImpact, generatedNewsLogs };
 };
-import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails } from '../../engine/presidentEngine';
+import { EXECUTIVE_ORDERS, generateCrisis, getMasteryBonusDetails, advancePresidentialDecay, inferAdministrationIdentity } from '../../engine/presidentEngine';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 import { PRESIDENTIAL_ACTIVITIES } from '../../config/presidencyActivities';
 import { enforceStatCaps } from '../../engine/statEngine';
@@ -59,9 +59,19 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     // Policy Alignment Discount
     const costMultiplier = 1 - masteryBonus;
 
+    // 1. Large Company Clout discount (5% per large biz, up to 25%)
+    const largeBizIds = ['film_studio', 'fight_promoter', 'space_investment', 'philanthropy_empire', 'media_empire', 'luxury_conglomerate', 'data_monopoly', 'central_bank_play', 'legacy_fund'];
+    const largeBizCount = largeBizIds.filter(id => (state.pl.hustleLevels?.[id] || 0) > 0).length;
+    const largeBizDiscount = Math.min(0.25, largeBizCount * 0.05);
+
+    // 2. High Clout-based discount on Clout costs (up to 25% discount, triggers when Clout is high > 10000)
+    const cloutDiscount = state.pl.clout > 10000 ? Math.min(0.25, state.pl.clout / 40000) : 0;
+
+    const cloutMultiplier = Math.max(0.5, 1 - largeBizDiscount - cloutDiscount);
+
     const finalCashCost = (order.cost.cash || 0) * costMultiplier;
     const finalAuraCost = (order.cost.aura || 0) * costMultiplier;
-    const baseCloutCost = (order.cost.clout || 0) * costMultiplier;
+    const baseCloutCost = (order.cost.clout || 0) * costMultiplier * cloutMultiplier;
 
     // Apply Opposition/Congress support multiplier to Clout costs
     const scaledCloutCost = baseCloutCost
@@ -111,9 +121,6 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       // Update Loyalty based on advisor sentiment
       if (order.quotes?.[roleId]) {
         const quote = order.quotes[roleId].toLowerCase();
-        // Simple sentiment: words like 'love', 'win', 'dividends', 'modernized', 'envy', 'surge' are positive
-        // Words like 'increase the deficit', 'worry our allies', 'disrupt', 'BRACING FOR IMPACT', 'Checks in pockets', 'checks' are neutral/positive
-        // Words like 'astronomical', 'print money', 'hurts the coasts', 'worry' are negative
         if (quote.includes('love') || quote.includes('win') || quote.includes('dividends') || quote.includes('envy') || quote.includes('surge') || quote.includes('stabilizing') || quote.includes('legacy')) {
           newCabinet[roleId] = { ...member, loyalty: Math.min(100, member.loyalty + 5) };
         } else if (quote.includes('worry') || quote.includes('disrupt') || quote.includes('hurts') || quote.includes('deficit') || quote.includes('astronomical')) {
@@ -121,6 +128,60 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         }
       }
     });
+
+    // 3. Rivals Support/Opposition Evaluation based on Leanings, Industries, and Relationships
+    let congressSupportDelta = 0;
+    let approvalRatingDelta = 0;
+    const rivalNews: string[] = [];
+    if (state.pl.rivals) {
+      state.pl.rivals.forEach(rival => {
+        let supportScore = 0;
+        const leansRight = rival.politicalLeaning === 'right';
+        const leansLeft = rival.politicalLeaning === 'left';
+        const hasFinanceIndustry = rival.industries?.includes('Finance') || rival.preferredIndustries?.includes('Finance');
+        const hasRealEstateIndustry = rival.industries?.includes('Real Estate') || rival.preferredIndustries?.includes('Real Estate');
+        const hasTechIndustry = rival.industries?.includes('Technology') || rival.preferredIndustries?.includes('Technology');
+        const relationship = rival.relationshipWithPlayer ?? 0;
+
+        if (orderId === 'tax_cut' || orderId === 'deregulation' || orderId === 'crypto_mining') {
+          if (leansRight) supportScore += 2;
+          if (leansLeft) supportScore -= 2;
+          if ((rival.riskTolerance ?? 0.5) > 0.6) supportScore += 1;
+          if (hasFinanceIndustry || hasTechIndustry) supportScore += 2; // Industry incentive
+        } else if (orderId === 'healthcare' || orderId === 'labor_policy' || orderId === 'working_class_policy') {
+          if (leansLeft) supportScore += 2;
+          if (leansRight) supportScore -= 2;
+          if ((rival.ethics ?? 0.5) > 0.6) supportScore += 1;
+        } else if (orderId === 'housing_policy') {
+          if (leansLeft) supportScore += 2;
+          if (leansRight) supportScore -= 2;
+          if (hasRealEstateIndustry) supportScore -= 3; // Rent control hurts their real estate assets!
+        } else {
+          if ((rival.intelligence ?? 0.5) > 0.6) supportScore += 1;
+        }
+
+        // Spite/Loyalty bias based on relationship with player
+        if (relationship < -50) {
+          supportScore -= 1.5; // pure spite
+        } else if (relationship > 50) {
+          supportScore += 1.5; // pure loyalty
+        }
+
+        if (supportScore >= 1.5) {
+          congressSupportDelta += 1.5;
+          // Believable and occasional surprising news
+          if (relationship < -50 && (hasFinanceIndustry || hasTechIndustry) && (orderId === 'deregulation' || orderId === 'tax_cut')) {
+            rivalNews.push(`🤝 BELIEVABLE SPITE: Despite hating you, rival ${rival.name} lobbied in favor of ${order.name} to line their own pockets!`);
+          } else {
+            rivalNews.push(`👑 SUPPORT: Rival ${rival.name} endorsed ${order.name}, boosting your congressional coalition!`);
+          }
+        } else if (supportScore <= -1.5) {
+          congressSupportDelta -= 2.0;
+          approvalRatingDelta -= 1.0;
+          rivalNews.push(`⚠️ OPPOSITION: ${rival.name} spent $250k on PAC ads opposing ${order.name}!`);
+        }
+      });
+    }
 
     let masteryOutcomeMsg = "";
     if (masteredHustlesDetails.length > 0) {
@@ -161,13 +222,69 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       });
     }
 
+    // 4. Housing Affordability Resolution & Dynamic Consequences injection
+    let updatedConsequences = [...(state.pl.consequences || [])];
+    let updatedActiveCrises = [...(state.pl.activeCrises || [])];
+    if (orderId === 'housing_policy') {
+      const initialLength = updatedConsequences.length;
+      updatedConsequences = updatedConsequences.filter(c => c.source !== 'housing_affordability_crisis');
+
+      const initialCrisesLength = updatedActiveCrises.length;
+      updatedActiveCrises = updatedActiveCrises.filter(c => c.type !== 'housing_affordability_crisis');
+
+      if (updatedConsequences.length < initialLength || updatedActiveCrises.length < initialCrisesLength) {
+        state.addTickerMessage(`🍀 POLICY SUCCESS: Affordable Housing Act has resolved the Housing Affordability Crisis!`, 'text-emerald-400 font-bold');
+      }
+    }
+
+    if (orderId === 'healthcare' || orderId === 'tax_cut') {
+      updatedConsequences.push({
+        id: `cons_wellness_${Math.random().toString(36).substring(7)}`,
+        source: 'universal_wellness_aura',
+        triggerCondition: order.name,
+        delay: 2,
+        severity: 'moderate',
+        expiry: 12,
+        affectedSystems: ['politics', 'aura', 'mental_health'],
+        status: 'pending' as const,
+        description: `Your healthcare/tax policies have improved public health, bolstering your aura and shielding you from stress.`,
+        effectModifier: { auraGainMult: 1.25, mentalHitMult: 0.5 }
+      });
+    } else if (orderId === 'deregulation' || orderId === 'crypto_mining') {
+      updatedConsequences.push({
+        id: `cons_volatility_${Math.random().toString(36).substring(7)}`,
+        source: 'financial_bubble',
+        triggerCondition: order.name,
+        delay: 3,
+        severity: 'severe',
+        expiry: 6,
+        affectedSystems: ['businesses', 'politics', 'heat'],
+        status: 'pending' as const,
+        description: `Financial deregulation has fueled market speculation, increasing yields but raising scandal risk.`,
+        effectModifier: { yieldCashMult: 1.3, heatGainMult: 1.5 }
+      });
+    } else if (orderId === 'tariffs') {
+      updatedConsequences.push({
+        id: `cons_trade_war_${Math.random().toString(36).substring(7)}`,
+        source: 'trade_war',
+        triggerCondition: order.name,
+        delay: 2,
+        severity: 'severe',
+        expiry: 8,
+        affectedSystems: ['businesses', 'politics'],
+        status: 'pending' as const,
+        description: `Retaliatory trade tariffs have raised supply chain costs and reduced corporate yields.`,
+        effectModifier: { yieldCashMult: 0.8 }
+      });
+    }
+
     const newPl = {
       ...state.pl,
-      congressSupport: Math.max(0, Math.min(100, state.pl.congressSupport)),
+      congressSupport: Math.max(0, Math.min(100, state.pl.congressSupport + congressSupportDelta)),
       federalBudget: state.pl.federalBudget - finalCashCost,
       clout: state.pl.clout - scaledCloutCost,
       aura: state.pl.aura - finalAuraCost,
-      approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + approvalImpact)),
+      approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + approvalImpact + approvalRatingDelta)),
       gdp: state.pl.gdp + gdpImpact,
       inflation: state.pl.inflation + inflationImpact,
       nationalDebt: state.pl.nationalDebt + debtImpact,
@@ -175,6 +292,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       regionalApproval: newRegionalApproval,
       cabinet: newCabinet,
       presidentialDiary: [diaryEntry, ...state.pl.presidentialDiary],
+      activeCrises: updatedActiveCrises,
       heat: state.pl.heat + (order.impact.heat || 0),
       dynamicPassives: {
         ...state.pl.dynamicPassives,
@@ -184,8 +302,30 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         type: order.marketEffect.type,
         monthsRemaining: order.marketEffect.duration
       } : state.pl.presidentialMarketControl,
-      pendingPresidentialImpacts: newPendingImpacts
+      pendingPresidentialImpacts: newPendingImpacts,
+      consequences: updatedConsequences
     };
+
+    // Trigger opposition warnings
+    rivalNews.forEach(msg => state.addTickerMessage(msg, 'text-red-300 text-xs'));
+
+    // Detailed policy trade-off feedback ticker messages
+    if (orderId === 'tax_cut') {
+      state.addTickerMessage(`📈 TAX CUT WINNERS: Middle class celebrates tax relief, boosting retail yields!`, 'text-emerald-400 font-bold');
+      state.addTickerMessage(`📉 BUDGET LOSSES: Federal reserves shrink. National Debt scales up.`, 'text-red-400');
+    } else if (orderId === 'deregulation') {
+      state.addTickerMessage(`📈 WALL STREET SURGE: Financial deregulation boosts banking sector yields!`, 'text-emerald-400 font-bold');
+      state.addTickerMessage(`⚠️ REGULATORY RISK: Consumer groups warn of extreme speculation and bubble risk.`, 'text-orange-400');
+    } else if (orderId === 'healthcare') {
+      state.addTickerMessage(`🏥 PUBLIC HEALTH WIN: Universal Healthcare signed into law! Families relieved.`, 'text-emerald-400 font-bold');
+      state.addTickerMessage(`💸 FISCAL STRAIN: Massive public healthcare spending drains treasury by $50M.`, 'text-red-400');
+    } else if (orderId === 'tariffs') {
+      state.addTickerMessage(`🚜 TRADE PROTECTIONISM: Import tariffs signed! Domestic manufacturing yields protect local labor.`, 'text-emerald-400 font-bold');
+      state.addTickerMessage(`🚨 CONSUMER CRISIS: Import tariffs drive up inflation and retail price indices.`, 'text-red-400');
+    } else if (orderId === 'housing_policy') {
+      state.addTickerMessage(`🏡 HOUSING STABILITY: Rent control caps protect families!`, 'text-emerald-400 font-bold');
+      state.addTickerMessage(`📉 LANDLORD COMPLAINT: Real Estate rental yields drop by 30% due to emergency rent caps.`, 'text-red-400');
+    }
 
     const bioUpdate = Bio.recordPresidencyAchievement(state.pl, order.name);
     if (bioUpdate) {
@@ -237,6 +377,14 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         updatedMember.loyalty = Math.min(100, updatedMember.loyalty + 15);
       }
 
+      // Relationship influence: high NPC relationship adds loyalty bonus
+      if (member.characterId && state.pl.npcs) {
+        const matchingNpc = state.pl.npcs.find(n => n.id === member.characterId);
+        if (matchingNpc && matchingNpc.disposition > 60) {
+          updatedMember.loyalty = Math.min(100, updatedMember.loyalty + 10);
+        }
+      }
+
       const newPl = {
         ...state.pl,
         cabinet: { ...state.pl.cabinet, [member.id]: updatedMember }
@@ -281,10 +429,22 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const newCabinet = { ...state.pl.cabinet };
     delete newCabinet[roleId];
 
+    // Firing a cabinet member hurts relationships with NPC friends
+    let updatedNpcs = state.pl.npcs;
+    if (member.characterId && state.pl.npcs) {
+      updatedNpcs = state.pl.npcs.map(npc => {
+        if (npc.id === member.characterId) {
+          return { ...npc, disposition: Math.max(-100, npc.disposition - 40) };
+        }
+        return npc;
+      });
+    }
+
     const newPl = {
       ...state.pl,
       clout: state.pl.clout - 10,
       cabinet: newCabinet,
+      npcs: updatedNpcs,
       presidentialDiary: [
         {
           id: Math.random().toString(36).substring(7),
@@ -397,8 +557,18 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const state = get();
     const { pl, currentMarket } = state;
 
-    let updatedPl = { ...pl };
+    // Run presidential decay to tick aura/clout down, applying media ownership slowdowns
+    let updatedPl = advancePresidentialDecay({ ...pl });
     let approvalHit = 0;
+
+    // Media ownership influence: permanent positive drift, scandal buffers
+    const mediaLevel = Math.max(pl.hustleLevels?.['media_empire'] || 0, pl.hustleLevels?.['film_studio'] || 0);
+    const mediaApprovalDrift = mediaLevel * 1.5;
+    const scandalBuffer = mediaLevel > 0 ? 0.5 : 1.0;
+
+    // Aura-based scandal buffer
+    const auraScandalBuffer = pl.aura > 700 ? 0.7 : 1.0;
+    const combinedScandalBuffer = scandalBuffer * auraScandalBuffer;
 
     // 1. Manage Crises (Timers and Penalties)
     const updatedCrises: PresidentCrisis[] = pl.activeCrises.map(c => ({
@@ -411,7 +581,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     const newDiaryEntries = [...pl.presidentialDiary];
 
     expiredCrises.forEach(c => {
-      approvalHit += (c.impact.approval * 1.5); // 50% extra penalty for expiration
+      approvalHit += (c.impact.approval * 1.5) * combinedScandalBuffer; // 50% extra penalty for expiration, buffered
       newDiaryEntries.unshift({
         id: Math.random().toString(36).substring(7),
         month: pl.presidentMonth,
@@ -423,7 +593,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     });
 
     activeCrises.forEach(c => {
-      approvalHit += c.impact.approval;
+      approvalHit += c.impact.approval * combinedScandalBuffer;
       // Crisis impacts federal budget instead of personal bag
       if (c.impact.cash) {
         updatedPl.federalBudget += (c.impact.cash || 0);
@@ -458,10 +628,107 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       });
     });
 
-    // 1.4 Economic Feedback Loops
+    // 1.4 Economic Feedback Loops & Macro Conditions dynamic approval impacts
     if (pl.inflation > 5) {
       approvalHit -= 2;
       state.addTickerMessage("PUBLIC UNREST: High inflation is hurting your approval!", "text-red-400 animate-pulse");
+    }
+
+    let macroApprovalChange = 0;
+    let macroCongressChange = 0;
+    if (pl.gdp > 110) {
+      macroApprovalChange += 2;
+    } else if (pl.gdp < 80) {
+      macroApprovalChange -= 3;
+    }
+    if (pl.inflation > 5) {
+      macroApprovalChange -= (pl.inflation - 5) * 1.5;
+    }
+    if (pl.nationalDebt > 90) {
+      macroApprovalChange -= 2;
+      macroCongressChange -= 1;
+    }
+    approvalHit += macroApprovalChange;
+
+    // High Heat decays Congress Support
+    if (pl.heat > 0) {
+      macroCongressChange -= (pl.heat / 20);
+    }
+    updatedPl.congressSupport = Math.max(0, Math.min(100, (updatedPl.congressSupport || 50) + macroCongressChange));
+
+    // Detailed Monthly Report System Feedback
+    if (macroApprovalChange > 0) {
+      state.addTickerMessage(`📊 ECONOMIC GROWTH: Strong GDP increases monthly approval rating by +${macroApprovalChange}%!`, 'text-emerald-400 text-[10px]');
+    } else if (macroApprovalChange < 0) {
+      state.addTickerMessage(`⚠️ ECONOMIC STRAIN: GDP stagnation, high inflation, or debt reduces monthly approval rating by ${macroApprovalChange}%!`, 'text-red-400 text-[10px]');
+    }
+
+    if (macroCongressChange > 0) {
+      state.addTickerMessage(`🗳️ CONGRESS COOPERATION: High approval improves legislative support by +${macroCongressChange}%!`, 'text-emerald-400 text-[10px]');
+    } else if (macroCongressChange < 0) {
+      state.addTickerMessage(`⚡ CONGRESS OPPOSITION: High Heat or economic strain degrades legislative support by ${macroCongressChange.toFixed(1)}%!`, 'text-red-400 text-[10px]');
+    }
+
+    if (mediaApprovalDrift > 0) {
+      state.addTickerMessage(`📺 MEDIA CONTROL: Your media holdings steer the public narrative: +${mediaApprovalDrift.toFixed(1)}% Approval Rating drift!`, 'text-emerald-400 text-[10px]');
+    }
+
+    // Media ownership approval rating positive drift
+    approvalHit += mediaApprovalDrift;
+
+    // Business Lobbying contributions
+    let lobbyingRevenue = 0;
+    let lobbyingClout = 0;
+    Object.keys(pl.hustleLevels || {}).forEach(hId => {
+      const lvl = pl.hustleLevels?.[hId] || 0;
+      if (lvl > 0 && hId !== 'r_sleep' && hId !== 'power_nap' && hId !== 'r_pr_campaign' && hId !== 'president_campaign') {
+        lobbyingRevenue += 25000 * lvl;
+        lobbyingClout += 1;
+      }
+    });
+    if (lobbyingRevenue > 0) {
+      updatedPl.federalBudget += lobbyingRevenue;
+      updatedPl.clout = (updatedPl.clout || 0) + lobbyingClout;
+      state.addTickerMessage(`LOBBYING: Active businesses contributed $${(lobbyingRevenue/1000).toFixed(0)}k to the Federal Budget and +${lobbyingClout} Clout.`, 'text-emerald-500 text-[10px]');
+    }
+
+    // Crime history / Past Misdeeds Scandal chance
+    if ((pl.arrestCount && pl.arrestCount > 0) || pl.heat > 50) {
+      if (Math.random() < 0.05) {
+        const pastMisdeedsCrisis = {
+          id: `scandal_past_misdeeds_${Date.now()}`,
+          type: 'past_misdeeds',
+          name: 'Past Misdeeds Leak',
+          title: 'Pre-Presidential Criminality Exposed',
+          description: 'A series of leaks detail your prior arrests and law enforcement scrutiny. The public is outraged.',
+          approvalImpact: -12,
+          impact: { approval: -12, heat: 15 },
+          resolved: false,
+          resolutionCost: { clout: 80, cash: 5000000 },
+          monthsRemaining: 3
+        };
+        activeCrises.push(pastMisdeedsCrisis);
+        state.addTickerMessage(`🚨 SCANDAL ALERT: Past Misdeeds Leak!`, 'text-red-500 font-bold');
+      }
+    }
+
+    // Real Estate housing affordability crisis
+    const hasHousingAct = pl.dynamicPassives?.['housing_policy'] !== undefined;
+    const hasHousingCrisis = activeCrises.some(c => c.type === 'housing_affordability_crisis');
+    if ((pl.rentPortfolioCount || 0) > 10 && !hasHousingAct && !hasHousingCrisis) {
+      activeCrises.push({
+        id: `cons_housing_crisis_${Date.now()}`,
+        type: 'housing_affordability_crisis',
+        name: 'Housing Affordability Protest',
+        title: 'Massive Real Estate Protest',
+        description: 'Your vast rental empire has sparked city-wide housing protests. Sign the Affordable Housing Act immediately to calm the streets.',
+        approvalImpact: -15,
+        impact: { approval: -15, heat: 20 },
+        resolved: false,
+        resolutionCost: { clout: 50 },
+        monthsRemaining: 4
+      });
+      state.addTickerMessage(`🚨 PROTEST: Vast rental empire triggers affordable housing crisis!`, 'text-red-500 font-bold');
     }
 
     // 1.5 Cabinet Consequences
@@ -472,11 +739,11 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       const member = { ...newCabinet[roleId] };
       let resigned = false;
 
-      // Cabinet Loyalty affected by player Aura
-      if (pl.aura > 750) {
-        member.loyalty = Math.min(100, member.loyalty + 1);
-      } else if (pl.aura < 300) {
-        member.loyalty = Math.max(0, member.loyalty - 2);
+      // Cabinet Loyalty affected by player Aura (updated thresholds)
+      if (pl.aura > 700) {
+        member.loyalty = Math.min(100, member.loyalty + 2);
+      } else if (pl.aura < 400) {
+        member.loyalty = Math.max(0, member.loyalty - 3);
       }
 
       // Fallback for legacy saves
@@ -487,7 +754,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       // Scandal Chance based on Corruption Risk and Integrity
       const scandalRisk = (corruptionRisk / 100) * (1.5 - integrity / 100);
       if (Math.random() < scandalRisk * 0.12) {
-        const appPenalty = 15 + Math.floor(Math.random() * 16);
+        const appPenalty = Math.floor((15 + Math.floor(Math.random() * 16)) * combinedScandalBuffer);
         approvalHit -= appPenalty;
         updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
         state.addTickerMessage(`SCANDAL: ${member.name} (${member.role}) caught in corruption scandal! Approval -${appPenalty}%`, 'text-red-600 font-black');
@@ -526,7 +793,7 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
             if (stat === 'approval') approvalHit += value;
             else if (stat === 'scandals') {
               if (value > 0 && Math.random() < value * 0.05) {
-                approvalHit -= 10;
+                approvalHit -= Math.floor(10 * combinedScandalBuffer);
                 updatedPl.scandalCount = (updatedPl.scandalCount || 0) + 1;
                 state.addTickerMessage(`LEAK: Small scandal linked to ${member.name}'s department.`, 'text-red-400');
               } else if (value < 0) {
@@ -607,6 +874,8 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
     });
 
     updatedPl.cabinet = newCabinet;
+
+    // 1.6 State of the Union History
 
     // 1.6 State of the Union History
     const newSotuHistory = [...(pl.sotuHistory || [])];
@@ -740,6 +1009,10 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
 
     if (isGameOver) {
       state.addTickerMessage(gameOverCause, "text-red-500 font-black");
+
+      const adminIdentity = inferAdministrationIdentity(updatedPl);
+      state.addTickerMessage(`🏛️ HISTORICAL VERDICT: Your administration is remembered as a ${adminIdentity}!`, 'text-yellow-400 font-bold');
+      updatedPl.biography = [...(updatedPl.biography || []), `HISTORICAL VERDICT: Left office with a legacy remembered as a ${adminIdentity}.`].slice(-50);
 
       updatedPl.deathContext = {
         mentalHealthAtDeath: Math.floor(updatedPl.mentalHealth),

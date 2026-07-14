@@ -13,6 +13,7 @@ global.localStorage = {
 describe('Presidency New Mechanics', () => {
   it('verifies Federal Budget, Macro-stats, and Midterm Elections', () => {
     const store = useGameStore;
+    store.getState().resetGame('sk_scrap');
 
     // Setup President State
     store.setState((state) => ({
@@ -31,6 +32,10 @@ describe('Presidency New Mechanics', () => {
         presidentMonth: 0,
         activeCrises: [],
         presidentialDiary: [],
+        approvalFloor: 0,
+        scandalRiskBonus: 0,
+        rivals: [],
+        consequences: [] // Clear pre-existing consequences to prevent state pollution
       },
       ph: 'PLAYING',
       activeTab: 'PRESIDENCY'
@@ -71,13 +76,13 @@ describe('Presidency New Mechanics', () => {
     expect(getState().pl.presidentialDiary[0].event).toBe('MIDTERM ELECTIONS');
 
     // 6. Test Inflation Feedback Loop
-    // Set inflation > 5
-    store.setState((state) => ({ pl: { ...state.pl, inflation: 6, approvalRating: 50 } }));
+    // Set inflation > 5, gdp at 100, and clear rivals to isolate pure economic feedback metrics
+    store.setState((state) => ({ pl: { ...state.pl, rivals: [], inflation: 6, gdp: 100, approvalRating: 50 } }));
     getState().advancePresidentialMonth();
     expect(getState().pl.approvalRating).toBeLessThan(50); // Should have hit -2 approval decay
 
     // 7. Test GDP Tax Penalty
-    // Set GDP < 80
+    // Set GDP < 80 and keep rivals clear to isolate the tax cut outcome
     store.setState((state) => ({ pl: { ...state.pl, gdp: 70 } }));
     const approvalBeforeTax = getState().pl.approvalRating;
     getState().issueExecutiveOrder('tax_cut');
