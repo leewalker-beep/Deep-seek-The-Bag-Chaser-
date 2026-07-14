@@ -55,7 +55,29 @@ export function calculateLegacyScore(pl: PlayerStats): number {
   // 7. Mid-run Legacy Points (from Achievements and Philanthropy)
   const midRunPoints = pl.legacyPoints || 0;
 
-  const baseScore = profitPoints + hustlePoints + achievementPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints;
+  // 11. Presidential Legacy Bonuses
+  let presidentialBonus = 0;
+  if (pl.currentTier === 'PRESIDENT' || (pl.presidentMonth && pl.presidentMonth > 0)) {
+    const orderCount = pl.presidentialDiary?.filter(d => d.type === 'ORDER').length || 0;
+    const resolvedCrisisCount = pl.presidentialDiary?.filter(d => d.event.startsWith('Crisis Resolved') || d.type === 'CRISIS').length || 0;
+    presidentialBonus += orderCount * 1000;
+    presidentialBonus += resolvedCrisisCount * 5000;
+
+    const cabinetMembers = Object.values(pl.cabinet || {});
+    if (cabinetMembers.length > 0) {
+      const avgLoyalty = cabinetMembers.reduce((sum, m) => sum + (m.loyalty ?? 70), 0) / cabinetMembers.length;
+      const avgIntegrity = cabinetMembers.reduce((sum, m) => sum + (m.integrity ?? 70), 0) / cabinetMembers.length;
+      if (avgLoyalty > 80 && avgIntegrity > 80) {
+        presidentialBonus += 10000;
+      }
+    }
+
+    if (pl.gdp > 100) {
+      presidentialBonus += Math.floor((pl.gdp - 100) * 50);
+    }
+  }
+
+  const baseScore = profitPoints + hustlePoints + achievementPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints + presidentialBonus;
 
   // 8. Login streak (50 bonus points for long streaks)
   const streakBonus = (pl.loginStreak || 0) * 50;

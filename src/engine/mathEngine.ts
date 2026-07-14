@@ -286,6 +286,8 @@ export function calculateHustleStatsAdditive(
   let eliteCloutBonus = 0;
   let presidentAuraBonus = 0;
 
+  let presidentEconomyBonus = 0;
+
   if (player.currentTier === 'MUD') {
     effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.5);
   } else if (player.currentTier === 'STREET') {
@@ -304,6 +306,16 @@ export function calculateHustleStatsAdditive(
     const masteryCount = getMasteryCount(player);
     const masteryApprovalBonus = Math.min(15, masteryCount * 1.5);
     effectiveResult.approvalBonus = (effectiveResult.approvalBonus || 0) + masteryApprovalBonus;
+
+    // Living Economy: GDP and Inflation directly scale business yields under presidency
+    if (player.gdp > 110) {
+      presidentEconomyBonus += 0.20;
+    } else if (player.gdp < 80) {
+      presidentEconomyBonus -= 0.20;
+    }
+    if (player.inflation > 5) {
+      presidentEconomyBonus -= 0.10;
+    }
   }
 
   // --- Legacy Multiplier ---
@@ -387,7 +399,7 @@ export function calculateHustleStatsAdditive(
   const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
   const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
 
-  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus;
+  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus;
 
   // Stress / Mental Health work efficiency impact
   const efficiencyMult = player.mentalHealth < 50 ? 0.75 + 0.25 * (player.mentalHealth / 50) : 1.0;

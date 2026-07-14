@@ -3,12 +3,18 @@ import type { CabinetMember, PresidentCrisis, ExecutiveOrder, PlayerStats } from
 export const advancePresidentialDecay = (pl: PlayerStats): PlayerStats => {
   const postDecayState = { ...pl };
 
-  const activeScandals = Object.keys(postDecayState.narrativeFlags).filter(key =>
+  const activeScandals = Object.keys(postDecayState.narrativeFlags || {}).filter(key =>
     key.startsWith('scandal_active_') && postDecayState.narrativeFlags[key] === true
   ).length;
 
-  const auraDecayRate = 6 + (activeScandals * 10);
+  let auraDecayRate = 6 + (activeScandals * 10);
   const cloutDecayRate = 20 * (1 + (postDecayState.heat / 100));
+
+  // Media ownership: Aura decay rate is 15% slower if they own media empire or film studio
+  const mediaLevel = Math.max(postDecayState.hustleLevels?.['media_empire'] || 0, postDecayState.hustleLevels?.['film_studio'] || 0);
+  if (mediaLevel > 0) {
+    auraDecayRate = Math.floor(auraDecayRate * 0.85);
+  }
 
   postDecayState.aura = Math.max(0, postDecayState.aura - auraDecayRate);
   postDecayState.clout = Math.max(0, postDecayState.clout - cloutDecayRate);
@@ -85,6 +91,12 @@ export function generateCandidatePool(roleId: string, player: PlayerStats): Cabi
       // Check narrative flags for relationship
       const relFlag = player.narrativeFlags?.[`rel_${cand.characterId}`];
       if (relFlag) score += Number(relFlag) * 50;
+
+      // Relationships influence cabinet appointments
+      const matchingNpc = player.npcs?.find(n => n.id === cand.characterId);
+      if (matchingNpc) {
+        score += matchingNpc.disposition * 10;
+      }
     }
 
     return { cand, score };
@@ -99,6 +111,18 @@ export function generateCandidatePool(roleId: string, player: PlayerStats): Cabi
       let initialLoyalty = 70;
       if (cand.characterId && player.crushedRivals?.includes(cand.characterId)) {
         initialLoyalty += 15; // Respect/Fear
+      }
+
+      // Relationships influence cabinet appointments: friend NPCs start with loyalty bonus
+      if (cand.characterId && player.npcs) {
+        const matchingNpc = player.npcs.find(n => n.id === cand.characterId);
+        if (matchingNpc) {
+          if (matchingNpc.disposition > 60) {
+            initialLoyalty += 20;
+          } else if (matchingNpc.disposition < -40) {
+            initialLoyalty -= 15;
+          }
+        }
       }
 
       // Integrity affects initial loyalty (more integrity = harder to buy)
@@ -430,4 +454,61 @@ export function generateCrisis(isSecondTerm: boolean, debt: number = 0, extraRis
     ...crisis,
     id: `${crisis.id}_${Date.now()}`
   };
+}
+
+export function inferAdministrationIdentity(pl: PlayerStats): string {
+  let progressive = 0;
+  let business = 0;
+  let reform = 0;
+  let security = 0;
+  let technocratic = 0;
+  let populist = 0;
+
+  // 1. Analyze signed orders (orders stored in pl.dynamicPassives)
+  const signedOrders = Object.keys(pl.dynamicPassives || {});
+  signedOrders.forEach(orderId => {
+    if (orderId === 'tax_cut' || orderId === 'working_class_policy') populist += 3;
+    if (orderId === 'infrastructure' || orderId === 'infrastructure_policy') technocratic += 3;
+    if (orderId === 'deregulation' || orderId === 'crypto_mining') business += 4;
+    if (orderId === 'healthcare' || orderId === 'labor_policy') progressive += 4;
+    if (orderId === 'housing_policy' || orderId === 'media_policy') reform += 3;
+    if (orderId === 'security_policy') security += 4;
+    if (orderId === 'data_analytics') technocratic += 4;
+  });
+
+  // 2. Analyze Cabinet members' careers/backgrounds
+  Object.values(pl.cabinet || {}).forEach(member => {
+    const prev = (member.previousCareer || '').toLowerCase();
+    if (prev.includes('general') || prev.includes('intelligence')) security += 2;
+    if (prev.includes('union') || prev.includes('journalist')) reform += 2;
+    if (prev.includes('ceo') || prev.includes('banker') || prev.includes('capitalist')) business += 2;
+    if (prev.includes('school') || prev.includes('dean') || prev.includes('auditor')) technocratic += 2;
+  });
+
+  // 3. Analyze macro indicators at term end
+  if (pl.gdp > 115) business += 2;
+  if (pl.inflation > 5) populist += 2;
+  if (pl.nationalDebt < 50) reform += 2;
+  if (pl.approvalRating > 75) populist += 3;
+
+  // 4. Determine style with highest score
+  const scores = {
+    'Progressive Administration': progressive,
+    'Business Administration': business,
+    'Reform Administration': reform,
+    'Security Administration': security,
+    'Technocratic Administration': technocratic,
+    'Populist Administration': populist
+  };
+
+  let bestStyle = 'Populist Administration';
+  let maxScore = -1;
+  Object.entries(scores).forEach(([style, score]) => {
+    if (score > maxScore) {
+      maxScore = score;
+      bestStyle = style;
+    }
+  });
+
+  return bestStyle;
 }

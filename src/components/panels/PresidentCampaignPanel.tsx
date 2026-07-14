@@ -67,9 +67,12 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
     }, 1000);
   };
 
+  const hasCrimeHistory = (pl.arrestCount && pl.arrestCount > 0) || (pl.heat && pl.heat > 50);
+  const campaignPenalty = hasCrimeHistory ? 0.75 : 1.0;
+
   if (activeMinigame === 'PersuadeVoters') {
     return <PersuadeVoters demographic={targetDemographic} onComplete={(mult) => {
-      const gain = Math.floor(mult * 5);
+      const gain = Math.floor(mult * 5 * campaignPenalty);
       updateDemographicApproval(targetDemographic, gain);
       addTickerMessage(`You won over key voters in the ${targetDemographic} community: +${gain}% Approval`, 'text-emerald-400');
       setActiveMinigame(null);
@@ -78,7 +81,7 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
 
   if (activeMinigame === 'SwingStateSweep') {
     return <SwingStateSweep onComplete={(res: any) => {
-      const votes = Math.floor(res.multiplier * 20);
+      const votes = Math.floor(res.multiplier * 20 * campaignPenalty);
       updatePresidentialStat('electoralVotes', votes);
       addTickerMessage(`Swing State Sweep complete: +${votes} Electoral Votes`, 'text-blue-400 font-bold');
       setActiveMinigame(null);
@@ -293,6 +296,13 @@ export const PresidentCampaignPanel: React.FC<PresidentCampaignPanelProps> = ({ 
   return (
     <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-6 shadow-2xl relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-white to-red-600" />
+
+      {hasCrimeHistory && (
+        <div className="bg-red-950/40 border border-red-500/30 p-3 rounded-xl text-xs text-red-400 font-bold mb-4">
+          ⚠️ CRIMINAL RECORD DETECTED: Due to your past arrests or high heat, voters are highly skeptical. Campaign persuasion and swing state gains are 25% less effective.
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="text-5xl drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{hustle.icon}</div>

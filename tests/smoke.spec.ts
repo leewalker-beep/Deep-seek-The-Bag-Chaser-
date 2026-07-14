@@ -15,8 +15,8 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         await skipBtn.click();
     }
 
-    // Chapter 1 intro screen should be visible
-    await expect(page.locator('h2')).toContainText('The First Hustle');
+    // Character select screen should be visible
+    await expect(page.locator('h2')).toContainText('Shape Your Story');
   });
 
   test('save and load verification', async ({ page }) => {
