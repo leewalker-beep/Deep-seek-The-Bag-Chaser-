@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
 import { PLAYER_AVATARS } from '../config/avatars';
 import Avatar from './Avatar';
-import { MagneticSweep } from './minigames/MagneticSweep';
-import { TrafficDodge } from './minigames/TrafficDodge';
+
+const MagneticSweep = lazy(() => import('./minigames/MagneticSweep').then(m => ({ default: m.MagneticSweep })));
+const TrafficDodge = lazy(() => import('./minigames/TrafficDodge').then(m => ({ default: m.TrafficDodge })));
 
 interface PrologueScreenProps {
   onStart: (
@@ -460,18 +461,20 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
         {/* PHASE: CHAPTER 1 GAMEPLAY */}
         {phase === 'ch1_game' && (
-          <MagneticSweep
-            level={1}
-            tier="MUD"
-            onComplete={handleCh1Complete}
-            itemEmojis={['🔩', '⚙️', '🖇️', '📎']}
-            rareEmoji="⭐"
-            title="Prologue Chapter 1"
-            instruction="Drag Magnet or tap items to salvage copper wire"
-            scoreLabel="COPPER SECURED"
-            rareLabel="PREMIUM COPPER"
-            icon="🧲"
-          />
+          <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 font-mono">LOADING SALVAGE MINIGAME...</div>}>
+            <MagneticSweep
+              level={1}
+              tier="MUD"
+              onComplete={handleCh1Complete}
+              itemEmojis={['🔩', '⚙️', '🖇️', '📎']}
+              rareEmoji="⭐"
+              title="Prologue Chapter 1"
+              instruction="Drag Magnet or tap items to salvage copper wire"
+              scoreLabel="COPPER SECURED"
+              rareLabel="PREMIUM COPPER"
+              icon="🧲"
+            />
+          </Suspense>
         )}
 
         {/* PHASE: CHAPTER 1 RESULTS */}
@@ -750,12 +753,14 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
         {/* PHASE: CHAPTER 4 GAMEPLAY */}
         {phase === 'ch4_game' && (
-          <TrafficDodge
-            level={1}
-            tier="MUD"
-            onComplete={handleCh4Complete}
-            title="Prologue Chapter 4"
-          />
+          <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 font-mono">LOADING DELIVERY MINIGAME...</div>}>
+            <TrafficDodge
+              level={1}
+              tier="MUD"
+              onComplete={handleCh4Complete}
+              title="Prologue Chapter 4"
+            />
+          </Suspense>
         )}
 
         {/* PHASE: CHAPTER 4 RESULTS */}

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGameStore } from '../store/gameStore';
 import { HUSTLES } from '../config/hustles/base';
-import { calculateHustleMath, getEffectiveHustleStats } from '../engine/mathEngine';
+import { calculateHustleMath, getEffectiveHustleStats, getLegacyBonus } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
+import { HUSTLE_REGISTRY } from '../engine/hustleEngine';
 
 describe('Legacy Multiplier Capping Regression Test Suite', () => {
   beforeEach(() => {
@@ -68,5 +69,35 @@ describe('Legacy Multiplier Capping Regression Test Suite', () => {
     expect(yieldAt5000).toBe(yieldAt2000);
     expect(yieldAt50000).toBe(yieldAt2000);
     expect(yieldAt200000).toBe(yieldAt2000);
+  });
+
+  it('shares identical behavior for getLegacyBonus across call sites', () => {
+    expect(getLegacyBonus(0)).toBe(0);
+    expect(getLegacyBonus(500)).toBe(0.5);
+    expect(getLegacyBonus(1000)).toBe(1.0);
+    expect(getLegacyBonus(2000)).toBe(2.0);
+    expect(getLegacyBonus(5000)).toBe(2.0);
+  });
+
+  it('caps philanthropy legacy gain to a safe bound', () => {
+    // Test a normal donation of $10M
+    const normalState = { philanthropyDonation: 10_000_000 } as any;
+    const normalRes = HUSTLE_REGISTRY.philanthropy_empire('philanthropy_empire', normalState, 'NORMAL', {} as any, 1, 1.0, false);
+    // baseLegacyGain = 50. legacyGain = 50 + 50 = 100
+    expect(normalRes.legacyGain).toBe(100);
+
+    // Test a large donation of $1B
+    const largeState = { philanthropyDonation: 1_000_000_000 } as any;
+    const largeRes = HUSTLE_REGISTRY.philanthropy_empire('philanthropy_empire', largeState, 'NORMAL', {} as any, 1, 1.0, false);
+    // baseLegacyGain is diminished to 401. legacyGain = 401 + 401 = 802.
+    expect(largeRes.legacyGain).toBeLessThan(1000);
+    expect(largeRes.legacyGain).toBe(802);
+
+    // Test an extreme donation of $100B ($100,000,000,000)
+    const extremeState = { philanthropyDonation: 100_000_000_000 } as any;
+    const extremeRes = HUSTLE_REGISTRY.philanthropy_empire('philanthropy_empire', extremeState, 'NORMAL', {} as any, 1, 1.0, false);
+    // baseLegacyGain is capped at 500. legacyGain = 500 + 500 = 1000.
+    expect(extremeRes.legacyGain).toBeLessThanOrEqual(1000);
+    expect(extremeRes.legacyGain).toBe(1000);
   });
 });

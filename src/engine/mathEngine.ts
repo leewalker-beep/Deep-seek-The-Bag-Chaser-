@@ -30,6 +30,10 @@ export const applyHQSynergies = (context: SynergyContext): number => {
   return Math.floor(context.baseYield * operationalMultiplier);
 };
 
+export function getLegacyBonus(legacyPoints: number): number {
+  return Math.min(2.0, (legacyPoints || 0) * 0.001);
+}
+
 export interface MathResult {
   cost: number;
   yieldCash: number;
@@ -319,7 +323,7 @@ export function calculateHustleStatsAdditive(
   }
 
   // --- Legacy Multiplier ---
-  const legacyBonus = Math.min(2.0, (player.legacyPoints || 0) * 0.001);
+  const legacyBonus = getLegacyBonus(player.legacyPoints || 0);
 
   // --- Specialization Bonuses ---
   let specBonus = 0;
