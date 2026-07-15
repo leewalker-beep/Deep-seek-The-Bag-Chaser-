@@ -1242,12 +1242,16 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
       'clout', 'aura', 'heat'
     ];
 
+    const reputation = newPl.narrativeFlags?.publicReputation as string || "The Hustler";
     statsToUpdate.forEach(stat => {
       const val = choice.impact[stat as keyof typeof choice.impact];
       if (val !== undefined) {
         // Use higher precision for macro-economic stats and approval
         const isMacro = ['gdp', 'inflation', 'debt', 'approval'].includes(stat);
-        const rawImpact = (val as number) * finalMultiplier;
+        let rawImpact = (val as number) * finalMultiplier;
+        if (reputation === "The President" && ['foreignRelations', 'worldPeace'].includes(stat)) {
+          rawImpact *= 1.2; // 20% easier diplomacy
+        }
         const impact = isMacro ? Number(rawImpact.toFixed(2)) : Math.floor(rawImpact);
 
         impacts[stat] = impact;

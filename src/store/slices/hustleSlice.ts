@@ -2238,7 +2238,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       return;
     }
 
-    const successChance = state.pl.chosenBackgroundCategory === 'street_kid' ? 0.85 : 0.75;
+    const reputation = state.pl.narrativeFlags?.publicReputation as string || "The Hustler";
+    let successChance = state.pl.chosenBackgroundCategory === 'street_kid' ? 0.85 : 0.75;
+    if (reputation === "The Crime Boss") {
+      successChance = Math.min(1.0, successChance + 0.15);
+    }
     const success = Math.random() < successChance;
     let nextPl = { ...state.pl, bag: state.pl.bag - cost };
 

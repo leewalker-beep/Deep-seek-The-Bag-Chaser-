@@ -395,11 +395,62 @@ export function calculateHustleStatsAdditive(
     effectiveResult.cost = Math.floor(effectiveResult.cost * (1 - cloutRebate));
   }
 
+  // --- Dynamic Reputation Modifiers ---
+  const reputation = player.narrativeFlags?.publicReputation as string || "The Hustler";
+  let repYieldBonus = 0;
+  let repCloutBonus = 0;
+  let repAuraBonus = 0;
+
+  if (reputation === "The Celebrity") {
+    if (['cc', 'pod', 'audio'].includes(hustleId)) {
+      repYieldBonus += 0.15;
+    } else {
+      repYieldBonus += 0.10;
+    }
+    effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.2);
+  } else if (reputation === "The Crime Boss") {
+    if (['r_ghost_mode', 'r_scrap', 'r_plasma'].includes(hustleId)) {
+      repYieldBonus += 0.20;
+    }
+    if (hustleId === 'president_campaign') {
+      effectiveResult.cost = Math.floor(effectiveResult.cost * 1.3);
+    }
+  } else if (reputation === "The Investor") {
+    effectiveResult.cost = Math.floor(effectiveResult.cost * 0.9);
+  } else if (reputation === "The Media Emperor") {
+    repCloutBonus += 0.15;
+  } else if (reputation === "The Mogul") {
+    repYieldBonus += 0.10;
+    effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 0.7);
+    effectiveResult.cost = Math.floor(effectiveResult.cost * 1.15);
+    effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.5);
+  } else if (reputation === "The People's Champion") {
+    repAuraBonus += 0.20;
+    if (['r_sleep', 'power_nap'].includes(hustleId) && effectiveResult.mentalHit > 0) {
+      effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.15);
+    }
+  } else if (reputation === "The Shadow Broker") {
+    if (['data_analytics', 'crypto_mining', 'data_monopoly'].includes(hustleId) || hustleId.includes('crypto')) {
+      repYieldBonus += 0.15;
+    }
+    const isTechOrDigital = ['data_analytics', 'crypto_mining', 'data_monopoly', 'saas_mvp', 'sw', 'techFlip'].includes(hustleId);
+    if (isTechOrDigital) {
+      effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 0.8);
+    }
+  } else if (reputation === "The Controversial Tycoon") {
+    repYieldBonus += 0.15;
+    if (hustleId === 'president_campaign') {
+      effectiveResult.cost = Math.floor(effectiveResult.cost * 1.20);
+    }
+  } else if (reputation === "The Billionaire") {
+    effectiveResult.cost = Math.floor(effectiveResult.cost * 0.85);
+  }
+
   // --- Centralized Cash Yield Linear Multiplier ---
   const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
   const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
 
-  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus;
+  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus + repYieldBonus;
 
   // Stress / Mental Health work efficiency impact
   const efficiencyMult = player.mentalHealth < 50 ? 0.75 + 0.25 * (player.mentalHealth / 50) : 1.0;
@@ -407,10 +458,10 @@ export function calculateHustleStatsAdditive(
   effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * totalMultiplier * specMatchingBonus * efficiencyMult));
 
   // --- Centralized Clout/Aura Yield Linear Multiplier ---
-  const totalCloutMultiplier = (1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus) * specMatchingBonus * efficiencyMult;
+  const totalCloutMultiplier = (1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus + repCloutBonus) * specMatchingBonus * efficiencyMult;
   effectiveResult.yieldClout = Math.max(0, Math.floor(result.yieldClout * totalCloutMultiplier));
 
-  const totalAuraMultiplier = (1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus) * specMatchingBonus * efficiencyMult;
+  const totalAuraMultiplier = (1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus + repAuraBonus) * specMatchingBonus * efficiencyMult;
   effectiveResult.yieldAura = Math.max(0, Math.floor(result.yieldAura * totalAuraMultiplier));
 
   // --- Clamp Clout/Aura yields ---
