@@ -248,25 +248,29 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const hasPlayed = state.pl.hustleLevels[hId] !== undefined || state.pl.hustleBranchIds[hId] !== undefined;
       if (!hasPlayed) return;
 
-      if (h.levels) {
-        const currentLvl = state.pl.hustleLevels[hId] || 1;
-        if (currentLvl >= h.levels.length) {
-          isMastered = true;
-        }
-      } else if (h.branches) {
-        const nodeId = state.pl.hustleBranchIds[hId] || h.startBranchId;
-        const node = nodeId ? h.branches[nodeId] : undefined;
+      // Universal rule: minimum 20 plays required for mastery
+      const plays = state.pl.hustlePlays[hId] || 0;
+      if (plays >= 20) {
+        if (h.levels) {
+          const currentLvl = state.pl.hustleLevels[hId] || 1;
+          if (currentLvl >= h.levels.length) {
+            isMastered = true;
+          }
+        } else if (h.branches) {
+          const nodeId = state.pl.hustleBranchIds[hId] || h.startBranchId;
+          const node = nodeId ? h.branches[nodeId] : undefined;
 
-        // Terminal branch check (must have actually selected this branch)
-        const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
-        const isRepeatableMastery = node?.isRepeatable && (
-          (hId === 'r_vending' && state.pl.vendingCount >= 10) ||
-          (hId === 'street_eats' && node.level >= 5) ||
-          (node.id === 'l2b' && state.pl.rentPortfolioCount >= 10)
-        );
+          // Terminal branch check (must have actually selected this branch)
+          const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
+          const isRepeatableMastery = node?.isRepeatable && (
+            (hId === 'r_vending' && state.pl.vendingCount >= 10) ||
+            (hId === 'street_eats' && node.level >= 5) ||
+            (node.id === 'l2b' && state.pl.rentPortfolioCount >= 10)
+          );
 
-        if (isTerminal || isRepeatableMastery) {
-          isMastered = true;
+          if (isTerminal || isRepeatableMastery) {
+            isMastered = true;
+          }
         }
       }
 

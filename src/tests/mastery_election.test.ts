@@ -28,10 +28,12 @@ describe('Mastery to Election Impact', () => {
 
   it('applies mastery bonus during campaign trail', () => {
     const hustleLevels: Record<string, number> = {};
+    const hustlePlays: Record<string, number> = {};
 
     const masteredHustleIds = Object.keys(HUSTLES).filter(id => !!HUSTLES[id].levels).slice(0, 10);
     masteredHustleIds.forEach(id => {
       hustleLevels[id] = HUSTLES[id].levels!.length;
+      hustlePlays[id] = 20;
     });
 
     useGameStore.setState((state) => ({
@@ -40,6 +42,7 @@ describe('Mastery to Election Impact', () => {
         currentTier: 'PRESIDENT',
         approvalRating: 50,
         hustleLevels,
+        hustlePlays,
         hustleBranchIds: { 'president_campaign': 'l1' },
         clout: 1000000,
         aura: 1000000,
@@ -76,7 +79,8 @@ describe('Mastery to Election Impact', () => {
         ...state.pl,
         masteredHustles: allHustleIds.filter(id => id !== 'r_scrap'),
         hustleLevels: { 'r_scrap': 4 },
-        hustleBranchIds: { 'r_scrap': 'l4' }
+        hustleBranchIds: { 'r_scrap': 'l4' },
+        hustlePlays: { 'r_scrap': 20 }
       }
     }));
 

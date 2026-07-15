@@ -68,7 +68,10 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
   // Difficulty scaling
   const gameSpeed = (3.5 + (level - 1) * 0.8) * Math.sqrt(scaling);
   const spawnRate = Math.max(280, (1100 - (level - 1) * 180) / spawnFactor);
-  const targetDistance = Math.floor((300 + (level - 1) * 150) * scaling);
+
+  // Target values: Level 1 = 700, Level 2 = 1000, Level 3 = 1500
+  const baseTarget = level === 1 ? 700 : level === 2 ? 1000 : level === 3 ? 1500 : (1500 + (level - 3) * 500);
+  const targetDistance = Math.floor(baseTarget * scaling);
   const targetPackages = 4 + level;
 
   // Refs to avoid resetting intervals continuously
@@ -148,7 +151,16 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
         const updated = prev.map(o => ({ ...o, y: o.y + (o.isPickup ? gameSpeed * 0.8 : gameSpeed) }));
 
         // Collision detection (🛵 lane width and vertical window checking)
-        const collision = updated.find(o => o.lane === laneRef.current && o.y > 74 && o.y < 94);
+        const collision = updated.find(o => {
+          if (o.lane !== laneRef.current) return false;
+          if (o.isPickup) {
+            // Generous hitbox for collecting package cargo!
+            return o.y > 68 && o.y < 98;
+          } else {
+            // Slightly tighter / fairer hitbox for avoiding standard hazards (cars/oil spills)
+            return o.y > 76 && o.y < 92;
+          }
+        });
         if (collision) {
           if (collision.isPickup) {
             setScore(s => s + 1);

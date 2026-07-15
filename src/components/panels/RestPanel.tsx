@@ -60,16 +60,26 @@ export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose
                   <div><p className="font-bold text-blue-400">🧘 Mindful Breathing</p><p className="text-[9px] text-blue-500/60">Rhythmic expansion matching</p></div>
                   <span className="text-blue-400 font-mono text-xs font-bold">+{Math.floor(baseRecovery * 1.5)} MH</span>
                 </button>
+              </>
+            )}
 
+            {/* STREET TIER: Show Perfect Brew and Constellation Tracing */}
+            {currentTier === 'STREET' && (
+              <>
                 <button onClick={() => setActiveMode('BREW')} className="p-2.5 bg-amber-950/20 hover:bg-amber-950/40 border border-amber-500/20 rounded-lg text-left text-xs flex justify-between items-center transition-all">
                   <div><p className="font-bold text-amber-400">🍵 The Perfect Brew</p><p className="text-[9px] text-amber-500/60">Hold & release pour sweetspot</p></div>
                   <span className="text-amber-400 font-mono text-xs font-bold">+{Math.floor(baseRecovery * 1.5)} MH</span>
                 </button>
+
+                <button onClick={() => setActiveMode('WEAVE')} className="p-2.5 bg-purple-950/20 hover:bg-purple-950/40 border border-purple-500/20 rounded-lg text-left text-xs flex justify-between items-center transition-all">
+                  <div><p className="font-bold text-purple-400">🌌 Constellation Tracing</p><p className="text-[9px] text-purple-400/60">Sequential pointer tracking</p></div>
+                  <span className="text-purple-400 font-mono text-xs font-bold">+{Math.floor(baseRecovery * 2.0)} MH</span>
+                </button>
               </>
             )}
 
-            {/* ADVANCED PROGRESSION (STREET TIER AND BEYOND): Unlock +100% tier items */}
-            {!isMudTier && (
+            {/* STARTUP AND BEYOND: Show Constellation Tracing and Thought Clouds */}
+            {currentTier !== 'MUD' && currentTier !== 'STREET' && (
               <>
                 <button onClick={() => setActiveMode('WEAVE')} className="p-2.5 bg-purple-950/20 hover:bg-purple-950/40 border border-purple-500/20 rounded-lg text-left text-xs flex justify-between items-center transition-all">
                   <div><p className="font-bold text-purple-400">🌌 Constellation Tracing</p><p className="text-[9px] text-purple-400/60">Sequential pointer tracking</p></div>
