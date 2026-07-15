@@ -21,6 +21,7 @@ import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier
 import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
 import { evaluateReputationTick } from './reputationEngine';
+import { getLegacyBonus } from './mathEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -333,7 +334,7 @@ export function advanceMonth(
 
   // --- MULTIPLIERS ---
   const isJailed = newPl.inJail === true || newPl.isIncarcerated === true;
-  const legacyMultiplier = 1 + Math.min(2.0, (newPl.legacyPoints || 0) * 0.001);
+  const legacyMultiplier = 1 + getLegacyBonus(newPl.legacyPoints || 0);
   let legacyBoost = 1.0;
   if (unlockedLegacyUpgrades.includes('passive_boost')) legacyBoost = 1.1;
 

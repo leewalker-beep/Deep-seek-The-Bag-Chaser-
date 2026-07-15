@@ -1,6 +1,6 @@
 import type { PlayerStats, MarketType, TickerMessage } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
-import { calculateHustleMath, getEffectiveHustleStats, LEVEL_MULTIPLIERS } from './mathEngine';
+import { calculateHustleMath, getEffectiveHustleStats, LEVEL_MULTIPLIERS, getLegacyBonus } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { SENTIMENT_CATEGORIES } from '../config/sentiment';
 import { isConsequenceActive } from './consequenceEngine';
@@ -129,7 +129,15 @@ const philanthropyStrategy: HustleStrategy = (_hustleId, state, marketType, _lev
   const market = MARKET_CONFIGS[marketType];
   const donation = state.philanthropyDonation || 10000000;
   const performanceMult = (minigameMultiplier || 1);
-  const baseLegacyGain = Math.floor(donation / 200000);
+
+  let baseLegacyGain = Math.floor(donation / 200000);
+  if (baseLegacyGain > 50) {
+    // Apply a square-root diminishing-return curve above 50 points (equivalent to $10M donation)
+    baseLegacyGain = 50 + Math.floor(Math.sqrt((baseLegacyGain - 50) * 25));
+  }
+  // Clamp at a maximum of 500 base legacy points
+  baseLegacyGain = Math.min(500, baseLegacyGain);
+
   const legacyGain = baseLegacyGain + Math.floor(baseLegacyGain * performanceMult);
 
   return {
@@ -661,7 +669,7 @@ export const executeHustleAction = (
       multipliers: {
         'Market': (MARKET_CONFIGS[market]?.heatMultiplier || 1), // Proxy for damage-relevant market mults
         'Skill': minigameMultiplier,
-        'Legacy': 1 + Math.min(2.0, (state.legacyPoints || 0) * 0.001)
+        'Legacy': 1 + getLegacyBonus(state.legacyPoints || 0)
       },
       finalDamage: effective.mentalHit
     }

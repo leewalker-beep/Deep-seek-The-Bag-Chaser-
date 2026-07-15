@@ -205,18 +205,6 @@ function App() {
 
   const showMinigame = useGameStore(state => state.showMinigame);
 
-  // Strategic Preloading
-  useEffect(() => {
-    if (showMinigame) {
-      // Small delay to prioritize the current minigame load
-      const timer = setTimeout(() => {
-        import('./components/DeathScreen');
-        import('./components/EndgameSummary');
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showMinigame]);
-
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
