@@ -26,9 +26,16 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({
   scoreLabel = "%",
   accentColor = "orange"
 }) => {
+  // Timing curve: Level 1 = 5.0s, Level 2 = 4.0s, Level 3 = 3.0s, clamped to min 3.0s
+  const initialTime = useMemo(() => Math.max(3.0, 5.0 - (level - 1) * 1.0), [level]);
+
   const [progress, setProgress] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isActive, setIsActive] = useState(true);
+
+  useEffect(() => {
+    setTimeLeft(initialTime);
+  }, [initialTime]);
   const [feedback, setFeedback] = useState<'tap' | 'perfect' | 'miss' | null>(null);
   const [targetPos, setTargetPos] = useState(50);
   const [targetDir, setTargetDir] = useState(1);

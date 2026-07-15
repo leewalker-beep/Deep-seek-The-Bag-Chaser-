@@ -71,7 +71,8 @@ describe('Living Biography System', () => {
         pl: {
             ...state.pl,
             hustleBranchIds: { 'cc': 'l3' }, // l3 is terminal for cc
-            hustleLevels: { 'cc': 3 }
+            hustleLevels: { 'cc': 3 },
+            hustlePlays: { 'cc': 20 }
         }
     });
 
@@ -148,6 +149,7 @@ describe('Living Biography System', () => {
         currentTier: 'MUD',
         hustleBranchIds: { 'r_labor': 'l3a' },
         hustleLevels: { 'r_labor': 3 },
+        hustlePlays: { 'r_labor': 20 },
         activeChallenges: [{
             rivalId: 'rival1',
             rivalName: 'Test Rival',
@@ -187,6 +189,7 @@ describe('Living Biography System', () => {
          aura: 50,
          hustleBranchIds: { 'r_labor': 'l3a' },
          hustleLevels: { 'r_labor': 3 },
+         hustlePlays: { 'r_labor': 20 },
          activeChallenges: [{
              rivalId: 'rival1',
              rivalName: 'Test Rival',

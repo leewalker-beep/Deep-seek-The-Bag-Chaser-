@@ -7,12 +7,20 @@ import { HUSTLES } from '../config/hustles/base';
  * AND the hustle has actually been played.
  */
 export const getMasteryCount = (player: PlayerStats): number => {
+  if (player.masteredHustles && player.masteredHustles.length > 0) {
+    return player.masteredHustles.length;
+  }
+
   let count = 0;
 
   Object.keys(HUSTLES).forEach(hId => {
     const hustle = HUSTLES[hId];
     const currentLevel = player.hustleLevels[hId] || 0;
     if (currentLevel === 0) return;
+
+    // Universal rule: minimum 20 plays required for mastery
+    const plays = player.hustlePlays?.[hId] || 0;
+    if (plays < 20) return;
 
     if (hustle.levels) {
       if (currentLevel >= hustle.levels.length) {

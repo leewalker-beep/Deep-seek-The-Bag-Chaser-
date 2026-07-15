@@ -20,6 +20,7 @@ describe('Badge Future Benefits', () => {
         aura: 100000,
         hustleLevels: { 'audio': 4 },
         hustleBranchIds: { 'audio': 'l4' },
+        hustlePlays: { 'audio': 20 },
         masteredHustles: []
       }
     }));
