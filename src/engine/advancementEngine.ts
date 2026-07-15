@@ -20,6 +20,7 @@ import { simulateRivals } from './rivalSimEngine';
 import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier, isConsequenceActive } from './consequenceEngine';
 import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
+import { evaluateReputationTick } from './reputationEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -112,6 +113,16 @@ export function advanceMonth(
   newPl.isIncarcerated = newPl.inJail;
   let newMarket = currentMarket;
 
+  // Evaluate reputation tick and update public reputation
+  const repTick = evaluateReputationTick(newPl);
+  newPl = repTick.newPl;
+  news.push(...repTick.news.map(msg => ({ text: msg, colorClass: 'text-yellow-400 font-bold' })));
+
+  const reputation = newPl.narrativeFlags?.publicReputation as string || "The Hustler";
+  if (reputation === "The Crime Boss") {
+    newPl.aura = Math.max(0, newPl.aura - 2);
+  }
+
   // Process Consequences
   newPl = detectAndCreateConsequences(newPl, news);
   newPl = tickConsequences(newPl, news);
@@ -182,6 +193,11 @@ export function advanceMonth(
       // Apply consequence multipliers to business yields
       const bizMult = getConsequenceMultiplier(newPl, 'businesses', 'yieldCashMult', 1.0);
       yieldAmount = Math.floor(yieldAmount * bizMult);
+
+      // Apply Investor Reputation Bonus (+10% passive business yield)
+      if (reputation === "The Investor") {
+        yieldAmount = Math.floor(yieldAmount * 1.10);
+      }
 
       baseTotal += yieldAmount;
       sources.push({

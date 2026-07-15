@@ -199,6 +199,10 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
+  useEffect(() => {
+    (window as any).__gameStore__ = useGameStore;
+  }, []);
+
   const showMinigame = useGameStore(state => state.showMinigame);
 
   // Strategic Preloading

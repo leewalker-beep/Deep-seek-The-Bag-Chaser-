@@ -19,6 +19,7 @@ export const simulateRivals = (
 ): RivalSimResult => {
   const news: string[] = [];
   const playerStatsUpdates: Partial<PlayerStats> = {};
+  const reputation = pl.narrativeFlags?.publicReputation as string || "The Hustler";
 
   const updatedRivals = pl.rivals.map(rival => {
     // Re-initialize default personality traits just in case they were missing
@@ -275,24 +276,34 @@ export const simulateRivals = (
     let sabotageChance = (0.2 + r.aggression! * 0.15);
     if (isRetaliationActive) sabotageChance *= 1.5;
     if (isHaloActive) sabotageChance *= 0.5;
+    if (reputation === "The Kingmaker") sabotageChance *= 0.5;
 
     if (r.sabotagedCount! > 0 && Math.random() < sabotageChance) {
       r.relationshipWithPlayer = Math.max(-100, r.relationshipWithPlayer! - 5);
       const retaliations = ['POACH_REVENUE', 'TALK_RUMOURS', 'DIRECT_SABOTAGE'];
       const act = randomChoice(retaliations);
 
+      let quote = '"Stay in your lane."';
+      if (reputation === "The Hustler") quote = '"You\'re just a basic street hustler."';
+      else if (reputation === "The Investor") quote = '"Let\'s see if your portfolio can buffer this strike, Investor."';
+      else if (reputation === "The Mogul") quote = '"Even Moguls can bleed."';
+      else if (reputation === "The Celebrity") quote = '"Your flashy fame won\'t shield your bank account."';
+      else if (reputation === "The Crime Boss") quote = '"You think you own the underground?"';
+      else if (reputation === "The Kingmaker") quote = '"Your political puppet strings won\'t save your holdings."';
+      else if (reputation === "The President") quote = '"Not even executive privilege can protect your assets."';
+
       if (act === 'POACH_REVENUE' && Object.keys(pl.dynamicPassives).length > 0) {
         const target = randomChoice(Object.keys(pl.dynamicPassives));
         playerStatsUpdates.dynamicPassives = { ...pl.dynamicPassives };
         playerStatsUpdates.dynamicPassives[target] = Math.floor((pl.dynamicPassives[target] || 0) * 0.80);
-        news.push(`🚨 RETALIATION: ${r.name} remembers your past sabotage and poached 20% of your ${target.replace(/_/g, ' ')} returns!`);
+        news.push(`🚨 RETALIATION: ${r.name} said ${quote} and poached 20% of your ${target.replace(/_/g, ' ')} returns!`);
       } else if (act === 'TALK_RUMOURS') {
         playerStatsUpdates.heat = Math.min(100, pl.heat + 15);
-        news.push(`🗣️ SMEAR Campaign: ${r.name} leaked rumors about your operations. Your Heat surged +15%!`);
+        news.push(`🗣️ SMEAR Campaign: ${r.name} declared ${quote} and leaked rumors about your operations. Your Heat surged +15%!`);
       } else {
         playerStatsUpdates.bag = Math.max(0, pl.bag - 15000);
         playerStatsUpdates.aura = Math.max(0, pl.aura - 20);
-        news.push(`💥 SABOTAGE: ${r.name} directly sabotaged your delivery logistics. Lost $15,000 and 20 Aura!`);
+        news.push(`💥 SABOTAGE: ${r.name} declared ${quote} and directly sabotaged your delivery logistics. Lost $15,000 and 20 Aura!`);
       }
     }
 
@@ -328,6 +339,8 @@ export const simulateRivals = (
     let bidChance = 0.05 * (r.vengeance ?? 1);
     if (isRetaliationActive) bidChance *= 1.5;
     if (isHaloActive) bidChance *= 0.5;
+    if (reputation === "The Kingmaker") bidChance *= 0.5;
+    if (reputation === "The Crime Boss") bidChance *= 0.75;
 
     if (r.tier === pl.currentTier && Math.random() < bidChance) {
       currentBid = Math.floor(r.netWorth * (0.05 + Math.random() * 0.1));

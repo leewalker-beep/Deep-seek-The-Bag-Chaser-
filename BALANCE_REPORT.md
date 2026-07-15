@@ -108,3 +108,58 @@ A comprehensive end-to-end player experience verification pass was conducted acr
 While the current release candidate is highly balanced, the following areas can be monitored for future adjustments:
 1.  **Hedge Fund active trading:** High performance in active hedge fund trading could be tuned slightly if players consistently achieve perfect minigame score streaks.
 2.  **Aura Decay at the Presidential tier:** Since Presidential activities require high Aura, a more aggressive passive Aura decay could be introduced in a future update to simulate the wear-and-tear of high office.
+
+---
+
+## 7. Dynamic Reputation Engine Balance Audit
+
+This section documents the balance, risk, and stability audit of the **Dynamic Reputation Engine** introduced to observe players' lives and generate living public reputations.
+
+### A. Core Questions & Answers
+
+#### 1. Which reputation provides the largest gameplay bonus?
+*   **The Billionaire** provides the most significant overall cash utility via its **-15% acquisition discount** on all business setup costs and high-end upgrades. However, this is balanced because the player must accumulate at least **$1,000,000,000** to unlock it, meaning they are already in the post-scarcity phase of sandbox play.
+*   For mid-game, **The Celebrity** provides the most influential cash multiplier with a **+15% active yield bonus** on media/creative hustles (CC, Podcast, Audio) and a **+10% sponsorship cash bonus** across all other active operations.
+
+#### 2. Which provides the largest drawback?
+*   **The Crime Boss** has the heaviest penalties:
+    1.  **-2 Aura decay per month** passively.
+    2.  **30% cost increase** to national Presidential Campaigns (representing heavy political shunning).
+    3.  A highly hostile relationship baseline with persistent NPCs.
+*   **The Mogul** also carries substantial drawbacks, introducing **+15% monthly overhead running costs** and a **1.5x Heat hit multiplier** on all actions due to aggressive public scrutiny on corporate movements.
+
+#### 3. Can any reputation become objectively optimal?
+*   **No.** Each persona has been carefully designed with specialized, complementary benefits and drawbacks:
+    - Players focused on passive portfolios gain massive value as an **Investor** (+10% passive business yield, -10% acquisition costs), but they face higher audit risks.
+    - Players focused on political dominance need **The Kingmaker** or **The People's Champion** to build easy cabinet alignments (+10% starting loyalty) and protect holdings from rival sabotage.
+    - Active grinders benefit from **The Celebrity** or **The Mogul**, but must manage significantly higher Heat and public scandal backlash.
+*   Because the engine is fully observational and score-based, players naturally drift into the persona that matches their active playstyle, making the system feel descriptive rather than prescriptive.
+
+#### 4. Do all reputations remain viable across long-term play?
+*   **Yes.** Every reputation features positive, flavor-filled modifiers that reward specific game loops:
+    - **The Shadow Broker** excels in high-heat tech/crypto grifts (20% heat reduction, +15% data yields).
+    - **The People's Champion** yields peak public admiration (+20% Aura gains) and rapid burnout recovery (+15% mental health recovery), keeping basic operations frictionless.
+    - Baseline reputations like **The Hustler** remain viable by granting silent, zero-scrutiny profiles (standard news scan rates) and minor sleep recovery aids.
+
+#### 5. Are there any potential snowball effects remaining?
+*   **None.** All scoring metrics are strictly **flat-capped and threshold-gated** (e.g., flat `+150` for holding specific properties or passing a net worth threshold) rather than scaling progressively.
+*   **The 3-month sustained candidate window** acts as an absolute buffer against oscillation. Even under rapid swings in Clout or Heat, the public's perception of the player only shifts after sustained, long-term operational changes.
+
+### B. Summary Table of Active Modifiers
+
+| Persona | Primary Modifiers | Drawbacks / Cost Modifiers |
+| :--- | :--- | :--- |
+| **The Hustler** | Standard profile, subtle sleep recovery | Low prestige leverage |
+| **The Investor** | +10% passive biz yields, -10% upgrade costs | Moderate rival audit targeting |
+| **The Mogul** | +10% active yields, -30% mental hits | +15% run costs, 1.5x Heat hits |
+| **The Celebrity** | +15% media yields, +10% sponsorships | 1.2x Heat hit scale on failed actions |
+| **The Philanthropist** | +15% Aura gains, -15% rival bids | Fragile (any arrest destroys persona) |
+| **The Crime Boss** | +15% sabotage chance, +20% shady yields | +30% campaign costs, -2 Aura/mo decay |
+| **The Reformer** | +10% Congress support, +10% demographics | Disliked by corporate rivals |
+| **The President** | +20% diplomacy gains | High public expectations (Approval decays faster) |
+| **The Kingmaker** | -50% rival sabotage/bidding chance | Sudden federal conspiracy audits |
+| **The Billionaire** | -15% acquisition costs | +30% rival bidding frequency |
+| **The Media Emperor** | +15% Clout yields | Leaked scandals trigger 25% harsher backlash |
+| **The Shadow Broker** | +15% tech/crypto yields, -20% tech Heat | -15 relationship baseline with rivals |
+| **The People's Champion**| +20% Aura gains, +15% mental sleep recovery | Prone to sudden establishment backlashes |
+| **Controversial Tycoon**| +15% active yields, immune to minor rival intimidation| +20% campaign costs, 20% more consequences |

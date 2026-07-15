@@ -22,10 +22,11 @@ export const triggerMonthlyNarrativeEvent = (player: any) => {
   }
 
   if (activeAlly && player.currentTier === 'ELITE') {
+    const reputation = player.narrativeFlags?.publicReputation || "The Hustler";
     return {
       id: `evt_campaign_boost_${Date.now()}`,
       title: "🗳️ THE TICKET IS LOCKED",
-      description: `Your longtime partner ${activeAlly.name} (${activeAlly.avatar}) addresses the press: "I watched this mogul balance cash registers at age ${activeAlly.originAge}. There is no one else I trust to run this city." Clout multipliers surging!`,
+      description: `Your longtime partner ${activeAlly.name} (${activeAlly.avatar}) addresses the press: "I watched this ${reputation.toLowerCase()} balance cash registers at age ${activeAlly.originAge}. There is no one else I trust to run this city." Clout multipliers surging!`,
       effect: (state: any) => {
         state.updateClout(5000);
         state.updateAura(500);

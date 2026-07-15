@@ -609,6 +609,19 @@ export function generateStrategicAdvice(
     });
   }
 
+  // --- DYNAMIC REPUTATION INTEGRATION ---
+  const activeRep = pl.narrativeFlags?.publicReputation as string || "The Hustler";
+  insights.push({
+    id: 'reputation_insight',
+    category: 'Legacy',
+    priority: 'Information',
+    title: `Active Public Persona: ${activeRep}`,
+    whatIsHappening: `The public currently views you as "${activeRep}".`,
+    whyItHappened: `This living reputation was built through your sustained metric choices, investments, and operational style.`,
+    recommendation: `Check your Reputation tab in the Advisor console to leverage its active flavorful modifiers and drawback mitigations.`,
+    confidence: 100,
+  });
+
   // --- DERIVE SUMMARIES AND KEY INSIGHTS ---
   // Prioritize list: Critical, then Important, then Opportunity, then Information
   const sortedInsights = [...insights].sort((a, b) => {
