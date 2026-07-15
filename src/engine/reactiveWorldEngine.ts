@@ -1,5 +1,6 @@
 import type { PlayerStats, WorldFeedItem, WorldFeedCategory, LiveWorldEvent, LiveWorldEventType } from '../types/game';
 import * as Bio from './biographyEngine';
+import { recordHistoryEvent, type HistoryEvent } from './historyEngine';
 
 const generateId = () => Math.random().toString(36).substring(7);
 
@@ -590,6 +591,20 @@ export function processWorldReaction(
     }
   }
 
+  // First Billion
+  if (updatedPl.bag >= 1000000000 && !completed.includes('FIRST_BILLION')) {
+    candidates.push({
+      id: 'FIRST_BILLION',
+      type: 'MARKET_FLASH',
+      priority: 9,
+      title: '📈 MARKET FLASH',
+      headline: `THE TEN-FIGURE CLUB: ${pName.toUpperCase()} REACHES $1,000,000,000!`,
+      body: `Unbelievable financial history! ${pName} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid reserves. They are officially a global financial sovereign!`,
+      source: 'Global Financial Digest',
+      effect: '+100 Clout | +100 Aura'
+    });
+  }
+
   // 3. First Arrest
   if (actionType === 'ARREST' && !completed.includes('FIRST_ARREST')) {
     const charge = updatedPl.jailCharge || 'regulatory violation';
@@ -882,6 +897,64 @@ export function processWorldReaction(
 
     updatedPl.activeLiveEvent = liveEvent;
     updatedPl.completedLiveEvents = [...completed, chosen.id];
+
+    // Record History Event for this major Live World Event!
+    let historyCat: HistoryEvent['category'] = 'CAREER';
+    let imp: HistoryEvent['importance'] = 4;
+
+    if (chosen.id === 'ELECTION_VICTORY') {
+      historyCat = 'POLITICS';
+      imp = 5;
+    } else if (chosen.id === 'BANKRUPTCY') {
+      historyCat = 'CAREER';
+      imp = 5;
+    } else if (chosen.id === 'FIRST_ARREST') {
+      historyCat = 'CRIME';
+      imp = 4;
+    } else if (chosen.id === 'PRESIDENTIAL_SCANDAL') {
+      historyCat = 'POLITICS';
+      imp = 4;
+    } else if (chosen.id.startsWith('PROMOTION_')) {
+      historyCat = 'CAREER';
+      imp = 4;
+    } else if (chosen.id === 'FIRST_MILLION') {
+      historyCat = 'CAREER';
+      imp = 4;
+    } else if (chosen.id === 'FIRST_BILLION') {
+      historyCat = 'CAREER';
+      imp = 5;
+    } else if (chosen.id.startsWith('ACHIEVEMENT_')) {
+      historyCat = 'LEGACY';
+      imp = 4;
+    } else if (chosen.id === 'MAJOR_PHILANTHROPY') {
+      historyCat = 'LEGACY';
+      imp = 5;
+    } else if (chosen.id === 'HISTORIC_ACQUISITION') {
+      historyCat = 'BUSINESS';
+      imp = 5;
+    } else if (chosen.id === 'MARKET_CRASH') {
+      historyCat = 'WORLD';
+      imp = 4;
+    } else if (chosen.id === 'RECORD_PROFIT') {
+      historyCat = 'CAREER';
+      imp = 4;
+    } else if (chosen.id.startsWith('LUXURY_')) {
+      historyCat = 'CAREER';
+      imp = 3;
+    } else if (chosen.id === 'FIRST_BUSINESS_LAUNCH') {
+      historyCat = 'BUSINESS';
+      imp = 3;
+    }
+
+    recordHistoryEvent(updatedPl, {
+      id: `live_event_${chosen.id}`,
+      title: chosen.headline,
+      description: chosen.body,
+      category: historyCat,
+      importance: imp,
+      month: updatedPl.month,
+      excludeFromBiography: true
+    });
 
     // INTEGRATE LIVING HISTORY SIDE EFFECTS
     const categoryMap: Record<LiveWorldEventType, WorldFeedCategory> = {

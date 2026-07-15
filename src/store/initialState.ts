@@ -372,6 +372,7 @@ export const getInitialStats = (
     completedNarrativeEvents: [],
     biography: [],
     recordedBioKeys: [],
+    history: [],
     activeNarrative: null,
     narrativeCooldown: 0,
     lastCharacterId: undefined,
