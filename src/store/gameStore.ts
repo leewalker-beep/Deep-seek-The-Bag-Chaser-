@@ -43,6 +43,7 @@ export const useGameStore = create<GameState>()(
           variationId: state.pl.variationId,
           consequences: state.pl.consequences,
           ambitions: state.pl.ambitions,
+          history: state.pl.history,
         },
         rivals: state.pl.rivals,
         ph: state.ph,

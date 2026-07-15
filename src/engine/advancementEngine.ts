@@ -13,6 +13,7 @@ import { getSentence } from '../config/jailSentences';
 import * as FlexEngine from './flexEngine';
 import type { PassiveSource, PassiveBreakdown } from '../types/game';
 import * as Bio from './biographyEngine';
+import { recordHistoryEvent } from './historyEngine';
 import { evolveWorldNPCs } from '../utils/narrativeEngine';
 import { triggerMonthlyNarrativeEvent } from './eventEngine';
 import { simulateRivals } from './rivalSimEngine';
@@ -376,6 +377,18 @@ export function advanceMonth(
 
   // Apply financial changes
   newPl.bag = newPl.bag + passiveIncome - totalRent;
+
+  // Record First Passive Income
+  if (passiveIncome > 0 && !newPl.history?.some(h => h.id === 'first_passive_income')) {
+    recordHistoryEvent(newPl, {
+      id: 'first_passive_income',
+      title: 'First Passive Income',
+      description: `Began generating passive stream of $${passiveIncome.toLocaleString()}/mo.`,
+      category: 'CAREER',
+      importance: 3,
+      month: newPl.month
+    });
+  }
 
   // New Record Label Artists handling (contract countdown, poaching alerts, revenue/retainer calculations)
   processEntertainmentTimelineTick(newPl, news as string[]);

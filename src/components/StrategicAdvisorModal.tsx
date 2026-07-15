@@ -14,7 +14,8 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
   const ignoreAmbition = useGameStore(state => state.ignoreAmbition);
   const replaceAmbition = useGameStore(state => state.replaceAmbition);
 
-  const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS'>('ALL');
+  const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY'>('ALL');
+  const [activeHistoryCategory, setActiveHistoryCategory] = useState<'ALL' | 'CAREER' | 'BUSINESS' | 'CRIME' | 'RIVALS' | 'POLITICS' | 'LEGACY' | 'WORLD'>('ALL');
 
   // Derive strategic advice using the pure advisor engine helper
   const advice = generateStrategicAdvice(pl, currentMarket);
@@ -23,6 +24,32 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
   const activeAmbitions = ambitions.filter(a => a.status === 'ACTIVE');
   const suggestedAmbitions = ambitions.filter(a => a.status === 'SUGGESTED');
   const completedAmbitions = ambitions.filter(a => a.status === 'COMPLETED');
+
+  // Filter history events and sort chronologically (Newest first)
+  const unfilteredHistory = pl.history || [];
+  const sortedHistory = [...unfilteredHistory].sort((a, b) => {
+    if (b.month !== a.month) return b.month - a.month;
+    return b.id.localeCompare(a.id);
+  });
+  const filteredHistory = sortedHistory.filter(event => {
+    if (activeHistoryCategory === 'ALL') return true;
+    if (activeHistoryCategory === 'RIVALS' && event.category === 'RIVAL') return true;
+    return event.category === activeHistoryCategory;
+  });
+
+  const getHistoryCategoryEmoji = (category: string) => {
+    switch (category) {
+      case 'CAREER': return '💼';
+      case 'BUSINESS': return '🏢';
+      case 'RIVAL': return '⚔️';
+      case 'CRIME': return '⚖️';
+      case 'POLITICS': return '🗳️';
+      case 'LEGACY': return '👑';
+      case 'RELATIONSHIP': return '🤝';
+      case 'WORLD': return '🌍';
+      default: return '📖';
+    }
+  };
 
   // Filter insights based on active filter button selection and limit to top 5 to avoid overwhelming the player
   const filteredInsights = advice.insights.filter(ins => {
@@ -161,22 +188,109 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
 
           {/* Filter Tabs */}
           <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar gap-1">
-            {(['ALL', 'CRITICAL', 'IMPORTANT', 'OPPORTUNITIES', 'INFO', 'AMBITIONS'] as const).map(tab => (
+            {(['ALL', 'CRITICAL', 'IMPORTANT', 'OPPORTUNITIES', 'INFO', 'AMBITIONS', 'HISTORY'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => setActivePriorityFilter(tab)}
+                onClick={() => {
+                  setActivePriorityFilter(tab);
+                  if (tab === 'HISTORY') {
+                    setActiveHistoryCategory('ALL');
+                  }
+                }}
                 className={`flex-1 text-center py-1.5 px-2.5 text-[8px] font-black uppercase tracking-wider rounded-md transition-all whitespace-nowrap ${
                   activePriorityFilter === tab
                     ? 'bg-slate-800 text-emerald-400 border border-slate-700/50 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                {tab === 'AMBITIONS' ? '🎯 AMBITIONS' : tab}
+                {tab === 'AMBITIONS' ? '🎯 AMBITIONS' : tab === 'HISTORY' ? '📖 HISTORY' : tab}
               </button>
             ))}
           </div>
 
-          {activePriorityFilter === 'AMBITIONS' ? (
+          {activePriorityFilter === 'HISTORY' ? (
+            <div className="space-y-4">
+              {/* History Category Sub-filters */}
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar gap-1">
+                {(['ALL', 'CAREER', 'BUSINESS', 'CRIME', 'RIVALS', 'POLITICS', 'LEGACY', 'WORLD'] as const).map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveHistoryCategory(cat)}
+                    className={`flex-1 text-center py-1.5 px-2.5 text-[8px] font-black uppercase tracking-wider rounded-md transition-all whitespace-nowrap ${
+                      activeHistoryCategory === cat
+                        ? 'bg-slate-800 text-emerald-400 border border-slate-700/50 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {cat === 'RIVALS' ? '⚔️ RIVALS' : cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* History timeline feed */}
+              {filteredHistory.length === 0 ? (
+                <div className="text-center py-12 bg-slate-950/30 border-2 border-dashed border-slate-850 rounded-2xl p-6">
+                  <span className="text-3xl block mb-2 opacity-60">📖</span>
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">No History Logged</h4>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 leading-normal">
+                    The pages of your history are still blank. Advance months, launch ventures, make partnerships, or trigger scandals to begin writing your legacy!
+                  </p>
+                </div>
+              ) : (
+                <div className="relative border-l border-slate-850 pl-4 ml-2 space-y-4 py-2 pb-10">
+                  {filteredHistory.map((event) => {
+                    const stars = Array(event.importance).fill('★').join('');
+                    const formattedAge = 18 + Math.floor(event.month / 12);
+                    const formattedMonth = (event.month % 12) + 1;
+
+                    return (
+                      <div key={event.id} className="relative group">
+                        {/* Timeline node icon */}
+                        <div className="absolute -left-[26px] top-1.5 w-5 h-5 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-[9px] group-hover:border-emerald-500 transition-colors shadow-sm">
+                          {getHistoryCategoryEmoji(event.category)}
+                        </div>
+
+                        {/* Event details card */}
+                        <div className="p-3.5 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded-2xl space-y-1.5 transition-all shadow-md">
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <span className="text-[8px] font-mono font-bold text-emerald-400 uppercase tracking-widest block">
+                                Year {event.year} • Month {formattedMonth} (Age {formattedAge})
+                              </span>
+                              <h4 className="text-[11px] font-black text-white uppercase tracking-tight mt-0.5 leading-snug">
+                                {event.title}
+                              </h4>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-yellow-400 font-bold text-[8px] tracking-widest uppercase">
+                                {stars}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-[6px] font-mono text-slate-500 uppercase tracking-widest">
+                                {event.category}
+                              </span>
+                            </div>
+                          </div>
+
+                          <p className="text-[10px] text-slate-300 uppercase tracking-tight font-medium leading-relaxed">
+                            {event.description}
+                          </p>
+
+                          {event.participants && event.participants.length > 0 && (
+                            <div className="text-[8px] font-bold text-slate-500 uppercase flex items-center gap-1.5 pt-1 border-t border-slate-900">
+                              <span>👥 Key Figures:</span>
+                              <span className="text-slate-300 font-black tracking-tight bg-slate-900/60 px-1.5 py-0.5 rounded border border-slate-800">
+                                {event.participants.join(', ')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : activePriorityFilter === 'AMBITIONS' ? (
             <div className="space-y-6">
               {/* Active Ambitions Section */}
               <div>

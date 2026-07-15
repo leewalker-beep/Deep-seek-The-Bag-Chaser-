@@ -639,6 +639,26 @@ export type LiveWorldEventType =
   | 'COMMUNITY_SPOTLIGHT'
   | 'CELEBRITY_WATCH';
 
+export interface HistoryEvent {
+  id: string;
+  month: number;
+  year: number;
+  title: string;
+  description: string;
+  category:
+    | "CAREER"
+    | "BUSINESS"
+    | "RIVAL"
+    | "CRIME"
+    | "POLITICS"
+    | "LEGACY"
+    | "RELATIONSHIP"
+    | "WORLD";
+  importance: 1 | 2 | 3 | 4 | 5;
+  participants?: string[];
+  excludeFromBiography?: boolean;
+}
+
 export interface LiveWorldEvent {
   id: string;
   type: LiveWorldEventType;
@@ -853,6 +873,7 @@ export interface PlayerStats {
   completedNarrativeEvents: string[];
   biography: string[];
   recordedBioKeys: string[];
+  history?: HistoryEvent[];
   narrativeFlags: Record<string, string | number | boolean>;
   actionLog: GameAction[];
   milestones: Milestone[];

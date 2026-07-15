@@ -1,4 +1,5 @@
 import type { Tier, PlayerStats } from '../types/game';
+import { recordHistoryEvent, type HistoryEvent } from './historyEngine';
 
 export interface BiographyUpdate {
   entry: string;
@@ -8,18 +9,44 @@ export interface BiographyUpdate {
 /**
  * Checks if a biography entry with a specific key has already been recorded.
  * If a key is provided and already exists in recordedBioKeys, returns null.
- * Otherwise returns the formatted entry and the key to be recorded.
+ * Otherwise records it in the history engine and returns the formatted entry and the key.
  */
 export const recordEvent = (
   pl: PlayerStats,
   entry: string,
-  key?: string
+  key?: string,
+  category: HistoryEvent['category'] = 'CAREER',
+  importance: HistoryEvent['importance'] = 3,
+  title?: string,
+  participants?: string[]
 ): BiographyUpdate | null => {
   if (key && pl.recordedBioKeys?.includes(key)) {
     return null;
   }
+
+  if (key) {
+    const computedTitle = title || formatTitleFromKey(key);
+    recordHistoryEvent(pl, {
+      id: key,
+      title: computedTitle,
+      description: entry,
+      category,
+      importance,
+      participants,
+      month: pl.month,
+      excludeFromBiography: true // Let caller append to pl.biography to prevent double-appends
+    });
+  }
+
   return { entry, key };
 };
+
+function formatTitleFromKey(key: string): string {
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 export const recordOrigin = (pl: PlayerStats, backgroundName: string, tier: Tier): BiographyUpdate | null => {
   const templates = [
@@ -28,7 +55,7 @@ export const recordOrigin = (pl: PlayerStats, backgroundName: string, tier: Tier
     `The story began in the ${tier} tier, where a young ${backgroundName} first learned to hustle.`
   ];
   const entry = templates[Math.floor(Math.random() * templates.length)];
-  return recordEvent(pl, entry, 'origin');
+  return recordEvent(pl, entry, 'origin', 'CAREER', 2, 'Started Journey');
 };
 
 export const recordBusiness = (pl: PlayerStats, businessName: string, age: number): BiographyUpdate | null => {
@@ -38,7 +65,14 @@ export const recordBusiness = (pl: PlayerStats, businessName: string, age: numbe
     `The first ${businessName} was founded at age ${age}, laying the groundwork for the future.`
   ];
   const entry = templates[Math.floor(Math.random() * templates.length)];
-  return recordEvent(pl, entry, `business_${businessName.replace(/\s+/g, '_').toLowerCase()}`);
+
+  // First Business vs. Company
+  const isFirstBusiness = !pl.history?.some(h => h.category === 'BUSINESS');
+  const importance = isFirstBusiness ? 3 : 2;
+  const title = isFirstBusiness ? 'First Business' : 'New Venture Founded';
+
+  const key = `business_${businessName.replace(/\s+/g, '_').toLowerCase()}`;
+  return recordEvent(pl, entry, key, 'BUSINESS', importance, title);
 };
 
 export const recordMastery = (pl: PlayerStats, hustleName: string): BiographyUpdate | null => {
@@ -48,7 +82,7 @@ export const recordMastery = (pl: PlayerStats, hustleName: string): BiographyUpd
     `Achieved total dominance in the field of ${hustleName}.`
   ];
   const entry = templates[Math.floor(Math.random() * templates.length)];
-  return recordEvent(pl, entry, `mastery_${hustleName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(pl, entry, `mastery_${hustleName.replace(/\s+/g, '_').toLowerCase()}`, 'CAREER', 3, 'Hustle Mastered');
 };
 
 export const recordRivalDefeat = (pl: PlayerStats, rivalName: string, tier: Tier): BiographyUpdate | null => {
@@ -62,7 +96,15 @@ export const recordRivalDefeat = (pl: PlayerStats, rivalName: string, tier: Tier
     'PRESIDENT': 'the capital',
     'OPEN': 'the world stage'
   };
-  return recordEvent(pl, `Defeated ${rivalName}, establishing dominance over ${tierContext[tier] || tier}.`, `rival_${rivalName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(
+    pl,
+    `Defeated ${rivalName}, establishing dominance over ${tierContext[tier] || tier}.`,
+    `rival_${rivalName.replace(/\s+/g, '_').toLowerCase()}`,
+    'RIVAL',
+    4,
+    'Rival Defeated',
+    [rivalName]
+  );
 };
 
 export const recordTierAdvancement = (pl: PlayerStats, tier: Tier, specialization?: string): BiographyUpdate | null => {
@@ -79,11 +121,22 @@ export const recordTierAdvancement = (pl: PlayerStats, tier: Tier, specializatio
   const entry = specialization
     ? templatesSpec[Math.floor(Math.random() * templatesSpec.length)]
     : templatesBase[Math.floor(Math.random() * templatesBase.length)];
-  return recordEvent(pl, entry, `tier_${tier}`);
+
+  let importance: HistoryEvent['importance'] = 4;
+  let title = 'Advanced Tier';
+  if (tier === 'PRESIDENT') {
+    importance = 5;
+    title = 'Became President';
+  } else if (tier === 'OPEN') {
+    importance = 5;
+    title = 'Entered OPEN';
+  }
+
+  return recordEvent(pl, entry, `tier_${tier}`, 'CAREER', importance, title);
 };
 
 export const recordWorldEventSurvival = (pl: PlayerStats, eventName: string): BiographyUpdate | null => {
-  return recordEvent(pl, `Survived the ${eventName}.`, `world_event_${eventName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(pl, `Survived the ${eventName}.`, `world_event_${eventName.replace(/\s+/g, '_').toLowerCase()}`, 'WORLD', 2, 'Survived Event');
 };
 
 export const recordScandal = (pl: PlayerStats, scandalType: string): BiographyUpdate | null => {
@@ -95,19 +148,43 @@ export const recordScandal = (pl: PlayerStats, scandalType: string): BiographyUp
     ? `His ambitions were interrupted by a spell behind bars, a setback that tested his resolve.`
     : `Weathered a major scandal that would have ended a lesser career.`;
 
-  return recordEvent(pl, entry, `scandal_${scandalType}`);
+  const title = scandalType === 'ARREST' ? 'Prison Sentence' : 'Scandal Triggered';
+  return recordEvent(pl, entry, `scandal_${scandalType}`, 'CRIME', 4, title);
 };
 
 export const recordPresidencyAchievement = (pl: PlayerStats, orderName: string): BiographyUpdate | null => {
-  return recordEvent(pl, `As President, successfully implemented the ${orderName} initiative.`, `presidency_${orderName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(
+    pl,
+    `As President, successfully implemented the ${orderName} initiative.`,
+    `presidency_${orderName.replace(/\s+/g, '_').toLowerCase()}`,
+    'POLITICS',
+    4,
+    'Major Law Passed'
+  );
 };
 
 export const recordCabinetAppointment = (pl: PlayerStats, name: string, role: string): BiographyUpdate | null => {
-  return recordEvent(pl, `Appointed ${name} as ${role}, a key move in shaping the administration.`, `appoint_${name.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(
+    pl,
+    `Appointed ${name} as ${role}, a key move in shaping the administration.`,
+    `appoint_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'POLITICS',
+    4,
+    'Cabinet Member Appointed',
+    [name]
+  );
 };
 
 export const recordCabinetDismissal = (pl: PlayerStats, name: string, role: string): BiographyUpdate | null => {
-  return recordEvent(pl, `Dismissed ${name} from the role of ${role} following a cabinet shakeup.`, `dismiss_${name.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(
+    pl,
+    `Dismissed ${name} from the role of ${role} following a cabinet shakeup.`,
+    `dismiss_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'POLITICS',
+    3,
+    'Cabinet Member Dismissed',
+    [name]
+  );
 };
 
 export const recordSpecialization = (pl: PlayerStats, specializationName: string): BiographyUpdate | null => {
@@ -117,7 +194,7 @@ export const recordSpecialization = (pl: PlayerStats, specializationName: string
     `The ${specializationName} path became the primary focus, shaping all future moves.`
   ];
   const entry = templates[Math.floor(Math.random() * templates.length)];
-  return recordEvent(pl, entry, `spec_focus_${specializationName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(pl, entry, `spec_focus_${specializationName.replace(/\s+/g, '_').toLowerCase()}`, 'CAREER', 3, 'Specialization Chosen');
 };
 
 export const recordArrestSummary = (pl: PlayerStats): BiographyUpdate | null => {
@@ -132,13 +209,20 @@ export const recordArrestSummary = (pl: PlayerStats): BiographyUpdate | null => 
     entry = `Despite ${pl.arrestCount} arrests, he repeatedly rebuilt his empire, becoming as infamous as he was successful.`;
   }
 
-  return recordEvent(pl, entry, 'arrest_summary');
+  return recordEvent(pl, entry, 'arrest_summary', 'CRIME', 4, 'Arrest Summary');
 };
 
 export const recordDeath = (pl: PlayerStats, endingTitle: string, deathCause: string): BiographyUpdate | null => {
-  return recordEvent(pl, `Remembered as ${endingTitle}. ${deathCause}`, 'death');
+  return recordEvent(pl, `Remembered as ${endingTitle}. ${deathCause}`, 'death', 'LEGACY', 5, 'Life Ended');
 };
 
 export const recordLegacyUnlock = (pl: PlayerStats, upgradeName: string): BiographyUpdate | null => {
-  return recordEvent(pl, `Left a lasting legacy by unlocking ${upgradeName}.`, `legacy_${upgradeName.replace(/\s+/g, '_').toLowerCase()}`);
+  return recordEvent(
+    pl,
+    `Left a lasting legacy by unlocking ${upgradeName}.`,
+    `legacy_${upgradeName.replace(/\s+/g, '_').toLowerCase()}`,
+    'LEGACY',
+    5,
+    'Monument Built'
+  );
 };

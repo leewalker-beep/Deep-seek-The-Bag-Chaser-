@@ -18,6 +18,7 @@ import { FLEX_ASSETS } from '../../config/flexAssets';
 import { getUnlockedHustles, getInitialStats } from '../initialState';
 import { executeHustleAction, type HustleExecutionResult } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
+import { recordHistoryEvent } from '../../engine/historyEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
@@ -1149,6 +1150,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     let runningPl = hustleResultPl;
+    if (totalHustlesCompleted === 1 && !runningPl.history?.some(h => h.id === 'first_hustle')) {
+      runningPl = recordHistoryEvent(runningPl, {
+        id: 'first_hustle',
+        title: 'First Hustle Completed',
+        description: `Successfully completed first hustle: ${hustle.name}.`,
+        category: 'CAREER',
+        importance: 2,
+        month: runningPl.month
+      });
+    }
     const sideEvents: { type: GameEventType, metadata: any }[] = [];
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
@@ -2244,6 +2255,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       );
       nextPl.aura += 50;
       get().addTickerMessage(`🎯 SABOTAGE SUCCESS: ${rival.name}'s operations disrupted! Net worth -20%.`, "text-emerald-400 font-bold");
+      if (!nextPl.history?.some(h => h.id === 'first_sabotage')) {
+        recordHistoryEvent(nextPl, {
+          id: 'first_sabotage',
+          title: 'First Sabotage Dispatched',
+          description: `Disrupted ${rival.name}'s active regional operations.`,
+          category: 'RIVAL',
+          importance: 3,
+          participants: [rival.name],
+          month: nextPl.month
+        });
+      }
     } else {
       nextPl.rivals = nextPl.rivals.map(r =>
         r.id === rivalId ? {
@@ -2291,6 +2313,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         } : r
       )
     });
+
+    if (!nextPl.history?.some(h => h.id === 'first_partnership')) {
+      recordHistoryEvent(nextPl, {
+        id: 'first_partnership',
+        title: 'First Partnership Established',
+        description: `Backed ${rival.name}'s strategy with a $${cost.toLocaleString()} seed loan, establishing a mutual partnership.`,
+        category: 'RIVAL',
+        importance: 3,
+        participants: [rival.name],
+        month: nextPl.month
+      });
+    }
 
     set({
       pl: nextPl,

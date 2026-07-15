@@ -1,4 +1,5 @@
 import type { PlayerStats, TickerMessage } from '../types/game';
+import { recordHistoryEvent } from './historyEngine';
 
 /**
  * Core Sandbox Engine for the OPEN tier.
@@ -33,6 +34,15 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
         text: `⚖️ ANTITRUST SETTLEMENT: Your massive monopolies triggered a federal antitrust investigation. You settled out of court for $${settlementFee.toLocaleString()} to protect your subsidiaries!`,
         colorClass: 'text-orange-400 font-bold',
         tier: 'OPEN'
+      });
+      nextPl = recordHistoryEvent(nextPl, {
+        id: `antitrust_settlement_${Date.now()}`,
+        title: 'Monopoly Investigation',
+        description: `Settled a major federal antitrust investigation into ${pName}'s business cartel for $${(settlementFee / 1000000).toFixed(1)}M.`,
+        category: 'BUSINESS',
+        importance: 4,
+        month: nextPl.month,
+        excludeFromBiography: true
       });
       nextPl.biography = [
         ...(nextPl.biography || []),
@@ -131,6 +141,15 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
       colorClass: 'text-cyan-400 font-black',
       tier: 'OPEN'
     });
+    nextPl = recordHistoryEvent(nextPl, {
+      id: `district_regeneration_${Date.now()}`,
+      title: 'District Redevelopment',
+      description: `Funded municipal regeneration projects, redeveloping entire city blocks to permanently scale landlord yield with a $${regenCost.toLocaleString()} investment.`,
+      category: 'BUSINESS',
+      importance: 4,
+      month: nextPl.month,
+      excludeFromBiography: true
+    });
     nextPl.biography = [
       ...(nextPl.biography || []),
       `Funded municipal regeneration projects, redeveloping entire city blocks to permanently scale landlord yield.`
@@ -167,6 +186,15 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
         colorClass: 'text-slate-300 font-bold',
         tier: 'OPEN'
       });
+      nextPl = recordHistoryEvent(nextPl, {
+        id: `rival_retirement_${retiringRival.id}_${Date.now()}`,
+        title: 'Rival Retirement',
+        description: `Rival ${retiringRival.name} gracefully retired from corporate boards, succeeded by ${nextName}.`,
+        category: 'RIVAL',
+        importance: 4,
+        participants: [retiringRival.name, nextName],
+        month: nextPl.month
+      });
     }
 
     // 5.2 Revenge Hostile Takeovers (with secure dynamicPassives fallbacks)
@@ -179,6 +207,15 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
           text: `💥 DEFENSE SYSTEM: Rival ${revengeRival.name} attempted a hostile takeover of your logistics chain out of revenge! You paid a $${defenseCost.toLocaleString()} premium to retain corporate sovereignty.`,
           colorClass: 'text-red-400 font-semibold',
           tier: 'OPEN'
+        });
+        nextPl = recordHistoryEvent(nextPl, {
+          id: `rival_revenge_blocked_${revengeRival.id}_${Date.now()}`,
+          title: 'Rival Revenge Blocked',
+          description: `Blocked a hostile revenge takeover attempt by ${revengeRival.name} with a $${defenseCost.toLocaleString()} premium payment.`,
+          category: 'RIVAL',
+          importance: 4,
+          participants: [revengeRival.name],
+          month: nextPl.month
         });
       } else {
         const cloutPenalty = Math.max(800, Math.floor(nextPl.clout * 0.15));
@@ -198,6 +235,15 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
           colorClass: 'text-red-500 font-black animate-pulse',
           tier: 'OPEN'
         });
+        nextPl = recordHistoryEvent(nextPl, {
+          id: `rival_revenge_success_${revengeRival.id}_${Date.now()}`,
+          title: 'Rival Revenge Succeeded',
+          description: `Failed to prevent a hostile revenge buyout of holdings by ${revengeRival.name}.`,
+          category: 'RIVAL',
+          importance: 4,
+          participants: [revengeRival.name],
+          month: nextPl.month
+        });
       }
     }
   }
@@ -212,6 +258,16 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
     });
 
     // Pinned historic entry to World Feed with deterministic sequential ID
+    nextPl = recordHistoryEvent(nextPl, {
+      id: `decadal_legacy_${decade}_${Date.now()}`,
+      title: 'Decadal Legacy',
+      description: `Celebrated a spectacular ${decade}0-year landmark of absolute sandbox dominance, recognized as an immortal industry sovereign.`,
+      category: 'LEGACY',
+      importance: 5,
+      month: nextPl.month,
+      excludeFromBiography: true
+    });
+
     nextPl.worldFeed = [
       {
         id: `decadal_monument_m${pl.month}`,
