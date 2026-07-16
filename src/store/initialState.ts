@@ -407,6 +407,7 @@ export const getInitialStats = (
     jailCharge: '',
     tutorialStep: 0,
     isTutorialSkipped: false,
+    guidanceSettings: 'Recommended',
     unlockedLegacyUpgradeIds: [],
     stats: {
       totalHustles: 0,
