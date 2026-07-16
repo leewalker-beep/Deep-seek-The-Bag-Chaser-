@@ -318,8 +318,12 @@ HUSTLES.power_nap = {
   icon: '😴',
   description: 'Regain mental health',
   startBranchId: 'l1',
+  hasPanel: true,
+  panelType: 'REST',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Power Nap', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 2 },
+    l1: { level: 1, id: 'l1', name: 'Power Nap', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 15, cloutReq: 0, auraReq: 0, shieldTurns: 2, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'The Perfect Brew', cost: 200, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 25, cloutReq: 10, auraReq: 0, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Constellation Tracing', cost: 2000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15 },
   },
 };
 
@@ -473,8 +477,12 @@ HUSTLES.therapy_session = {
   icon: '🛋️',
   description: 'Regain mental health',
   startBranchId: 'l1',
+  hasPanel: true,
+  panelType: 'REST',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 10000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3 },
+    l1: { level: 1, id: 'l1', name: 'Therapy Session', cost: 10000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 40, cloutReq: 0, auraReq: 0, shieldTurns: 3, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', name: 'Constellation Tracing', cost: 12000, yieldCash: 0, yieldClout: 10, yieldAura: 10, mentalHit: 50, cloutReq: 30, auraReq: 15, nextBranches: ['l3'] },
+    l3: { level: 3, id: 'l3', name: 'Thought Clouds', cost: 25000, yieldCash: 0, yieldClout: 25, yieldAura: 25, mentalHit: 80, cloutReq: 100, auraReq: 50 },
   },
 };
 

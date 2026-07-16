@@ -374,7 +374,7 @@ export function calculateHustleStatsAdditive(
     bgYieldBonus += 0.10;
   }
   if (player.chosenBackgroundCategory === 'street_kid') {
-    if (hustleId === 'r_sleep' || hustleId === 'power_nap') {
+    if (hustleId === 'r_sleep' || hustleId === 'power_nap' || hustleId === 'therapy_session') {
       if (effectiveResult.mentalHit > 0) {
         effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.15);
       }
@@ -430,7 +430,7 @@ export function calculateHustleStatsAdditive(
     effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.5);
   } else if (reputation === "The People's Champion") {
     repAuraBonus += 0.20;
-    if (['r_sleep', 'power_nap'].includes(hustleId) && effectiveResult.mentalHit > 0) {
+    if (['r_sleep', 'power_nap', 'therapy_session'].includes(hustleId) && effectiveResult.mentalHit > 0) {
       effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * 1.15);
     }
   } else if (reputation === "The Shadow Broker") {
