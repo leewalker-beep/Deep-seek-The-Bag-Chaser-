@@ -6,16 +6,17 @@ import { getReputationDetails } from '../engine/reputationEngine';
 
 interface StrategicAdvisorModalProps {
   onClose: () => void;
+  initialTab?: 'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION';
 }
 
-export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ onClose }) => {
+export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ onClose, initialTab }) => {
   const pl = useGameStore(state => state.pl);
   const currentMarket = useGameStore(state => state.currentMarket);
   const acceptAmbition = useGameStore(state => state.acceptAmbition);
   const ignoreAmbition = useGameStore(state => state.ignoreAmbition);
   const replaceAmbition = useGameStore(state => state.replaceAmbition);
 
-  const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>('ALL');
+  const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>(initialTab || 'ALL');
   const [activeHistoryCategory, setActiveHistoryCategory] = useState<'ALL' | 'CAREER' | 'BUSINESS' | 'CRIME' | 'RIVALS' | 'POLITICS' | 'LEGACY' | 'WORLD'>('ALL');
 
   // Derive strategic advice using the pure advisor engine helper
