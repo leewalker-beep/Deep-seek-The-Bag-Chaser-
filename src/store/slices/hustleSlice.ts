@@ -1248,7 +1248,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       if (hustleId === 'philanthropy_empire') {
         reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
       } else {
-        if ((state.pl.hustlePlays[hustleId] || 0) === 0) {
+        const totalPlays = Object.values(state.pl.hustlePlays || {}).reduce((a, b) => a + b, 0);
+        const isFirstBusiness = totalPlays === 0;
+        if (isFirstBusiness) {
+          reactedPl = processWorldReaction(reactedPl, 'FIRST_BUSINESS_LAUNCH', { hustleName: hustle.name, cost: result.cost }).updatedPl;
+        } else if ((state.pl.hustlePlays[hustleId] || 0) === 0) {
           reactedPl = processWorldReaction(reactedPl, 'BUSINESS_LAUNCH', { hustleName: hustle.name, cost: result.cost }).updatedPl;
         }
         if (netChange >= 50000) {
@@ -1661,6 +1665,13 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const checkBranchId = branchId || targetNodeData.id || '';
     const isTimelineTick = checkBranchId === 'vending' || hustleId === 'r_vending' || (checkBranchId === 'l2b' && hustleId === 'r_labor') || (checkBranchId === 'l1' && hustleId === 'r_labor');
     let finalNextPl = newPl;
+
+    const oldMaxLevel = Object.values(state.pl.hustleLevels || {}).reduce((max, lvl) => Math.max(max, lvl), 1);
+    const newLevel = targetNodeData.level;
+    const isFirstEmployee = oldMaxLevel === 1 && newLevel >= 2;
+    if (isFirstEmployee) {
+      finalNextPl = processWorldReaction(finalNextPl, 'FIRST_EMPLOYEE', { hustleName: hustle.name }).updatedPl;
+    }
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
     let advancementResult: any = null;
@@ -2211,14 +2222,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       )
     });
 
-    const bioUpdate = Bio.recordRivalDefeat(nextPl, rival.name, rival.tier);
+    let nextPlReacted = processWorldReaction(nextPl, 'RIVAL_DEFEAT', { hustleName: rival.name }).updatedPl;
+    const bioUpdate = Bio.recordRivalDefeat(nextPlReacted, rival.name, rival.tier);
     if (bioUpdate) {
-      nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
-      nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+      nextPlReacted.biography = [...(nextPlReacted.biography || []), bioUpdate.entry];
+      nextPlReacted.recordedBioKeys = [...(nextPlReacted.recordedBioKeys || []), bioUpdate.key!];
     }
 
     set({
-      pl: nextPl,
+      pl: nextPlReacted,
       news: [{ text: `🔥 RETALIATION: You hit ${rival.name}'s bottom line. Their net worth plummeted! (-$${cost.toLocaleString()})`, colorClass: 'text-orange-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 
@@ -2322,20 +2334,22 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       )
     });
 
-    if (!nextPl.history?.some(h => h.id === 'first_partnership')) {
-      recordHistoryEvent(nextPl, {
+    let nextPlReacted = processWorldReaction(nextPl, 'RIVAL_PARTNERSHIP', { hustleName: rival.name }).updatedPl;
+
+    if (!nextPlReacted.history?.some(h => h.id === 'first_partnership')) {
+      recordHistoryEvent(nextPlReacted, {
         id: 'first_partnership',
         title: 'First Partnership Established',
         description: `Backed ${rival.name}'s strategy with a $${cost.toLocaleString()} seed loan, establishing a mutual partnership.`,
         category: 'RIVAL',
         importance: 3,
         participants: [rival.name],
-        month: nextPl.month
+        month: nextPlReacted.month
       });
     }
 
     set({
-      pl: nextPl,
+      pl: nextPlReacted,
       news: [{ text: `🤝 PARTNERSHIP ESTABLISHED: You backed ${rival.name}'s strategy with a $${cost.toLocaleString()} seed loan. Relationship surged!`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 
@@ -2362,14 +2376,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       dynamicPassives: { ...state.pl.dynamicPassives, [`counter_bid_bonus_${rival.tier}`]: 1 }
     };
 
-    const bioUpdate = Bio.recordRivalDefeat(nextPl, rival.name, rival.tier);
+    let nextPlReacted = processWorldReaction(nextPl, 'RIVAL_DEFEAT', { hustleName: rival.name }).updatedPl;
+    const bioUpdate = Bio.recordRivalDefeat(nextPlReacted, rival.name, rival.tier);
     if (bioUpdate) {
-      nextPl.biography = [...(nextPl.biography || []), bioUpdate.entry];
-      nextPl.recordedBioKeys = [...(nextPl.recordedBioKeys || []), bioUpdate.key!];
+      nextPlReacted.biography = [...(nextPlReacted.biography || []), bioUpdate.entry];
+      nextPlReacted.recordedBioKeys = [...(nextPlReacted.recordedBioKeys || []), bioUpdate.key!];
     }
 
     set({
-      pl: enforceStatCaps(nextPl),
+      pl: enforceStatCaps(nextPlReacted),
       news: [{ text: `🤝 COUNTER-BID: You bought out ${rival.name}'s position! Clout +300. 1.2x Yield bonus for ${rival.tier} active.`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
     });
 

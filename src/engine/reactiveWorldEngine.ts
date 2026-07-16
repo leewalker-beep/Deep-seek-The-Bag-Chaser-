@@ -1,8 +1,19 @@
-import type { PlayerStats, WorldFeedItem, WorldFeedCategory, LiveWorldEvent, LiveWorldEventType } from '../types/game';
+import type { PlayerStats, WorldFeedItem, WorldFeedCategory, LiveWorldEvent, LiveWorldEventType, Rival } from '../types/game';
 import * as Bio from './biographyEngine';
 import { recordHistoryEvent, type HistoryEvent } from './historyEngine';
+import { getCurrentReputation } from './reputationEngine';
+import { HUSTLES } from '../config/hustles/base';
 
-const generateId = () => Math.random().toString(36).substring(7);
+const isTest = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
+
+let idCounter = 0;
+const generateId = () => {
+  if (isTest) {
+    idCounter++;
+    return `id_${idCounter}`;
+  }
+  return Math.random().toString(36).substring(7);
+};
 
 export interface WorldReactionResult {
   updatedPl: PlayerStats;
@@ -10,19 +21,109 @@ export interface WorldReactionResult {
 }
 
 /**
+ * Replaces template placeholders with player-specific dynamic state values (Part 6 - Dynamic Headlines).
+ */
+export function injectPlayerData(template: string, pl: PlayerStats, metadata?: any): string {
+  const pName = pl.name || 'The Player';
+  const rep = getCurrentReputation(pl);
+  const tier = pl.currentTier;
+  const bizName = metadata?.hustleName ||
+                  (pl.lastExecutedHustleId && HUSTLES[pl.lastExecutedHustleId] ? HUSTLES[pl.lastExecutedHustleId].name : 'your enterprise');
+  const topRival = pl.rivals && pl.rivals.length > 0 ? pl.rivals[0].name : 'competitors';
+  const office = pl.currentTier === 'PRESIDENT' ? 'President of the United States' : 'Executive Leader';
+
+  return template
+    .replace(/{PLAYER}/g, pName)
+    .replace(/{PLAYER_NAME}/g, pName)
+    .replace(/{REPUTATION}/g, rep)
+    .replace(/{TIER}/g, tier)
+    .replace(/{BUSINESS}/g, bizName)
+    .replace(/{COMPANY}/g, bizName)
+    .replace(/{RIVAL}/g, topRival)
+    .replace(/{OFFICE}/g, office);
+}
+
+/**
+ * Picks an active rival (if any) and generates a personality-driven reaction (Part 3 - Rival Reactions).
+ * Makes rivals feel deeply human by varying comments based on relationship and personality metrics.
+ */
+function getRivalComment(rival: Rival, _eventType: string, pName: string, _rep: string): { quote: string; type: string } {
+  const rel = rival.relationshipWithPlayer ?? 0;
+  const aggression = rival.aggression ?? 0.5;
+  const intelligence = rival.intelligence ?? 0.5;
+  const ethics = rival.ethics ?? 0.5;
+
+  let quote = '';
+  let type = 'criticism';
+
+  if (rel > 50) {
+    // Highly Supportive Allies
+    if (ethics > 0.6) {
+      type = 'support';
+      quote = `"Incredible milestone, ${pName}! It's genuinely inspiring to watch your rise. Let's keep building a stronger ecosystem together."`;
+    } else {
+      type = 'congratulations';
+      quote = `"Brilliant play, ${pName}! Our networks should align on this. Proposing a joint sector expansion soon!"`;
+    }
+  } else if (rel > 15) {
+    // Moderately Friendly Acquaintances
+    if (intelligence > 0.6) {
+      type = 'congratulations';
+      quote = `"Admirable progress, ${pName}. Your strategic allocation of capital is textbook perfect."`;
+    } else {
+      type = 'support';
+      quote = `"Congrats! You're really off the blocks now. Keep pushing!"`;
+    }
+  } else if (rel < -50) {
+    // Very Hostile / Nemeses
+    if (aggression > 0.6) {
+      type = 'challenge';
+      quote = `"You think you're untouchable, ${pName}? This is overhyped nonsense. I am preparing a direct counter-campaign to squeeze your margins!"`;
+    } else if (ethics < 0.4) {
+      type = 'mockery';
+      quote = `"All this praise for ${pName} is a joke. Your whole empire is built on matchstick leverage, and I can't wait to watch it burn."`;
+    } else {
+      type = 'warning';
+      quote = `"You've captured the spotlight, ${pName}, but your regulatory compliance is absolute garbage. Enjoy the peak while it lasts."`;
+    }
+  } else if (rel < -15) {
+    // Sarcastic Rivals
+    if (aggression > 0.6) {
+      type = 'warning';
+      quote = `"A nice little surge, ${pName}. But remember, a highly visible position is extremely vulnerable to targeted audits."`;
+    } else {
+      type = 'jealousy';
+      quote = `"Must be nice having standard capital buffers to fund these moves. Try surviving a real contraction."`;
+    }
+  } else {
+    // Neutral Competitors (Reluctant respect or predictions)
+    if (intelligence > 0.6) {
+      type = 'respect';
+      quote = `"I've audited your latest moves. Reluctantly, I must admit your operational efficiency is mathematically admirable."`;
+    } else if (aggression > 0.6) {
+      type = 'challenge';
+      quote = `"Enjoy the spotlight for now, ${pName}. The market is still wide open, and we're coming for your market share next quarter."`;
+    } else {
+      type = 'prediction';
+      quote = `"My projections suggest this milestone will trigger municipal regulatory friction soon. Let's see if the portfolio can absorb it."`;
+    }
+  }
+
+  return { quote, type };
+}
+
+/**
  * Handles incoming triggers from player actions and returns an updated PlayerStats block
  * containing both UI feed updates, news flashes, and actual numeric state gameplay impacts.
  *
  * Separates reactions into clearly recognizable categories:
- * - 📰 NEWS (News)
- * - 📱 SOCIAL (Social Media - Chirper)
- * - 💼 BUSINESS (Business News)
- * - 📈 MARKET (Market Commentary)
+ * - 📰 NEWS (News - Local)
+ * - 📱 SOCIAL (Social Media - Chirper / Pop Culture)
+ * - 💼 BUSINESS (Business News - Corporate)
+ * - 📈 MARKET (Market Commentary / Financial Press)
  * - 🏛 POLITICS (Political Headlines)
  * - ❤️ OPINION (Public Opinion / Polling)
  * - 🌍 WORLD (World / Systems)
- *
- * Implements Fame Scaling, Living History references, and varied failures.
  */
 export function processWorldReaction(
   pl: PlayerStats,
@@ -51,6 +152,7 @@ export function processWorldReaction(
 
   const addedItems: WorldFeedItem[] = [];
   const pName = pl.name || 'The Player';
+  const reputation = getCurrentReputation(pl);
 
   const isTest = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
 
@@ -84,8 +186,12 @@ export function processWorldReaction(
 
     if (isDuplicate) return;
 
-    const likes = category === 'SOCIAL' ? Math.floor(Math.random() * 24000) + 120 : undefined;
-    const shares = category === 'SOCIAL' && likes ? Math.floor(likes * 0.15) + 5 : undefined;
+    const likes = category === 'SOCIAL'
+      ? (isTest ? 1500 : Math.floor(Math.random() * 24000) + 120)
+      : undefined;
+    const shares = category === 'SOCIAL' && likes
+      ? (isTest ? 150 : Math.floor(likes * 0.15) + 5)
+      : undefined;
 
     const item: WorldFeedItem = {
       id: generateId(),
@@ -96,17 +202,83 @@ export function processWorldReaction(
       month: pl.month,
       likes,
       shares,
-      author: options?.author || (category === 'SOCIAL' ? `@user_${Math.floor(Math.random() * 8999) + 1000}` : undefined),
-      avatarId: options?.avatarId || (category === 'SOCIAL' ? `av_f${Math.floor(Math.random() * 5) + 1}` : undefined),
+      author: options?.author || (category === 'SOCIAL' ? (isTest ? '@user_1234' : `@user_${Math.floor(Math.random() * 8999) + 1000}`) : undefined),
+      avatarId: options?.avatarId || (category === 'SOCIAL' ? (isTest ? 'av_f1' : `av_f${Math.floor(Math.random() * 5) + 1}`) : undefined),
       effect: options?.effect,
       pinned: options?.pinned || false
     };
     addedItems.push(item);
   };
 
-  // 1. DYNAMIC RETROSPECTIVE RETRO FEEDBACK (LIVING HISTORY)
+  // Helper to add Multiple News Outlets (Part 2 - Multiple News Sources)
+  const addMultiOutletReports = (
+    templates: {
+      business?: string;
+      popCulture?: string;
+      politics?: string;
+      local?: string;
+      financial?: string;
+    }
+  ) => {
+    if (templates.business) {
+      addFeed(
+        'BUSINESS',
+        injectPlayerData(templates.business, pl, metadata),
+        'Wall Street Ledger'
+      );
+    }
+    if (templates.popCulture) {
+      addFeed(
+        'SOCIAL',
+        injectPlayerData(templates.popCulture, pl, metadata),
+        'Chirper Trend',
+        { author: '@PopCultureDaily' }
+      );
+    }
+    if (templates.politics) {
+      addFeed(
+        'POLITICS',
+        injectPlayerData(templates.politics, pl, metadata),
+        'Capitol Broadcaster'
+      );
+    }
+    if (templates.local) {
+      addFeed(
+        'NEWS',
+        injectPlayerData(templates.local, pl, metadata),
+        'The Neighborhood Bulletin'
+      );
+    }
+    if (templates.financial) {
+      addFeed(
+        'MARKET',
+        injectPlayerData(templates.financial, pl, metadata),
+        'Global Finance Tracker'
+      );
+    }
+  };
+
+  // Trigger optional rival comments for major events (Part 3)
+  const addRivalCommentIfPossible = (eventType: string) => {
+    if (pl.rivals && pl.rivals.length > 0) {
+      // Find the most relevant rival (highest net worth or highest aggression)
+      const rival = [...pl.rivals].sort((a, b) => b.netWorth - a.netWorth)[0];
+      const comment = getRivalComment(rival, eventType, pName, reputation);
+      addFeed(
+        'SOCIAL',
+        `${comment.quote} #rivalry #${eventType}`,
+        'Chirper',
+        {
+          author: `@${rival.name.replace(/\s+/g, '_')}`,
+          avatarId: 'av_m2',
+          effect: `Rival ${comment.type.toUpperCase()}`
+        }
+      );
+    }
+  };
+
   const appendLivingHistoryChirps = () => {
-    if (pl.totalHustlesCompleted > 5 && Math.random() < 0.3) {
+    if (pl.totalHustlesCompleted > 5 && (isTest || Math.random() < 0.3)) {
       if (pl.hustleBranchIds['r_scrap'] || pl.masteredHustles.includes('r_scrap')) {
         addFeed(
           'SOCIAL',
@@ -118,68 +290,217 @@ export function processWorldReaction(
         addFeed(
           'SOCIAL',
           `Wild. I remember when ${pName} was just buying cheap vending machines. Now they are completely scaling the game! 🥤📈`,
-          'Chirp',
+          'Chirper',
           { author: '@VendingWatcher', avatarId: 'av_f2' }
         );
       } else if (pl.rentalCount > 2) {
         addFeed(
           'SOCIAL',
           `Crazy transition. ${pName} built their entire foundation on local housing. Truly a self-made titan. 🏗️🏘️`,
-          'Chirp',
+          'Chirper',
           { author: '@LandlordLife', avatarId: 'av_m1' }
         );
       }
     }
   };
 
+  // Main Event Routing Switch (Part 1 - World Feed Improvements)
   switch (actionType) {
-    case 'BUSINESS_LAUNCH': {
-      const hName = metadata.hustleName || 'New Venture';
-      const cost = metadata.cost || 0;
+    case 'FIRST_BUSINESS_LAUNCH': {
+      addMultiOutletReports({
+        business: `Market analysts note that {PLAYER}, known as "{REPUTATION}", has launched {BUSINESS}, marking a strategic entry into commercial markets.`,
+        popCulture: `OMG, {PLAYER} is off the blocks! The local scene is talking about the new {BUSINESS}! 🚀✨ #FirstStep`,
+        politics: `Local representatives welcome {PLAYER}'s investment in {BUSINESS}, hoping it boosts municipal commerce.`,
+        local: `Exciting day on the block! {PLAYER} has opened {BUSINESS} right down the street. Come support your neighbor!`,
+        financial: `{PLAYER} deploys early seed capital to acquire {BUSINESS}, laying down a foundation in {TIER} tier.`
+      });
+      addRivalCommentIfPossible('FirstBusiness');
+      if (!isTest) {
+        updatedPl.clout = Math.min(10000, updatedPl.clout + 10);
+      }
+      break;
+    }
 
-      if (fame === 'local') {
-        addFeed(
-          'NEWS',
-          `🚨 LOCAL NEWS: Neighbors excited as ${pName} launches a small ${hName} nearby.`,
-          'The Neighborhood Bulletin'
-        );
-        addFeed(
-          'SOCIAL',
-          `Yo, ${pName} is doing big things on the block! Just started a ${hName}! Best of luck! 🙌`,
-          'Chirp',
-          { effect: '+5 Clout', author: '@BlockWatcher', avatarId: 'av_f1' }
-        );
-      } else if (fame === 'regional') {
-        addFeed(
-          'BUSINESS',
-          `STRATEGIC EXPANSION: ${pName} initiates a promising ${hName} venture, pouring $${cost.toLocaleString()} in regional assets.`,
-          'Metropolitan Herald'
-        );
-        addFeed(
-          'SOCIAL',
-          `Tech hubs are shaking. ${pName} just expanded with a serious ${hName} venture. Let's see if it scales! 📈 #regionalgrind`,
-          'Chirp',
-          { effect: '+5 Clout', author: '@SilliconValleyInside', avatarId: 'av_m4' }
-        );
+    case 'BUSINESS_LAUNCH': {
+      // Check if this is the player's very first business ever played
+      const totalPlays = Object.values(pl.hustlePlays || {}).reduce((a, b) => a + b, 0);
+      if (totalPlays <= 1) {
+        addMultiOutletReports({
+          business: `Market analysts note that {PLAYER}, known as "{REPUTATION}", has launched {BUSINESS}, marking a strategic entry into commercial markets.`,
+          popCulture: `OMG, {PLAYER} is off the blocks! The local scene is talking about the new {BUSINESS}! 🚀✨ #FirstStep`,
+          politics: `Local representatives welcome {PLAYER}'s investment in {BUSINESS}, hoping it boosts municipal commerce.`,
+          local: `Exciting day on the block! {PLAYER} has opened {BUSINESS} right down the street. Come support your neighbor!`,
+          financial: `{PLAYER} deploys early seed capital to acquire {BUSINESS}, laying down a foundation in {TIER} tier.`
+        });
+        addRivalCommentIfPossible('FirstBusiness');
       } else {
-        // National or Global
-        addFeed(
-          'BUSINESS',
-          `EMPIRE GROWTH: ${pName} enters the ${hName} sector with a massive multi-million dollar capital injection.`,
-          'Wall Street Ledger'
-        );
-        addFeed(
-          'SOCIAL',
-          `Monopoly vibes! ${pName} is expanding their global grip with ${hName}! Absolute dominance. 👑 #titan`,
-          'Chirp',
-          { effect: '+5 Clout', author: '@MarketMoguls', avatarId: 'av_f4' }
-        );
+        const hName = metadata.hustleName || 'New Venture';
+        const cost = metadata.cost || 0;
+
+        if (fame === 'local') {
+          addFeed(
+            'NEWS',
+            `🚨 LOCAL NEWS: Neighbors excited as ${pName} launches a small ${hName} nearby.`,
+            'The Neighborhood Bulletin'
+          );
+          addFeed(
+            'SOCIAL',
+            `Yo, ${pName} is doing big things on the block! Just started a ${hName}! Best of luck! 🙌`,
+            'Chirper',
+            { effect: '+5 Clout', author: '@BlockWatcher', avatarId: 'av_f1' }
+          );
+        } else if (fame === 'regional') {
+          addFeed(
+            'BUSINESS',
+            `STRATEGIC EXPANSION: ${pName} initiates a promising ${hName} venture, pouring $${cost.toLocaleString()} in regional assets.`,
+            'Metropolitan Herald'
+          );
+          addFeed(
+            'SOCIAL',
+            `Tech hubs are shaking. ${pName} just expanded with a serious ${hName} venture. Let's see if it scales! 📈 #regionalgrind`,
+            'Chirper',
+            { effect: '+5 Clout', author: '@SilliconValleyInside', avatarId: 'av_m4' }
+          );
+        } else {
+          addFeed(
+            'BUSINESS',
+            `EMPIRE GROWTH: ${pName} enters the ${hName} sector with a massive multi-million dollar capital injection.`,
+            'Wall Street Ledger'
+          );
+          addFeed(
+            'SOCIAL',
+            `Monopoly vibes! ${pName} is expanding their global grip with ${hName}! Absolute dominance. 👑 #titan`,
+            'Chirper',
+            { effect: '+5 Clout', author: '@MarketMoguls', avatarId: 'av_f4' }
+          );
+        }
       }
 
       appendLivingHistoryChirps();
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 5);
       }
+      break;
+    }
+
+    case 'FIRST_EMPLOYEE': {
+      addMultiOutletReports({
+        business: `Scalable growth begins: {PLAYER}'s {BUSINESS} makes its first official staff hire, signaling transition to professional management.`,
+        popCulture: `We're expanding! {PLAYER} is officially a boss of bosses, hiring the very first employee for {BUSINESS}! 👔💼`,
+        politics: `Employment metrics rise as {PLAYER} creates job openings for local workforce inside {BUSINESS}.`,
+        local: `{PLAYER}'s {BUSINESS} is hiring! Local resident secures first official role under the growing street brand.`,
+        financial: `{BUSINESS} payroll expands: {PLAYER} converts manual labor sweat equity into leveraged operational overhead.`
+      });
+      addRivalCommentIfPossible('FirstEmployee');
+      if (!isTest) {
+        updatedPl.clout = Math.min(10000, updatedPl.clout + 15);
+      }
+      break;
+    }
+
+    case 'FIRST_PASSIVE_INCOME': {
+      addMultiOutletReports({
+        business: `{PLAYER} establishes their first fully automated passive stream, generating cash flows independent of active labor.`,
+        popCulture: `{PLAYER} is literally making money in their sleep right now! 🛌💸 Zero active hours, pure leverage. #Goals`,
+        politics: `Critics debate wealth inequality as {PLAYER} joins the class of passive asset earners.`,
+        local: `From grinding all day to passive returns: neighbor {PLAYER} is showing us all how to work smarter.`,
+        financial: `Capital yield report: {PLAYER}'s passive investments begin paying off, building a recurring interest foundation.`
+      });
+      addRivalCommentIfPossible('FirstPassiveIncome');
+      if (!isTest) {
+        updatedPl.aura = Math.min(10000, updatedPl.aura + 15);
+      }
+      break;
+    }
+
+    case 'PRISON_RELEASE': {
+      addMultiOutletReports({
+        business: `{PLAYER} is released from federal custody, returning to direct active management of their corporate holdings.`,
+        popCulture: `{PLAYER} is back on the streets! 🔓🚔 Mugshot era is over, the grind resumes immediately. #Free`,
+        politics: `Debate sparks over criminal justice as convicted executive {PLAYER} resumes their corporate climb.`,
+        local: `{PLAYER} has served their time and returned home. Neighbors hope for a clean, reformed chapter.`,
+        financial: `Markets stabilize as {PLAYER} is released, ending uncertainty surrounding their corporate leadership.`
+      });
+      addRivalCommentIfPossible('PrisonRelease');
+      break;
+    }
+
+    case 'RIVAL_DEFEAT': {
+      addMultiOutletReports({
+        business: `Sector monopoly secured: {PLAYER} completely outmaneuvers {RIVAL}, crushing their market capitalization.`,
+        popCulture: `{PLAYER} absolutely cooked {RIVAL}! 💀🔥 Complete knockout in the business arena. Who's next? #Victory`,
+        politics: `Anti-competitive concerns rise as {PLAYER} eliminates {RIVAL} from active sector competition.`,
+        local: `{PLAYER} dominates the district after a heated showdown with rival {RIVAL}.`,
+        financial: `{RIVAL} files for emergency asset protection after {PLAYER}'s hostile plays trigger a 60% liquidation.`
+      });
+      addRivalCommentIfPossible('RivalDefeat');
+      if (!isTest) {
+        updatedPl.clout = Math.min(10000, updatedPl.clout + 50);
+        updatedPl.aura = Math.min(10000, updatedPl.aura + 30);
+      }
+      break;
+    }
+
+    case 'RIVAL_PARTNERSHIP': {
+      addMultiOutletReports({
+        business: `Strategic joint venture: former competitors {PLAYER} and {RIVAL} announce a mutual capital partnership.`,
+        popCulture: `Plot twist! Former enemies {PLAYER} and {RIVAL} are now besties? Massive business collab dropped! 🤝👀`,
+        politics: `Industry regulators scrutinize the consolidation as {PLAYER} and {RIVAL} align their lobbying PACs.`,
+        local: `{PLAYER} and {RIVAL} shake hands on a new neighborhood trade agreement, stabilizing local commerce.`,
+        financial: `{PLAYER} deploys seed capital into {RIVAL}'s holdings, securing a joint 1.2x sector yield multiplier.`
+      });
+      addRivalCommentIfPossible('RivalPartnership');
+      if (!isTest) {
+        updatedPl.aura = Math.min(10000, updatedPl.aura + 25);
+      }
+      break;
+    }
+
+    case 'MONOPOLY_INVESTIGATION': {
+      addMultiOutletReports({
+        business: `Federal Antitrust Division launches formal monopoly investigation into {PLAYER}'s market cartel.`,
+        popCulture: `Is {PLAYER} getting canceled by the government? Busted for having too many businesses! ⚖️📉 #Antitrust`,
+        politics: `Bipartisan senators demand regulatory break-up of President {PLAYER}'s private business monopolies.`,
+        local: `Federal investigators set up monitors in local shops owned by tycoon {PLAYER}.`,
+        financial: `Risk analysis: monopoly investigation triggers a heavy settlement fee, draining {PLAYER}'s cash reserves.`
+      });
+      addRivalCommentIfPossible('MonopolyInvestigation');
+      break;
+    }
+
+    case 'HOUSING_PROTEST': {
+      addMultiOutletReports({
+        business: `Tenant strikes and housing affordability protests target {PLAYER}'s real estate holdings, threatening rent yields.`,
+        popCulture: `Protesters are literally camping outside {PLAYER}'s luxury properties! Rent is too high! 🏘️🪧 #HousingCrisis`,
+        politics: `Local council demands strict rent control caps in response to widespread protests against {PLAYER}.`,
+        local: `Tenants in {PLAYER}'s buildings organize a neighborhood-wide rent strike demanding fair leasing terms.`,
+        financial: `Real estate risk: housing protests and regulatory pressure dock {PLAYER}'s passive rental yields by 30%.`
+      });
+      addRivalCommentIfPossible('HousingProtest');
+      break;
+    }
+
+    case 'DYNASTY_MILESTONE': {
+      addMultiOutletReports({
+        business: `A century of dominance: {PLAYER} family celebrates decades of active market sovereignty across sectors.`,
+        popCulture: `{PLAYER} has been running this game for decades! An absolute dynasty. Peak legacy. 👑💫 #Legendary`,
+        politics: `Historians review the monumental influence of the {PLAYER} dynasty on national policy and macroeconomics.`,
+        local: `Honoring a legacy: city builds a historical monument dedicated to {PLAYER}'s decadal contributions.`,
+        financial: `Multi-generational wealth: {PLAYER} dynasty locks in permanent legacy multipliers and sovereign assets.`
+      });
+      addRivalCommentIfPossible('DynastyMilestone');
+      break;
+    }
+
+    case 'MAJOR_LEGISLATION': {
+      addMultiOutletReports({
+        business: `Regulatory frameworks shift after President {PLAYER} implements major policy changes regarding {BUSINESS}.`,
+        popCulture: `President {PLAYER} just signed a massive executive order! The internet is dividing over the new law! 🇺🇸🏛️`,
+        politics: `Congress responds to President {PLAYER}'s newest directive on {BUSINESS}, debating bipartisan compliance.`,
+        local: `How President {PLAYER}'s latest executive order affects our local community and housing prices.`,
+        financial: `Corporate yield multipliers fluctuate following President {PLAYER}'s sweeping legislative shifts.`
+      });
+      addRivalCommentIfPossible('MajorLegislation');
       break;
     }
 
@@ -190,7 +511,7 @@ export function processWorldReaction(
         addFeed(
           'SOCIAL',
           `Lmao ${pName} completely fumbled that ${hName} run! Local dreams crushed. 🤡 #loser #fumble`,
-          'Chirp',
+          'Chirper',
           { effect: '-5 Aura', author: '@BlockHater', avatarId: 'av_m2' }
         );
         addFeed(
@@ -207,7 +528,7 @@ export function processWorldReaction(
         addFeed(
           'SOCIAL',
           `How the mighty fall. ${pName}'s heavily hyped ${hName} project went down in absolute flames. Disastrous. 💀📉`,
-          'Chirp',
+          'Chirper',
           { effect: '-15 Clout', author: '@ShortSellerPro', avatarId: 'av_f3' }
         );
         addFeed(
@@ -226,31 +547,15 @@ export function processWorldReaction(
       const profit = metadata.profit || 0;
       const hName = metadata.hustleName || 'operations';
 
-      if (fame === 'local') {
-        addFeed(
-          'NEWS',
-          `LOCAL BULLETINS: ${pName} clears an outstanding $${profit.toLocaleString()} profit. Talk of the town!`,
-          'Local Town Crier'
-        );
-        addFeed(
-          'SOCIAL',
-          `Omg, ${pName} is absolutely clearing the block! Cleared $${(profit / 1000).toFixed(0)}k profit from ${hName}! Insane! 💸🐐`,
-          'Chirp',
-          { effect: '+10 Clout', author: '@TownGrind', avatarId: 'av_f1' }
-        );
-      } else {
-        addFeed(
-          'MARKET',
-          `CASH SURGE: ${pName}'s strategic play in ${hName} yields a colossal $${profit.toLocaleString()} single-month cash flow.`,
-          'Wall Street Ledger'
-        );
-        addFeed(
-          'SOCIAL',
-          `Absolutely astronomical! ${pName} just cleared $${(profit / 1000000).toFixed(1)}M profit from ${hName}! Standard cheat code. 🚀🐐 #wealth #genius`,
-          'Chirp',
-          { effect: '+20 Aura | +15 Clout', author: '@MemeTrader', avatarId: 'av_m2' }
-        );
-      }
+      addMultiOutletReports({
+        business: `Strategic plays in ${hName} yield a colossal $${profit.toLocaleString()} single-month cash flow for {PLAYER}.`,
+        popCulture: `Absolutely astronomical! {PLAYER} just cleared $${(profit / 1000000).toFixed(1)}M profit from ${hName}! Standard cheat code. 🚀🐐 #wealth`,
+        politics: `Bipartisan financial debates surround the massive margin profits recorded by {PLAYER}.`,
+        local: ` neighbors are in disbelief as local icon {PLAYER} clears $${profit.toLocaleString()} from ${hName}.`,
+        financial: `Profit yields surge: {PLAYER}'s ${hName} operations capture peak industry multipliers during this cycle.`
+      });
+
+      addRivalCommentIfPossible('HugeProfit');
 
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 15);
@@ -282,17 +587,14 @@ export function processWorldReaction(
 
     case 'MAJOR_LOSS': {
       const loss = metadata.profit ? Math.abs(metadata.profit) : 0;
-      addFeed(
-        'MARKET',
-        `LIQUIDITY BLEED: ${pName} suffers a heavy financial blow, losing $${loss.toLocaleString()} in recent activities.`,
-        'Wall Street Ledger'
-      );
-      addFeed(
-        'SOCIAL',
-        `Ouch, ${pName} just wiped out $${loss.toLocaleString()}! Is this the beginning of the end or what? 📉💀`,
-        'Chirp',
-        { effect: '-20 Clout', author: '@MarketBear', avatarId: 'av_m3' }
-      );
+      addMultiOutletReports({
+        business: `Liquidity drain: {PLAYER} absorbs a heavy operational loss, dropping $${loss.toLocaleString()} in liquid reserves.`,
+        popCulture: `Yikes, {PLAYER} just lost $${loss.toLocaleString()} on that last run. High stakes represent high risk! 📉💀`,
+        politics: `Policy debates spark as {PLAYER}'s financial setback affects local sector confidence.`,
+        local: `Neighbor {PLAYER} absorbs a tough financial hit, but the local block remains confident in a swift recovery.`,
+        financial: `Asset contraction: {PLAYER}'s portfolio buffers a $${loss.toLocaleString()} capital deficit due to margin pressures.`
+      });
+      addRivalCommentIfPossible('MajorLoss');
       if (!isTest) {
         updatedPl.clout = Math.max(0, updatedPl.clout - 20);
         updatedPl.aura = Math.max(0, updatedPl.aura - 15);
@@ -303,17 +605,14 @@ export function processWorldReaction(
     case 'LUXURY_PURCHASE': {
       const assetName = metadata.assetId || 'luxury item';
       const cost = metadata.cost || 0;
-      addFeed(
-        'SOCIAL',
-        `HEAVY FLEX! ${pName} just copped a brand new ${assetName.replace('_', ' ')}! The drip is real. 💎👑 #flex #luxury`,
-        'Chirp',
-        { effect: '+25 Aura | +10 Clout', author: '@DripInspector', avatarId: 'av_f5' }
-      );
-      addFeed(
-        'BUSINESS',
-        `MOGUL SPENDING: ${pName}'s acquisition of the ${assetName.replace('_', ' ')} for $${cost.toLocaleString()} shows absolute market dominance.`,
-        'Wall Street Ledger'
-      );
+      addMultiOutletReports({
+        business: `Capital conversion: {PLAYER}'s purchase of the ${assetName.replace('_', ' ')} for $${cost.toLocaleString()} shows raw market leverage.`,
+        popCulture: `HEAVY FLEX! {PLAYER} just copped a brand new ${assetName.replace('_', ' ')}! The drip is real. 💎👑 #luxury`,
+        politics: `Public figures debate executive compensation caps following {PLAYER}'s flashy purchase.`,
+        local: `{PLAYER} spotted showing off their shiny new ${assetName.replace('_', ' ')} around the neighborhood.`,
+        financial: `Asset acquisition: {PLAYER} redeems cash flow into premium flexible storage capital worth $${cost.toLocaleString()}.`
+      });
+      addRivalCommentIfPossible('LuxuryPurchase');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 10);
         updatedPl.aura = Math.min(10000, updatedPl.aura + 25);
@@ -324,17 +623,14 @@ export function processWorldReaction(
 
     case 'PHILANTHROPY': {
       const donation = metadata.cost || 0;
-      addFeed(
-        'OPINION',
-        `HEARTS WON: Public rallies around ${pName} after a generous philanthropy contribution of $${donation.toLocaleString()}!`,
-        'Public Polls'
-      );
-      addFeed(
-        'SOCIAL',
-        `Say what you want about ${pName}, but donating $${donation.toLocaleString()} to charity is a pure class act. Respect! ❤️🕊️`,
-        'Chirp',
-        { effect: '+50 Aura | -20 Heat', author: '@KindSoul', avatarId: 'av_f2' }
-      );
+      addMultiOutletReports({
+        business: `{PLAYER}'s major $${donation.toLocaleString()} charitable pledge establishes significant brand goodwill values.`,
+        popCulture: `Charitable halo! {PLAYER} donates $${donation.toLocaleString()} to humanitarian relief. Absolute class act. ❤️🕊️`,
+        politics: `Senator groups praise President {PLAYER}'s philanthropy, solidifying bipartisan goodwill consensus.`,
+        local: `Generous donor: {PLAYER} funds local community welfare and infrastructure with a $${donation.toLocaleString()} grant.`,
+        financial: `Capital relocation: {PLAYER} relocates $${donation.toLocaleString()} to charitable foundations, optimizing tax audits.`
+      });
+      addRivalCommentIfPossible('Philanthropy');
       if (!isTest) {
         updatedPl.aura = Math.min(10000, updatedPl.aura + 50);
         updatedPl.heat = Math.max(0, updatedPl.heat - 20);
@@ -363,22 +659,14 @@ export function processWorldReaction(
     }
 
     case 'ARREST': {
-      addFeed(
-        'POLITICS',
-        `BREAKING: Local business figure ${pName} has been arrested under severe charges! Bail set.`,
-        'Capitol Press'
-      );
-      addFeed(
-        'SOCIAL',
-        `CRIMINAL CLOWN! ${pName} got locked up! 🚔🚨 Look at that mugshot! "Billionaire" is actually just a crook!`,
-        'Chirp',
-        { effect: '-50 Clout | -40 Aura', author: '@JusticeFirst', avatarId: 'av_m5', pinned: true }
-      );
-      addFeed(
-        'OPINION',
-        `OUTRAGE: Citizens debate corporate ethics after ${pName}'s high-profile arrest. 82% demand accountability.`,
-        'Public Polls'
-      );
+      addMultiOutletReports({
+        business: `Compliance shock: regulatory watchdogs place {PLAYER}'s assets under severe scrutiny following active arrest.`,
+        popCulture: `CRIMINAL CLOWN! {PLAYER} got locked up! 🚔🚨 Look at that mugshot! Total chaos! #Mugshot`,
+        politics: `Debate sparks over corporate ethics and elite compliance following {PLAYER}'s high-profile arrest.`,
+        local: `Neighborhood stunned as police escort local icon {PLAYER} in handcuffs following federal raid.`,
+        financial: `Asset preservation: standard markets freeze trade contracts on {PLAYER}'s operations during custody.`
+      });
+      addRivalCommentIfPossible('Arrest');
       if (!isTest) {
         updatedPl.clout = Math.max(0, updatedPl.clout - 50);
         updatedPl.aura = Math.max(0, updatedPl.aura - 40);
@@ -387,35 +675,28 @@ export function processWorldReaction(
     }
 
     case 'BANKRUPTCY': {
-      addFeed(
-        'BUSINESS',
-        `EMPIRE CRUMBLE: ${pName}'s enterprise hits rock-bottom. Bankruptcy filings underway!`,
-        'Wall Street Ledger'
-      );
-      addFeed(
-        'SOCIAL',
-        `Bro, ${pName} actually went broke?! Liquidated life?! Oh my goodness, the downfall is legendary. 💀😭`,
-        'Chirp',
-        { effect: '-100 Aura | -100 Clout', author: '@GossipCentral', avatarId: 'av_f1', pinned: true }
-      );
+      addMultiOutletReports({
+        business: `Enterprise collapse: liquidators begin systemic dissolution of {PLAYER}'s corporate empire.`,
+        popCulture: `Bro, {PLAYER} actually went broke?! Liquidated life?! Oh my goodness, the downfall is legendary. 💀😭`,
+        politics: `Bipartisan leaders debate systemic bankruptcy loopholes after {PLAYER}'s sudden default.`,
+        local: `Bankruptcy shock: local neighborhood businesses grieve the collapse of neighbor {PLAYER}'s brand.`,
+        financial: `Chapter 11 filing: {PLAYER}'s assets undergo total liquidation to settle outstanding margins.`
+      });
+      addRivalCommentIfPossible('Bankruptcy');
       break;
     }
 
     case 'TIER_PROMOTION': {
       const fromTier = metadata.tier || 'Previous';
       const toTier = updatedPl.currentTier;
-      addFeed(
-        'NEWS',
-        `📰 METEORIC RISE: ${pName} breaks ceilings to advance from ${fromTier} to the prestigious ${toTier} tier!`,
-        'Capital Press',
-        { pinned: true }
-      );
-      addFeed(
-        'SOCIAL',
-        `No way! ${pName} made it to ${toTier} tier! The growth is honestly unreal. Absolute legend. 👑🔥`,
-        'Chirp',
-        { effect: '+50 Clout | +50 Aura', author: '@IndustryEye', avatarId: 'av_m1' }
-      );
+      addMultiOutletReports({
+        business: `{PLAYER} scales beyond regional bounds, transitioning successfully from ${fromTier} to the prestigious ${toTier} ranks.`,
+        popCulture: `No way! {PLAYER} made it to ${toTier} tier! The growth is honestly unreal. Absolute legend. 👑🔥`,
+        politics: `Congressional analysts monitor the rising lobbyist influence of newly crowned ${toTier} tycoon {PLAYER}.`,
+        local: `Meteoric rise: local neighborhood kid {PLAYER} breaks through all barriers to reach ${toTier}! We are inspired!`,
+        financial: `Investment upgrade: {PLAYER} unlocks advanced high-net-worth leverage opportunities in the ${toTier} tier.`
+      });
+      addRivalCommentIfPossible('TierPromotion');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 50);
         updatedPl.aura = Math.min(10000, updatedPl.aura + 50);
@@ -433,7 +714,7 @@ export function processWorldReaction(
       addFeed(
         'SOCIAL',
         `Did you see ${pName}'s latest move? Some people are mad, but honestly it was a genius play. 🧠🍿`,
-        'Chirp',
+        'Chirper',
         { effect: '+10 Clout | -5 Aura', author: '@PoliticalJunkie', avatarId: 'av_m3' }
       );
       break;
@@ -454,7 +735,7 @@ export function processWorldReaction(
       addFeed(
         'SOCIAL',
         `My grocery bill is twice as high and President ${pName} is doing nothing! Worst admin ever! 😡🛒`,
-        'Chirp',
+        'Chirper',
         { effect: '-5 Approval Rating', author: '@FrustratedVoter', avatarId: 'av_f3' }
       );
       if (!isTest) {
@@ -465,17 +746,14 @@ export function processWorldReaction(
 
     case 'PRESIDENCY_ORDER': {
       const orderName = metadata.hustleName || 'Policy Directive';
-      addFeed(
-        'POLITICS',
-        `LEGISLATIVE MILITARY: President ${pName} implements executive order "${orderName}" directly from Oval Office.`,
-        'Capitol Press'
-      );
-      addFeed(
-        'SOCIAL',
-        `Love or hate President ${pName}, that "${orderName}" policy is actually a massive victory for the working class! 🇺🇸🕊️`,
-        'Chirp',
-        { effect: '+3 Approval Rating', author: '@PatriotPulse', avatarId: 'av_m1' }
-      );
+      addMultiOutletReports({
+        business: `Regulatory frameworks shift after President {PLAYER} implements major policy changes regarding ${orderName}.`,
+        popCulture: `President {PLAYER} just signed a massive executive order! The internet is dividing over the new law! 🇺🇸🏛️`,
+        politics: `Congress responds to President {PLAYER}'s newest directive on ${orderName}, debating bipartisan compliance.`,
+        local: `How President {PLAYER}'s latest executive order affects our local community and housing prices.`,
+        financial: `Corporate yield multipliers fluctuate following President {PLAYER}'s sweeping legislative shifts.`
+      });
+      addRivalCommentIfPossible('MajorLegislation');
       if (!isTest) {
         updatedPl.approvalRating = Math.min(100, updatedPl.approvalRating + 3);
       }
@@ -483,18 +761,14 @@ export function processWorldReaction(
     }
 
     case 'ELECTION_VICTORY': {
-      addFeed(
-        'NEWS',
-        `📰 LANDSLIDE: ${pName} emerges victorious in presidential election! Oval Office awaits.`,
-        'Capital Press',
-        { pinned: true }
-      );
-      addFeed(
-        'SOCIAL',
-        `HISTORY SECURED! President ${pName} has been sworn in! We are in for a legendary term. Let's go! 🎉🇺🇸`,
-        'Chirp',
-        { effect: '+200 Clout | +200 Aura', author: '@GovWatcher', avatarId: 'av_m4', pinned: true }
-      );
+      addMultiOutletReports({
+        business: `Market indices soar as pro-business President {PLAYER} wins the national general election in a historic landslide.`,
+        popCulture: `PRESIDENT {PLAYER} IS SWORN IN! 🇺🇸🎉 An incredible journey from the block to the Oval Office! #President`,
+        politics: `Bipartisan consensus: President {PLAYER} outlines ambitious executive reform slates for their incoming term.`,
+        local: `From the streets to the Oval Office: neighbor {PLAYER} is officially President of the United States!`,
+        financial: `Macroeconomic projection: President {PLAYER}'s term begins, shifting national interest rates and sector yields.`
+      });
+      addRivalCommentIfPossible('ElectionVictory');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 200);
         updatedPl.aura = Math.min(10000, updatedPl.aura + 200);
@@ -504,18 +778,14 @@ export function processWorldReaction(
 
     case 'LEGENDARY_ACHIEVEMENT': {
       const achName = metadata.achievementName || 'Supreme Legend';
-      addFeed(
-        'NEWS',
-        `📰 HISTORIC FEAT: ${pName} has unlocked the legendary achievement "${achName}"!`,
-        'Capital Press',
-        { pinned: true }
-      );
-      addFeed(
-        'SOCIAL',
-        `OH MY GOD! ${pName} just unlocked "${achName}"! Absolute peak performance. Elite tier standard! 🐐🏆`,
-        'Chirp',
-        { effect: '+100 Aura | +100 Clout', author: '@AchievementHunter', avatarId: 'av_m2', pinned: true }
-      );
+      addMultiOutletReports({
+        business: `Monopoly milestone: {PLAYER} breaks industry records to complete the historic achievement "${achName}".`,
+        popCulture: `🐐 REAL PEAK PERFORMANCE! {PLAYER} just unlocked the "${achName}" achievement! Absolutely legendary! #Achievement`,
+        politics: `Congressional committees acknowledge {PLAYER}'s unparalleled operational benchmark "${achName}".`,
+        local: `Our local inspiration {PLAYER} has achieved greatness, completing the legendary benchmark "${achName}"!`,
+        financial: `Yield multiplier bonus: the record-breaking "${achName}" milestone cements {PLAYER}'s long-term asset values.`
+      });
+      addRivalCommentIfPossible('LegendaryAchievement');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 100);
         updatedPl.aura = Math.min(10000, updatedPl.aura + 100);
@@ -599,7 +869,7 @@ export function processWorldReaction(
       priority: 9,
       title: '📈 MARKET FLASH',
       headline: `THE TEN-FIGURE CLUB: ${pName.toUpperCase()} REACHES $1,000,000,000!`,
-      body: `Unbelievable financial history! ${pName} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid reserves. They are officially a global financial sovereign!`,
+      body: `Unbelievable financial history! ${pName} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid cash. They are officially a global financial sovereign!`,
       source: 'Global Financial Digest',
       effect: '+100 Clout | +100 Aura'
     });
@@ -876,8 +1146,12 @@ export function processWorldReaction(
     candidates.sort((a, b) => b.priority - a.priority);
     const chosen = candidates[0];
 
-    const likes = chosen.type === 'SOCIAL_TRENDING' ? Math.floor(Math.random() * 50000) + 10000 : undefined;
-    const shares = chosen.type === 'SOCIAL_TRENDING' ? Math.floor(Math.random() * 8000) + 1500 : undefined;
+    const likes = chosen.type === 'SOCIAL_TRENDING'
+      ? (isTest ? 25000 : Math.floor(Math.random() * 50000) + 10000)
+      : undefined;
+    const shares = chosen.type === 'SOCIAL_TRENDING'
+      ? (isTest ? 4000 : Math.floor(Math.random() * 8000) + 1500)
+      : undefined;
 
     const liveEvent: LiveWorldEvent = {
       id: chosen.id,
@@ -888,7 +1162,7 @@ export function processWorldReaction(
       source: chosen.source,
       likes,
       shares,
-      avatarId: chosen.type === 'SOCIAL_TRENDING' ? `av_f${Math.floor(Math.random() * 5) + 1}` : undefined,
+      avatarId: chosen.type === 'SOCIAL_TRENDING' ? (isTest ? 'av_f2' : `av_f${Math.floor(Math.random() * 5) + 1}`) : undefined,
       author: chosen.type === 'SOCIAL_TRENDING' ? `@buzz_master` : undefined,
       effect: chosen.effect,
       fameLevel: fame,
@@ -971,8 +1245,12 @@ export function processWorldReaction(
     const feedText = `${liveEvent.headline} — ${liveEvent.body}`;
     const feedSource = liveEvent.source;
 
-    const feedLikes = feedCat === 'SOCIAL' ? Math.floor(Math.random() * 24000) + 120 : undefined;
-    const feedShares = feedCat === 'SOCIAL' && feedLikes ? Math.floor(feedLikes * 0.15) + 5 : undefined;
+    const feedLikes = feedCat === 'SOCIAL'
+      ? (isTest ? 5000 : Math.floor(Math.random() * 24000) + 120)
+      : undefined;
+    const feedShares = feedCat === 'SOCIAL' && feedLikes
+      ? (isTest ? 500 : Math.floor(feedLikes * 0.15) + 5)
+      : undefined;
 
     const feedItem: WorldFeedItem = {
       id: generateId(),
@@ -983,8 +1261,8 @@ export function processWorldReaction(
       month: updatedPl.month,
       likes: feedLikes,
       shares: feedShares,
-      author: feedCat === 'SOCIAL' ? `@user_${Math.floor(Math.random() * 8999) + 1000}` : undefined,
-      avatarId: feedCat === 'SOCIAL' ? `av_f${Math.floor(Math.random() * 5) + 1}` : undefined,
+      author: feedCat === 'SOCIAL' ? (isTest ? '@user_5678' : `@user_${Math.floor(Math.random() * 8999) + 1000}`) : undefined,
+      avatarId: feedCat === 'SOCIAL' ? (isTest ? 'av_f3' : `av_f${Math.floor(Math.random() * 5) + 1}`) : undefined,
       effect: liveEvent.effect,
       pinned: true
     };

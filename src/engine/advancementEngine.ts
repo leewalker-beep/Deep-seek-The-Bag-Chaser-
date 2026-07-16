@@ -19,6 +19,7 @@ import { triggerMonthlyNarrativeEvent } from './eventEngine';
 import { simulateRivals } from './rivalSimEngine';
 import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier, isConsequenceActive } from './consequenceEngine';
 import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
+import { processWorldReaction } from './reactiveWorldEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
 import { evaluateReputationTick } from './reputationEngine';
 import { getLegacyBonus } from './mathEngine';
@@ -405,6 +406,7 @@ export function advanceMonth(
       importance: 3,
       month: newPl.month
     });
+    newPl = processWorldReaction(newPl, 'FIRST_PASSIVE_INCOME', {}).updatedPl;
   }
 
   // New Record Label Artists handling (contract countdown, poaching alerts, revenue/retainer calculations)
@@ -494,6 +496,7 @@ export function advanceMonth(
         text: `🔓 RELEASED. You served your time for ${newPl.jailCharge}.`,
         colorClass: 'text-emerald-400 font-black'
       });
+      newPl = processWorldReaction(newPl, 'PRISON_RELEASE', {}).updatedPl;
     }
   }
 

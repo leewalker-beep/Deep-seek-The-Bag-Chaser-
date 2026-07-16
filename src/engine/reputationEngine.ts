@@ -450,7 +450,7 @@ export function evaluateReputationTick(pl: PlayerStats): { newPl: PlayerStats; n
         newPl.narrativeFlags.reputationSustainedMonths = 0;
 
         // Record major historical milestone and biography reference
-        const desc = `The media and the public are strictly in consensus: you are now viewed as "${targetRep}".`;
+        const desc = `The public increasingly views you as "${targetRep}". The business community now sees you as "${targetRep}". This reputation may open opportunities across your operations.`;
         recordHistoryEvent(newPl, {
           id: `reputation_shift_${targetRep.toLowerCase().replace(/ /g, '_')}_${newPl.month}`,
           title: `Persona Evolved: ${targetRep}`,
@@ -466,17 +466,39 @@ export function evaluateReputationTick(pl: PlayerStats): { newPl: PlayerStats; n
           newPl.biography.push(bioEntry);
         }
 
-        // Post pinned world feed update
-        const feedItem = {
-          id: `reputation_feed_shift_${targetRep.toLowerCase().replace(/ /g, '_')}_${newPl.month}`,
-          category: 'SOCIAL' as any,
-          text: `📢 NEWS FLASH: Public sentiment has solidified. ${newPl.name || "The player"} is now widely regarded as "${targetRep}"!`,
-          source: "Wall Street Ledger",
+        // Post multiple outlet reports for reputation lock-in (Part 2, 4)
+        const feedBusiness = {
+          id: `rep_feed_biz_${newPl.month}_${Math.random().toString(36).substring(7)}`,
+          category: 'BUSINESS' as const,
+          text: `📢 CONFLICT RESOLVED: The business community now sees you as "${targetRep}", transforming executive and trade relations.`,
+          source: 'Wall Street Ledger',
           timestamp: Date.now(),
           month: newPl.month,
           pinned: true
         };
-        newPl.worldFeed = [feedItem, ...(newPl.worldFeed || [])].slice(0, 100);
+        const feedPop = {
+          id: `rep_feed_pop_${newPl.month}_${Math.random().toString(36).substring(7)}`,
+          category: 'SOCIAL' as const,
+          text: `🔥 TRENDING: The public increasingly views you as "${targetRep}"! Absolute main-character energy across all platforms!`,
+          source: 'Chirper Trend',
+          timestamp: Date.now(),
+          month: newPl.month,
+          author: '@IndustryWatcher',
+          likes: Math.floor(Math.random() * 45000) + 5000,
+          shares: Math.floor(Math.random() * 9000) + 1000,
+          pinned: true
+        };
+        const feedFinance = {
+          id: `rep_feed_fin_${newPl.month}_${Math.random().toString(36).substring(7)}`,
+          category: 'MARKET' as const,
+          text: `📊 PORTFOLIO OPTIMIZATION: This reputation may open opportunities to scale capital assets and reduce overhead margins.`,
+          source: 'Global Finance Tracker',
+          timestamp: Date.now(),
+          month: newPl.month,
+          pinned: true
+        };
+
+        newPl.worldFeed = [feedBusiness, feedPop, feedFinance, ...(newPl.worldFeed || [])].slice(0, 100);
 
         // News alerts and world feed placement
         news.push(`📰 PUBLIC PERSONA SHIFT: You are now widely recognized as "${targetRep}"!`);

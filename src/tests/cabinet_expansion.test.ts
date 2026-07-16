@@ -9,6 +9,7 @@ describe('Cabinet Expansion - Engine Logic', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     mockPlayer = {
       runId: 'test-run',
       avatarId: 'av_m1',

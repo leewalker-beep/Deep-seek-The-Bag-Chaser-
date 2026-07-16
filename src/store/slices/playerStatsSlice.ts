@@ -6,6 +6,7 @@ import { enforceStatCaps } from '../../engine/statEngine';
 import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
 import * as Bio from '../../engine/biographyEngine';
 import { generateGlobalNPC } from '../../config/world/npcRegistry';
+import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 
 export interface PlayerStatsSlice {
   pl: PlayerStats;
@@ -238,12 +239,19 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       persistentArtistNPC
     ];
 
+    const isFirstEmployee = state.pl.artists.length === 0;
+    let plFinalArtist = enforceStatCaps({
+      ...plAfterCost,
+      artists: [...plAfterCost.artists, newArtist],
+      npcs: updatedNpcs,
+    });
+
+    if (isFirstEmployee) {
+      plFinalArtist = processWorldReaction(plFinalArtist, 'FIRST_EMPLOYEE', { hustleName: 'Record Label' }).updatedPl;
+    }
+
     set({
-      pl: enforceStatCaps({
-        ...plAfterCost,
-        artists: [...plAfterCost.artists, newArtist],
-        npcs: updatedNpcs,
-      }),
+      pl: plFinalArtist,
       news: [`🎤 SUCCESS! Signed ${tier} artist: ${npcProfile.name}`, ...state.news.slice(0, 49)]
     });
 

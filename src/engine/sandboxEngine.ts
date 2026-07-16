@@ -1,5 +1,6 @@
 import type { PlayerStats, TickerMessage } from '../types/game';
 import { recordHistoryEvent } from './historyEngine';
+import { processWorldReaction } from './reactiveWorldEngine';
 
 /**
  * Core Sandbox Engine for the OPEN tier.
@@ -35,6 +36,7 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
         colorClass: 'text-orange-400 font-bold',
         tier: 'OPEN'
       });
+      nextPl = processWorldReaction(nextPl, 'MONOPOLY_INVESTIGATION', {}).updatedPl;
       nextPl = recordHistoryEvent(nextPl, {
         id: `antitrust_settlement_${Date.now()}`,
         title: 'Monopoly Investigation',
@@ -256,6 +258,8 @@ export function simulateSandboxTick(pl: PlayerStats, news: (string | TickerMessa
       colorClass: 'text-yellow-400 font-black animate-bounce',
       tier: 'OPEN'
     });
+
+    nextPl = processWorldReaction(nextPl, 'DYNASTY_MILESTONE', {}).updatedPl;
 
     // Pinned historic entry to World Feed with deterministic sequential ID
     nextPl = recordHistoryEvent(nextPl, {
