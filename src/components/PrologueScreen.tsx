@@ -104,12 +104,13 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const hasChosenOriginUnlocked = unlockedLegacyUpgradeIds.includes('unique_origin_chosen');
 
   // Phases of Character Creation Flow:
-  // 'welcome' | 'enter_name' | 'choose_avatar' | 'choose_origin' | 'opening_cinematic' | 'advisor_intro' | 'first_month'
+  // 'welcome' | 'enter_name' | 'choose_avatar' | 'choose_origin' | 'select_starting_conditions' | 'opening_cinematic' | 'advisor_intro' | 'first_month'
   const [phase, setPh] = useState<
     | 'welcome'
     | 'enter_name'
     | 'choose_avatar'
     | 'choose_origin'
+    | 'select_starting_conditions'
     | 'opening_cinematic'
     | 'advisor_intro'
     | 'first_month'
@@ -120,43 +121,112 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   const [selectedAvatarId, setSelectedAvatarId] = useState('av_m1');
   const [selectedCatId, setSelectedCatId] = useState('street_kid');
   const [selectedVarId, setSelectedVarId] = useState('sk_delivery');
+  const [startingFocusId, setStartingFocusId] = useState<'capital' | 'clout' | 'aura' | 'balanced'>('balanced');
+
+  const filteredCategories = useMemo(() => {
+    return BACKGROUND_CATEGORIES.filter(c => {
+      if (c.id === 'legacy') return hasChosenOriginUnlocked;
+      return true;
+    });
+  }, [hasChosenOriginUnlocked]);
+
+  const activeCategory = useMemo(() => {
+    return BACKGROUND_CATEGORIES.find(c => c.id === selectedCatId) || BACKGROUND_CATEGORIES[0];
+  }, [selectedCatId]);
+
+  const activeVariation = useMemo(() => {
+    return activeCategory.variations.find(v => v.id === selectedVarId) || activeCategory.variations[0];
+  }, [activeCategory, selectedVarId]);
 
   // Cinematic lines for the Opening Cinematic step
   const [cinematicIndex, setCinematicIndex] = useState(0);
-  const cinematicLines = [
-    { text: 'Some people inherit wealth.', glow: 'shadow-emerald-500/20' },
-    { text: 'You inherited nothing.', glow: 'shadow-red-500/20' },
-    { text: 'No money. No reputation. No influence. No safety net.', glow: 'shadow-yellow-500/20' },
-    { text: 'Every decision shapes your future.', glow: 'shadow-blue-500/20' },
-    { text: 'Every life tells a different story.', glow: 'shadow-purple-500/20' },
-    { text: 'You only get one life.', glow: 'shadow-pink-500/20' },
-    { text: 'When your life ends, your legacy remains.', glow: 'shadow-white/20' },
-  ];
+  const cinematicLines = useMemo(() => {
+    const name = playerName || 'STRANGER';
+    let focusDesc = 'a stable balance';
+    if (startingFocusId === 'capital') focusDesc = 'aggressive capital accumulation';
+    if (startingFocusId === 'clout') focusDesc = 'relentless public influence';
+    if (startingFocusId === 'aura') focusDesc = 'magnetic personal charisma';
+
+    if (selectedCatId === 'street_kid') {
+      return [
+        { text: `In the concrete grid of the city, a new name emerges: ${name}.`, glow: 'shadow-emerald-500/25' },
+        { text: `You grew up in the shadow of high rises, with survival etched in your bones.`, glow: 'shadow-rose-500/25' },
+        { text: `You choose the ${activeVariation.name} path, launching with only $${activeVariation.starterBag}.`, glow: 'shadow-yellow-500/25' },
+        { text: `With your starting conditions tuned for ${focusDesc}.`, glow: 'shadow-blue-500/25' },
+        { text: `No trust funds. No safety nets. Just raw determination and the mud beneath your feet.`, glow: 'shadow-red-500/25' },
+        { text: `They think they can sweep you under the rug. They are wrong.`, glow: 'shadow-pink-500/25' },
+        { text: `This city knows your face now, ${name}. Go and claim your crown.`, glow: 'shadow-white/25' },
+      ];
+    } else if (selectedCatId === 'dropout') {
+      return [
+        { text: `They told you to stay in school. They told you to follow the rules, ${name}.`, glow: 'shadow-blue-500/25' },
+        { text: `But you dropped out. You chose the real world over their outdated lectures.`, glow: 'shadow-teal-500/25' },
+        { text: `Armed with a ${activeVariation.name} vehicle and a $${activeVariation.starterBag} war chest.`, glow: 'shadow-purple-500/25' },
+        { text: `Harnessing your potential for ${focusDesc} to dominate the airwaves.`, glow: 'shadow-emerald-500/25' },
+        { text: `You have everything to prove, and the target on your back is burning.`, glow: 'shadow-rose-500/25' },
+        { text: `Let them doubt you. Let them talk. Your clout will buy their corporations.`, glow: 'shadow-pink-500/25' },
+        { text: `The spotlight is yours, ${name}. Rewrite the future.`, glow: 'shadow-white/25' },
+      ];
+    } else if (selectedCatId === 'benefactor') {
+      return [
+        { text: `Wealth. Authority. The crushing weight of your ancestral family lineage, ${name}.`, glow: 'shadow-yellow-500/25' },
+        { text: `The world knows your bloodline. But they do not know what you are capable of.`, glow: 'shadow-cyan-500/25' },
+        { text: `Stepping out as a ${activeVariation.name} with an elite $${activeVariation.starterBag} headstart.`, glow: 'shadow-emerald-500/25' },
+        { text: `Fueled by a starting strategy of ${focusDesc}.`, glow: 'shadow-blue-500/25' },
+        { text: `Some call it easy. But they do not understand the pressure of an empire.`, glow: 'shadow-rose-500/25' },
+        { text: `You will not merely inherit history. You will define it.`, glow: 'shadow-purple-500/25' },
+        { text: `The boardrooms are ready, ${name}. Let them tremble.`, glow: 'shadow-white/25' },
+      ];
+    } else {
+      // Legacy / Chosen
+      return [
+        { text: `The prophecy fulfills itself, ${name}. A legacy reborn across lifetimes.`, glow: 'shadow-yellow-500/30' },
+        { text: `You step back into the arena of destiny with the crown of the Chosen.`, glow: 'shadow-purple-500/30' },
+        { text: `Starting with a legendary $${activeVariation.starterBag} and unmatched cosmic backing.`, glow: 'shadow-emerald-500/30' },
+        { text: `Executing with the absolute power of ${focusDesc}.`, glow: 'shadow-blue-500/30' },
+        { text: `The rivals are already plotting your demise, terrified of your return.`, glow: 'shadow-red-500/30' },
+        { text: `But they forget: this game is yours. This city is yours.`, glow: 'shadow-pink-500/30' },
+        { text: `Welcome back to the throne, ${name}. Let the speedrun begin.`, glow: 'shadow-white/30' },
+      ];
+    }
+  }, [playerName, selectedCatId, activeVariation, startingFocusId]);
 
   // Advisor dialogue tailored to Origin
   const advisorDialogue = useMemo(() => {
+    const name = playerName || 'Kid';
+    let focusTip = '';
+    if (startingFocusId === 'capital') {
+      focusTip = "I see you chose the Aggressive Capitalist strategy. That extra cash will help you secure your first micro-business early. Don't waste it on frivolous things.";
+    } else if (startingFocusId === 'clout') {
+      focusTip = "That extra Clout you started with is a powerful weapon. Leverage it to build viral attention and scout high-tier artist talent before your competitors wake up.";
+    } else if (startingFocusId === 'aura') {
+      focusTip = "Your magnetic Aura starting boost is excellent. It will shield your reputation from falling under pressure and stabilize your initial monthly standings.";
+    } else {
+      focusTip = "The balanced Stable Insider setup is a very smart, flexible foundation. You're ready to adapt to whatever opportunities or crises the market throws at you.";
+    }
+
     if (selectedCatId === 'street_kid') {
       return {
-        text: "Ah, another kid from the blocks. You've got the hunger and the scars to prove it. Survival in the mud is second nature to you, and those street hustles will pay out extra cash. But don't let the exhaustion break you before you even reach the high rise. Keep an eye on your Stress and Mental Health, and watch out for early careless mistakes. Let's make them pay for every tear.",
+        text: `Ah, another kid from the blocks. Welcome, ${name}. You've got the hunger and the scars to prove it. Survival in the mud is second nature to you, and those street hustles will pay out extra cash. ${focusTip} But don't let the exhaustion break you before you even reach the high rise. Keep an eye on your Stress and Mental Health, and watch out for early careless mistakes. Let's make them pay for every tear.`,
         highlight: "Street Hustles Yield Cash, but Exhaustion is Your Enemy."
       };
     } else if (selectedCatId === 'dropout') {
       return {
-        text: "A dropout, huh? Rebellious, hungry, and refusing to follow their rules. I like it. Your charisma and Clout will open doors much faster in the music and startup scenes. But the spotlight burns bright, and rivals will be eager to expose you. Build your crowd, protect your reputation, and prove everyone who doubted you wrong.",
+        text: `A dropout, huh? Rebellious, hungry, and refusing to follow their rules. I like it, ${name}. Your charisma and Clout will open doors much faster in the music and startup scenes. ${focusTip} But the spotlight burns bright, and rivals will be eager to expose you. Build your crowd, protect your reputation, and prove everyone who doubted you wrong.`,
         highlight: "Clout and Networking Dominate, but Public Failure Drains Aura."
       };
     } else if (selectedCatId === 'benefactor') {
       return {
-        text: "A benefactor's child. You were born with a golden spoon, but now you want to build a kingdom of your own design. You've got the capital and the early Aura to command boardrooms. But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.",
+        text: `A benefactor's child. You were born with a golden spoon, ${name}, but now you want to build a kingdom of your own design. You've got the capital and the early Aura to command boardrooms. ${focusTip} But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.`,
         highlight: "Sovereign Boardrooms and Capital, but Vulnerable to Early Stress."
       };
     } else {
       return {
-        text: "The Chosen One has arrived. A destiny foretold, carrying the weight of ancient legacy. Your starting advantages are unmatched, but you have a massive target on your back. The rivals are ready. Step forward and claim your throne.",
+        text: `The Chosen One has arrived. A destiny foretold, carrying the weight of ancient legacy. Welcome back, ${name}. Your starting advantages are unmatched. ${focusTip} But you have a massive target on your back. The rivals are ready. Step forward and claim your throne.`,
         highlight: "Overwhelming Advantages, but Relentless Rival Bids."
       };
     }
-  }, [selectedCatId]);
+  }, [selectedCatId, playerName, startingFocusId]);
 
   // Handle cinematic lines autoplay
   useEffect(() => {
@@ -176,22 +246,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       }, 3000);
       return () => clearInterval(timer);
     }
-  }, [phase]);
-
-  const filteredCategories = useMemo(() => {
-    return BACKGROUND_CATEGORIES.filter(c => {
-      if (c.id === 'legacy') return hasChosenOriginUnlocked;
-      return true;
-    });
-  }, [hasChosenOriginUnlocked]);
-
-  const activeCategory = useMemo(() => {
-    return BACKGROUND_CATEGORIES.find(c => c.id === selectedCatId) || BACKGROUND_CATEGORIES[0];
-  }, [selectedCatId]);
-
-  const activeVariation = useMemo(() => {
-    return activeCategory.variations.find(v => v.id === selectedVarId) || activeCategory.variations[0];
-  }, [activeCategory, selectedVarId]);
+  }, [phase, cinematicLines]);
 
   const handleSelectCategory = (catId: string) => {
     setSelectedCatId(catId);
@@ -204,6 +259,23 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
   // Complete Character Creation
   const handleEnterWorld = () => {
     if (playerName.trim().length < 2) return;
+
+    let extraCash = 0;
+    let extraClout = 0;
+    let extraAura = 0;
+    let focusName = "Stable Insider";
+
+    if (startingFocusId === 'capital') {
+      extraCash = 250;
+      focusName = "Aggressive Capitalist";
+    } else if (startingFocusId === 'clout') {
+      extraClout = 10;
+      focusName = "Influence Hustler";
+    } else if (startingFocusId === 'aura') {
+      extraAura = 10;
+      focusName = "Charismatic Player";
+    }
+
     onStart(
       playerName.trim().toUpperCase(),
       activeVariation.id,
@@ -211,13 +283,14 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       activeVariation.id,
       selectedAvatarId,
       {
-        bag: 0,
-        clout: 0,
-        aura: 0,
+        bag: extraCash,
+        clout: extraClout,
+        aura: extraAura,
         biography: [
-          `Left behind the shadows of your old life to make something of yourself.`
+          `Left behind the shadows of your old life to make something of yourself as a ${activeVariation.name}.`,
+          `Chose the starting path of the ${focusName} to define your trajectory.`
         ],
-        recordedBioKeys: ['prologue_origin'],
+        recordedBioKeys: ['prologue_origin', `focus_${startingFocusId}`],
         hustlePlays: {},
         totalHustlesCompleted: 0,
         actionLog: []
@@ -258,7 +331,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               Every decision shapes your story. Climb the social classes from poverty to command the Oval Office. Remember: you only get one life.
             </p>
 
-            {/* PART 5 — Legacy Explanation */}
+            {/* Legacy Inheritance */}
             <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-left space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-lg">✨</span>
@@ -304,7 +377,6 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                 Begin Journey →
               </button>
 
-              {/* Maintain Playwright Skip button text mapping */}
               <button
                 onClick={() => setPh('choose_origin')}
                 className="text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-widest transition-colors block mx-auto py-2"
@@ -368,7 +440,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           </motion.div>
         )}
 
-        {/* STEP 3: CHOOSE AVATAR / FACE */}
+        {/* STEP 3: CHOOSE AVATAR */}
         {phase === 'choose_avatar' && (
           <motion.div
             key="choose_avatar"
@@ -387,7 +459,6 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               </p>
             </div>
 
-            {/* Grid of 8 Portraits */}
             <div className="grid grid-cols-4 gap-3">
               {PLAYER_AVATARS.map(av => {
                 const isSelected = selectedAvatarId === av.id;
@@ -433,7 +504,6 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
             exit={{ opacity: 0, x: -20 }}
             className="w-full max-w-4xl space-y-6 z-10 p-6 md:p-8 rounded-[2.5rem] bg-slate-900/60 border border-white/5 backdrop-blur-md max-h-[92vh] overflow-y-auto custom-scrollbar"
           >
-            {/* Added standard locator header for smoke test mapping */}
             <div className="text-center space-y-1">
               <span className="text-[10px] text-emerald-400 tracking-[0.3em] font-black uppercase">
                 Identity Profile – Step 3
@@ -444,9 +514,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               </p>
             </div>
 
-            {/* Main responsive grid layout */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-
               {/* Left Column: Origin Buttons Selection */}
               <div className="md:col-span-4 flex flex-col gap-2.5">
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">
@@ -494,8 +562,6 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
 
               {/* Right Column: Detailed Presentation */}
               <div className="md:col-span-8 space-y-4">
-
-                {/* PART 2 Expanded Details Presentation Card */}
                 <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-4 text-left">
                   <div className="border-b border-white/5 pb-3">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">
@@ -543,44 +609,6 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                     </p>
                   </div>
                 </div>
-
-                {/* Specific Variation Selector under details */}
-                <div className="space-y-2 text-left">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                    Select Specific Starter Specialization ({activeCategory.name})
-                  </span>
-                  <div className="grid grid-cols-1 gap-2">
-                    {activeCategory.variations.map(v => {
-                      const isVarSelected = selectedVarId === v.id;
-                      return (
-                        <button
-                          key={v.id}
-                          onClick={() => setSelectedVarId(v.id)}
-                          className={`p-3 rounded-xl border text-left flex justify-between items-center transition-all ${
-                            isVarSelected
-                              ? 'bg-white/10 border-white/40 ring-1 ring-white/15'
-                              : 'bg-slate-950/40 border-white/5 opacity-75 hover:opacity-100 hover:bg-slate-950/70'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">{v.icon}</span>
-                            <div className="space-y-0.5">
-                              <span className="block text-xs font-black text-white uppercase">{v.name}</span>
-                              <span className="block text-[10px] text-slate-400 max-w-[400px] line-clamp-1">{v.flavor}</span>
-                            </div>
-                          </div>
-                          <div className="text-right pl-4">
-                            <span className="block text-xs font-mono font-black text-emerald-400">
-                              +${v.starterBag.toLocaleString()}
-                            </span>
-                            <span className="text-[8px] uppercase font-bold text-slate-500">Starter Capital</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
               </div>
             </div>
 
@@ -592,7 +620,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                 Back
               </button>
               <button
-                onClick={() => setPh('opening_cinematic')}
+                onClick={() => setPh('select_starting_conditions')}
                 className="flex-1 py-4 bg-emerald-500 text-black font-black uppercase tracking-wider rounded-xl hover:scale-[1.01] transition-all text-xs shadow-lg shadow-emerald-500/10 text-center"
               >
                 Confirm Origin & Proceed →
@@ -601,7 +629,140 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           </motion.div>
         )}
 
-        {/* STEP 5: OPENING CINEMATIC */}
+        {/* STEP 5: SELECT STARTING CONDITIONS */}
+        {phase === 'select_starting_conditions' && (
+          <motion.div
+            key="select_starting_conditions"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="w-full max-w-4xl space-y-6 z-10 p-6 md:p-8 rounded-[2.5rem] bg-slate-900/60 border border-white/5 backdrop-blur-md max-h-[92vh] overflow-y-auto custom-scrollbar"
+          >
+            <div className="text-center space-y-1">
+              <span className="text-[10px] text-emerald-400 tracking-[0.3em] font-black uppercase">
+                Identity Profile – Step 4
+              </span>
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Select Starting Conditions</h2>
+              <p className="text-slate-400 text-xs">
+                Fine-tune your initial career vehicle, starting resources, and strategic focus.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start text-left">
+              {/* Left Column: Variation Selection */}
+              <div className="space-y-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">
+                  1. Choose Starter Specialization ({activeCategory.name})
+                </span>
+                <div className="grid grid-cols-1 gap-2.5 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+                  {activeCategory.variations.map(v => {
+                    const isVarSelected = selectedVarId === v.id;
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => setSelectedVarId(v.id)}
+                        className={`p-4 rounded-2xl border text-left flex justify-between items-center transition-all duration-200 ${
+                          isVarSelected
+                            ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/10'
+                            : 'bg-slate-950/60 border-white/5 opacity-75 hover:opacity-100 hover:bg-slate-900/80'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{v.icon}</span>
+                          <div className="space-y-0.5">
+                            <span className="block text-xs font-black text-white uppercase">{v.name}</span>
+                            <span className="block text-[10px] text-slate-400 max-w-[220px] line-clamp-1">{v.flavor}</span>
+                          </div>
+                        </div>
+                        <div className="text-right pl-3">
+                          <span className="block text-xs font-mono font-black text-emerald-400">
+                            +${v.starterBag.toLocaleString()}
+                          </span>
+                          <span className="text-[8px] uppercase font-bold text-slate-500 block">Starter Capital</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Starting Focus Modifiers */}
+              <div className="space-y-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">
+                  2. Choose Strategy Focus Modifier
+                </span>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {[
+                    {
+                      id: 'capital',
+                      name: '🚀 Aggressive Capitalist',
+                      bonus: '+$250 Cash',
+                      desc: 'Prioritize raw liquid assets to immediately fund early business upgrades.'
+                    },
+                    {
+                      id: 'clout',
+                      name: '📣 Influence Hustler',
+                      bonus: '+10 Clout',
+                      desc: 'Leverage viral networking potential to scout high-tier talent early.'
+                    },
+                    {
+                      id: 'aura',
+                      name: '✨ Charismatic Player',
+                      bonus: '+10 Aura',
+                      desc: 'Establish a powerful, magnetic presence that stabilizes public reputation.'
+                    },
+                    {
+                      id: 'balanced',
+                      name: '⚖️ Stable Insider',
+                      bonus: 'Balanced',
+                      desc: 'A well-rounded, adaptive launchpad suited for any strategic pivot.'
+                    }
+                  ].map(f => {
+                    const isFocusSelected = startingFocusId === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => setStartingFocusId(f.id as any)}
+                        className={`p-3.5 rounded-2xl border text-left transition-all duration-200 ${
+                          isFocusSelected
+                            ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/10'
+                            : 'bg-slate-950/40 border-white/5 hover:bg-slate-900/80'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-black text-white uppercase">{f.name}</span>
+                          <span className="text-[9px] font-mono font-black text-emerald-400 uppercase bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/15">
+                            {f.bonus}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          {f.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-white/5">
+              <button
+                onClick={() => setPh('choose_origin')}
+                className="w-1/4 py-4 bg-slate-800 text-slate-300 font-bold uppercase tracking-wider rounded-xl hover:bg-slate-700 transition-all text-xs"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => setPh('opening_cinematic')}
+                className="flex-1 py-4 bg-emerald-500 text-black font-black uppercase tracking-wider rounded-xl hover:scale-[1.01] transition-all text-xs shadow-lg shadow-emerald-500/10 text-center"
+              >
+                Confirm Starting Conditions & Proceed →
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 6: OPENING CINEMATIC */}
         {phase === 'opening_cinematic' && (
           <motion.div
             key="opening_cinematic"
@@ -633,7 +794,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                   textShadow: '0 0 40px rgba(255,255,255,0.1)',
                 }}
               >
-                {cinematicLines[cinematicIndex].text}
+                {cinematicLines[cinematicIndex]?.text}
               </h2>
             </motion.div>
 
@@ -646,7 +807,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           </motion.div>
         )}
 
-        {/* STEP 6: ADVISOR INTRODUCTION */}
+        {/* STEP 7: ADVISOR INTRODUCTION */}
         {phase === 'advisor_intro' && (
           <motion.div
             key="advisor_intro"
@@ -693,7 +854,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           </motion.div>
         )}
 
-        {/* STEP 7: FIRST MONTH */}
+        {/* STEP 8: FIRST MONTH */}
         {phase === 'first_month' && (
           <motion.div
             key="first_month"
@@ -718,7 +879,13 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               <div>• Alias: <span className="font-mono text-emerald-400 font-bold">{playerName}</span></div>
               <div>• Origin Class: <span className="text-emerald-400 font-bold uppercase">{activeCategory.name}</span></div>
               <div>• Starter Job: <span className="text-slate-200 font-bold">{activeVariation.name}</span></div>
-              <div>• Starter Funds: <span className="font-mono text-emerald-400 font-bold">${activeVariation.starterBag}</span></div>
+              <div>• Strategy Focus: <span className="text-emerald-400 font-bold uppercase">
+                {startingFocusId === 'capital' && '🚀 Aggressive Capitalist (+$250 Cash)'}
+                {startingFocusId === 'clout' && '📣 Influence Hustler (+10 Clout)'}
+                {startingFocusId === 'aura' && '✨ Charismatic Player (+10 Aura)'}
+                {startingFocusId === 'balanced' && '⚖️ Stable Insider (Standard)'}
+              </span></div>
+              <div>• Starter Funds: <span className="font-mono text-emerald-400 font-bold">${(activeVariation.starterBag + (startingFocusId === 'capital' ? 250 : 0)).toLocaleString()}</span></div>
             </div>
 
             <button

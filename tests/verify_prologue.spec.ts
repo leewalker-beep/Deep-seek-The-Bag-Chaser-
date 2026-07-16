@@ -10,6 +10,6 @@ test('verify prologue flow', async ({ page }) => {
 
   // Skip Prologue to get to the first chapter intro
   await page.click('button:has-text("Skip Prologue")');
-  await expect(page.locator('h2')).toContainText('The First Hustle');
+  await expect(page.locator('h2')).toContainText('Shape Your Story');
   await page.screenshot({ path: 'prologue-2-first-hustle.png' });
 });
