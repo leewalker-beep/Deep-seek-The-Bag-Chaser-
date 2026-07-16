@@ -1,12 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGameStore } from '../store/gameStore';
 import type { HustleCompletedMetadata } from '../types/game';
 
 describe('Money Pipeline Audit Verification', () => {
   beforeEach(() => {
+    // Mock Math.random to avoid flakiness from procedural active challenges or event generation
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
+
     // Reset the game to standard starting configurations
     const { resetGame } = useGameStore.getState();
     resetGame('dropout', 3, 'Dropout', 'dropout_default');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('verifies standard identity: Applied bag delta == Reward Card == Receipt == Receipt totals', () => {
@@ -226,6 +233,7 @@ describe('Money Pipeline Audit Verification', () => {
     expect((event!.metadata as HustleCompletedMetadata).profit).toBe(13000);
 
     // C. Verify active challenge was won and cleared
+    console.log('ACTIVE CHALLENGES IN TEST:', JSON.stringify(finalPl.activeChallenges));
     expect(finalPl.activeChallenges.length).toBe(0);
   });
 });

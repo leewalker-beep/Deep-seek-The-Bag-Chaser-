@@ -46,7 +46,21 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         store.getState().updatePl({
             bag: 1000000,
             clout: 1000,
-            aura: 1000
+            aura: 1000,
+            narrativeFlags: {
+                advisor_shown_first_rival: true,
+                advisor_shown_first_million: true,
+                advisor_shown_dangerous_crime: true,
+                advisor_shown_first_business: true,
+                advisor_shown_first_passive: true,
+                advisor_shown_tier_STREET: true, // Prevent STREET onboarding from popping up immediately as well
+                advisor_shown_tier_STARTUP: true,
+                advisor_shown_tier_CORPORATE: true,
+                advisor_shown_tier_ELITE: true,
+                advisor_shown_tier_MOGUL: true,
+                advisor_shown_tier_PRESIDENT: true,
+                advisor_shown_tier_OPEN: true
+            }
         });
         store.getState().setActiveTab('MUD');
     });
