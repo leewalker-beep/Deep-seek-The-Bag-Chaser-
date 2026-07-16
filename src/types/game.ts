@@ -909,6 +909,7 @@ export interface PlayerStats {
   variationId?: string;
   tutorialStep: number;
   isTutorialSkipped: boolean;
+  guidanceSettings?: 'Full' | 'Recommended' | 'Minimal' | 'Off';
   deathContext?: {
     mentalHealthAtDeath: number;
     lastHustleMentalHit: number;

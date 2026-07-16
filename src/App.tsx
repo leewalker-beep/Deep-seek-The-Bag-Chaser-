@@ -546,9 +546,12 @@ function App() {
   useEffect(() => {
     if (ph !== 'PLAYING' || !pl) return;
 
+    const guidance = pl.guidanceSettings || 'Recommended';
+    if (guidance === 'Off') return;
+
     // --- 1. Tier Onboarding welcome/briefing triggers ---
-    // If pendingSpecialization is true, do NOT trigger (do not interrupt the cinematic).
-    if (!pendingSpecialization) {
+    // If pendingSpecialization or activeTransition is true, do NOT trigger (do not interrupt the cinematic).
+    if (!pendingSpecialization && !activeTransition) {
       const currentTier = pl.currentTier;
       const prevTier = prevTierRef.current;
 
@@ -590,8 +593,22 @@ function App() {
     // Make sure we are not already showing an advisor prompt
     if (activeAdvisorPrompt) return;
 
+    // Minimal guidance suppresses all contextual triggers
+    if (guidance === 'Minimal') return;
+
     const matchedTrigger = checkAdvisorTriggers(pl, currentMarket);
     if (matchedTrigger) {
+      // Recommended guidance only allows critical or survival-level alerts
+      if (guidance === 'Recommended') {
+        const isCritical =
+          matchedTrigger.tabToOpen === 'CRITICAL' ||
+          matchedTrigger.title.includes('CRITICAL') ||
+          matchedTrigger.title.includes('LIMIT') ||
+          matchedTrigger.title.includes('WARNING') ||
+          matchedTrigger.title.includes('DANGEROUS');
+        if (!isCritical) return;
+      }
+
       // Set the narrative flag in gameStore so it won't trigger again
       useGameStore.setState(state => ({
         pl: {
@@ -611,7 +628,7 @@ function App() {
         tabToOpen: matchedTrigger.tabToOpen,
       });
     }
-  }, [pl, ph, currentMarket, pendingSpecialization, activeAdvisorPrompt]);
+  }, [pl, ph, currentMarket, pendingSpecialization, activeTransition, activeAdvisorPrompt]);
 
 
   // Animate cash changes
