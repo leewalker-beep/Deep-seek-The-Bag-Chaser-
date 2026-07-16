@@ -1,4 +1,5 @@
 import type { PlayerStats, Consequence } from '../types/game';
+import { processWorldReaction } from './reactiveWorldEngine';
 
 /**
  * Helper to generate a unique random ID
@@ -191,6 +192,11 @@ export function tickConsequences(pl: PlayerStats, news: any[]): PlayerStats {
             ? 'text-emerald-400 font-bold animate-pulse'
             : 'text-red-500 font-bold animate-pulse'
         });
+        if (copy.source === 'housing_affordability_crisis') {
+          // Trigger housing protest world feed story
+          const reactionResult = processWorldReaction(updatedPl, 'HOUSING_PROTEST', {});
+          Object.assign(updatedPl, reactionResult.updatedPl);
+        }
       }
     } else if (copy.status === 'active') {
       if (copy.expiry > 0) {

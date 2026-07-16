@@ -616,11 +616,56 @@ export function generateStrategicAdvice(
     category: 'Legacy',
     priority: 'Information',
     title: `Active Public Persona: ${activeRep}`,
-    whatIsHappening: `The public currently views you as "${activeRep}".`,
-    whyItHappened: `This living reputation was built through your sustained metric choices, investments, and operational style.`,
-    recommendation: `Check your Reputation tab in the Advisor console to leverage its active flavorful modifiers and drawback mitigations.`,
+    whatIsHappening: `The public increasingly views you as "${activeRep}".`,
+    whyItHappened: `The business community now sees you as "${activeRep}" due to your metric choices.`,
+    recommendation: `This reputation may open opportunities across your operations. Check your Reputation tab in the Advisor console to leverage its active flavorful modifiers and drawback mitigations.`,
     confidence: 100,
   });
+
+  // --- ADVISOR AWARENESS OF THE LIVING WORLD ---
+  // 1. Reference recent headlines/press coverage (Advisor Awareness)
+  if (pl.worldFeed && pl.worldFeed.length > 0) {
+    const latestItem = pl.worldFeed[0];
+    const simplifiedText = latestItem.text.split('\n')[0].substring(0, 60); // Get first line, capped
+    insights.push({
+      id: 'advisor_headline_awareness',
+      category: 'WorldMemory',
+      priority: 'Important',
+      title: 'Headlines & Press Coverage',
+      whatIsHappening: `I noticed the press coverage regarding recent events: "${simplifiedText}..."`,
+      whyItHappened: `Your high-visibility choices are directly shaping public interest.`,
+      recommendation: `The media will amplify both triumphs and misdeeds. Protect your public profile carefully.`,
+      confidence: 90,
+    });
+  }
+
+  // 2. Reference market movements
+  if (currentMarket === 'BULL_MARKET' || currentMarket === 'NORMAL') {
+    insights.push({
+      id: 'advisor_market_awareness',
+      category: 'Economy',
+      priority: 'Opportunity',
+      title: 'Market Reaction Insights',
+      whatIsHappening: `The markets reacted well to our recent expansions, especially under the current ${currentMarket} market.`,
+      whyItHappened: `Investors appreciate pro-growth metrics and low Heat profiles.`,
+      recommendation: `Capitalize on this positive market sentiment by upgrading your high-tier business branches.`,
+      confidence: 95,
+    });
+  }
+
+  // 3. Reference changing public opinion
+  if (pl.aura !== undefined && pl.aura < 40) {
+    insights.push({
+      id: 'advisor_opinion_awareness',
+      category: 'Aura',
+      priority: 'Critical',
+      title: 'Public Opinion Dynamics',
+      whatIsHappening: `Public opinion is changing rapidly regarding your career.`,
+      whyItHappened: `Recent setbacks or high-heat activities have eroded public trust.`,
+      recommendation: `Prioritize rest and establish philanthropy projects to recover your reputation.`,
+      confidence: 95,
+    });
+  }
 
   // --- DERIVE SUMMARIES AND KEY INSIGHTS ---
   // Prioritize list: Critical, then Important, then Opportunity, then Information
