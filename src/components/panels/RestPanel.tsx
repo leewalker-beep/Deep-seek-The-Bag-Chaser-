@@ -8,11 +8,12 @@ import { useGameStore } from '../../store/gameStore';
 interface RestPanelProps {
   baseRecovery?: number;
   onClose: () => void;
+  hustleId?: string;
 }
 
 type RestMode = 'CHOICE' | 'BREATHE' | 'WEAVE' | 'BREW' | 'CLOUDS';
 
-export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose }) => {
+export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose, hustleId = 'r_sleep' }) => {
   const [activeMode, setActiveMode] = useState<RestMode>('CHOICE');
 
   // Use a reactive selector to fetch the current live progression tier profile
@@ -27,7 +28,7 @@ export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose
     });
 
     // Fires the unified timeline progression ticker action cleanly
-    store.executeHustleWithTimelineTick('r_sleep', tierKey);
+    store.executeHustleWithTimelineTick(hustleId, tierKey);
     onClose();
   };
 

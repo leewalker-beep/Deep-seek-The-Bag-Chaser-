@@ -1306,6 +1306,7 @@ function App() {
                   return (
                     <RestPanel
                       baseRecovery={baseRecovery}
+                      hustleId={hustle.id}
                       onClose={() => setActiveHustleView(null)}
                     />
                   );
