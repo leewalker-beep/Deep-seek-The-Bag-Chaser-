@@ -82,6 +82,66 @@ const TIER_ONBOARDING_DATA: Record<string, {
 const checkAdvisorTriggersMock = (pl: any, currentMarket: string) => {
   if (!pl || !pl.narrativeFlags) return null;
 
+  // A. FIRST EMPLOYEE HIRED (Leadership & delegation)
+  if (pl.narrativeFlags.just_hired_employee && !pl.narrativeFlags.advisor_shown_first_employee) {
+    return {
+      id: 'advisor_shown_first_employee',
+      title: '👥 THE POWER OF DELEGATION',
+      subtitle: 'You have hired your very first employee! Corporate leadership is about leveraging other people\'s time while you focus on macro strategy.',
+      bullets: [
+        'Hiring employees automates manual labor, paving the path to scalable passive cash flow.',
+        'Keep scaling your businesses by upgrading their levels to generate higher passive and active returns.',
+        'Be mindful of your monthly overheads and maintain healthy capital buffers.'
+      ],
+      tabToOpen: 'OPPORTUNITIES',
+    };
+  }
+
+  // B. DONATE TO CHARITY (Charitable Halo / Suggest break)
+  if (pl.narrativeFlags.just_donated_charity && !pl.narrativeFlags.advisor_shown_charity) {
+    return {
+      id: 'advisor_shown_charity',
+      title: '🕊️ THE HALO OF GENEROSITY',
+      subtitle: 'Your significant charitable contribution has established incredible public goodwill. To maximize your efficiency, the Advisor suggests taking a well-earned break.',
+      bullets: [
+        'A local public relations halo is forming, shielding you from minor Heat spikes.',
+        'Your mind and body need recuperation after such a massive deployment of capital.',
+        'Take a rest protocol now to claim a small, temporary recovery bonus (+10 MH on your next rest).'
+      ],
+      tabToOpen: 'OPPORTUNITIES',
+    };
+  }
+
+  // C. PURCHASE INSIDER INFORMATION
+  if (pl.narrativeFlags.just_bought_insider && !pl.narrativeFlags.advisor_shown_insider) {
+    return {
+      id: 'advisor_shown_insider',
+      title: '📈 INSIDER OPPORTUNITY SECURED',
+      subtitle: 'Your purchase of insider information from Cassie has positioned you perfectly. The Advisor suggests checking high-tier business expansions.',
+      bullets: [
+        'The shipping merger details Cassie shared are highly lucrative, adding $25,000 monthly passive income.',
+        'Use this momentum to look into other high-tier corporate ventures or real estate investments.',
+        'Maintain absolute discretion to avoid drawing regulatory antitrust investigations.'
+      ],
+      tabToOpen: 'OPPORTUNITIES',
+    };
+  }
+
+  // D. ENROLLED IN UNIVERSITY
+  if (pl.narrativeFlags.just_accepted_university && !pl.narrativeFlags.advisor_shown_university) {
+    return {
+      id: 'advisor_shown_university',
+      title: '🎓 IVY LEAGUE ACADEMIC PRESTIGE',
+      subtitle: 'Your acceptance into the Ivy League business program provides phenomenal long-term benefits and credentials.',
+      bullets: [
+        'Academic credentials amplify your Clout and build prestigious networking rings.',
+        'Your profile as an educated, structured leader makes you highly attractive for board memberships.',
+        'Review your strategic opportunities to see how this credential influences your campaign or ventures.'
+      ],
+      tabToOpen: 'OPPORTUNITIES',
+    };
+  }
+
   // 1. HIGH HEAT
   if (pl.heat > 75 && !pl.narrativeFlags.advisor_shown_high_heat) {
     return {
@@ -202,7 +262,7 @@ const checkAdvisorTriggersMock = (pl: any, currentMarket: string) => {
         'This triggers rent cap policies and docks passive rent yields by up to 30%.',
         'Prepare to pass legislative executive orders or allocate community philanthropy to restore peace.'
       ],
-      tabToOpen: 'CRITICAL',
+      tabToOpen: 'REPUTATION',
     };
   }
 
@@ -217,7 +277,7 @@ const checkAdvisorTriggersMock = (pl: any, currentMarket: string) => {
         'Focus on preserving liquid cash and prioritizing lower-overhead passive operations.',
         'Avoid launching expensive campaign stages until standard cycles stabilize.'
       ],
-      tabToOpen: 'CRITICAL',
+      tabToOpen: 'OPPORTUNITIES',
     };
   }
 
@@ -282,7 +342,7 @@ describe('Strategic Advisor Mentor - Trigger Evaluation', () => {
     expect(trigger?.id).toBe('advisor_shown_first_passive');
   });
 
-  it('should trigger economy collapsing advice under recession', () => {
+  it('should trigger economy collapsing advice under recession with opportunities tab target', () => {
     const pl = {
       narrativeFlags: {},
     };
@@ -290,5 +350,68 @@ describe('Strategic Advisor Mentor - Trigger Evaluation', () => {
     const trigger = checkAdvisorTriggersMock(pl, 'RECESSION');
     expect(trigger).not.toBeNull();
     expect(trigger?.id).toBe('advisor_shown_economy_collapse');
+    expect(trigger?.tabToOpen).toBe('OPPORTUNITIES');
+  });
+
+  it('should trigger first employee hired advice when just_hired_employee is flagged', () => {
+    const pl = {
+      narrativeFlags: {
+        just_hired_employee: true
+      }
+    };
+
+    const trigger = checkAdvisorTriggersMock(pl, 'NORMAL');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.id).toBe('advisor_shown_first_employee');
+    expect(trigger?.tabToOpen).toBe('OPPORTUNITIES');
+  });
+
+  it('should trigger charity donation advice when just_donated_charity is flagged', () => {
+    const pl = {
+      narrativeFlags: {
+        just_donated_charity: true
+      }
+    };
+
+    const trigger = checkAdvisorTriggersMock(pl, 'NORMAL');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.id).toBe('advisor_shown_charity');
+  });
+
+  it('should trigger insider information advice when just_bought_insider is flagged', () => {
+    const pl = {
+      narrativeFlags: {
+        just_bought_insider: true
+      }
+    };
+
+    const trigger = checkAdvisorTriggersMock(pl, 'NORMAL');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.id).toBe('advisor_shown_insider');
+  });
+
+  it('should trigger university acceptance advice when just_accepted_university is flagged', () => {
+    const pl = {
+      narrativeFlags: {
+        just_accepted_university: true
+      }
+    };
+
+    const trigger = checkAdvisorTriggersMock(pl, 'NORMAL');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.id).toBe('advisor_shown_university');
+    expect(trigger?.tabToOpen).toBe('OPPORTUNITIES');
+  });
+
+  it('should trigger housing protest advice with reputation tab target', () => {
+    const pl = {
+      rentPortfolioCount: 6,
+      narrativeFlags: {},
+    };
+
+    const trigger = checkAdvisorTriggersMock(pl, 'NORMAL');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.id).toBe('advisor_shown_housing_protest');
+    expect(trigger?.tabToOpen).toBe('REPUTATION');
   });
 });

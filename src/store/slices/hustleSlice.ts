@@ -1247,6 +1247,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const netChange = result.yieldCash - result.cost;
       if (hustleId === 'philanthropy_empire') {
         reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
+        reactedPl.narrativeFlags = {
+          ...reactedPl.narrativeFlags,
+          just_donated_charity: true
+        };
       } else {
         const totalPlays = Object.values(state.pl.hustlePlays || {}).reduce((a, b) => a + b, 0);
         const isFirstBusiness = totalPlays === 0;
@@ -1671,6 +1675,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const isFirstEmployee = oldMaxLevel === 1 && newLevel >= 2;
     if (isFirstEmployee) {
       finalNextPl = processWorldReaction(finalNextPl, 'FIRST_EMPLOYEE', { hustleName: hustle.name }).updatedPl;
+      finalNextPl.narrativeFlags = {
+        ...finalNextPl.narrativeFlags,
+        just_hired_employee: true
+      };
     }
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
@@ -2416,6 +2424,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         ...nextPl.narrativeFlags,
         ...choice.setFlags
       };
+      if (choice.setFlags.sofia_charity_active) {
+        nextPl.narrativeFlags.just_donated_charity = true;
+      }
+      if (choice.setFlags.cassie_shares_bought) {
+        nextPl.narrativeFlags.just_bought_insider = true;
+      }
+      if (choice.setFlags.university_accepted) {
+        nextPl.narrativeFlags.just_accepted_university = true;
+      }
     }
 
     // Apply Biography Entry

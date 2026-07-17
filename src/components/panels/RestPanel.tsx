@@ -22,7 +22,19 @@ export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose
 
   const processResolution = (multiplier: number, tierKey: string) => {
     // Math clamping safety net ensures recovery bounds never leak past 100% capacity cap
-    const addedRecovery = Math.floor(baseRecovery * multiplier);
+    let addedRecovery = Math.floor(baseRecovery * multiplier);
+
+    // Check for charity recovery bonus
+    if (store.pl.narrativeFlags?.charity_recovery_bonus) {
+      addedRecovery += 10;
+      store.updatePl({
+        narrativeFlags: {
+          ...store.pl.narrativeFlags,
+          charity_recovery_bonus: false
+        }
+      });
+    }
+
     store.updatePl({
       mentalHealth: Math.min(100, store.pl.mentalHealth + addedRecovery)
     });
@@ -42,6 +54,11 @@ export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose
             <h2 className="text-xs font-black uppercase tracking-widest text-emerald-400">
               RECOVERY DECK ({currentTier})
             </h2>
+            {store.pl.narrativeFlags?.charity_recovery_bonus && (
+              <p className="text-[10px] text-yellow-400 font-bold animate-pulse mt-1">
+                🌟 CHARITY RECOVERY BONUS ACTIVE (+10 MH)
+              </p>
+            )}
             <p className="text-[10px] text-slate-400 mt-0.5">
               Select a protocol. Failures still guarantee 100% baseline recovery values.
             </p>
