@@ -17,7 +17,7 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
   const replaceAmbition = useGameStore(state => state.replaceAmbition);
 
   const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>(initialTab || 'ALL');
-  const [activeHistoryCategory, setActiveHistoryCategory] = useState<'ALL' | 'CAREER' | 'BUSINESS' | 'CRIME' | 'RIVALS' | 'POLITICS' | 'LEGACY' | 'WORLD'>('ALL');
+  const [activeHistoryCategory, setActiveHistoryCategory] = useState<'ALL' | 'BIOGRAPHY' | 'CAREER' | 'BUSINESS' | 'CRIME' | 'RIVALS' | 'POLITICS' | 'LEGACY' | 'WORLD'>('ALL');
 
   // Derive strategic advice using the pure advisor engine helper
   const advice = generateStrategicAdvice(pl, currentMarket);
@@ -214,7 +214,7 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
             <div className="space-y-4">
               {/* History Category Sub-filters */}
               <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar gap-1">
-                {(['ALL', 'CAREER', 'BUSINESS', 'CRIME', 'RIVALS', 'POLITICS', 'LEGACY', 'WORLD'] as const).map(cat => (
+                {(['ALL', 'BIOGRAPHY', 'CAREER', 'BUSINESS', 'CRIME', 'RIVALS', 'POLITICS', 'LEGACY', 'WORLD'] as const).map(cat => (
                   <button
                     key={cat}
                     onClick={() => setActiveHistoryCategory(cat)}
@@ -230,7 +230,30 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
               </div>
 
               {/* History timeline feed */}
-              {filteredHistory.length === 0 ? (
+              {activeHistoryCategory === 'BIOGRAPHY' ? (
+                /* Biography render */
+                <div className="space-y-3">
+                  <div className="p-3 bg-slate-950/80 border border-slate-850 rounded-2xl text-[10px] text-slate-400 leading-relaxed uppercase tracking-tight">
+                    <span className="font-black text-white block mb-1">📖 Real-Time Chronicled Legend</span>
+                    This is your live character biography, logging key career moves, achievements, and major story milestones in real-time.
+                  </div>
+                  {!pl.biography || pl.biography.length === 0 ? (
+                    <div className="text-center py-12 bg-slate-950/30 border-2 border-dashed border-slate-850 rounded-2xl text-[10px] text-slate-500 uppercase font-black">
+                      No biography text logged yet. Keep grinding to write your history!
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {pl.biography.map((entry, idx) => (
+                        <div key={idx} className="p-3 bg-slate-950 border border-slate-850 rounded-xl hover:border-emerald-500/20 transition-all">
+                          <p className="text-[10px] text-slate-300 font-semibold leading-relaxed uppercase tracking-tight">
+                            {entry}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : filteredHistory.length === 0 ? (
                 <div className="text-center py-12 bg-slate-950/30 border-2 border-dashed border-slate-850 rounded-2xl p-6">
                   <span className="text-3xl block mb-2 opacity-60">📖</span>
                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">No History Logged</h4>
@@ -253,13 +276,23 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
                         </div>
 
                         {/* Event details card */}
-                        <div className="p-3.5 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded-2xl space-y-1.5 transition-all shadow-md">
+                        <div className={`p-3.5 bg-slate-950 rounded-2xl space-y-1.5 transition-all shadow-md ${
+                          event.importance >= 4
+                            ? 'border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.25)] bg-gradient-to-br from-slate-950 via-slate-950 to-amber-950/30'
+                            : 'border border-slate-850 hover:border-slate-700'
+                        }`}>
                           <div className="flex justify-between items-start gap-2">
                             <div>
-                              <span className="text-[8px] font-mono font-bold text-emerald-400 uppercase tracking-widest block">
-                                Year {event.year} • Month {formattedMonth} (Age {formattedAge})
+                              <span className={`text-[8px] font-mono font-bold uppercase tracking-widest block ${
+                                event.importance >= 4 ? 'text-yellow-400 animate-pulse' : 'text-emerald-400'
+                              }`}>
+                                Year {event.year} • Month {formattedMonth} (Age {formattedAge}){event.importance >= 4 && ' • ⭐ LANDMARK'}
                               </span>
-                              <h4 className="text-[11px] font-black text-white uppercase tracking-tight mt-0.5 leading-snug">
+                              <h4 className={`text-[11px] font-black uppercase tracking-tight mt-0.5 leading-snug ${
+                                event.importance >= 4
+                                  ? 'bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 bg-clip-text text-transparent font-black italic'
+                                  : 'text-white'
+                              }`}>
                                 {event.title}
                               </h4>
                             </div>
@@ -425,8 +458,85 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
               const candidate = pl.narrativeFlags?.reputationCandidate as string;
               const sustainedMonths = pl.narrativeFlags?.reputationSustainedMonths as number || 0;
 
+              const charityScore = Math.min(100, Math.round(
+                (pl.aura * 0.4) +
+                ((pl.philanthropyDonation || 0) > 100000 ? 30 : 0) +
+                ((pl.hustleLevels?.['philanthropy_empire'] || 0) > 0 ? 30 : 0)
+              ));
+
+              const crimeScore = Math.min(100, Math.round(
+                (pl.heat * 0.5) +
+                (Math.min(30, (pl.arrestCount || 0) * 10)) +
+                ((pl.hustleLevels?.['r_ghost_mode'] || 0) > 0 ? 10 : 0) +
+                ((pl.hustleLevels?.['r_scrap'] || 0) > 0 ? 10 : 0)
+              ));
+
+              const commerceScore = Math.min(100, Math.round(
+                (Object.keys(pl.hustleLevels || {}).length * 8) +
+                ((pl.rentalCount || 0) * 6) +
+                (pl.bag > 1000000 ? 30 : 10)
+              ));
+
+              const socialScore = Math.min(100, Math.round(
+                (pl.clout / 12) +
+                ((pl.artists || []).length * 12)
+              ));
+
               return (
                 <div className="space-y-5">
+                  {/* Persona Contributing Vectors Tracker */}
+                  <div className="p-4 bg-slate-950 border border-slate-850 rounded-2xl space-y-3">
+                    <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-wider flex justify-between items-center">
+                      <span>📊 Persona Contributing Vectors</span>
+                      <span className="text-[7px] text-slate-500 lowercase font-medium">real-time factors</span>
+                    </h4>
+                    <div className="space-y-2">
+                      {/* Charity Vector */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-tight">
+                          <span className="text-emerald-400">🕊️ Charity & Philanthropy</span>
+                          <span className="text-slate-400">{charityScore}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                          <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${charityScore}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Crime Vector */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-tight">
+                          <span className="text-red-400">⚖️ Crime & Underworld Activity</span>
+                          <span className="text-slate-400">{crimeScore}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                          <div className="h-full bg-red-500 rounded-full" style={{ width: `${crimeScore}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Social/Celebrity Vector */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-tight">
+                          <span className="text-blue-400">👑 Social Clout & Celebrity</span>
+                          <span className="text-slate-400">{socialScore}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${socialScore}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Commerce/Mogul Vector */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-tight">
+                          <span className="text-yellow-400">🏢 Commerce & Mogul Leverage</span>
+                          <span className="text-slate-400">{commerceScore}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                          <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${commerceScore}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Reputation Title Card */}
                   <div className="p-5 bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800 rounded-2xl relative overflow-hidden text-center shadow-lg">
                     <div className="absolute top-2 right-2 bg-emerald-500/10 border border-emerald-500/20 text-[7px] font-black tracking-widest text-emerald-400 px-2 py-0.5 rounded uppercase">

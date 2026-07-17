@@ -16,7 +16,11 @@ import type {
   PassiveSource
 } from '../types/game';
 
-export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const TheReceipts: React.FC<{
+  onClose: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
+}> = ({ onClose, isPinned = false, onTogglePin }) => {
   const pl = useGameStore(state => state.pl);
   const [filterType, setFilterType] = useState<string>('ALL');
   const [expandedLedger, setExpandedLedger] = useState<string | null>(null);
@@ -327,7 +331,21 @@ export const TheReceipts: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-emerald-400 italic">📋 THE RECEIPTS</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-black text-emerald-400 italic">📋 THE RECEIPTS</h2>
+            {onTogglePin && (
+              <button
+                onClick={onTogglePin}
+                className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full transition-all border ${
+                  isPinned
+                    ? 'bg-yellow-500 border-yellow-400 text-slate-950 shadow-md'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                {isPinned ? '📌 PINNED' : '📌 PIN LEDGER'}
+              </button>
+            )}
+          </div>
           <button onClick={onClose} className="text-slate-400 text-2xl">✕</button>
         </div>
 
