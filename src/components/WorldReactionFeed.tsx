@@ -1,11 +1,62 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
-import type { WorldFeedCategory, WorldFeedItem } from '../types/game';
+import type { WorldFeedCategory, WorldFeedItem, AppTab } from '../types/game';
+import { HUSTLES } from '../config/hustles/base';
 
 interface WorldReactionFeedProps {
   onClose: () => void;
 }
+
+const renderTextWithBusinessLinks = (text: string, pl: any, onClose: () => void) => {
+  // Find all owned businesses
+  const ownedHustles = Object.values(HUSTLES).filter(h =>
+    pl.hustleLevels[h.id] !== undefined || pl.hustleBranchIds[h.id] !== undefined
+  );
+
+  if (ownedHustles.length === 0) {
+    return <span>{text}</span>;
+  }
+
+  // Sort by name length descending so longer matching names are checked/matched first
+  const sortedOwned = [...ownedHustles].sort((a, b) => b.name.length - a.name.length);
+
+  // Escaping function for regex safety
+  const esc = (s: string) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+  const patterns = sortedOwned.map(h => esc(h.name)).filter(Boolean);
+  if (patterns.length === 0) {
+    return <span>{text}</span>;
+  }
+
+  const regex = new RegExp(`(${patterns.join('|')})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        const matchedHustle = sortedOwned.find(h => h.name.toLowerCase() === part.toLowerCase());
+        if (matchedHustle) {
+          return (
+            <button
+              key={index}
+              onClick={(e) => {
+                e.stopPropagation();
+                useGameStore.getState().setActiveTab(matchedHustle.tier as AppTab);
+                useGameStore.getState().setActiveHustleView(matchedHustle.id);
+                onClose();
+              }}
+              className="text-emerald-400 hover:text-emerald-300 underline font-bold transition-colors bg-emerald-500/10 px-1.5 py-0.5 rounded inline-block cursor-pointer select-none"
+            >
+              {part}
+            </button>
+          );
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </>
+  );
+};
 
 export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose }) => {
   const pl = useGameStore(state => state.pl);
@@ -77,7 +128,7 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
             </div>
           </div>
           <p className="text-xs text-slate-200 leading-relaxed font-serif">
-            {item.text}
+            {renderTextWithBusinessLinks(item.text, pl, onClose)}
           </p>
           <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
             <div className="flex gap-4 text-[9px] font-bold text-slate-500">
@@ -107,7 +158,7 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
             <span className="text-[8px] text-slate-500 font-mono">{formatTime(item.month)}</span>
           </div>
           <p className="text-xs text-white font-bold tracking-tight">
-            {item.text}
+            {renderTextWithBusinessLinks(item.text, pl, onClose)}
           </p>
           <div className="mt-2 space-y-1">
             <div className="flex justify-between text-[8px] font-bold text-slate-500 uppercase">
@@ -141,7 +192,7 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
           <span className="text-slate-400">{item.source}</span>
         </div>
         <h4 className="font-serif text-sm font-bold text-white leading-tight uppercase tracking-tight mt-1">
-          {item.text}
+          {renderTextWithBusinessLinks(item.text, pl, onClose)}
         </h4>
         <div className="flex justify-between items-center mt-2 pt-1.5 border-t border-slate-900/50">
           <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest">{formatTime(item.month)}</span>

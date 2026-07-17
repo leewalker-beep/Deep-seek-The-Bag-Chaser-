@@ -10,6 +10,80 @@ interface NewsTickerProps {
   currentTier: Tier;
 }
 
+const getNewsColorClass = (msg: TickerMessage): string => {
+  if (msg.colorClass) {
+    return msg.colorClass;
+  }
+
+  const text = msg.text.toUpperCase();
+
+  // red/orange for alerts (raids, crime, threats, warnings, critical, feds, scandal, police, jail, arrest, fail, error, debt, deficit, risk)
+  if (
+    text.includes('🚨') ||
+    text.includes('RAID') ||
+    text.includes('CRIME') ||
+    text.includes('THREAT') ||
+    text.includes('CRITICAL') ||
+    text.includes('FED') ||
+    text.includes('SCANDAL') ||
+    text.includes('POLICE') ||
+    text.includes('JAIL') ||
+    text.includes('ARREST') ||
+    text.includes('BETRAYAL') ||
+    text.includes('ALERT')
+  ) {
+    return 'text-red-500 font-bold';
+  }
+
+  if (
+    text.includes('⚠️') ||
+    text.includes('WARNING') ||
+    text.includes('RISK') ||
+    text.includes('FAILED') ||
+    text.includes('DEBT') ||
+    text.includes('OUTBID') ||
+    text.includes('LEAK') ||
+    text.includes('PROTEST')
+  ) {
+    return 'text-orange-400 font-medium';
+  }
+
+  // blue/green for financial/positive news
+  if (
+    text.includes('📈') ||
+    text.includes('💸') ||
+    text.includes('🍀') ||
+    text.includes('💵') ||
+    text.includes('💰') ||
+    text.includes('SUCCESS') ||
+    text.includes('PROFIT') ||
+    text.includes('GROWTH') ||
+    text.includes('REVENUE') ||
+    text.includes('COLLECTED') ||
+    text.includes('TREASURY') ||
+    text.includes('TAX') ||
+    text.includes('GDP') ||
+    text.includes('BAILS OUT')
+  ) {
+    return 'text-emerald-400 font-bold';
+  }
+
+  if (
+    text.includes('💎') ||
+    text.includes('WIN') ||
+    text.includes('UNLOCKED') ||
+    text.includes('PARTNER') ||
+    text.includes('MARKET') ||
+    text.includes('SAVED') ||
+    text.includes('COMPLETE')
+  ) {
+    return 'text-blue-400 font-medium';
+  }
+
+  // white/gray for flavor chirps
+  return 'text-slate-400';
+};
+
 export const NewsTicker: React.FC<NewsTickerProps> = ({ news, currentTier }) => {
   const { unlockedLegacyUpgradeIds, currentMarket } = useGameStore();
 
@@ -65,15 +139,18 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news, currentTier }) => 
             repeat: Infinity
           }}
         >
-          {[...deduped, ...deduped].map((msg, i) => (
-            <span
-              key={i}
-              className={`text-xs shrink-0 ${msg.colorClass || 'text-slate-400'}`}
-            >
-              {msg.text}
-              <span className="mx-4 text-slate-700">•</span>
-            </span>
-          ))}
+          {[...deduped, ...deduped].map((msg, i) => {
+            const colorClass = getNewsColorClass(msg);
+            return (
+              <span
+                key={i}
+                className={`text-xs shrink-0 ${colorClass}`}
+              >
+                {msg.text}
+                <span className="mx-4 text-slate-700">•</span>
+              </span>
+            );
+          })}
         </motion.div>
       </div>
     </div>
