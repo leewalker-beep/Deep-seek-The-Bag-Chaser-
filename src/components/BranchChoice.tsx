@@ -154,9 +154,40 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
                   <div className="font-bold text-white text-sm">{branch.name}</div>
                   <div className="text-blue-400 font-mono text-[11px]">-${branch.cost.toLocaleString()}</div>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1">
-                  Yield: <span className="text-emerald-400">${branch.yieldCash.toLocaleString()}</span>
-                  {branch.passiveYield && branch.passiveYield > 0 ? ` | Passive: +$${branch.passiveYield.toLocaleString()}/mo` : ''}
+                <div className="bg-slate-950/40 rounded-xl p-3 border border-slate-800/80 text-xs my-2 space-y-2">
+                  <div className="text-[10px] font-black text-purple-400 uppercase tracking-wider flex justify-between items-center">
+                    <span>🚀 Branch Upgrade Preview</span>
+                    <span className="text-[9px] text-slate-500 lowercase font-medium">read-only preview</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="bg-slate-900/60 rounded p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Est. Cash</span>
+                      <span className="font-bold font-mono text-emerald-400">
+                        ${(currentBranch?.yieldCash || 0).toLocaleString()} → ${(branch.yieldCash || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="bg-slate-900/60 rounded p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Clout</span>
+                      <span className="font-bold font-mono text-blue-400">
+                        +{(currentBranch?.yieldClout || 0)} → +{(branch.yieldClout || 0)}
+                      </span>
+                    </div>
+                    <div className="bg-slate-900/60 rounded p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Aura</span>
+                      <span className="font-bold font-mono text-purple-400">
+                        +{(currentBranch?.yieldAura || 0)} → +{(branch.yieldAura || 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {((currentBranch?.passiveYield !== undefined && currentBranch.passiveYield > 0) || (branch.passiveYield !== undefined && branch.passiveYield > 0)) && (
+                    <div className="text-center text-[10px] bg-indigo-950/20 rounded-lg py-1 border border-indigo-500/10">
+                      <span className="text-slate-400 font-bold uppercase text-[8px] mr-1">Passive Income:</span>
+                      <span className="font-bold font-mono text-indigo-400">
+                        ${(currentBranch?.passiveYield || 0).toLocaleString()}/mo → ${(branch.passiveYield || 0).toLocaleString()}/mo
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {(branch.cloutReq > 0 || branch.auraReq > 0) && (
                   <div className="text-[9px] text-slate-500 mt-1 uppercase tracking-tighter">

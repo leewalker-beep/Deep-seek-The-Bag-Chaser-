@@ -167,6 +167,17 @@ const renderHustlePanel = (panelType: string, currentLevel: number, handleGameFi
   );
 };
 
+const isPassiveHustle = (hustle: any) => {
+  if (hustle.isPassive) return true;
+  if (hustle.levels) {
+    return hustle.levels.some((l: any) => l.passiveYield !== undefined && l.passiveYield > 0);
+  }
+  if (hustle.branches) {
+    return Object.values(hustle.branches).some((b: any) => b.passiveYield !== undefined && b.passiveYield > 0);
+  }
+  return false;
+};
+
 const TIER_ONBOARDING_DATA: Record<string, {
   title: string;
   subtitle: string;
@@ -1269,6 +1280,7 @@ function App() {
                   const isMastered = pl.masteredHustles?.includes(hustle.id);
                   const tierCardClass = `hustle-card-${hustle.tier.toLowerCase()}`;
                   const isHot = index === 0;
+                  const isPassive = isPassiveHustle(hustle);
 
                   return (
                     <button
@@ -1294,6 +1306,17 @@ function App() {
                       <div className="text-4xl mb-2">{hustle.icon}</div>
                       <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300 truncate">
                         {hustle.name}
+                      </div>
+                      <div className="mt-2">
+                        {isPassive ? (
+                          <span className="text-[8px] px-1.5 py-0.5 bg-indigo-950/80 text-indigo-400 border border-indigo-500/30 rounded font-black tracking-widest uppercase">
+                            PASSIVE FOCUS
+                          </span>
+                        ) : (
+                          <span className="text-[8px] px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 rounded font-black tracking-widest uppercase">
+                            ACTIVE CASH
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
