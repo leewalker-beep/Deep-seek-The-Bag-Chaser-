@@ -723,6 +723,38 @@ function App() {
     const guidance = pl.guidanceSettings || 'Recommended';
     if (guidance === 'Off') return;
 
+    // Ensure queue is initialized on pl safely
+    const currentQueue = pl.advisorQueue || [];
+
+    // If an advisor prompt is already active on the screen, wait until it is closed.
+    if (activeAdvisorPrompt) return;
+
+    // Check if we already displayed a prompt during the current month.
+    const hasShownPopupThisMonth = pl.lastAdvisorPopupMonth === pl.month;
+
+    // If we haven't shown a popup this month, and there are pending prompts in the queue, dequeue and show the next one.
+    if (!hasShownPopupThisMonth && currentQueue.length > 0) {
+      const [nextPrompt, ...remainingQueue] = currentQueue;
+
+      useGameStore.setState(state => {
+        const updatedFlags = { ...(state.pl.narrativeFlags || {}) };
+        if (nextPrompt.id) {
+          updatedFlags[nextPrompt.id] = true;
+        }
+        return {
+          pl: {
+            ...state.pl,
+            lastAdvisorPopupMonth: state.pl.month,
+            advisorQueue: remainingQueue,
+            narrativeFlags: updatedFlags
+          }
+        };
+      });
+
+      setActiveAdvisorPrompt(nextPrompt);
+      return;
+    }
+
     // --- 1. Tier Onboarding welcome/briefing triggers ---
     // If pendingSpecialization or activeTransition is true, do NOT trigger (do not interrupt the cinematic).
     if (!pendingSpecialization && !activeTransition) {
@@ -740,33 +772,46 @@ function App() {
       if (!pl.narrativeFlags?.[flagKey]) {
         const onboarding = TIER_ONBOARDING_DATA[currentTier];
         if (onboarding) {
-          // Set narrative flag first to prevent double-render trigger loops
-          useGameStore.setState(state => ({
-            pl: {
-              ...state.pl,
-              narrativeFlags: {
-                ...(state.pl.narrativeFlags || {}),
-                [flagKey]: true
-              }
-            }
-          }));
+          const isAlreadyQueued = currentQueue.some((item: any) => item.id === flagKey);
+          if (!isAlreadyQueued) {
+            const promptObj = {
+              id: flagKey,
+              title: onboarding.title,
+              subtitle: onboarding.subtitle,
+              bullets: onboarding.bullets,
+              ctaLabel: 'Take me there',
+              tabToOpen: onboarding.tabToOpen,
+            };
 
-          setActiveAdvisorPrompt({
-            title: onboarding.title,
-            subtitle: onboarding.subtitle,
-            bullets: onboarding.bullets,
-            ctaLabel: 'Take me there',
-            tabToOpen: onboarding.tabToOpen,
-          });
+            if (!hasShownPopupThisMonth) {
+              // Show immediately and set narrative flags
+              useGameStore.setState(state => ({
+                pl: {
+                  ...state.pl,
+                  lastAdvisorPopupMonth: state.pl.month,
+                  narrativeFlags: {
+                    ...(state.pl.narrativeFlags || {}),
+                    [flagKey]: true
+                  }
+                }
+              }));
+              setActiveAdvisorPrompt(promptObj);
+            } else {
+              // Queue it!
+              useGameStore.setState(state => ({
+                pl: {
+                  ...state.pl,
+                  advisorQueue: [...(state.pl.advisorQueue || []), promptObj]
+                }
+              }));
+            }
+          }
           return; // Skip contextual checks in the same frame
         }
       }
     }
 
     // --- 2. Contextual Advisor triggers ---
-    // Make sure we are not already showing an advisor prompt
-    if (activeAdvisorPrompt) return;
-
     // Minimal guidance suppresses all contextual triggers
     if (guidance === 'Minimal') return;
 
@@ -783,24 +828,42 @@ function App() {
         if (!isCritical) return;
       }
 
-      // Set the narrative flag in gameStore so it won't trigger again
-      useGameStore.setState(state => ({
-        pl: {
-          ...state.pl,
-          narrativeFlags: {
-            ...(state.pl.narrativeFlags || {}),
-            [matchedTrigger.id]: true
-          }
-        }
-      }));
+      const isAlreadyQueued = currentQueue.some((item: any) => item.id === matchedTrigger.id);
+      if (!isAlreadyQueued) {
+        const promptObj = {
+          id: matchedTrigger.id,
+          title: matchedTrigger.title,
+          subtitle: matchedTrigger.subtitle,
+          bullets: matchedTrigger.bullets,
+          ctaLabel: 'Take me there',
+          tabToOpen: matchedTrigger.tabToOpen,
+          onTakeMeThereCustom: matchedTrigger.onTakeMeThereCustom,
+          onCloseExtra: matchedTrigger.onCloseExtra,
+        };
 
-      setActiveAdvisorPrompt({
-        title: matchedTrigger.title,
-        subtitle: matchedTrigger.subtitle,
-        bullets: matchedTrigger.bullets,
-        ctaLabel: 'Take me there',
-        tabToOpen: matchedTrigger.tabToOpen,
-      });
+        if (!hasShownPopupThisMonth) {
+          // Show immediately and set narrative flags
+          useGameStore.setState(state => ({
+            pl: {
+              ...state.pl,
+              lastAdvisorPopupMonth: state.pl.month,
+              narrativeFlags: {
+                ...(state.pl.narrativeFlags || {}),
+                [matchedTrigger.id]: true
+              }
+            }
+          }));
+          setActiveAdvisorPrompt(promptObj);
+        } else {
+          // Queue it!
+          useGameStore.setState(state => ({
+            pl: {
+              ...state.pl,
+              advisorQueue: [...(state.pl.advisorQueue || []), promptObj]
+            }
+          }));
+        }
+      }
     }
   }, [pl, ph, currentMarket, pendingSpecialization, activeTransition, activeAdvisorPrompt]);
 
