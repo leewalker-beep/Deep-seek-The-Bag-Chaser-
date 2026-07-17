@@ -29,6 +29,8 @@ export const getInitialStats = (
     mentalHealth: 100,
     heat: 0,
     month: 0,
+    lastAdvisorPopupMonth: -1,
+    advisorQueue: [],
     currentTier: 'MUD',
     hustleLevels: {},
     hustleBranchIds: {},

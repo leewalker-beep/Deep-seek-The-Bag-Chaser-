@@ -737,6 +737,8 @@ export interface PlayerStats {
   mentalHealth: number;
   heat: number;
   month: number;
+  lastAdvisorPopupMonth?: number;
+  advisorQueue?: any[];
   currentTier: Tier;
   hustleLevels: Record<string, number>;
   hustleBranchIds: Record<string, string>;
