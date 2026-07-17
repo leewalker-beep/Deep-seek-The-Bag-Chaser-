@@ -42,6 +42,17 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
 
   const currentMarket = useGameStore(state => state.currentMarket);
 
+  const isPassiveFocus = useMemo(() => {
+    if (hustle.isPassive) return true;
+    if (hustle.levels) {
+      return hustle.levels.some(l => l.passiveYield !== undefined && l.passiveYield > 0);
+    }
+    if (hustle.branches) {
+      return Object.values(hustle.branches).some(b => b.passiveYield !== undefined && b.passiveYield > 0);
+    }
+    return false;
+  }, [hustle]);
+
   const currentLevel = player.hustleLevels[hustle.id] || 1;
   let levelData: HustleLevel | undefined;
   let nextBranches: HustleLevel[] = [];
@@ -165,10 +176,19 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
           </div>
           <div>
             <h3 className="font-bold text-white text-lg leading-tight">{hustle.name}</h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
               {!isVending && (
                 <span className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded uppercase font-bold tracking-wider">
                   Level {currentLevel}
+                </span>
+              )}
+              {isPassiveFocus ? (
+                <span className="text-[9px] px-1.5 py-0.5 bg-indigo-950/80 text-indigo-400 border border-indigo-500/30 rounded uppercase font-bold tracking-wider">
+                  PASSIVE FOCUS
+                </span>
+              ) : (
+                <span className="text-[9px] px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 rounded uppercase font-bold tracking-wider">
+                  ACTIVE CASH
                 </span>
               )}
               <span className="text-[10px] text-slate-500 italic">{hustle.description}</span>
@@ -239,6 +259,65 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
               ? `${EXECUTE_LABEL[player.currentTier] || 'RUN IT'} (-$${effectiveStats.cost.toLocaleString()})`
               : EXECUTE_LABEL[player.currentTier] || 'EXECUTE'}
           </button>
+        )}
+
+        {nextBranches.length > 0 && (
+          <div className="bg-slate-950/40 rounded-xl p-3 border border-slate-800 text-xs my-2 space-y-2">
+            <div className="text-[10px] font-black text-purple-400 uppercase tracking-wider flex justify-between items-center">
+              <span>🚀 Upgrade Preview</span>
+              <span className="text-[9px] text-slate-500 lowercase font-medium">read-only preview</span>
+            </div>
+            <div className="space-y-2.5">
+              {nextBranches.map((branch) => (
+                <div key={branch.id || branch.level} className="space-y-1.5 border-t border-slate-900 pt-2 first:border-0 first:pt-0">
+                  <div className="flex justify-between items-center text-[10px] font-black text-slate-300">
+                    <span>{branch.name ? `To: ${branch.name}` : `To: Level ${branch.level}`}</span>
+                    <span className="text-purple-400 font-mono text-xs">Cost: ${branch.cost.toLocaleString()}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="bg-slate-900/40 rounded-lg p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Est. Cash</span>
+                      <span className="font-bold font-mono text-emerald-400">
+                        ${(levelData?.yieldCash || 0).toLocaleString()} → ${(branch.yieldCash || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="bg-slate-900/40 rounded-lg p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Clout</span>
+                      <span className="font-bold font-mono text-blue-400">
+                        +{(levelData?.yieldClout || 0)} → +{(branch.yieldClout || 0)}
+                      </span>
+                    </div>
+                    <div className="bg-slate-900/40 rounded-lg p-1">
+                      <span className="text-slate-500 block text-[8px] uppercase font-black tracking-tighter">Aura</span>
+                      <span className="font-bold font-mono text-purple-400">
+                        +{(levelData?.yieldAura || 0)} → +{(branch.yieldAura || 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Render passive yield if applicable */}
+                  {((levelData?.passiveYield !== undefined && levelData.passiveYield > 0) || (branch.passiveYield !== undefined && branch.passiveYield > 0)) && (
+                    <div className="text-center text-[10px] bg-indigo-950/20 rounded-lg py-1 border border-indigo-500/10">
+                      <span className="text-slate-400 font-bold uppercase text-[8px] mr-1">Passive Income:</span>
+                      <span className="font-bold font-mono text-indigo-400">
+                        ${(levelData?.passiveYield || 0).toLocaleString()}/mo → ${(branch.passiveYield || 0).toLocaleString()}/mo
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Render minigame multiplier if applicable */}
+                  {branch.multiplier !== undefined && (
+                    <div className="text-center text-[10px] bg-amber-950/20 rounded-lg py-1 border border-amber-500/10">
+                      <span className="text-slate-400 font-bold uppercase text-[8px] mr-1">Minigame Mult:</span>
+                      <span className="font-bold font-mono text-amber-400">
+                        {(levelData?.multiplier || 1.0).toFixed(1)}x → {branch.multiplier.toFixed(1)}x
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="flex gap-2 overflow-x-auto pb-1">
