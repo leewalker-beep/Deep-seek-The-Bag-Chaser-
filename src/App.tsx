@@ -13,6 +13,7 @@ import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
 import { AnimatePresence } from 'framer-motion';
 import { CinematicTransition } from './components/effects/CinematicTransition';
+import { MarketShiftOverlay } from './components/effects/MarketShiftOverlay';
 import { HERO_ARTWORK } from './config/heroArtwork';
 import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
@@ -579,6 +580,8 @@ function App() {
   } | null>(null);
 
   const prevTierRef = useRef<string | null>(null);
+  const prevMarketRef = useRef<string | null>(null);
+  const [marketShiftAlert, setMarketShiftAlert] = useState<string | null>(null);
 
   const {
     pl,
@@ -883,6 +886,23 @@ function App() {
     }
   }, [pl?.bag, displayedCash]);
 
+  // Track market changes and display full-screen brief overlay
+  useEffect(() => {
+    if (!pl) return;
+    if (prevMarketRef.current === null) {
+      prevMarketRef.current = currentMarket;
+      return;
+    }
+    if (prevMarketRef.current !== currentMarket) {
+      setMarketShiftAlert(currentMarket);
+      prevMarketRef.current = currentMarket;
+      const timer = setTimeout(() => {
+        setMarketShiftAlert(null);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentMarket, pl]);
+
   const currentTierIndex = useMemo(() => pl ? PROGRESSION_ORDER.indexOf(pl.currentTier) : -1, [pl]);
 
   const canAdvance = useMemo(() => {
@@ -1040,6 +1060,14 @@ function App() {
             key={activeTransition.id}
             artwork={activeTransition}
             onComplete={clearTransition}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {marketShiftAlert && (
+          <MarketShiftOverlay
+            key={marketShiftAlert}
+            market={marketShiftAlert as any}
           />
         )}
       </AnimatePresence>
