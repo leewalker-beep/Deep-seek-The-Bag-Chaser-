@@ -558,8 +558,8 @@ export const PresidentDashboard: React.FC = () => {
     >
       {/* Background Decorative Element */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] flex items-center justify-center overflow-hidden z-0">
-        <div className="w-[800px] h-[800px] border-[40px] border-white rounded-full flex items-center justify-center">
-          <div className="text-[400px] font-black">E</div>
+        <div className="w-[85vw] h-[85vw] max-w-[800px] max-h-[800px] border-[5vw] md:border-[40px] border-white rounded-full flex items-center justify-center">
+          <div className="text-[40vw] md:text-[400px] font-black leading-none">E</div>
         </div>
       </div>
 

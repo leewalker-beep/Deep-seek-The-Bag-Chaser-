@@ -18,8 +18,20 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete 
   const [items, setItems] = useState<ItemNode[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(12);
+  const [showInstruction, setShowInstruction] = useState(true);
+  const [gameActive, setGameActive] = useState(false);
 
   useEffect(() => {
+    const introTimer = setTimeout(() => {
+      setShowInstruction(false);
+      setGameActive(true);
+    }, 2000);
+    return () => clearTimeout(introTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!gameActive) return;
+
     const engineInterval = setInterval(() => {
       setItems(prevItems => {
         return prevItems
@@ -58,9 +70,10 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete 
       clearInterval(engineInterval);
       clearInterval(spawnerInterval);
     };
-  }, [truckLane, level]);
+  }, [truckLane, level, gameActive]);
 
   useEffect(() => {
+    if (!gameActive) return;
     if (timeLeft <= 0.1) {
       // Map final score to standard multiplier range
       let multiplier = 0.5;
@@ -72,11 +85,11 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete 
     }
     const cd = setTimeout(() => setTimeLeft(t => t - 0.1), 100);
     return () => clearTimeout(cd);
-  }, [timeLeft, score, onComplete]);
+  }, [timeLeft, score, onComplete, gameActive]);
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
-      <div className="w-full max-w-md bg-zinc-950 rounded-xl p-3 flex flex-col justify-between overflow-hidden shadow-2xl border border-zinc-800">
+      <div className="w-full max-w-md bg-zinc-950 rounded-xl p-3 flex flex-col justify-between overflow-hidden shadow-2xl border border-zinc-800 relative">
         <div className="flex justify-between items-center text-[10px] font-mono font-bold text-orange-400 mb-2">
           <span>🚚 RUNNER LOGISTICS L{level}</span>
           <span>FLOW OUTFLOW: {score} PTS</span>
@@ -101,7 +114,7 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete 
             className="absolute bottom-2 text-xl transition-all duration-100 ease-out -translate-x-1/2 bg-orange-600/20 p-1.5 rounded-lg border border-orange-500/40 shadow-glow"
             style={{ left: `${truckLane * 33.33 + 16.66}%` }}
           >
-            盒子 🚛
+            🚛
           </div>
         </div>
 
@@ -118,6 +131,23 @@ export const RunnerRoute: React.FC<RunnerRouteProps> = ({ level = 1, onComplete 
             </button>
           ))}
         </div>
+
+        {/* Instruction Intro overlay */}
+        {showInstruction && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/85 backdrop-blur-sm rounded-xl">
+            <div className="text-center p-6">
+              <div className="text-5xl mb-2 animate-bounce">🚚</div>
+              <div className="text-orange-500 font-black text-sm uppercase tracking-widest">
+                RUNNER LOGISTICS
+              </div>
+              <div className="text-white text-xs mt-2 max-w-xs leading-relaxed">
+                1. Avoid barriers (🚧).<br />
+                2. Catch cargo (📦).<br />
+                3. Use the L/C/R buttons to switch lanes.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

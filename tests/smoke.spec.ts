@@ -15,8 +15,8 @@ test.describe('Bag Chaser Performance & Hardening Smoke Tests', () => {
         await skipBtn.click();
     }
 
-    // Character select screen should be visible
-    await expect(page.locator('h2')).toContainText('Shape Your Story');
+    // CHAMP name should be visible in the playing state header
+    await expect(page.locator('text=CHAMP').first()).toBeVisible();
   });
 
   test('save and load verification', async ({ page }) => {

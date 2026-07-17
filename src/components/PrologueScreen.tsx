@@ -298,6 +298,29 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     );
   };
 
+  const handleSkipPrologue = () => {
+    onStart(
+      'CHAMP',
+      'sk_delivery',
+      'street_kid',
+      'sk_delivery',
+      'av_m1',
+      {
+        bag: 0,
+        clout: 0,
+        aura: 0,
+        biography: [
+          'Skipped the prologue to fast-track your rise as a delivery courier.',
+          'Chose the starting path of the Stable Insider to define your trajectory.'
+        ],
+        recordedBioKeys: ['prologue_origin', 'focus_balanced'],
+        hustlePlays: {},
+        totalHustlesCompleted: 0,
+        actionLog: []
+      }
+    );
+  };
+
   return (
     <div
       className="min-h-screen w-full relative flex flex-col items-center justify-center p-4 md:p-8 font-sans overflow-hidden select-none bg-slate-950 text-white"
@@ -378,7 +401,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
               </button>
 
               <button
-                onClick={() => setPh('choose_origin')}
+                onClick={handleSkipPrologue}
                 className="text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-widest transition-colors block mx-auto py-2"
               >
                 Skip Prologue
