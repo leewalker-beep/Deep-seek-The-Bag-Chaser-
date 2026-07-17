@@ -248,6 +248,139 @@ const TIER_ONBOARDING_DATA: Record<string, {
 const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
   if (!pl || !pl.narrativeFlags) return null;
 
+  // A. FIRST EMPLOYEE HIRED (Leadership & delegation)
+  if (pl.narrativeFlags.just_hired_employee && !pl.narrativeFlags.advisor_shown_first_employee) {
+    return {
+      id: 'advisor_shown_first_employee',
+      title: '👥 THE POWER OF DELEGATION',
+      subtitle: 'You have hired your very first employee! Corporate leadership is about leveraging other people\'s time while you focus on macro strategy.',
+      bullets: [
+        'Hiring employees automates manual labor, paving the path to scalable passive cash flow.',
+        'Keep scaling your businesses by upgrading their levels to generate higher passive and active returns.',
+        'Be mindful of your monthly overheads and maintain healthy capital buffers.'
+      ],
+      tabToOpen: 'OPPORTUNITIES' as const,
+      onCloseExtra: (store: any) => {
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_hired_employee: false,
+            advisor_shown_first_employee: true
+          }
+        });
+      }
+    };
+  }
+
+  // B. DONATE TO CHARITY (Charitable Halo / Suggest break)
+  if (pl.narrativeFlags.just_donated_charity && !pl.narrativeFlags.advisor_shown_charity) {
+    return {
+      id: 'advisor_shown_charity',
+      title: '🕊️ THE HALO OF GENEROSITY',
+      subtitle: 'Your significant charitable contribution has established incredible public goodwill. To maximize your efficiency, the Advisor suggests taking a well-earned break.',
+      bullets: [
+        'A local public relations halo is forming, shielding you from minor Heat spikes.',
+        'Your mind and body need recuperation after such a massive deployment of capital.',
+        'Take a rest protocol now to claim a small, temporary recovery bonus (+10 MH on your next rest).'
+      ],
+      ctaLabel: 'Open Recovery Deck',
+      onTakeMeThereCustom: (store: any) => {
+        const currentTier = store.pl.currentTier;
+        let recoveryHustle = 'r_sleep';
+        if (currentTier === 'STREET') recoveryHustle = 'power_nap';
+        else if (currentTier === 'STARTUP') recoveryHustle = 'therapy_session';
+        else if (currentTier === 'CORPORATE') recoveryHustle = 'wellness_retreat';
+        else if (currentTier !== 'MUD') recoveryHustle = 'psychiatrist';
+
+        store.setActiveHustleView(recoveryHustle);
+        store.setShowMinigame(false);
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_donated_charity: false,
+            advisor_shown_charity: true,
+            charity_recovery_bonus: true
+          }
+        });
+      },
+      onCloseExtra: (store: any) => {
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_donated_charity: false,
+            advisor_shown_charity: true,
+            charity_recovery_bonus: true
+          }
+        });
+      }
+    };
+  }
+
+  // C. PURCHASE INSIDER INFORMATION
+  if (pl.narrativeFlags.just_bought_insider && !pl.narrativeFlags.advisor_shown_insider) {
+    return {
+      id: 'advisor_shown_insider',
+      title: '📈 INSIDER OPPORTUNITY SECURED',
+      subtitle: 'Your purchase of insider information from Cassie has positioned you perfectly. The Advisor suggests checking high-tier business expansions.',
+      bullets: [
+        'The shipping merger details Cassie shared are highly lucrative, adding $25,000 monthly passive income.',
+        'Use this momentum to look into other high-tier corporate ventures or real estate investments.',
+        'Maintain absolute discretion to avoid drawing regulatory antitrust investigations.'
+      ],
+      ctaLabel: 'Review Businesses',
+      onTakeMeThereCustom: (store: any) => {
+        const currentTier = store.pl.currentTier;
+        const targetTab = (currentTier === 'STREET' || currentTier === 'STARTUP') ? 'STARTUP' : 'ELITE';
+        store.setActiveTab(targetTab);
+        if (targetTab === 'ELITE') {
+          store.setActiveHustleView('venture_capital');
+        } else {
+          store.setActiveHustleView('saas_mvp');
+        }
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_bought_insider: false,
+            advisor_shown_insider: true
+          }
+        });
+      },
+      onCloseExtra: (store: any) => {
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_bought_insider: false,
+            advisor_shown_insider: true
+          }
+        });
+      }
+    };
+  }
+
+  // D. ENROLLED IN UNIVERSITY
+  if (pl.narrativeFlags.just_accepted_university && !pl.narrativeFlags.advisor_shown_university) {
+    return {
+      id: 'advisor_shown_university',
+      title: '🎓 IVY LEAGUE ACADEMIC PRESTIGE',
+      subtitle: 'Your acceptance into the Ivy League business program provides phenomenal long-term benefits and credentials.',
+      bullets: [
+        'Academic credentials amplify your Clout and build prestigious networking rings.',
+        'Your profile as an educated, structured leader makes you highly attractive for board memberships.',
+        'Review your strategic opportunities to see how this credential influences your campaign or ventures.'
+      ],
+      tabToOpen: 'OPPORTUNITIES' as const,
+      onCloseExtra: (store: any) => {
+        store.updatePl({
+          narrativeFlags: {
+            ...store.pl.narrativeFlags,
+            just_accepted_university: false,
+            advisor_shown_university: true
+          }
+        });
+      }
+    };
+  }
+
   // 1. HIGH HEAT
   if (pl.heat > 75 && !pl.narrativeFlags.advisor_shown_high_heat) {
     return {
@@ -368,7 +501,7 @@ const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
         'This triggers rent cap policies and docks passive rent yields by up to 30%.',
         'Prepare to pass legislative executive orders or allocate community philanthropy to restore peace.'
       ],
-      tabToOpen: 'CRITICAL' as const,
+      tabToOpen: 'REPUTATION' as const,
     };
   }
 
@@ -383,7 +516,7 @@ const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
         'Focus on preserving liquid cash and prioritizing lower-overhead passive operations.',
         'Avoid launching expensive campaign stages until standard cycles stabilize.'
       ],
-      tabToOpen: 'CRITICAL' as const,
+      tabToOpen: 'OPPORTUNITIES' as const,
     };
   }
 
@@ -442,6 +575,8 @@ function App() {
     bullets?: string[];
     ctaLabel?: string;
     tabToOpen?: 'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION';
+    onTakeMeThereCustom?: (store: any) => void;
+    onCloseExtra?: (store: any) => void;
   } | null>(null);
 
   const prevTierRef = useRef<string | null>(null);
@@ -1480,12 +1615,25 @@ function App() {
           subtitle={activeAdvisorPrompt.subtitle}
           bullets={activeAdvisorPrompt.bullets}
           ctaLabel={activeAdvisorPrompt.ctaLabel}
-          onClose={() => setActiveAdvisorPrompt(null)}
+          onClose={() => {
+            if (activeAdvisorPrompt.onCloseExtra) {
+              activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
+            }
+            setActiveAdvisorPrompt(null);
+          }}
           onTakeMeThere={
-            activeAdvisorPrompt.tabToOpen
+            activeAdvisorPrompt.onTakeMeThereCustom
+              ? () => {
+                  activeAdvisorPrompt.onTakeMeThereCustom!(useGameStore.getState());
+                  setActiveAdvisorPrompt(null);
+                }
+              : activeAdvisorPrompt.tabToOpen
               ? () => {
                   setAdvisorTab(activeAdvisorPrompt.tabToOpen!);
                   setShowAdvisor(true);
+                  if (activeAdvisorPrompt.onCloseExtra) {
+                    activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
+                  }
                   setActiveAdvisorPrompt(null);
                 }
               : undefined

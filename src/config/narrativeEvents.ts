@@ -5722,8 +5722,48 @@ export const SATIRICAL_NARRATIVE_EXPANSIONS = [
   }
 ] as NarrativeEvent[];
 
+export const UNIVERSITY_ARC = [
+  {
+    id: 'university_admission_offer',
+    title: 'Ivy League Admission',
+    pacingCategory: 'MAJOR',
+    description: 'A prestigious Ivy League university has accepted your application for an executive business program. Enrolling will amplify your public prestige and long-term strategic clout.',
+    trigger: {
+      tier: ['STREET', 'STARTUP', 'CORPORATE'],
+      probability: 0.2,
+      once: true
+    },
+    choices: [
+      {
+        id: 'accept_university_offer',
+        label: 'Accept and Enroll (-$20,000, +80 Clout)',
+        description: 'Pay the tuition fees to secure your enrollment.',
+        consequences: {
+          bag: -20000,
+          clout: 80
+        },
+        setFlags: {
+          university_accepted: true,
+          just_accepted_university: true
+        },
+        logMessage: '🎓 ENROLLED: You paid $20,000 for executive business enrollment. Banners congratulate your new academic prestige.'
+      },
+      {
+        id: 'reject_university_offer',
+        label: 'Decline Offer (+10 Aura)',
+        description: 'Real-world experience is the best teacher anyway.',
+        consequences: {
+          aura: 10
+        },
+        logMessage: '🚫 DECLINED: You turned down the executive program. Your followers praise your self-made authenticity.'
+      }
+    ]
+  }
+] as NarrativeEvent[];
+
 export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...BASE_EVENTS,
+  ...UNIVERSITY_ARC,
   ...POPS_ARC,
   ...TWITCH_ARC,
   ...SLICK_ARC,
