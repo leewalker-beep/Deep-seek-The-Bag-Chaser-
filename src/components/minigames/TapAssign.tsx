@@ -15,6 +15,7 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete, level = 1, tie
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
+  const [lastTappedType, setLastTappedType] = useState<number | null>(null);
   const nextId = useRef(0);
 
   // Centralized Scaling
@@ -61,7 +62,16 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete, level = 1, tie
 
   const handleTask = (id: number) => {
     if (!gameActive) return;
-    setScore(s => s + 1);
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    if (lastTappedType === task.type) {
+      setScore(s => s + 1);
+      setLastTappedType(null); // Match found, clear selection
+    } else {
+      setLastTappedType(task.type); // No match, set current as active selection
+    }
+
     setTasks(prev => prev.filter(t => t.id !== id));
     if (navigator.vibrate) navigator.vibrate(20);
   };
@@ -82,8 +92,14 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete, level = 1, tie
     <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <div className="absolute top-12 text-center w-full px-8">
         <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">AGENCY SCALE <span className="text-emerald-500 text-sm">L{level}</span></h2>
-        <div className="mt-6 text-emerald-400 font-mono font-black text-4xl drop-shadow-xl tabular-nums">
-            TASKS: {score}
+        <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-bold">
+          Consecutively tap two of the same icon to score a match!
+        </p>
+        <div className="mt-4 text-emerald-400 font-mono font-black text-4xl drop-shadow-xl tabular-nums">
+            MATCHES: {score}
+        </div>
+        <div className="text-xs text-slate-300 font-semibold mt-1">
+          Active Selection: {lastTappedType === 0 ? '✉️' : lastTappedType === 1 ? '📞' : lastTappedType === 2 ? '🛠️' : 'None'}
         </div>
       </div>
 
