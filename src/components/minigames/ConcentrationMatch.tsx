@@ -31,7 +31,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
   const [lockBoard, setLockBoard] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameEnded, setGameEnded] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   // Difficulty scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -90,7 +90,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
         }
         return prev - 0.1;
       });
-    }, 100);
+    }, 100) as unknown as number;
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
