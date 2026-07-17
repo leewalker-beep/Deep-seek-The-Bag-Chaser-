@@ -235,8 +235,27 @@ export const TrafficDodge: React.FC<TrafficDodgeProps> = ({
     };
   }, [gameActive, spawnRate, level]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    const element = containerRef.current;
+    if (element) {
+      element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener('touchmove', handleTouchMove);
+      }
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
+    <div ref={containerRef} className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none p-4 z-[100]">
       <PerfectFlow isActive={gameActive && distance > targetDistance * 0.5} intensity={Math.min(5, Math.floor(distance / (targetDistance * 0.2)))} />
       <div className="absolute top-12 text-center w-full z-20">
         <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{title} <span className="text-emerald-500">L{level}</span></h2>

@@ -16,7 +16,6 @@ import { CinematicTransition } from './components/effects/CinematicTransition';
 import { HERO_ARTWORK } from './config/heroArtwork';
 import TierBackground from './components/TierBackground';
 import { TheReceipts } from './components/TheReceipts';
-import { StatsPanel } from './components/StatsPanel';
 import Avatar from './components/Avatar';
 import { WorldReactionFeed } from './components/WorldReactionFeed';
 
@@ -655,6 +654,46 @@ function App() {
     }
   }, [pl?.currentTier, triggerTransition]);
 
+  // Warning system side-effects
+  useEffect(() => {
+    if (!pl) return;
+
+    if (pl.mentalHealth <= 25) {
+      document.getElementById('mental-stat')?.classList.add('flash-red');
+      addTickerMessage('Your mind is fracturing. One more hit could end you.', 'text-red-500');
+    } else {
+      document.getElementById('mental-stat')?.classList.remove('flash-red');
+    }
+
+    if (pl.clout <= 10) {
+      document.getElementById('clout-stat')?.classList.add('flash-blue');
+      addTickerMessage('Your influence is fading. The streets are forgetting you.', 'text-blue-400');
+    } else {
+      document.getElementById('clout-stat')?.classList.remove('flash-blue');
+    }
+
+    if (pl.aura <= 10) {
+      document.getElementById('aura-stat')?.classList.add('flash-purple');
+      addTickerMessage('Your mystique is gone. You are becoming invisible.', 'text-purple-400');
+    } else {
+      document.getElementById('aura-stat')?.classList.remove('flash-purple');
+    }
+
+    if (pl.heat >= 80) {
+      document.getElementById('heat-stat')?.classList.add('flash-orange');
+      addTickerMessage('The feds are circling. One wrong move and you are done.', 'text-orange-400');
+    } else {
+      document.getElementById('heat-stat')?.classList.remove('flash-orange');
+    }
+
+    if (pl.bag <= 1000) {
+      document.getElementById('bag-amount')?.classList.add('flash-red-border');
+      addTickerMessage('Your funds are critically low. One bad month ends everything.', 'text-red-500');
+    } else {
+      document.getElementById('bag-amount')?.classList.remove('flash-red-border');
+    }
+  }, [pl, addTickerMessage]);
+
   const [displayedCash, setDisplayedCash] = useState(pl?.bag || 0);
   const [cashSplash, setCashSplash] = useState<{ text: string; isWin: boolean } | null>(null);
   const [showReceipts, setShowReceipts] = useState(false);
@@ -951,10 +990,6 @@ function App() {
           transition={{ duration: 1.5 }}
         />
       </AnimatePresence>
-      {/* Hidden StatsPanel to run its side effects (warning system) */}
-      <div className="hidden">
-        <StatsPanel stats={pl} market={currentMarket} />
-      </div>
 
       {/* Big Win Celebration */}
       {bigWin && (
@@ -1042,13 +1077,17 @@ function App() {
             </div>
           </div>
           <div className="grid grid-cols-4 gap-1 text-center">
-            <div className="flex flex-col">
+            <div className="flex flex-col group relative cursor-help">
               <span className="text-[8px] text-slate-500 uppercase">Clout</span>
               <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
                 {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
               </span>
+              <div className="absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+                <span className="font-black text-blue-400 uppercase block mb-1">👑 Clout (Influence)</span>
+                Represents your public reach, street rep, and political sway. Reaching the max allows tier promotions. Failing active checks reduces your fame.
+              </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col group relative cursor-help">
               <span className="text-[8px] text-slate-500 uppercase">Mental</span>
               <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
                 {Math.floor(pl.mentalHealth)}%
@@ -1056,18 +1095,30 @@ function App() {
                   <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
                 )}
               </span>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+                <span className="font-black text-red-400 uppercase block mb-1">🧠 Mental Health</span>
+                Your psychological capacity. Exhausting work drains your mental health. Reaching <span className="font-black text-red-500">0% causes burnout (Death)</span>. Restore it via sleep/recreation.
+              </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col group relative cursor-help">
               <span className="text-[8px] text-slate-500 uppercase">Aura</span>
               <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
                 {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
               </span>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+                <span className="font-black text-purple-400 uppercase block mb-1">✨ Aura (Mystique)</span>
+                Represents your personal presence, charisma, and star power. Necessary for massive negotiations, business deals, and general respect.
+              </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col group relative cursor-help">
               <span className="text-[8px] text-slate-500 uppercase">Heat</span>
               <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
                 {Math.floor(pl.heat)}%
               </span>
+              <div className="absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+                <span className="font-black text-orange-400 uppercase block mb-1">🔥 Heat (WANTED)</span>
+                Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
+              </div>
             </div>
           </div>
         </div>

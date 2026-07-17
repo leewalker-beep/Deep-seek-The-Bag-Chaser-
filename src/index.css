@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  overflow-x: hidden;
+}
+
 :root {
   --mud-bg: #0f0f0f;
   --mud-accent: #4ade80;

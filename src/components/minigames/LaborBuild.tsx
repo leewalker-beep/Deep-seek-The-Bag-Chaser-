@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getScalingMultiplier } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
@@ -134,8 +134,27 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({
   const colors = colorMap[accentColor] || colorMap.orange;
   const [cText, cBorder, cBg, cBtn, cBtnBorder, cSubText] = colors.split(' ');
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    const element = containerRef.current;
+    if (element) {
+      element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener('touchmove', handleTouchMove);
+      }
+    };
+  }, []);
+
   return (
-    <div className={`bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto transition-colors duration-100 ${
+    <div ref={containerRef} className={`bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto transition-colors duration-100 touch-none select-none ${
         feedback === 'perfect' ? 'bg-emerald-950/20' :
         feedback === 'miss' ? 'bg-red-950/10' :
         feedback === 'tap' ? 'bg-stone-900' : 'bg-stone-950'

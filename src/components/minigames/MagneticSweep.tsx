@@ -304,8 +304,27 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
     }
   }, [grid, gameActive, initializeGrid]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    const element = containerRef.current;
+    if (element) {
+      element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener('touchmove', handleTouchMove);
+      }
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]">
+    <div ref={containerRef} className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center touch-none select-none z-[100]">
       {/* Top Header UI */}
       <div className="absolute top-12 text-center w-full z-20 px-4">
         <h2 className="text-2xl md:text-3xl font-black text-slate-400 italic tracking-tighter uppercase">
