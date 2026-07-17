@@ -537,6 +537,7 @@ const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
 function App() {
   const [isHydrated, setIsHydrated] = useState(false);
   const forceUpdate = useReducer(() => ({}), {})[1];
+  const [isLedgerPinned, setIsLedgerPinned] = useState(false);
 
   useEffect(() => {
     // Check if the store has hydrated
@@ -1226,6 +1227,91 @@ function App() {
         </div>
       </div>
 
+      {/* Pinned Condensed Live Ledger */}
+      {isLedgerPinned && (
+        <div className="max-w-md mx-auto px-4 mt-2 mb-1 animate-in slide-in-from-top duration-300">
+          <div className="bg-slate-950/95 border-2 border-emerald-500/30 rounded-2xl p-3 shadow-[0_0_15px_rgba(16,185,129,0.1)] relative">
+            <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-slate-900">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs">📌</span>
+                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Live Ledger Summary</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setShowReceipts(true)}
+                  className="text-[7.5px] bg-slate-900 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black uppercase hover:text-white tracking-tighter"
+                >
+                  Expand Receipts
+                </button>
+                <button
+                  onClick={() => setIsLedgerPinned(false)}
+                  className="text-slate-500 hover:text-white font-black text-[9px] bg-slate-900 hover:bg-slate-800 rounded px-1"
+                  title="Unpin Ledger"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Monthly Net Summary */}
+            <div className="flex justify-between items-center text-[8.5px] font-mono text-slate-400 mb-1.5 bg-slate-900/40 p-1.5 rounded-lg border border-slate-900">
+              <div>
+                RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
+              </div>
+              <div>
+                PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Last 3 Cash Actions */}
+            <div className="space-y-1">
+              {(pl.events || []).filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).slice(0, 3).map((event) => {
+                let text = '';
+                let cashChange = 0;
+                let isProfit = true;
+
+                if (event.type === 'HUSTLE_COMPLETED') {
+                  const m = event.metadata as any;
+                  text = m.hustleName || 'Hustle';
+                  cashChange = m.profit || 0;
+                  isProfit = cashChange >= 0;
+                } else if (event.type === 'BUSINESS_PURCHASED') {
+                  const m = event.metadata as any;
+                  text = `Asset: ${m.assetId?.replace('_', ' ')}`;
+                  cashChange = m.cost || 0;
+                  isProfit = false;
+                } else if (event.type === 'PROPERTY_PURCHASED') {
+                  const m = event.metadata as any;
+                  text = `RE: ${m.branchName || m.type || 'Property'}`;
+                  cashChange = m.cost || 0;
+                  isProfit = false;
+                } else if (event.type === 'RIVAL_DEFEATED') {
+                  const m = event.metadata as any;
+                  text = `Defeated ${m.rivalName}`;
+                  cashChange = m.bonus || 0;
+                  isProfit = true;
+                }
+
+                return (
+                  <div key={event.id} className="flex justify-between items-center text-[9px] bg-slate-900/20 px-2 py-1 rounded-lg border border-slate-900/50">
+                    <span className="text-slate-300 font-bold uppercase tracking-tight truncate max-w-[180px]">{text}</span>
+                    <span className={`font-mono font-black ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {isProfit ? '+' : '-'}${Math.abs(cashChange).toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {(!pl.events || pl.events.filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).length === 0) && (
+                <div className="text-[8px] text-slate-600 text-center italic py-1">
+                  No cash events logged yet.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navigation Tabs */}
       {!(pl.inJail || pl.isIncarcerated) && (
         <div className="-mt-px">
@@ -1731,7 +1817,11 @@ function App() {
 
       {/* Receipts Modal */}
       {showReceipts && (
-        <TheReceipts onClose={() => setShowReceipts(false)} />
+        <TheReceipts
+          onClose={() => setShowReceipts(false)}
+          isPinned={isLedgerPinned}
+          onTogglePin={() => setIsLedgerPinned(!isLedgerPinned)}
+        />
       )}
 
       {/* World Reaction Phone Feed Modal */}
