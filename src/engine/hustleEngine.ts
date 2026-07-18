@@ -1,4 +1,4 @@
-import type { PlayerStats, MarketType, TickerMessage, RegionalExecutive } from '../types/game';
+import type { PlayerStats, MarketType, TickerMessage } from '../types/game';
 import type { HustleLevel } from '../config/hustles/base';
 import { calculateHustleMath, getEffectiveHustleStats, LEVEL_MULTIPLIERS, getLegacyBonus } from './mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
@@ -546,7 +546,7 @@ const openMovieStrategy: HustleStrategy = (hustleId, state, marketType, levelDat
   return defaultStrategy(hustleId, state, marketType, customLevelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
 };
 
-const globalConglomerateStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
+const globalConglomerateStrategy: HustleStrategy = (_hustleId, state, _marketType, levelData, _currentLevel, _minigameMultiplier, _forceSuccess, _rivalThreat) => {
   const ceos = state.conglomerateCEOs || {};
   const divisions = [
     { id: 'na_tech', name: 'NA Technology' },

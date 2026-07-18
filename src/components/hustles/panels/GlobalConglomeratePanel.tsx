@@ -5,8 +5,6 @@ import type { RegionalExecutive } from '../../../types/game';
 import { RosterSelectList } from '../../ui/RosterSelectList';
 import { CONGLOMERATE_CANDIDATES } from '../../../config/conglomerateCandidates';
 import { CinematicModal } from '../../ui/CinematicModal';
-import { PortraitCard } from '../../ui/PortraitCard';
-import { motion } from 'framer-motion';
 
 interface GlobalConglomeratePanelProps {
   hustle: Hustle;
