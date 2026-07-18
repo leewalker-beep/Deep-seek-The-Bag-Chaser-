@@ -106,7 +106,7 @@ import { RewardCard } from './components/effects/RewardCard';
 import { TierBadgeCelebration } from './components/effects/TierBadgeCelebration';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
-import { FestivalPanel } from './components/hustles/panels/FestivalPanel';
+import { EntertainmentDashboard } from './components/dashboard/EntertainmentDashboard';
 import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPanel';
 import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
 import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
@@ -1675,7 +1675,7 @@ function App() {
                   );
                 }
                 if (hustle.panelType === 'FESTIVAL') {
-                  return <FestivalPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;
+                  return <EntertainmentDashboard />;
                 }
                 if (hustle.panelType === 'DATA_ANALYTICS') {
                   return <DataAnalyticsPanel hustle={hustle} />;
