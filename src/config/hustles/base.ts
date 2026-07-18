@@ -888,6 +888,8 @@ HUSTLES.open_movie = {
   icon: '🎬',
   description: 'Finance a Hollywood blockbuster',
   miniGame: 'PinchToZoom',
+  hasPanel: true,
+  panelType: 'FUND_MOVIE',
   levels: [
     { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 300, yieldAura: 150, mentalHit: -15, cloutReq: 300, auraReq: 150, passiveYield: 0 }
   ]
