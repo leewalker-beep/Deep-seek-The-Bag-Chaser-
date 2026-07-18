@@ -4,34 +4,117 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
 
+export interface ConcentrationCardItem {
+  id: string;
+  label: string;
+  image: string;
+  [key: string]: any;
+}
+
 interface ConcentrationMatchProps {
-  onComplete: (multiplier: number) => void;
+  onComplete: (multiplier: number, extraData?: any) => void;
   level?: number;
   tier?: Tier;
+  cardSet?: ConcentrationCardItem[];
+  theme?: 'emerald' | 'purple';
+  title?: string;
+  subtitle?: string;
+  description?: string | React.ReactNode;
+  startBtnText?: string;
+  icon?: string;
+  cardBackIcon?: string;
+  delayMs?: number;
+  onMatchComplete?: (
+    success: boolean,
+    multiplier: number,
+    timeLeft: number,
+    mismatches: number
+  ) => any;
+  renderOverlay?: (
+    success: boolean,
+    multiplier: number,
+    mismatches: number,
+    pairsCount: number,
+    timeLeft: number,
+    extraData?: any
+  ) => React.ReactNode;
 }
 
 interface Card {
-  id: number;
-  emoji: string;
+  id: string;
+  sourceId: string;
+  label: string;
+  image: string;
   isFlipped: boolean;
   isMatched: boolean;
 }
 
 const EMOJI_POOL = ['💰', '💼', '📈', '🚀', '🧠', '💻', '🤝', '🔥', '💎', '🎨'];
 
+interface ThemeConfig {
+  borderColor: string;
+  highlightText: string;
+  startBtn: string;
+  progress: string;
+  cardMatched: string;
+  cardFlipped: string;
+  cardBackText: string;
+  startHeight: string;
+  gameHeight: string;
+}
+
+const THEMES: Record<'emerald' | 'purple', ThemeConfig> = {
+  emerald: {
+    borderColor: 'border-emerald-900',
+    highlightText: 'text-emerald-400',
+    startBtn: 'bg-emerald-600 hover:bg-emerald-500 border-emerald-800 active:border-b-0 shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+    progress: 'bg-emerald-500',
+    cardMatched: 'bg-emerald-950 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]',
+    cardFlipped: 'bg-blue-950 border-blue-400',
+    cardBackText: 'text-emerald-500/40',
+    startHeight: 'h-[500px]',
+    gameHeight: 'h-[520px]',
+  },
+  purple: {
+    borderColor: 'border-purple-900',
+    highlightText: 'text-purple-400',
+    startBtn: 'bg-purple-600 hover:bg-purple-500 border-purple-800 active:border-b-0 shadow-[0_0_30px_rgba(147,51,234,0.3)]',
+    progress: 'bg-purple-500',
+    cardMatched: 'bg-purple-950/80 border-purple-500 shadow-[0_0_15px_rgba(147,51,234,0.3)]',
+    cardFlipped: 'bg-indigo-950 border-indigo-400',
+    cardBackText: 'text-purple-500/40',
+    startHeight: 'h-[520px]',
+    gameHeight: 'h-[540px]',
+  },
+};
+
 export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
   onComplete,
   level = 1,
   tier = 'MUD',
+  cardSet,
+  theme = 'emerald',
+  title = 'MARKET SYNC',
+  subtitle = 'CONCENTRATION MATCH',
+  description,
+  startBtnText = 'START SYNC',
+  icon = '🧠',
+  cardBackIcon = '❓',
+  delayMs = 1500,
+  onMatchComplete,
+  renderOverlay,
 }) => {
   const [isStarted, setIsStarted] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [mismatches, setMismatches] = useState(0);
   const [lockBoard, setLockBoard] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameEnded, setGameEnded] = useState(false);
+  const [extraData, setExtraData] = useState<any>(undefined);
   const timerRef = useRef<number | null>(null);
+
+  const themeConfig = THEMES[theme];
 
   // Difficulty scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -51,18 +134,42 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
 
   // Initialize and shuffle board
   const initializeBoard = () => {
-    const pool = EMOJI_POOL.slice(0, pairsCount);
-    const deck = [...pool, ...pool].map((emoji, index) => ({
-      id: index,
-      emoji,
-      isFlipped: false,
-      isMatched: false,
-    }));
+    // If cardSet is provided, use it. Otherwise, build it from EMOJI_POOL
+    const pool = cardSet && cardSet.length > 0
+      ? cardSet
+      : EMOJI_POOL.slice(0, pairsCount).map((emoji, idx) => ({
+          id: `emoji_${idx}`,
+          label: emoji,
+          image: emoji,
+        }));
+
+    const deck: Card[] = [];
+    pool.forEach((item, index) => {
+      // Each pair has two identical cards
+      deck.push({
+        id: `${index}_a`,
+        sourceId: item.id,
+        label: item.label,
+        image: item.image,
+        isFlipped: false,
+        isMatched: false,
+      });
+      deck.push({
+        id: `${index}_b`,
+        sourceId: item.id,
+        label: item.label,
+        image: item.image,
+        isFlipped: false,
+        isMatched: false,
+      });
+    });
 
     // Fisher-Yates shuffle
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
+      const temp = deck[i];
+      deck[i] = deck[j];
+      deck[j] = temp;
     }
 
     setCards(deck);
@@ -71,6 +178,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
     setTimeLeft(totalTime);
     setGameEnded(false);
     setLockBoard(false);
+    setExtraData(undefined);
   };
 
   const startGame = () => {
@@ -97,7 +205,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
     };
   }, [isStarted, gameEnded]);
 
-  const handleCardClick = (id: number) => {
+  const handleCardClick = (id: string) => {
     if (lockBoard || gameEnded) return;
 
     const clickedCard = cards.find((c) => c.id === id);
@@ -117,7 +225,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
       const firstCard = cards.find((c) => c.id === firstId)!;
       const secondCard = clickedCard; // clickedCard is the second one
 
-      if (firstCard.emoji === secondCard.emoji) {
+      if (firstCard.sourceId === secondCard.sourceId) {
         // MATCH found
         if (navigator.vibrate) navigator.vibrate(20);
         setTimeout(() => {
@@ -183,9 +291,15 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
       else navigator.vibrate(200);
     }
 
+    let calculatedExtra: any = undefined;
+    if (onMatchComplete) {
+      calculatedExtra = onMatchComplete(success, multiplier, timeLeft, mismatches);
+      setExtraData(calculatedExtra);
+    }
+
     setTimeout(() => {
-      onComplete(multiplier);
-    }, 1500);
+      onComplete(multiplier, calculatedExtra);
+    }, delayMs);
   };
 
   const gridColsClass = useMemo(() => {
@@ -194,46 +308,63 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
   }, [pairsCount]);
 
   const cardHeightClass = useMemo(() => {
-    if (pairsCount === 6) return 'h-16';
-    if (pairsCount === 8) return 'h-14';
-    return 'h-11';
-  }, [pairsCount]);
+    if (pairsCount === 6) return theme === 'purple' ? 'h-20' : 'h-16';
+    if (pairsCount === 8) return theme === 'purple' ? 'h-16' : 'h-14';
+    return theme === 'purple' ? 'h-12' : 'h-11';
+  }, [pairsCount, theme]);
 
   if (!isStarted) {
     return (
-      <div className="h-[500px] w-full max-w-[380px] mx-auto bg-slate-950 border-4 border-emerald-900 rounded-3xl flex flex-col items-center justify-center p-6 text-center shadow-2xl">
+      <div className={`${themeConfig.startHeight} w-full max-w-[380px] mx-auto bg-slate-950 border-4 ${themeConfig.borderColor} rounded-3xl flex flex-col items-center justify-center p-6 text-center shadow-2xl relative overflow-hidden`}>
+        {theme === 'purple' && (
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1b4b_1px,transparent_1px),linear-gradient(to_bottom,#1e1b4b_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20 pointer-events-none" />
+        )}
         <motion.div
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="text-6xl mb-4"
+          className="text-6xl mb-4 z-10"
         >
-          🧠
+          {icon}
         </motion.div>
-        <h2 className="text-3xl font-black text-emerald-400 mb-2 italic tracking-tighter uppercase">
-          MARKET SYNC <span className="text-white text-xs">L{level}</span>
+        <h2 className={`text-3xl font-black ${themeConfig.highlightText} mb-2 italic tracking-tighter uppercase z-10`}>
+          {title} <span className="text-white text-xs">L{level}</span>
         </h2>
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-6">
-          CONCENTRATION MATCH
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-6 z-10">
+          {subtitle}
         </p>
-        <p className="text-slate-500 mb-8 uppercase text-[10px] font-black tracking-wider leading-relaxed">
-          Flip cards to pair identical assets.<br />
-          Clear the board before the capacity decays.<br />
-          Fewer mismatches yields premium returns.
-        </p>
+        {description ? (
+          typeof description === 'string' ? (
+            <p className={`text-slate-500 mb-8 uppercase text-[10px] ${theme === 'purple' ? 'font-bold' : 'font-black'} tracking-wider leading-relaxed z-10 ${theme === 'purple' ? 'max-w-[280px]' : ''}`}>
+              {description}
+            </p>
+          ) : (
+            description
+          )
+        ) : (
+          <p className="text-slate-500 mb-8 uppercase text-[10px] font-black tracking-wider leading-relaxed z-10">
+            Flip cards to pair identical assets.<br />
+            Clear the board before the capacity decays.<br />
+            Fewer mismatches yields premium returns.
+          </p>
+        )}
         <button
           onClick={startGame}
-          className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-500 transition-all border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 shadow-[0_0_30px_rgba(16,185,129,0.3)] uppercase tracking-widest italic"
+          className={`w-full py-4 ${themeConfig.startBtn} text-white font-black rounded-2xl transition-all border-b-4 active:border-b-0 active:translate-y-1 uppercase tracking-widest italic z-10`}
         >
-          START SYNC
+          {startBtnText}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="h-[520px] w-full max-w-[380px] mx-auto bg-slate-950 border-4 border-emerald-900 rounded-3xl flex flex-col items-center justify-between p-6 relative shadow-2xl">
+    <div className={`${themeConfig.gameHeight} w-full max-w-[380px] mx-auto bg-slate-950 border-4 ${themeConfig.borderColor} rounded-3xl flex flex-col items-center justify-between p-6 relative shadow-2xl overflow-hidden`}>
+      {theme === 'purple' && (
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1b4b_1px,transparent_1px),linear-gradient(to_bottom,#1e1b4b_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-10 pointer-events-none" />
+      )}
+
       {/* Top Header */}
-      <div className="w-full flex justify-between items-center mb-1">
+      <div className="w-full flex justify-between items-center mb-1 z-10">
         <div className="text-left">
           <span className="block text-[8px] text-slate-500 font-black uppercase tracking-widest">
             MISMATCHES
@@ -243,17 +374,17 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
           </span>
         </div>
         <div className="text-center">
-          <span className="text-emerald-400 font-black text-sm italic tracking-tighter uppercase">
-            MARKET SYNC
+          <span className={`font-black text-sm italic tracking-tighter uppercase ${themeConfig.highlightText}`}>
+            {theme === 'purple' ? 'AUDITIONS' : title}
           </span>
         </div>
         <div className="text-right">
           <span className="block text-[8px] text-slate-500 font-black uppercase tracking-widest">
-            CAPACITY
+            {theme === 'purple' ? 'TIME LEFT' : 'CAPACITY'}
           </span>
           <span
             className={`text-lg font-black font-mono ${
-              timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-emerald-400'
+              timeLeft < 5 ? 'text-red-500 animate-pulse' : themeConfig.highlightText
             }`}
           >
             {timeLeft.toFixed(1)}s
@@ -262,7 +393,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
       </div>
 
       {/* Grid */}
-      <div className={`grid ${gridColsClass} gap-2 w-full flex-grow my-3 items-center justify-center p-1`}>
+      <div className={`grid ${gridColsClass} gap-2 w-full flex-grow my-3 items-center justify-center p-1 z-10`}>
         {cards.map((card) => {
           const isRevealed = card.isFlipped || card.isMatched;
           return (
@@ -270,11 +401,11 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
               key={card.id}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleCardClick(card.id)}
-              className={`w-full ${cardHeightClass} rounded-xl flex items-center justify-center text-2xl transition-all duration-300 relative border-2 ${
+              className={`w-full ${cardHeightClass} rounded-xl flex items-center justify-center text-3xl transition-all duration-300 relative border-2 ${
                 card.isMatched
-                  ? 'bg-emerald-950 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                  ? themeConfig.cardMatched
                   : card.isFlipped
-                  ? 'bg-blue-950 border-blue-400'
+                  ? themeConfig.cardFlipped
                   : 'bg-slate-900 border-slate-800 hover:border-slate-700 active:bg-slate-800'
               }`}
             >
@@ -287,7 +418,7 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
                     exit={{ scale: 0 }}
                     className="select-none"
                   >
-                    {card.emoji}
+                    {card.image}
                   </motion.span>
                 ) : (
                   <motion.span
@@ -295,9 +426,9 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="text-emerald-500/40 font-black text-lg select-none"
+                    className={`${themeConfig.cardBackText} font-black text-lg select-none`}
                   >
-                    ❓
+                    {cardBackIcon}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -307,14 +438,16 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
       </div>
 
       {/* Footer Timer and Quota */}
-      <div className="w-full mt-1">
+      <div className="w-full mt-1 z-10">
         <ProgressBar
           value={timeLeft}
           max={totalTime}
-          colorClass={timeLeft < 5 ? 'bg-red-500' : 'bg-emerald-500'}
+          colorClass={timeLeft < 5 ? 'bg-red-500' : themeConfig.progress}
         />
-        <div className="mt-1.5 text-center text-[8px] text-slate-500 font-black uppercase tracking-widest">
-          COMPLETE ALL {pairsCount} MATCHES FOR BONUS YIELD
+        <div className={`mt-1.5 text-center ${theme === 'purple' ? 'text-[7.5px]' : 'text-[8px]'} text-slate-500 font-black uppercase tracking-widest`}>
+          {theme === 'purple'
+            ? `COMPLETE ALL ${pairsCount} AUDITION MATCHES`
+            : `COMPLETE ALL ${pairsCount} MATCHES FOR BONUS YIELD`}
         </div>
       </div>
 
@@ -326,21 +459,49 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-30 p-6 rounded-2xl"
           >
-            <div className="text-6xl mb-3 drop-shadow-2xl">
-              {cards.every((c) => c.isMatched) ? '📈' : '📉'}
-            </div>
-            <div className="text-2xl font-black text-white italic uppercase tracking-tighter">
-              {cards.every((c) => c.isMatched) ? 'SYNC COMPLETED' : 'SYNC TERMINATED'}
-            </div>
-            <div className="text-emerald-400 font-black font-mono text-sm mt-1 uppercase tracking-widest">
-              {mismatches} MISMATCHES OCCURRED
-            </div>
-            <div className="text-slate-500 text-[8px] font-black mt-4 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 uppercase tracking-widest">
-              RATING: {mismatches <= pairsCount - 2 ? 'EXCELLENT' : mismatches <= pairsCount + 2 ? 'GOOD' : 'FAIR'}
-            </div>
+            {renderOverlay ? (
+              renderOverlay(
+                cards.every((c) => c.isMatched),
+                performanceBaseMultiplier(cards.every((c) => c.isMatched), mismatches, pairsCount, scaling),
+                mismatches,
+                pairsCount,
+                timeLeft,
+                extraData
+              )
+            ) : (
+              <>
+                <div className="text-6xl mb-3 drop-shadow-2xl">
+                  {cards.every((c) => c.isMatched) ? '📈' : '📉'}
+                </div>
+                <div className="text-2xl font-black text-white italic uppercase tracking-tighter">
+                  {cards.every((c) => c.isMatched) ? 'SYNC COMPLETED' : 'SYNC TERMINATED'}
+                </div>
+                <div className="text-emerald-400 font-black font-mono text-sm mt-1 uppercase tracking-widest">
+                  {mismatches} MISMATCHES OCCURRED
+                </div>
+                <div className="text-slate-500 text-[8px] font-black mt-4 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 uppercase tracking-widest">
+                  RATING: {mismatches <= pairsCount - 2 ? 'EXCELLENT' : mismatches <= pairsCount + 2 ? 'GOOD' : 'FAIR'}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 };
+
+// Helper to calculate exact same performance formula inside the local component scope
+function performanceBaseMultiplier(success: boolean, mismatches: number, pairsCount: number, scaling: number): number {
+  let performanceBase = 0.5;
+  if (success) {
+    if (mismatches <= pairsCount - 2) {
+      performanceBase = 4.0;
+    } else if (mismatches <= pairsCount + 2) {
+      performanceBase = 2.5;
+    } else {
+      performanceBase = 1.2;
+    }
+  }
+  return performanceBase * (0.8 + scaling * 0.2);
+}
