@@ -333,6 +333,28 @@ export function advanceMonth(
     }
   });
 
+  // 6.5 Backed Founders (BUSINESS)
+  let totalFounderReturns = 0;
+  if (newPl.foundersBacked && newPl.foundersBacked.length > 0) {
+    newPl.foundersBacked.forEach(founder => {
+      const execution = founder.stats.execution || 50;
+      const vision = founder.stats.vision || 50;
+      const burnDiscipline = founder.stats.burnDiscipline || 50;
+      const returns = (execution * 100) + (vision * 150) + (burnDiscipline * 50);
+      totalFounderReturns += returns;
+    });
+  }
+  if (totalFounderReturns > 0) {
+    baseTotal += totalFounderReturns;
+    sources.push({
+      id: 'founders_backed',
+      name: 'Portfolio Returns',
+      category: 'BUSINESS',
+      amount: totalFounderReturns,
+      count: newPl.foundersBacked.length
+    });
+  }
+
   // --- MULTIPLIERS ---
   const isJailed = newPl.inJail === true || newPl.isIncarcerated === true;
   const legacyMultiplier = 1 + getLegacyBonus(newPl.legacyPoints || 0);
