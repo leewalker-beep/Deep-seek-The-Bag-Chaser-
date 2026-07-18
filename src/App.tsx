@@ -70,6 +70,7 @@ const SimpleFallback = lazy(() => import('./components/minigames/SimpleFallback'
 
 const CaptchaDrone = lazy(() => import('./components/minigames/CaptchaDrone').then(m => ({ default: m.CaptchaDrone })));
 const ClickbaitGame = lazy(() => import('./components/minigames/ClickbaitGame').then(m => ({ default: m.ClickbaitGame })));
+const TalentAgencyGame = lazy(() => import('./components/minigames/TalentAgencyGame').then(m => ({ default: m.TalentAgencyGame })));
 const SignSpinner = lazy(() => import('./components/minigames/SignSpinner').then(m => ({ default: m.SignSpinner })));
 const ReviewFarm = lazy(() => import('./components/minigames/ReviewFarm').then(m => ({ default: m.ReviewFarm })));
 const ConcertJam = lazy(() => import('./components/minigames/ConcertJam').then(m => ({ default: m.ConcertJam })));
@@ -143,8 +144,10 @@ const renderHustlePanel = (panelType: string, currentLevel: number, handleGameFi
             return <CaptchaDrone level={currentLevel} onComplete={handleGameFinished} />;
 
           case 'CLICKBAIT_GAME':
-          case 'TALENT_AGENT_GAME':
             return <ClickbaitGame level={currentLevel} onComplete={handleGameFinished} />;
+
+          case 'TALENT_AGENT_GAME':
+            return <TalentAgencyGame level={currentLevel} onComplete={handleGameFinished} />;
 
           case 'SIGN_SPINNER_GAME':
             return <SignSpinner level={currentLevel} onComplete={handleGameFinished} />;
@@ -1719,9 +1722,23 @@ function App() {
                 if (customPanelTypes.includes(hustle.panelType || '')) {
                   const hustleLevel = pl.hustleLevels[hustle.id] || 1;
                   return renderHustlePanel(hustle.panelType!, hustleLevel, (win) => {
-                    const multiplier = win ? 1.5 : 0.5;
+                    const isWinObject = typeof win === 'object';
+                    const isSuccess = isWinObject ? win.success : !!win;
+                    const multiplier = isWinObject ? win.multiplier : (win ? 1.5 : 0.5);
                     const result = executeHustle(hustle.id, multiplier);
                     if (result.success) {
+                      let signedCelebrity: any = null;
+                      if (isWinObject && win.celebrity) {
+                        signedCelebrity = win.celebrity;
+                        const store = useGameStore.getState();
+                        const currentRolodex = store.pl.rolodex || [];
+                        const updatedRolodex = [...currentRolodex, signedCelebrity];
+                        store.updatePl({
+                          rolodex: updatedRolodex
+                        });
+                        store.addTickerMessage(`🤝 SIGNED: New talent ${signedCelebrity.name} added to Rolodex! Starting Rel: ${signedCelebrity.relationshipScore}`, 'text-yellow-400 font-bold');
+                      }
+
                       setActiveHustleResult({
                         hustleId: hustle.id,
                         success: result.success,
@@ -1732,7 +1749,12 @@ function App() {
                         yieldAura: result.yieldAura,
                         mentalHit: result.mentalHit,
                         heatHit: result.heatHit,
-                      });
+                        ...(signedCelebrity ? {
+                          signedCelebrityName: signedCelebrity.name,
+                          signedCelebrityAvatar: signedCelebrity.avatar,
+                          relationshipScore: signedCelebrity.relationshipScore
+                        } : {})
+                      } as any);
                       forceUpdate();
                     }
                     setActiveHustleView(null);
@@ -1849,6 +1871,18 @@ function App() {
               value: activeHustleResult.mentalHit,
               colorClass: activeHustleResult.mentalHit >= 0 ? 'text-emerald-400' : 'text-red-400'
             },
+            ...((activeHustleResult as any).signedCelebrityName ? [
+              {
+                label: 'Signed Creator',
+                value: `${(activeHustleResult as any).signedCelebrityAvatar || '🎭'} ${(activeHustleResult as any).signedCelebrityName}`,
+                colorClass: 'text-yellow-400 font-black'
+              },
+              {
+                label: 'Starting Relationship',
+                value: `${(activeHustleResult as any).relationshipScore || 50}/100`,
+                colorClass: 'text-amber-400 font-black font-mono'
+              }
+            ] : [])
           ].filter(s => s.value !== 0)}
           onDismiss={() => {
             setActiveHustleResult(null);
