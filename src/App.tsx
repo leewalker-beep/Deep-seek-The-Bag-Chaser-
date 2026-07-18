@@ -112,6 +112,7 @@ import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPan
 import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
 import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
 import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
+import { GlobalConglomeratePanel } from './components/hustles/panels/GlobalConglomeratePanel';
 import { VCPanel } from './components/hustles/panels/VCPanel';
 import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
@@ -1692,6 +1693,9 @@ function App() {
                 }
                 if (hustle.panelType === 'REAL_ESTATE') {
                   return <RealEstatePanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'GLOBAL_CONGLOMERATE') {
+                  return <GlobalConglomeratePanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
                   return <VCPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;

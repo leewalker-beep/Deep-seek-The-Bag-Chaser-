@@ -546,6 +546,97 @@ const openMovieStrategy: HustleStrategy = (hustleId, state, marketType, levelDat
   return defaultStrategy(hustleId, state, marketType, customLevelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
 };
 
+const globalConglomerateStrategy: HustleStrategy = (_hustleId, state, _marketType, levelData, _currentLevel, _minigameMultiplier, _forceSuccess, _rivalThreat) => {
+  const ceos = state.conglomerateCEOs || {};
+  const divisions = [
+    { id: 'na_tech', name: 'NA Technology' },
+    { id: 'eu_mfg', name: 'EU Manufacturing' },
+    { id: 'apac_retail', name: 'APAC Retail' },
+    { id: 'latam_log', name: 'LATAM Logistics' }
+  ];
+
+  let totalYieldCash = 0;
+  let totalYieldClout = 0;
+  let totalYieldAura = 0;
+  let totalPassiveAdded = 0;
+  const tickerMessages: TickerMessage[] = [];
+
+  divisions.forEach(div => {
+    const ceo = ceos[div.id];
+    const baseCash = levelData.yieldCash / 4;
+    const baseClout = levelData.yieldClout / 4;
+    const baseAura = levelData.yieldAura / 4;
+    const basePassive = (levelData.passiveYield || 0) / 4;
+
+    let divMult = 0.5;
+    let scandalChance = 0;
+    let leakChance = 0;
+
+    if (ceo) {
+      const competenceMult = 0.5 + (ceo.competence / 100) * 1.0;
+      const loyaltyMult = 0.8 + (ceo.loyalty / 100) * 0.2;
+      const riskMult = 1.0 + (ceo.riskTolerance / 100) * 0.5;
+      divMult = competenceMult * loyaltyMult * riskMult;
+
+      scandalChance = (ceo.riskTolerance / 100) * 0.25;
+      if (ceo.loyalty < 40) {
+        leakChance = ((40 - ceo.loyalty) / 100) * 0.30;
+      }
+    }
+
+    let finalCash = Math.floor(baseCash * divMult);
+    const finalClout = Math.floor(baseClout * divMult);
+    const finalAura = Math.floor(baseAura * divMult);
+    const finalPassive = Math.floor(basePassive * divMult);
+
+    // Scandal check
+    if (ceo && Math.random() < scandalChance) {
+      const fine = Math.max(2000000, Math.floor(finalCash * 0.25));
+      finalCash = Math.max(0, finalCash - fine);
+      tickerMessages.push({
+        text: `🚨 SCANDAL: ${ceo.name} (${div.name}) exposed in a high-risk compliance failure! Fine: -$${fine.toLocaleString()} and gained +15 Heat.`,
+        colorClass: 'text-red-400 font-bold'
+      });
+    }
+
+    // Embezzlement leak check
+    if (ceo && leakChance > 0 && Math.random() < leakChance) {
+      const siphoned = Math.floor(finalCash * 0.15);
+      finalCash = Math.max(0, finalCash - siphoned);
+      tickerMessages.push({
+        text: `💸 LEAK: Suspicious offshore accounts linked to ${ceo.name} (${div.name}) siphoned -$${siphoned.toLocaleString()} from operations!`,
+        colorClass: 'text-orange-400 font-bold'
+      });
+    }
+
+    totalYieldCash += finalCash;
+    totalYieldClout += finalClout;
+    totalYieldAura += finalAura;
+    totalPassiveAdded += finalPassive;
+  });
+
+  let extraHeat = 0;
+  tickerMessages.forEach(m => {
+    if (m.text.includes('Heat')) {
+      extraHeat += 15;
+    }
+  });
+
+  return {
+    success: true,
+    netChange: totalYieldCash - levelData.cost,
+    message: '',
+    cost: levelData.cost,
+    yieldCash: totalYieldCash,
+    yieldClout: totalYieldClout,
+    yieldAura: totalYieldAura,
+    mentalHit: levelData.mentalHit || -15,
+    heatHit: 5 + extraHeat,
+    passiveAdded: totalPassiveAdded,
+    tickerMessages
+  };
+};
+
 export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   festival: festivalStrategy,
   philanthropy_empire: philanthropyStrategy,
@@ -563,6 +654,7 @@ export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   open_island: openIslandStrategy,
   open_sports_league: openSportsLeagueStrategy,
   open_movie: openMovieStrategy,
+  h_global_conglomerate: globalConglomerateStrategy,
 };
 
 export const getHustleStrategy = (hustleId: string): HustleStrategy => {

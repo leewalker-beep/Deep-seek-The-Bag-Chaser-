@@ -916,10 +916,12 @@ HUSTLES.h_global_conglomerate = {
   tier: 'ELITE',
   icon: '🏢',
   description: 'Manage a massive global conglomerate with extensive industrial and retail operations.',
-  basePayout: 45000,
-  baseClout: 500,
-  mentalHealthCost: 20,
+  hasPanel: true,
+  panelType: 'GLOBAL_CONGLOMERATE',
+  miniGame: 'BoardroomBattle',
   levels: [
-    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 0 }
+    { level: 1, reqClout: 0, cloutReq: 0, multiplier: 1.0, auraReq: 0, cost: 15000000, yieldCash: 30000000, yieldClout: 100, yieldAura: 80, mentalHit: -15, passiveYield: 2500000 },
+    { level: 2, reqClout: 1000, cloutReq: 1000, multiplier: 1.0, auraReq: 1000, cost: 50000000, yieldCash: 110000000, yieldClout: 250, yieldAura: 200, mentalHit: -20, passiveYield: 8000000 },
+    { level: 3, reqClout: 3000, cloutReq: 3000, multiplier: 1.0, auraReq: 3000, cost: 150000000, yieldCash: 350000000, yieldClout: 600, yieldAura: 500, mentalHit: -25, passiveYield: 25000000 }
   ]
 };
