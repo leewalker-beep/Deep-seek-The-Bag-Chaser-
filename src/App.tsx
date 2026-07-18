@@ -115,6 +115,7 @@ import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
 import { VCPanel } from './components/hustles/panels/VCPanel';
 import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
+import { FundMoviePanel } from './components/panels/FundMoviePanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
 import { RestPanel } from './components/panels/RestPanel';
@@ -1697,6 +1698,9 @@ function App() {
                 }
                 if (hustle.panelType === 'FILM_STUDIO') {
                   return <FilmStudioPanel hustle={hustle} />;
+                }
+                if (hustle.panelType === 'FUND_MOVIE') {
+                  return <FundMoviePanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'SPACE_INVESTMENT') {
                   return <SpaceInvestmentPanel hustle={hustle} />;

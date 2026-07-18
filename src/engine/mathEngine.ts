@@ -456,10 +456,13 @@ export function calculateHustleStatsAdditive(
 
   const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus + repYieldBonus;
 
+  // Globally limit the total cash yield multiplier to prevent extreme scaling/exploit (capped at 10.0x max multiplier)
+  const cappedTotalMultiplier = Math.min(10.0, totalMultiplier);
+
   // Stress / Mental Health work efficiency impact
   const efficiencyMult = player.mentalHealth < 50 ? 0.75 + 0.25 * (player.mentalHealth / 50) : 1.0;
 
-  effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * totalMultiplier * specMatchingBonus * efficiencyMult));
+  effectiveResult.yieldCash = Math.max(0, Math.floor(baseYield * cappedTotalMultiplier * specMatchingBonus * efficiencyMult));
 
   // --- Centralized Clout/Aura Yield Linear Multiplier ---
   const totalCloutMultiplier = (1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus + repCloutBonus) * specMatchingBonus * efficiencyMult;

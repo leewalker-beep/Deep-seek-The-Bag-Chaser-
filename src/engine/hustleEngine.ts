@@ -537,6 +537,16 @@ const openSportsLeagueStrategy: HustleStrategy = (hustleId, state, marketType, l
   }
   return result;
 };
+
+const openMovieStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
+  // Let's set a base cash yield of 100,000,000 so the movie actually generates box office returns
+  const customLevelData = {
+    ...levelData,
+    yieldCash: 100000000
+  };
+  return defaultStrategy(hustleId, state, marketType, customLevelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+};
+
 export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   festival: festivalStrategy,
   philanthropy_empire: philanthropyStrategy,
@@ -553,6 +563,7 @@ export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   space_investment: spaceInvestmentStrategy,
   open_island: openIslandStrategy,
   open_sports_league: openSportsLeagueStrategy,
+  open_movie: openMovieStrategy,
 };
 
 export const getHustleStrategy = (hustleId: string): HustleStrategy => {
