@@ -507,6 +507,19 @@ export interface CabinetMember extends RosterCharacter {
   loyaltyMonths?: number;
 }
 
+export interface RegionalExecutive extends RosterCharacter {
+  id: string;
+  name: string;
+  avatar?: string;
+  avatarId?: string;
+  assignedDivision?: string; // e.g. "APAC Retail", "EU Manufacturing", "NA Technology", "LATAM Logistics"
+  competence: number; // 0-100
+  loyalty: number; // 0-100
+  riskTolerance: number; // 0-100
+  bio?: string;
+  personalityTraits?: string[];
+}
+
 export interface PresidentialActivityChoice {
   id: string;
   label: string;
@@ -791,6 +804,8 @@ export interface PlayerStats {
   };
   rolodex: RolodexCelebrity[];
   foundersBacked: Founder[];
+  conglomerateCEOs?: Record<string, RegionalExecutive>;
+  conglomerateCandidates?: RegionalExecutive[];
   npcs?: PersistentNPC[];
   rareTechStockpile: number;
   algorithmicLogs: number;
@@ -1069,6 +1084,8 @@ export interface GameState {
   issueExecutiveOrder: (orderId: string) => void;
   appointCabinetMember: (member: CabinetMember) => void;
   fireCabinetMember: (roleId: string) => void;
+  appointConglomerateCEO?: (divisionId: string, member: RegionalExecutive) => void;
+  fireConglomerateCEO?: (divisionId: string) => void;
   resolveCrisis: (crisisId: string) => void;
   investPersonalFunds: (amount: number) => void;
   advancePresidentialMonth: () => void;

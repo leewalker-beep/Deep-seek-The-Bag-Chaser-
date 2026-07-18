@@ -54,6 +54,8 @@ export const getInitialStats = (
     },
     rolodex: [],
     foundersBacked: [],
+    conglomerateCEOs: {},
+    conglomerateCandidates: [],
     npcs: [],
     rareTechStockpile: 0,
     algorithmicLogs: 0,

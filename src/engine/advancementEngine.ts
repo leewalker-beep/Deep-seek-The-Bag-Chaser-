@@ -541,6 +541,42 @@ export function advanceMonth(
     newPl.heat = Math.max(0, newPl.heat - heatDecay);
   }
 
+  // Conglomerate Divisional CEO Monthly Scandals / Leaks
+  if (newPl.conglomerateCEOs) {
+    const ceos = newPl.conglomerateCEOs;
+    const divisions = [
+      { id: 'na_tech', name: 'NA Technology' },
+      { id: 'eu_mfg', name: 'EU Manufacturing' },
+      { id: 'apac_retail', name: 'APAC Retail' },
+      { id: 'latam_log', name: 'LATAM Logistics' }
+    ];
+
+    divisions.forEach(div => {
+      const ceo = ceos[div.id];
+      if (ceo) {
+        const scandalChance = (ceo.riskTolerance / 100) * 0.10; // Capped at 10% chance per month passively
+        const leakChance = ceo.loyalty < 40 ? ((40 - ceo.loyalty) / 100) * 0.15 : 0;
+
+        if (Math.random() < scandalChance) {
+          const fine = 2500000;
+          newPl.bag = Math.max(0, newPl.bag - fine);
+          newPl.heat = Math.min(100, newPl.heat + 10);
+          news.push({
+            text: `⚠️ CONGLOMERATE SCANDAL: ${ceo.name} (${div.name}) caused a compliance breach! Fined $${fine.toLocaleString()} and gained +10 Heat.`,
+            colorClass: 'text-red-400 font-bold'
+          });
+        } else if (leakChance > 0 && Math.random() < leakChance) {
+          const siphoned = 750000;
+          newPl.bag = Math.max(0, newPl.bag - siphoned);
+          news.push({
+            text: `💸 CONGLOMERATE LEAK: Undisclosed accounts linked to ${ceo.name} (${div.name}) siphoned $${siphoned.toLocaleString()}!`,
+            colorClass: 'text-orange-400 font-bold'
+          });
+        }
+      }
+    });
+  }
+
   // Rival AI Updates (Simulated via new robust emergent rivalSimEngine)
   if (newPl.rivals) {
     newPl.rivalThreats = {};

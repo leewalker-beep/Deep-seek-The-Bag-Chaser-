@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PlayerStats, RecordLabelArtist, PersistentNPC } from '../../types/game';
+import type { GameState, PlayerStats, RecordLabelArtist, PersistentNPC, RegionalExecutive } from '../../types/game';
 import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
@@ -7,6 +7,7 @@ import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
 import * as Bio from '../../engine/biographyEngine';
 import { generateGlobalNPC } from '../../config/world/npcRegistry';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
+import { HUSTLES } from '../../config/hustles/base';
 
 export interface PlayerStatsSlice {
   pl: PlayerStats;
@@ -23,6 +24,8 @@ export interface PlayerStatsSlice {
   setRealEstateChoices: (type: PlayerStats['realEstateType'], leverage: PlayerStats['realEstateLeverage'], strategy: PlayerStats['realEstateStrategy']) => void;
   setVCChoices: (stage: PlayerStats['vcStage'], sector: PlayerStats['vcSector'], investment: number) => void;
   setFilmChoices: (genre: 'action' | 'comedy' | 'drama', budget: 'low' | 'medium' | 'high') => void;
+  appointConglomerateCEO: (divisionId: string, member: RegionalExecutive) => void;
+  fireConglomerateCEO: (divisionId: string) => void;
   setSpaceCompany: (company: 'asteroid' | 'tourism' | 'mining') => void;
   setPhilanthropyDonation: (amount: number) => void;
   setCampaignStage: (stage: number) => void;
@@ -119,6 +122,113 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     set((state) => ({
       pl: { ...state.pl, filmGenre: genre, filmBudget: budget }
     }));
+  },
+
+  appointConglomerateCEO: (divisionId, member) => {
+    set((state) => {
+      const ceos = { ...(state.pl.conglomerateCEOs || {}) };
+      const currentCandidatePool = [...(state.pl.conglomerateCandidates || [])];
+
+      // If there was a previous CEO in this division, return them to the candidate pool
+      const previousCEO = ceos[divisionId];
+      let updatedCandidates = currentCandidatePool.filter(c => c.id !== member.id);
+      if (previousCEO) {
+        const returnedCEO = { ...previousCEO };
+        delete returnedCEO.assignedDivision;
+        updatedCandidates.push(returnedCEO);
+      }
+
+      // Assign division to new CEO
+      const appointedCEO = { ...member, assignedDivision: divisionId };
+      ceos[divisionId] = appointedCEO;
+
+      // Update passive income immediately
+      const currentLevel = state.pl.hustleLevels['h_global_conglomerate'] || 1;
+      const hustle = HUSTLES['h_global_conglomerate'];
+      const levelData = hustle?.levels?.find(l => l.level === currentLevel) || { passiveYield: 2500000 };
+      const basePassive = levelData.passiveYield || 0;
+
+      const divisions = ['na_tech', 'eu_mfg', 'apac_retail', 'latam_log'];
+      let totalPassive = 0;
+      divisions.forEach(id => {
+        const activeCeo = ceos[id];
+        const baseShare = basePassive / 4;
+        let mult = 0.5;
+        if (activeCeo) {
+          const compMult = 0.5 + (activeCeo.competence / 100) * 1.0;
+          const loyMult = 0.8 + (activeCeo.loyalty / 100) * 0.2;
+          const riskMult = 1.0 + (activeCeo.riskTolerance / 100) * 0.5;
+          mult = compMult * loyMult * riskMult;
+        }
+        totalPassive += Math.floor(baseShare * mult);
+      });
+
+      const dynamicPassives = {
+        ...(state.pl.dynamicPassives || {}),
+        'h_global_conglomerate': totalPassive
+      };
+
+      return {
+        pl: enforceStatCaps({
+          ...state.pl,
+          conglomerateCEOs: ceos,
+          conglomerateCandidates: updatedCandidates,
+          dynamicPassives
+        })
+      };
+    });
+  },
+
+  fireConglomerateCEO: (divisionId) => {
+    set((state) => {
+      const ceos = { ...(state.pl.conglomerateCEOs || {}) };
+      const currentCandidatePool = [...(state.pl.conglomerateCandidates || [])];
+
+      const previousCEO = ceos[divisionId];
+      if (!previousCEO) return {};
+
+      // Remove division assignment and return to candidates
+      const returnedCEO = { ...previousCEO };
+      delete returnedCEO.assignedDivision;
+      const updatedCandidates = [...currentCandidatePool, returnedCEO];
+
+      delete ceos[divisionId];
+
+      // Re-calculate new conglomerate passive yield
+      const currentLevel = state.pl.hustleLevels['h_global_conglomerate'] || 1;
+      const hustle = HUSTLES['h_global_conglomerate'];
+      const levelData = hustle?.levels?.find(l => l.level === currentLevel) || { passiveYield: 2500000 };
+      const basePassive = levelData.passiveYield || 0;
+
+      const divisions = ['na_tech', 'eu_mfg', 'apac_retail', 'latam_log'];
+      let totalPassive = 0;
+      divisions.forEach(id => {
+        const activeCeo = ceos[id];
+        const baseShare = basePassive / 4;
+        let mult = 0.5;
+        if (activeCeo) {
+          const compMult = 0.5 + (activeCeo.competence / 100) * 1.0;
+          const loyMult = 0.8 + (activeCeo.loyalty / 100) * 0.2;
+          const riskMult = 1.0 + (activeCeo.riskTolerance / 100) * 0.5;
+          mult = compMult * loyMult * riskMult;
+        }
+        totalPassive += Math.floor(baseShare * mult);
+      });
+
+      const dynamicPassives = {
+        ...(state.pl.dynamicPassives || {}),
+        'h_global_conglomerate': totalPassive
+      };
+
+      return {
+        pl: enforceStatCaps({
+          ...state.pl,
+          conglomerateCEOs: ceos,
+          conglomerateCandidates: updatedCandidates,
+          dynamicPassives
+        })
+      };
+    });
   },
 
   setSpaceCompany: (company) => {
