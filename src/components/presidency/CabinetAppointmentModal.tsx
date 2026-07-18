@@ -3,6 +3,7 @@ import { CinematicModal } from '../ui/CinematicModal';
 import { PortraitCard } from '../ui/PortraitCard';
 import type { CabinetMember } from '../../types/game';
 import { motion } from 'framer-motion';
+import { RosterSelectList } from '../ui/RosterSelectList';
 
 interface CabinetAppointmentModalProps {
   isOpen: boolean;
@@ -41,15 +42,18 @@ export const CabinetAppointmentModal: React.FC<CabinetAppointmentModalProps> = (
         • <span className="text-white font-bold">Corruption Risk:</span> Chance of inducing heavy legal heat & public backlash crises.
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
-        {candidates.map((candidate, idx) => (
+      <RosterSelectList
+        roster={candidates}
+        onSelect={onSelect}
+        containerClassName="grid grid-cols-1 md:grid-cols-3 gap-6 p-4"
+        renderCard={(candidate, handleSelect, idx) => (
           <motion.div
             key={candidate.id + idx}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col items-center hover:border-blue-500/50 transition-colors group cursor-pointer"
-            onClick={() => onSelect(candidate)}
+            onClick={handleSelect}
           >
             <PortraitCard
               avatarId={candidate.avatarId}
@@ -100,8 +104,8 @@ export const CabinetAppointmentModal: React.FC<CabinetAppointmentModalProps> = (
               </button>
             </div>
           </motion.div>
-        ))}
-      </div>
+        )}
+      />
     </CinematicModal>
   );
 };

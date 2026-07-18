@@ -1,5 +1,13 @@
 export type Tier = 'MUD' | 'STREET' | 'STARTUP' | 'CORPORATE' | 'ELITE' | 'MOGUL' | 'PRESIDENT' | 'OPEN';
 
+export interface RosterCharacter {
+  id: string;
+  name: string;
+  avatar?: string;
+  avatarId?: string;
+  stats?: Record<string, number>;
+}
+
 export interface WorldEventInstance {
   eventId: string;
   monthsRemaining: number;
@@ -265,7 +273,7 @@ export interface GameAction {
   variation?: number;
 }
 
-export interface Artist {
+export interface Artist extends RosterCharacter {
   id: string;
   name: string;
   tier: 'local' | 'regional' | 'global';
@@ -285,7 +293,7 @@ export interface RecordLabelArtist extends Artist {
   isTargetedByRival: boolean;
 }
 
-export interface RolodexCelebrity {
+export interface RolodexCelebrity extends RosterCharacter {
   id: string;
   name: string;
   avatar: string;
@@ -454,7 +462,7 @@ export interface Badge {
   relevantTier?: Tier;
 }
 
-export interface CabinetMember {
+export interface CabinetMember extends RosterCharacter {
   id: string; // Role ID (e.g., 'treasury')
   name: string;
   role: string; // Display name of role

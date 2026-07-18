@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 import { ProgressBar } from '../ui/ProgressBar';
+import { RosterSelectList } from '../ui/RosterSelectList';
 
 interface FundMoviePanelProps {
   hustle: Hustle;
@@ -230,8 +231,10 @@ export const FundMoviePanel: React.FC<FundMoviePanelProps> = ({ hustle }) => {
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
-                {currentRolodex.map((celeb) => {
+              <RosterSelectList
+                roster={currentRolodex}
+                onSelect={handleSelectCelebrity}
+                renderCard={(celeb, handleSelect) => {
                   const score = celeb.relationshipScore || 0;
                   let perkText = "Difficult to work with. High flop risk.";
                   let perkColor = "text-red-400";
@@ -250,7 +253,7 @@ export const FundMoviePanel: React.FC<FundMoviePanelProps> = ({ hustle }) => {
                   return (
                     <div
                       key={celeb.id}
-                      onClick={() => handleSelectCelebrity(celeb)}
+                      onClick={handleSelect}
                       className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-purple-500/80 cursor-pointer transition-all flex items-center justify-between gap-4 group"
                     >
                       <div className="flex items-center gap-3">
@@ -280,8 +283,8 @@ export const FundMoviePanel: React.FC<FundMoviePanelProps> = ({ hustle }) => {
                       </div>
                     </div>
                   );
-                })}
-              </div>
+                }}
+              />
             </div>
           )}
         </div>
