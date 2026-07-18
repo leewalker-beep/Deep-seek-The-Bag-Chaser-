@@ -394,7 +394,7 @@ const realEstateEmpireStrategy: HustleStrategy = (_hustleId, state, marketType, 
   };
 };
 
-const ventureCapitalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, _minigameMultiplier, _forceSuccess) => {
+const ventureCapitalStrategy: HustleStrategy = (_hustleId, state, marketType, _levelData, _currentLevel, _minigameMultiplier, forceSuccess) => {
   const market = MARKET_CONFIGS[marketType];
   const stage = state.vcStage;
   const sector = state.vcSector;
@@ -411,11 +411,10 @@ const ventureCapitalStrategy: HustleStrategy = (_hustleId, state, marketType, _l
 
   let yieldCash = 0;
   const outcomeRoll = Math.random();
-  let success = false;
+  let success = forceSuccess !== undefined ? forceSuccess : (outcomeRoll > stageData.failRate);
   const tickerMessages = [];
 
-  if (outcomeRoll > stageData.failRate) {
-    success = true;
+  if (success) {
     const successTypeRoll = Math.random();
     let exitMult;
     if (successTypeRoll < 0.25) {

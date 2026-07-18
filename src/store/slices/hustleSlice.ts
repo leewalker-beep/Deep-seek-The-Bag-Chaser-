@@ -1,5 +1,21 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata } from '../../types/game';
+import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata, Founder } from '../../types/game';
+
+const FOUNDER_FIRST_NAMES = ["Alex", "Jordan", "Taylor", "Casey", "Morgan", "Sam", "Jamie", "Robin", "Drew", "Skyler"];
+const FOUNDER_LAST_NAMES = ["Chen", "Smith", "Altman", "Musk", "Jobs", "Wozniak", "Thiel", "Horowitz", "Andreessen", "Page"];
+const COMPANY_PREFIXES = ["Quantum", "Cyber", "Bio", "Neuro", "Opti", "Apex", "Synapse", "Aether", "Omni", "Vortex"];
+const COMPANY_SUFFIXES = ["AI", "Tech", "Labs", "Systems", "Solutions", "Dynamics", "Networks", "Genetics", "Robotics"];
+const PITCH_IDEAS = [
+  "Decentralized cloud computing platform for autonomous drones.",
+  "AI-powered medical diagnostics utilizing bio-feedback sensors.",
+  "Next-generation solid-state battery tech for electric vehicles.",
+  "Neuro-link interface for seamless virtual reality immersion.",
+  "Algae-based sustainable protein synthesis and distribution.",
+  "Predictive quantum algorithms for global supply chain optimization.",
+  "Automated micro-retail storefronts utilizing robotic sorting.",
+  "Carbon-negative synthetic building materials from atmospheric CO2."
+];
+const FOUNDER_AVATARS = ["👓", "🧠", "💻", "🚀", "🕶️", "💼", "🤖", "👔"];
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
@@ -1118,8 +1134,52 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     newTierStats[tier].favoriteHustle = favorite;
 
+    let updatedFounders: Founder[] = [...(state.pl.foundersBacked || [])];
+    if (hustleId === 'venture_capital' && result.success) {
+      const performanceFactor = minigameMultiplier || 1.0;
+      const performanceBonus = Math.floor((performanceFactor - 1.0) * 15);
+
+      const execution = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
+      const vision = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
+      const burnDiscipline = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
+
+      const firstName = FOUNDER_FIRST_NAMES[Math.floor(Math.random() * FOUNDER_FIRST_NAMES.length)];
+      const lastName = FOUNDER_LAST_NAMES[Math.floor(Math.random() * FOUNDER_LAST_NAMES.length)];
+      const companyPrefix = COMPANY_PREFIXES[Math.floor(Math.random() * COMPANY_PREFIXES.length)];
+      const companySuffix = COMPANY_SUFFIXES[Math.floor(Math.random() * COMPANY_SUFFIXES.length)];
+      const pitchIdea = PITCH_IDEAS[Math.floor(Math.random() * PITCH_IDEAS.length)];
+      const avatar = FOUNDER_AVATARS[Math.floor(Math.random() * FOUNDER_AVATARS.length)];
+
+      const founderName = `${firstName} ${lastName}`;
+      const companyName = `${companyPrefix}${companySuffix}`;
+      const id = `founder_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+      const newFounder: Founder = {
+        id,
+        name: founderName,
+        avatar,
+        companyName,
+        pitchIdea,
+        followOnCount: 0,
+        stats: {
+          execution,
+          vision,
+          burnDiscipline,
+        }
+      };
+
+      updatedFounders.push(newFounder);
+
+      if (!result.tickerMessages) result.tickerMessages = [];
+      result.tickerMessages.push({
+        text: `🤝 DEAL CLOSED: Backed ${founderName} (${companyName})! Exec: ${execution}, Vis: ${vision}, Burn: ${burnDiscipline}`,
+        colorClass: 'text-yellow-400 font-bold'
+      });
+    }
+
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
+      foundersBacked: updatedFounders,
       rareTechStockpile: (state.pl.rareTechStockpile || 0) + (result.success && (hustleId === 'r_scrap' || hustleId === 'techFlip') ? 1 : 0),
       algorithmicLogs: (state.pl.algorithmicLogs || 0) + (result.success && (hustleId === 'r_delivery' || hustleId === 'cleaning') ? 1 : 0),
       annualCashEarned: state.pl.annualCashEarned + Math.max(0, result.yieldCash || 0),

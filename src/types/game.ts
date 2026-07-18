@@ -8,6 +8,21 @@ export interface RosterCharacter {
   stats?: Record<string, number>;
 }
 
+export interface Founder extends RosterCharacter {
+  id: string;
+  name: string;
+  avatar: string;
+  companyName: string;
+  pitchIdea: string;
+  followOnCount?: number;
+  stats: {
+    execution: number;
+    vision: number;
+    burnDiscipline: number;
+    [key: string]: number;
+  };
+}
+
 export interface WorldEventInstance {
   eventId: string;
   monthsRemaining: number;
@@ -775,6 +790,7 @@ export interface PlayerStats {
     logisticsBonus?: number;
   };
   rolodex: RolodexCelebrity[];
+  foundersBacked: Founder[];
   npcs?: PersistentNPC[];
   rareTechStockpile: number;
   algorithmicLogs: number;
