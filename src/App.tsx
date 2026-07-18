@@ -1723,7 +1723,6 @@ function App() {
                   const hustleLevel = pl.hustleLevels[hustle.id] || 1;
                   return renderHustlePanel(hustle.panelType!, hustleLevel, (win) => {
                     const isWinObject = typeof win === 'object';
-                    const isSuccess = isWinObject ? win.success : !!win;
                     const multiplier = isWinObject ? win.multiplier : (win ? 1.5 : 0.5);
                     const result = executeHustle(hustle.id, multiplier);
                     if (result.success) {
