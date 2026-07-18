@@ -51,7 +51,7 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
 
   const handleMatchComplete = (
     isWin: boolean,
-    multiplier: number,
+    _multiplier: number,
     timeLeft: number,
     mismatches: number
   ) => {
@@ -85,10 +85,10 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
 
   const renderGameOverOverlay = (
     isWin: boolean,
-    multiplier: number,
+    _multiplier: number,
     mismatches: number,
     pairsCount: number,
-    timeLeft: number,
+    _timeLeft: number,
     extraData?: any
   ) => {
     const talent = extraData?.celebrity || signedTalent;
