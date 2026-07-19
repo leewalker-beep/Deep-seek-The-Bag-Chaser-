@@ -169,12 +169,22 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
         'h_global_conglomerate': totalPassive
       };
 
+      let updatedBiography = [...(state.pl.biography || [])];
+      let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+      const bioUpdate = Bio.recordCEOAppointment(state.pl, member.name, divisionId);
+      if (bioUpdate) {
+        updatedBiography.push(bioUpdate.entry);
+        updatedRecordedBioKeys.push(bioUpdate.key!);
+      }
+
       return {
         pl: enforceStatCaps({
           ...state.pl,
           conglomerateCEOs: ceos,
           conglomerateCandidates: updatedCandidates,
-          dynamicPassives
+          dynamicPassives,
+          biography: updatedBiography,
+          recordedBioKeys: updatedRecordedBioKeys
         })
       };
     });
@@ -389,6 +399,15 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
 
     if (isFirstEmployee) {
       plFinalArtist = processWorldReaction(plFinalArtist, 'FIRST_EMPLOYEE', { hustleName: 'Record Label' }).updatedPl;
+    }
+
+    const bioUpdate = Bio.recordArtistSigning(plFinalArtist, artist.name, artist.tier);
+    if (bioUpdate) {
+      plFinalArtist = {
+        ...plFinalArtist,
+        biography: [...(plFinalArtist.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(plFinalArtist.recordedBioKeys || []), bioUpdate.key!]
+      };
     }
 
     set({

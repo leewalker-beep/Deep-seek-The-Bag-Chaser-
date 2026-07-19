@@ -238,3 +238,84 @@ export const recordLegacyUnlock = (pl: PlayerStats, upgradeName: string): Biogra
     'Monument Built'
   );
 };
+
+export const recordArtistBooking = (pl: PlayerStats, name: string, level: number): BiographyUpdate | null => {
+  const venues = ['Club Tour', 'Headline Stadium'];
+  const venue = venues[level - 1] || 'Festival Circuit';
+  return recordEvent(
+    pl,
+    `Booked ${name} for a live performance at the ${venue}, driving massive grassroots fan engagement.`,
+    `book_artist_${name.replace(/\s+/g, '_').toLowerCase()}_lvl_${level}`,
+    'CAREER',
+    3,
+    'Artist Booked for Gig',
+    [name]
+  );
+};
+
+export const recordArtistSigning = (pl: PlayerStats, name: string, tier: string): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Signed ${tier} artist ${name} to a music label contract, expanding the creative roster.`,
+    `sign_artist_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Artist Signed to Label',
+    [name]
+  );
+};
+
+export const recordTalentSigning = (pl: PlayerStats, name: string, relationship: number): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Signed high-profile talent ${name} to the agency roster with an initial chemistry rating of ${relationship}/100.`,
+    `sign_talent_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Talent Signed',
+    [name]
+  );
+};
+
+export const recordMovieCasting = (pl: PlayerStats, actorName: string, movieTitle: string, rating: string): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Cast ${actorName} in "${movieTitle}", which went on to become a ${rating.toLowerCase()} at the box office.`,
+    `cast_movie_${movieTitle.replace(/\s+/g, '_').toLowerCase()}_${actorName.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Movie Cast & Released',
+    [actorName]
+  );
+};
+
+export const recordFounderBacked = (pl: PlayerStats, name: string, companyName: string): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Invested venture capital into backed founder ${name}, seeding the growth of ${companyName}.`,
+    `back_founder_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'BUSINESS',
+    3,
+    'Founder Backed',
+    [name]
+  );
+};
+
+export const recordCEOAppointment = (pl: PlayerStats, name: string, division: string): BiographyUpdate | null => {
+  const divisionNames: Record<string, string> = {
+    'na_tech': 'North America Technology',
+    'eu_mfg': 'Europe Manufacturing',
+    'apac_retail': 'Asia-Pacific Retail',
+    'latam_log': 'Latin America Logistics'
+  };
+  const divisionName = divisionNames[division] || division;
+  return recordEvent(
+    pl,
+    `Appointed ${name} as Regional CEO of the ${divisionName} division.`,
+    `appoint_ceo_${name.replace(/\s+/g, '_').toLowerCase()}_${division}`,
+    'BUSINESS',
+    3,
+    'Regional CEO Appointed',
+    [name]
+  );
+};

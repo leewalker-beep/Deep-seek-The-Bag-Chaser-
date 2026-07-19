@@ -1138,6 +1138,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
     newTierStats[tier].favoriteHustle = favorite;
 
+    let updatedBiography = [...(state.pl.biography || [])];
+    let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+
     let updatedFounders: Founder[] = [...(state.pl.foundersBacked || [])];
     if (hustleId === 'venture_capital' && result.success) {
       const performanceFactor = minigameMultiplier || 1.0;
@@ -1174,6 +1177,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       updatedFounders.push(newFounder);
 
+      const bioUpdate = Bio.recordFounderBacked(state.pl, founderName, companyName);
+      if (bioUpdate) {
+        updatedBiography.push(bioUpdate.entry);
+        updatedRecordedBioKeys.push(bioUpdate.key!);
+      }
+
       if (!result.tickerMessages) result.tickerMessages = [];
       result.tickerMessages.push({
         text: `🤝 DEAL CLOSED: Backed ${founderName} (${companyName})! Exec: ${execution}, Vis: ${vision}, Burn: ${burnDiscipline}`,
@@ -1184,6 +1193,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
       foundersBacked: updatedFounders,
+      biography: updatedBiography,
+      recordedBioKeys: updatedRecordedBioKeys,
       rareTechStockpile: (state.pl.rareTechStockpile || 0) + (result.success && (hustleId === 'r_scrap' || hustleId === 'techFlip') ? 1 : 0),
       algorithmicLogs: (state.pl.algorithmicLogs || 0) + (result.success && (hustleId === 'r_delivery' || hustleId === 'cleaning') ? 1 : 0),
       annualCashEarned: state.pl.annualCashEarned + Math.max(0, result.yieldCash || 0),
@@ -2878,6 +2889,13 @@ export const completeConcertPerformanceWithLineup = (draftPl: any, score: number
     }
     return artist;
   });
+
+  const lineupNames = lineup.map((a: any) => a.name).join(', ');
+  const bioUpdate = Bio.recordArtistBooking(draftPl, lineupNames, gigLevel);
+  if (bioUpdate) {
+    draftPl.biography = [...(draftPl.biography || []), bioUpdate.entry];
+    draftPl.recordedBioKeys = [...(draftPl.recordedBioKeys || []), bioUpdate.key!];
+  }
 
   newsFeed.unshift(`🎉 LIVE WRAP: Show complete! Your chosen lineup generated $${ticketSalesPayoff} in revenue. Performers gained +${individualHypeBoost}x Hype!`);
 };

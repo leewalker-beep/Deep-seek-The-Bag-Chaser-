@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
+import * as Bio from '../../engine/biographyEngine';
 import type { Hustle } from '../../config/hustles/base';
 import { ProgressBar } from '../ui/ProgressBar';
 import { RosterSelectList } from '../ui/RosterSelectList';
@@ -141,6 +142,20 @@ export const FundMoviePanel: React.FC<FundMoviePanelProps> = ({ hustle }) => {
 
       // Execute hustle directly in Zustand store
       const result = executeHustle(hustle.id, finalMultiplier);
+
+      const state = useGameStore.getState();
+      const bioUpdate = Bio.recordMovieCasting(
+        state.pl,
+        selectedCelebrity.name,
+        movieTitle || customTitle || 'The Mystery Film',
+        rating
+      );
+      if (bioUpdate) {
+        state.updatePl({
+          biography: [...(state.pl.biography || []), bioUpdate.entry],
+          recordedBioKeys: [...(state.pl.recordedBioKeys || []), bioUpdate.key!]
+        });
+      }
 
       // Extract generated quotes/reviews
       const ratingKey = rating === 'CRITICAL FLOP' ? 'flop' :
