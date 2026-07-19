@@ -55,3 +55,20 @@ export const getRivalRosterProfile = (rival: Rival): RivalRosterProfile => {
     riskTolerance,
   };
 };
+
+/**
+ * Checks if a Rival is eligible to be recruited as an ally.
+ * Eligibility requires the rival to not already be recruited, and to meet one of the following criteria:
+ * - relationshipWithPlayer >= 40
+ * - sabotagedCount >= 3
+ * - helpedCount >= 3
+ */
+export const isRivalEligibleForRecruit = (rival: Rival): boolean => {
+  if (rival.status === 'ally') {
+    return false;
+  }
+  const rel = rival.relationshipWithPlayer ?? 0;
+  const sab = rival.sabotagedCount ?? 0;
+  const help = rival.helpedCount ?? 0;
+  return rel >= 40 || sab >= 3 || help >= 3;
+};

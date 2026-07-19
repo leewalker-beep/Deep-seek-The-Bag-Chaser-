@@ -140,6 +140,12 @@ export interface RivalCounterBidMetadata {
   cost: number;
 }
 
+export interface RivalRecruitedMetadata {
+  type: 'RIVAL_RECRUITED';
+  rivalId: string;
+  rivalName: string;
+}
+
 export interface ScandalTriggeredMetadata {
   type: 'DATA_BREACH' | 'POLICE_RAID_RISK';
   heat?: number;
@@ -154,7 +160,8 @@ export type SpecialEventMetadata =
   | MediaExpansionMetadata
   | RivalRetaliationMetadata
   | RivalSabotageMetadata
-  | RivalCounterBidMetadata;
+  | RivalCounterBidMetadata
+  | RivalRecruitedMetadata;
 
 export interface MarketWinMetadata {
   type: 'VC_EXIT' | 'TRADE_SUCCESS';
@@ -329,6 +336,7 @@ export interface Rival {
   vengeance?: number; // Multiplier for aggressive bidding chance
   currentHustle?: string;
   specialty?: string;
+  status?: CharacterStatus;
 
   // Persistent personality traits
   riskTolerance?: number;       // 0 to 1
@@ -1116,6 +1124,7 @@ export interface GameState {
   sabotageRival: (rivalId: string) => void;
   helpRival?: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
+  recruitRival?: (rivalId: string) => boolean;
   setTutorialSkipped: (skipped: boolean) => void;
   bankedLegacyPoints: number;
   unlockedLegacyUpgradeIds: string[];

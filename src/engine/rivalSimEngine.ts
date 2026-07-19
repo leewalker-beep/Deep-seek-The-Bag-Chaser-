@@ -163,6 +163,10 @@ export const simulateRivals = (
       });
 
       // Execute Best Personality Action
+      if (bestAction === 'HOSTILE_COMPETITION' && r.status === 'ally') {
+        bestAction = 'START_BUSINESS';
+      }
+
       if (bestAction === 'EXPAND_INDUSTRY') {
         const allPossibleSectors = ['Food', 'Retail', 'Technology', 'Finance', 'Real Estate', 'Entertainment', 'Politics'];
         const unowned = allPossibleSectors.filter(s => !r.industries!.includes(s));
@@ -272,42 +276,44 @@ export const simulateRivals = (
     const isRetaliationActive = isConsequenceActive(pl, 'sabotage_retaliation');
     const isHaloActive = isConsequenceActive(pl, 'philanthropic_halo');
 
-    // Sabotage retaliation logic
-    let sabotageChance = (0.2 + r.aggression! * 0.15);
-    if (isRetaliationActive) sabotageChance *= 1.5;
-    if (isHaloActive) sabotageChance *= 0.5;
-    if (reputation === "The Kingmaker") sabotageChance *= 0.5;
+    // Sabotage retaliation logic (allies never retaliate with hostile sabotage)
+    if (r.status !== 'ally') {
+      let sabotageChance = (0.2 + r.aggression! * 0.15);
+      if (isRetaliationActive) sabotageChance *= 1.5;
+      if (isHaloActive) sabotageChance *= 0.5;
+      if (reputation === "The Kingmaker") sabotageChance *= 0.5;
 
-    if (r.sabotagedCount! > 0 && Math.random() < sabotageChance) {
-      r.relationshipWithPlayer = Math.max(-100, r.relationshipWithPlayer! - 5);
-      const retaliations = ['POACH_REVENUE', 'TALK_RUMOURS', 'DIRECT_SABOTAGE'];
-      const act = randomChoice(retaliations);
+      if (r.sabotagedCount! > 0 && Math.random() < sabotageChance) {
+        r.relationshipWithPlayer = Math.max(-100, r.relationshipWithPlayer! - 5);
+        const retaliations = ['POACH_REVENUE', 'TALK_RUMOURS', 'DIRECT_SABOTAGE'];
+        const act = randomChoice(retaliations);
 
-      let quote = '"Stay in your lane."';
-      if (reputation === "The Hustler") quote = '"You\'re just a basic street hustler."';
-      else if (reputation === "The Investor") quote = '"Let\'s see if your portfolio can buffer this strike, Investor."';
-      else if (reputation === "The Mogul") quote = '"Even Moguls can bleed."';
-      else if (reputation === "The Celebrity") quote = '"Your flashy fame won\'t shield your bank account."';
-      else if (reputation === "The Crime Boss") quote = '"You think you own the underground?"';
-      else if (reputation === "The Kingmaker") quote = '"Your political puppet strings won\'t save your holdings."';
-      else if (reputation === "The President") quote = '"Not even executive privilege can protect your assets."';
+        let quote = '"Stay in your lane."';
+        if (reputation === "The Hustler") quote = '"You\'re just a basic street hustler."';
+        else if (reputation === "The Investor") quote = '"Let\'s see if your portfolio can buffer this strike, Investor."';
+        else if (reputation === "The Mogul") quote = '"Even Moguls can bleed."';
+        else if (reputation === "The Celebrity") quote = '"Your flashy fame won\'t shield your bank account."';
+        else if (reputation === "The Crime Boss") quote = '"You think you own the underground?"';
+        else if (reputation === "The Kingmaker") quote = '"Your political puppet strings won\'t save your holdings."';
+        else if (reputation === "The President") quote = '"Not even executive privilege can protect your assets."';
 
-      if (act === 'POACH_REVENUE' && Object.keys(pl.dynamicPassives).length > 0) {
-        const target = randomChoice(Object.keys(pl.dynamicPassives));
-        playerStatsUpdates.dynamicPassives = { ...pl.dynamicPassives };
-        playerStatsUpdates.dynamicPassives[target] = Math.floor((pl.dynamicPassives[target] || 0) * 0.80);
-        news.push(`🚨 RETALIATION: ${r.name} said ${quote} and poached 20% of your ${target.replace(/_/g, ' ')} returns!`);
-      } else if (act === 'TALK_RUMOURS') {
-        playerStatsUpdates.heat = Math.min(100, pl.heat + 15);
-        news.push(`🗣️ SMEAR Campaign: ${r.name} declared ${quote} and leaked rumors about your operations. Your Heat surged +15%!`);
-      } else {
-        playerStatsUpdates.bag = Math.max(0, pl.bag - 15000);
-        playerStatsUpdates.aura = Math.max(0, pl.aura - 20);
-        news.push(`💥 SABOTAGE: ${r.name} declared ${quote} and directly sabotaged your delivery logistics. Lost $15,000 and 20 Aura!`);
+        if (act === 'POACH_REVENUE' && Object.keys(pl.dynamicPassives).length > 0) {
+          const target = randomChoice(Object.keys(pl.dynamicPassives));
+          playerStatsUpdates.dynamicPassives = { ...pl.dynamicPassives };
+          playerStatsUpdates.dynamicPassives[target] = Math.floor((pl.dynamicPassives[target] || 0) * 0.80);
+          news.push(`🚨 RETALIATION: ${r.name} said ${quote} and poached 20% of your ${target.replace(/_/g, ' ')} returns!`);
+        } else if (act === 'TALK_RUMOURS') {
+          playerStatsUpdates.heat = Math.min(100, pl.heat + 15);
+          news.push(`🗣️ SMEAR Campaign: ${r.name} declared ${quote} and leaked rumors about your operations. Your Heat surged +15%!`);
+        } else {
+          playerStatsUpdates.bag = Math.max(0, pl.bag - 15000);
+          playerStatsUpdates.aura = Math.max(0, pl.aura - 20);
+          news.push(`💥 SABOTAGE: ${r.name} declared ${quote} and directly sabotaged your delivery logistics. Lost $15,000 and 20 Aura!`);
+        }
       }
     }
 
-    // Help/Partnership reward logic
+    // Help/Partnership reward logic (allies can trigger this helpful reward loop!)
     if (r.helpedCount! > 0 && r.relationshipWithPlayer! > 25 && Math.random() < (0.15 + r.intelligence! * 0.1)) {
       const benefits = ['CASH_GIFT', 'CLOUT_BOOST', 'AURA_BOOST'];
       const act = randomChoice(benefits);
@@ -325,26 +331,27 @@ export const simulateRivals = (
       }
     }
 
-    // Politics Opposition Logic
-    const playerInPolitics = pl.currentTier === 'PRESIDENT' || (pl.campaignStage !== undefined && pl.campaignStage > 1);
-    if (playerInPolitics && r.tier === pl.currentTier && Math.random() < 0.25) {
-      if (r.politicalLeaning !== 'center' && r.ethics! < 0.4) {
-        news.push(`🗳️ OPPOSITION FUNDING: ${r.name} is pumping PAC money into your opponent's election campaign! Approval hit.`);
-        playerStatsUpdates.approvalRating = Math.max(0, pl.approvalRating - 5);
-      }
-    }
-
-    // Bidding behavior logic using standard system
+    // Politics Opposition and Bidding behavior logic (allies never execute these hostile acts)
     let currentBid = 0;
-    let bidChance = 0.05 * (r.vengeance ?? 1);
-    if (isRetaliationActive) bidChance *= 1.5;
-    if (isHaloActive) bidChance *= 0.5;
-    if (reputation === "The Kingmaker") bidChance *= 0.5;
-    if (reputation === "The Crime Boss") bidChance *= 0.75;
+    if (r.status !== 'ally') {
+      const playerInPolitics = pl.currentTier === 'PRESIDENT' || (pl.campaignStage !== undefined && pl.campaignStage > 1);
+      if (playerInPolitics && r.tier === pl.currentTier && Math.random() < 0.25) {
+        if (r.politicalLeaning !== 'center' && r.ethics! < 0.4) {
+          news.push(`🗳️ OPPOSITION FUNDING: ${r.name} is pumping PAC money into your opponent's election campaign! Approval hit.`);
+          playerStatsUpdates.approvalRating = Math.max(0, pl.approvalRating - 5);
+        }
+      }
 
-    if (r.tier === pl.currentTier && Math.random() < bidChance) {
-      currentBid = Math.floor(r.netWorth * (0.05 + Math.random() * 0.1));
-      news.push(`⚠️ RIVAL ALERT: ${r.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`);
+      let bidChance = 0.05 * (r.vengeance ?? 1);
+      if (isRetaliationActive) bidChance *= 1.5;
+      if (isHaloActive) bidChance *= 0.5;
+      if (reputation === "The Kingmaker") bidChance *= 0.5;
+      if (reputation === "The Crime Boss") bidChance *= 0.75;
+
+      if (r.tier === pl.currentTier && Math.random() < bidChance) {
+        currentBid = Math.floor(r.netWorth * (0.05 + Math.random() * 0.1));
+        news.push(`⚠️ RIVAL ALERT: ${r.name} is aggressively bidding in your sector! Current bid: $${currentBid.toLocaleString()}`);
+      }
     }
     r.currentBid = currentBid;
 

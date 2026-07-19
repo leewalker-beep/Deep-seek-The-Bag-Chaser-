@@ -107,6 +107,18 @@ export const recordRivalDefeat = (pl: PlayerStats, rivalName: string, tier: Tier
   );
 };
 
+export const recordRivalRecruitment = (pl: PlayerStats, rivalName: string): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Turned longtime rival ${rivalName} into a business partner.`,
+    `recruit_${rivalName.replace(/\s+/g, '_').toLowerCase()}`,
+    'RIVAL',
+    3,
+    'Rival Recruited',
+    [rivalName]
+  );
+};
+
 export const recordTierAdvancement = (pl: PlayerStats, tier: Tier, specialization?: string): BiographyUpdate | null => {
   const templatesSpec = [
     `Rose to the ${tier} tier, specializing as a ${specialization}.`,

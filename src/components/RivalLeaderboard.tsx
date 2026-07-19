@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { GAME_CONSTANTS } from '../config/gameConstants';
 import { getRivalAvatarId } from '../config/avatars';
 import Avatar from './Avatar';
+import { isRivalEligibleForRecruit } from '../utils/rivalUtils';
 
 interface RivalLeaderboardProps {
   playerBag: number;
@@ -28,7 +29,7 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerName,
   rivals = []
 }) => {
-  const { pl, retaliateRival, sabotageRival, helpRival, counterBid } = useGameStore();
+  const { pl, retaliateRival, sabotageRival, helpRival, counterBid, recruitRival } = useGameStore();
   const allParticipants = [
     ...(rivals || []),
     { id: 'player', name: playerName || 'You', netWorth: playerBag, currentBid: 0, isNpc: false, tier: pl.currentTier }
@@ -174,45 +175,62 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                   )}
 
                   <div className="flex gap-2 flex-wrap items-center">
-                    {p.netWorth > playerBag && (
-                      <button
-                        disabled={pAsRival.lastSabotagedMonth === pl.month}
-                        className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-950/60 text-red-400 border border-red-500/30 rounded px-2 py-0.5 disabled:opacity-50"
-                        onClick={() => handleSabotage(p.id)}
-                      >
-                        ⚔️ {pAsRival.lastSabotagedMonth === pl.month ? 'SABOTAGED' : `SABOTAGE ACTIVE · $${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K`}
-                      </button>
-                    )}
+                    {pAsRival.status === 'ally' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded px-2 py-0.5">
+                        🤝 ALLIED
+                      </span>
+                    ) : (
+                      <>
+                        {p.netWorth > playerBag && (
+                          <button
+                            disabled={pAsRival.lastSabotagedMonth === pl.month}
+                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-950/60 text-red-400 border border-red-500/30 rounded px-2 py-0.5 disabled:opacity-50"
+                            onClick={() => handleSabotage(p.id)}
+                          >
+                            ⚔️ {pAsRival.lastSabotagedMonth === pl.month ? 'SABOTAGED' : `SABOTAGE ACTIVE · $${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K`}
+                          </button>
+                        )}
 
-                    {helpRival && !isPlayer && (
-                      <button
-                        className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 rounded px-2 py-0.5"
-                        onClick={() => handleHelp(p.id)}
-                      >
-                        🤝 PARTNER (${((TIER_HELP_COSTS[pAsRival.tier] || 10000) / 1000).toLocaleString()}K)
-                      </button>
-                    )}
+                        {helpRival && !isPlayer && (
+                          <button
+                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 rounded px-2 py-0.5"
+                            onClick={() => handleHelp(p.id)}
+                          >
+                            🤝 PARTNER (${((TIER_HELP_COSTS[pAsRival.tier] || 10000) / 1000).toLocaleString()}K)
+                          </button>
+                        )}
 
-                    {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
-                       <BaseButton
-                        variant="ghost"
-                        size="sm"
-                        className="text-[8px] py-1 h-auto bg-blue-500/20 border border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
-                        onClick={() => counterBid(p.id)}
-                      >
-                        ⚡ Counter-Bid (${(Math.floor(p.currentBid * 1.5) / 1000).toLocaleString()}k)
-                      </BaseButton>
-                    )}
+                        {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
+                           <BaseButton
+                            variant="ghost"
+                            size="sm"
+                            className="text-[8px] py-1 h-auto bg-blue-500/20 border border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
+                            onClick={() => counterBid(p.id)}
+                          >
+                            ⚡ Counter-Bid (${(Math.floor(p.currentBid * 1.5) / 1000).toLocaleString()}k)
+                          </BaseButton>
+                        )}
 
-                    {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && (
-                       <BaseButton
-                        variant="ghost"
-                        size="sm"
-                        className="text-[8px] py-1 h-auto bg-orange-500/20 border border-orange-500/40 hover:bg-orange-500/30 text-orange-400"
-                        onClick={() => retaliateRival(p.id)}
-                      >
-                        🔥 RETALIATE (10% Bag)
-                      </BaseButton>
+                        {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && (
+                           <BaseButton
+                            variant="ghost"
+                            size="sm"
+                            className="text-[8px] py-1 h-auto bg-orange-500/20 border border-orange-500/40 hover:bg-orange-500/30 text-orange-400"
+                            onClick={() => retaliateRival(p.id)}
+                          >
+                            🔥 RETALIATE (10% Bag)
+                          </BaseButton>
+                        )}
+
+                        {recruitRival && isRivalEligibleForRecruit(pAsRival) && (
+                          <button
+                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-blue-950/60 text-blue-400 border border-blue-500/30 rounded px-2 py-0.5 hover:bg-blue-900/60"
+                            onClick={() => recruitRival(p.id)}
+                          >
+                            🤝 RECRUIT
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
