@@ -318,6 +318,7 @@ export interface RolodexCelebrity extends RosterCharacter {
 
 export interface Rival {
   id: string;
+  characterId?: string;
   name: string;
   netWorth: number;
   currentBid: number;
