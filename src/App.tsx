@@ -2,6 +2,7 @@ import { useEffect, useState, useReducer, useMemo, useRef, lazy, Suspense } from
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from './store/gameStore';
 import { completeConcertPerformanceWithLineup } from './store/slices/hustleSlice';
+import * as Bio from './engine/biographyEngine';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
 import { NavTabs } from './components/NavTabs';
@@ -1740,8 +1741,13 @@ function App() {
                         const store = useGameStore.getState();
                         const currentRolodex = store.pl.rolodex || [];
                         const updatedRolodex = [...currentRolodex, signedCelebrity];
+                        const bioUpdate = Bio.recordTalentSigning(store.pl, signedCelebrity.name, signedCelebrity.relationshipScore);
+                        const biography = bioUpdate ? [...(store.pl.biography || []), bioUpdate.entry] : (store.pl.biography || []);
+                        const recordedBioKeys = bioUpdate ? [...(store.pl.recordedBioKeys || []), bioUpdate.key!] : (store.pl.recordedBioKeys || []);
                         store.updatePl({
-                          rolodex: updatedRolodex
+                          rolodex: updatedRolodex,
+                          biography,
+                          recordedBioKeys
                         });
                         store.addTickerMessage(`🤝 SIGNED: New talent ${signedCelebrity.name} added to Rolodex! Starting Rel: ${signedCelebrity.relationshipScore}`, 'text-yellow-400 font-bold');
                       }
