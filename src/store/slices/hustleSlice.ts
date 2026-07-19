@@ -69,6 +69,8 @@ export interface HustleSlice {
   resolveInteractiveStoryEvent: (choiceIndex: number) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
+  registerAdvice: (insights: any[]) => void;
+  triggerSetback: () => void;
   checkMilestones: () => void;
   resetGame: (
     backgroundId?: string,
@@ -178,11 +180,91 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       id: Math.random().toString(36).substring(7),
       timestamp: Date.now(),
     };
+
+    const pl = { ...state.pl };
+    pl.actionLog = [newAction, ...(pl.actionLog || [])].slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE);
+
+    // --- SETBACK TRACKING ---
+    if ((pl.setbackActionsRemaining || 0) > 0) {
+      const isSleepOrPR = newAction.hustleId === 'r_sleep' || newAction.hustleId === 'power_nap' || newAction.hustleId === 'r_pr_campaign' || newAction.hustleId === 'therapy_session' || newAction.hustleId === 'wellness_retreat' || newAction.hustleId === 'psychiatrist';
+      const isPhilanthropy = newAction.hustleId === 'philanthropy_empire' || newAction.hustleId.includes('philanthropy');
+      const isEscalation = (newAction.heatHit && newAction.heatHit > 0) || (newAction.yieldCash > 0 && !isSleepOrPR && !isPhilanthropy);
+      const isRetreat = isSleepOrPR || isPhilanthropy || (newAction.heatHit && newAction.heatHit <= 0) || (newAction.yieldCash === 0 && newAction.yieldClout === 0 && newAction.yieldAura === 0);
+
+      if (isEscalation) {
+        pl.escalationCount = (pl.escalationCount || 0) + 1;
+        pl.setbackActionsRemaining = pl.setbackActionsRemaining! - 1;
+      } else if (isRetreat) {
+        pl.retreatCount = (pl.retreatCount || 0) + 1;
+        pl.setbackActionsRemaining = pl.setbackActionsRemaining! - 1;
+      }
+    }
+
+    // --- ADVICE COMPLIANCE TRACKING ---
+    const activeAdviceTriggers = [...(pl.activeAdviceTriggers || [])];
+    let adviceFollowedCount = pl.adviceFollowedCount || 0;
+
+    const updatedTriggers = activeAdviceTriggers.map(trigger => {
+      if (trigger.resolved) return trigger;
+
+      const nextChecked = trigger.actionsChecked + 1;
+      let isMatched = false;
+
+      // Check specific hustle ID list
+      if (trigger.hustleIds && trigger.hustleIds.length > 0) {
+        if (trigger.hustleIds.includes(newAction.hustleId)) {
+          isMatched = true;
+        }
+      }
+
+      // Check extra conditions
+      if (trigger.extraCondition === 'diversify') {
+        let dominantCategory = '';
+        let maxPlays = -1;
+        const plays = pl.hustlePlays || {};
+        for (const [hId, p] of Object.entries(plays)) {
+          if (p > maxPlays) {
+            maxPlays = p;
+            const hObj = HUSTLES[hId];
+            if (hObj) dominantCategory = hObj.tier;
+          }
+        }
+        const currentHustleObj = HUSTLES[newAction.hustleId];
+        if (currentHustleObj && currentHustleObj.tier !== dominantCategory) {
+          isMatched = true;
+        }
+      } else if (trigger.extraCondition === 'cool_down') {
+        if (newAction.hustleId === 'r_ghost_mode' || newAction.hustleId === 'r_sleep' || newAction.hustleId === 'power_nap' || (newAction.heatHit && newAction.heatHit < 0)) {
+          isMatched = true;
+        }
+      } else if (trigger.extraCondition === 'boost_aura') {
+        if (newAction.yieldAura > 0 || newAction.hustleId.includes('philanthropy')) {
+          isMatched = true;
+        }
+      } else if (trigger.extraCondition === 'rest_or_recover') {
+        const isRest = newAction.hustleId === 'r_sleep' || newAction.hustleId === 'power_nap' || newAction.hustleId === 'therapy_session' || newAction.hustleId === 'wellness_retreat' || newAction.hustleId === 'psychiatrist';
+        if (isRest) {
+          isMatched = true;
+        }
+      } else if (trigger.extraCondition === 'legislative_action') {
+        if (newAction.hustleId === 'data_monopoly' || newAction.hustleId === 'central_bank_play') {
+          isMatched = true;
+        }
+      }
+
+      if (isMatched) {
+        adviceFollowedCount++;
+        return { ...trigger, resolved: true, actionsChecked: nextChecked };
+      }
+
+      return { ...trigger, actionsChecked: nextChecked };
+    }).filter(t => !t.resolved && t.actionsChecked < 3);
+
+    pl.activeAdviceTriggers = updatedTriggers;
+    pl.adviceFollowedCount = adviceFollowedCount;
+
     set({
-      pl: enforceStatCaps({
-        ...state.pl,
-        actionLog: [newAction, ...(state.pl.actionLog || [])].slice(0, GAME_CONSTANTS.ACTION_LOG_MAX_SIZE),
-      }),
+      pl: enforceStatCaps(pl),
     });
   },
 
@@ -205,8 +287,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         metadata,
       };
 
+      const isJailSetback = state.pl.inJail && !state.pl.inJail; // Will be handled on direct property transition, or if metadata says arrest
+      const isSetback = type === 'SCANDAL_TRIGGERED' || (type === 'SPECIAL_EVENT' && (metadata as any)?.type === 'RIVAL_SABOTAGE');
+
       const updatedPl = enforceStatCaps({
         ...state.pl,
+        setbackActionsRemaining: isSetback ? 2 : state.pl.setbackActionsRemaining,
         events: [newEvent, ...(state.pl.events || [])].slice(0, 1000),
       });
       updatedPl.legacyScore = calculateLegacyScore(updatedPl);
@@ -222,6 +308,74 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const newlyUnlocked = checkAchievements(get(), newEvent);
       newlyUnlocked.forEach(id => get().unlockAchievement(id));
     }
+  },
+
+  triggerSetback: () => {
+    set((state) => ({
+      pl: {
+        ...state.pl,
+        setbackActionsRemaining: 2
+      }
+    }));
+  },
+
+  registerAdvice: (insights) => {
+    set((state) => {
+      const pl = state.pl;
+      const activeAdviceTriggers = [...(pl.activeAdviceTriggers || [])];
+      let adviceGivenCount = pl.adviceGivenCount || 0;
+      let hasChanges = false;
+
+      insights.forEach(ins => {
+        const exists = activeAdviceTriggers.some(t => t.id === ins.id);
+        if (!exists) {
+          hasChanges = true;
+          let extraCondition = '';
+          let hustleIds: string[] = [];
+
+          if (ins.id === 'passive_dependency_high' || ins.id === 'passive_dependency_single' || ins.id === 'passive_none') {
+            extraCondition = 'diversify';
+          } else if (ins.id === 'media_lack_politics') {
+            hustleIds = ['media_empire', 'film_studio'];
+          } else if (ins.id === 'rival_aggressive_bid') {
+            extraCondition = 'counter_bid';
+          } else if (ins.id === 'rival_dominant_wealth') {
+            extraCondition = 'sabotage_or_counter';
+          } else if (ins.id === 'heat_critical' || ins.id === 'heat_important') {
+            extraCondition = 'cool_down';
+          } else if (ins.id === 'aura_critical') {
+            extraCondition = 'boost_aura';
+          } else if (ins.id === 'mental_health_penalty' || ins.id === 'stress_careless_mistakes') {
+            extraCondition = 'rest_or_recover';
+          } else if (ins.id === 'politics_integrity_crisis') {
+            extraCondition = 'cabinet_integrity';
+          } else if (ins.id === 'politics_congress_weak') {
+            extraCondition = 'legislative_action';
+          }
+
+          activeAdviceTriggers.push({
+            id: ins.id,
+            extraCondition,
+            hustleIds,
+            actionsChecked: 0,
+            resolved: false
+          });
+          adviceGivenCount++;
+        }
+      });
+
+      if (!hasChanges) {
+        return {};
+      }
+
+      return {
+        pl: {
+          ...pl,
+          activeAdviceTriggers,
+          adviceGivenCount
+        }
+      };
+    });
   },
 
   checkMilestones: () => {
@@ -2384,6 +2538,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       get().addTickerMessage(`🚫 SABOTAGE FAILED: You were nearly caught! Heat +25%, Aura -100.`, "text-red-500 font-bold");
     }
 
+    // Resolve advice trigger for sabotage
+    let adviceFollowedCountSabotage = nextPl.adviceFollowedCount || 0;
+    const activeAdviceTriggersSabotage = (nextPl.activeAdviceTriggers || []).map(t => {
+      if (t.extraCondition === 'sabotage_or_counter') {
+        adviceFollowedCountSabotage++;
+        return { ...t, resolved: true };
+      }
+      return t;
+    }).filter(t => !t.resolved);
+    nextPl.activeAdviceTriggers = activeAdviceTriggersSabotage;
+    nextPl.adviceFollowedCount = adviceFollowedCountSabotage;
+
     set({ pl: enforceStatCaps(nextPl) });
     get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_SABOTAGE', rivalId, success, cost });
   },
@@ -2465,6 +2631,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       nextPlReacted.biography = [...(nextPlReacted.biography || []), bioUpdate.entry];
       nextPlReacted.recordedBioKeys = [...(nextPlReacted.recordedBioKeys || []), bioUpdate.key!];
     }
+
+    // Resolve advice trigger for counter-bid
+    let adviceFollowedCountCounterBid = nextPlReacted.adviceFollowedCount || 0;
+    const activeAdviceTriggersCounterBid = (nextPlReacted.activeAdviceTriggers || []).map(t => {
+      if (t.extraCondition === 'counter_bid' || t.extraCondition === 'sabotage_or_counter') {
+        adviceFollowedCountCounterBid++;
+        return { ...t, resolved: true };
+      }
+      return t;
+    }).filter(t => !t.resolved);
+    nextPlReacted.activeAdviceTriggers = activeAdviceTriggersCounterBid;
+    nextPlReacted.adviceFollowedCount = adviceFollowedCountCounterBid;
 
     set({
       pl: enforceStatCaps(nextPlReacted),

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
 import Avatar from './Avatar';
+import { analyzeBehavior } from '../utils/personalityAnalyzer';
 
 interface EndgameSummaryProps {
   onRestart: () => void;
@@ -13,6 +14,8 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
   const { pl } = useGameStore();
   const [copied, setCopied] = useState(false);
   const [displayScore, setDisplayScore] = useState(0);
+
+  const blueprint = useMemo(() => analyzeBehavior(pl), [pl]);
 
   const targetScore = pl.legacyScore || pl.legacyPoints || 0;
 
@@ -122,7 +125,9 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
     }));
   };
 
-  const shareText = `I just finished a run of Bag Chaser! Hit ${pl.currentTier} tier with $${pl.bag.toLocaleString()} net worth. Legacy score: ${targetScore.toLocaleString()}. Can you beat me?`;
+  const shareText = useMemo(() => {
+    return `I just finished a run of Bag Chaser! Hit ${pl.currentTier} tier with $${pl.bag.toLocaleString()} net worth. My Advisor Blueprint: ${blueprint.primaryColor} — ${blueprint.dominantPersona}. Legacy score: ${targetScore.toLocaleString()}. Can you beat me?`;
+  }, [pl.currentTier, pl.bag, blueprint.primaryColor, blueprint.dominantPersona, targetScore]);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -260,6 +265,72 @@ export const EndgameSummary: React.FC<EndgameSummaryProps> = ({ onRestart, onVie
             ) : (
               <p>A fast-paced chaser who fought bravely against systemic odds to claim their footprint in this digital age.</p>
             )}
+          </div>
+        </div>
+
+        {/* BEHAVIORAL BLUEPRINT PANEL */}
+        <div className="space-y-4 text-left border border-slate-800 bg-slate-950/60 p-6 rounded-[2rem]">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🧬</span>
+              <div>
+                <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Advisor's Record</span>
+                <h3 className="text-sm font-black uppercase text-white tracking-wider">Behavioral Blueprint</h3>
+              </div>
+            </div>
+            <span
+              className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border"
+              style={{
+                backgroundColor: `${blueprint.colorHex}15`,
+                color: blueprint.colorHex,
+                borderColor: `${blueprint.colorHex}40`
+              }}
+            >
+              {blueprint.primaryColor} Archetype
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-xs font-black uppercase tracking-wide text-white block">
+              Persona Sub-Label: <span style={{ color: blueprint.colorHex }}>{blueprint.dominantPersona}</span>
+            </span>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium italic">
+              {blueprint.colorDescription}
+            </p>
+          </div>
+
+          {/* Metrics Readout */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+            <div className="bg-slate-900/60 border border-slate-800 p-3 rounded-xl text-center">
+              <span className="text-[7px] text-slate-500 uppercase font-bold block mb-1">Action Pace</span>
+              <span className="text-white font-mono font-bold text-xs">{blueprint.paceSeconds}s ({blueprint.paceLabel})</span>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-800 p-3 rounded-xl text-center">
+              <span className="text-[7px] text-slate-500 uppercase font-bold block mb-1">Advice Compliance</span>
+              <span className="text-white font-mono font-bold text-xs">{Math.round(blueprint.adviceRatio * 100)}%</span>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-800 p-3 rounded-xl text-center">
+              <span className="text-[7px] text-slate-500 uppercase font-bold block mb-1">Setbacks Recovery</span>
+              <span className="text-white font-mono font-bold text-xs">{Math.round(blueprint.setbackRatio * 100)}% ({blueprint.setbackRatio >= 0.5 ? 'Retreat' : 'Escalate'})</span>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-800 p-3 rounded-xl text-center">
+              <span className="text-[7px] text-slate-500 uppercase font-bold block mb-1">Risk Cadence</span>
+              <span className="text-white font-mono font-bold text-xs">{Math.round(blueprint.riskCadenceRatio * 100)}%</span>
+            </div>
+          </div>
+
+          {/* Advisor Synthesis Lines */}
+          <div className="pt-2 border-t border-slate-900 space-y-2">
+            <span className="text-[8px] font-black uppercase tracking-wider text-slate-500 block">Systemic Tension Synthesis</span>
+            <div className="space-y-2.5">
+              {blueprint.synthesisLines.map((line, idx) => (
+                <div key={idx} className="flex gap-2.5 items-start pl-2 border-l-2 border-slate-700">
+                  <span className="text-xs text-slate-300 leading-relaxed font-serif italic">
+                    "{line}"
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

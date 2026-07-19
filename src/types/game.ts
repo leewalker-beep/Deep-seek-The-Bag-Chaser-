@@ -925,6 +925,12 @@ export interface PlayerStats {
   recordedBioKeys: string[];
   history?: HistoryEvent[];
   narrativeFlags: Record<string, string | number | boolean>;
+  adviceGivenCount?: number;
+  adviceFollowedCount?: number;
+  activeAdviceTriggers?: { id: string; extraCondition?: string; hustleIds?: string[]; actionsChecked: number; resolved?: boolean }[];
+  escalationCount?: number;
+  retreatCount?: number;
+  setbackActionsRemaining?: number;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];

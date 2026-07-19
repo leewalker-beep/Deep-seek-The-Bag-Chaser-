@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { generateStrategicAdvice, type AdvisorInsight } from '../engine/advisorEngine';
@@ -15,12 +15,24 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
   const acceptAmbition = useGameStore(state => state.acceptAmbition);
   const ignoreAmbition = useGameStore(state => state.ignoreAmbition);
   const replaceAmbition = useGameStore(state => state.replaceAmbition);
+  const registerAdvice = useGameStore(state => state.registerAdvice);
 
   const [activePriorityFilter, setActivePriorityFilter] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>(initialTab || 'ALL');
   const [activeHistoryCategory, setActiveHistoryCategory] = useState<'ALL' | 'BIOGRAPHY' | 'CAREER' | 'BUSINESS' | 'CRIME' | 'RIVALS' | 'POLITICS' | 'LEGACY' | 'WORLD'>('ALL');
 
-  // Derive strategic advice using the pure advisor engine helper
-  const advice = generateStrategicAdvice(pl, currentMarket);
+  // Derive strategic advice using the pure advisor engine helper and memoize it
+  const advice = useMemo(() => generateStrategicAdvice(pl, currentMarket), [pl, currentMarket]);
+
+  // Serialize insight IDs to protect against infinite loops
+  const insightIds = useMemo(() => {
+    return advice?.insights?.map(i => i.id).join(',') || '';
+  }, [advice]);
+
+  useEffect(() => {
+    if (advice && advice.insights && registerAdvice) {
+      registerAdvice(advice.insights);
+    }
+  }, [insightIds, registerAdvice]);
 
   const ambitions = pl.ambitions || [];
   const activeAmbitions = ambitions.filter(a => a.status === 'ACTIVE');
