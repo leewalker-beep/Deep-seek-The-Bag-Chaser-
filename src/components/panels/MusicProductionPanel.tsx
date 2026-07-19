@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
+import { RosterSelectList } from '../ui/RosterSelectList';
 
 interface MusicProductionPanelProps {
   hustle: Hustle;
@@ -8,7 +9,7 @@ interface MusicProductionPanelProps {
 }
 
 export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hustle, onExecute }) => {
-  const { pl, scoutArtist, dropArtist, executeBranch } = useGameStore();
+  const { pl, scoutArtist, signScoutedArtist, dropArtist, executeBranch } = useGameStore();
   const currentLevel = pl.hustleLevels[hustle.id] || 1;
 
   const currentBranchId = pl.hustleBranchIds[hustle.id] || hustle.startBranchId;
@@ -65,6 +66,45 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hust
       ) : (
         <div className="mb-6 py-3 px-4 bg-slate-800/50 rounded-xl border border-slate-700 text-center">
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Reach Level 2 to scout talent</p>
+        </div>
+      )}
+
+      {pl.scoutedTalentPool && pl.scoutedTalentPool.length > 0 && (
+        <div className="mb-6 p-4 bg-purple-950/30 border border-purple-500/30 rounded-2xl space-y-3">
+          <div className="flex justify-between items-center">
+            <div>
+              <h4 className="font-black text-purple-400 text-xs uppercase tracking-wider">Scouted Candidates</h4>
+              <p className="text-[9px] text-slate-400 leading-tight">Select one candidate to sign (unpicked will clear)</p>
+            </div>
+            <button
+              onClick={() => {
+                useGameStore.setState((state) => ({
+                  pl: { ...state.pl, scoutedTalentPool: [] }
+                }));
+              }}
+              className="text-[9px] font-black text-red-400 hover:text-red-300 uppercase tracking-wider"
+            >
+              Discard All
+            </button>
+          </div>
+
+          <RosterSelectList
+            roster={pl.scoutedTalentPool}
+            onSelect={(artist) => {
+              signScoutedArtist(artist.id);
+            }}
+            getDisplayProps={(artist) => ({
+              name: artist.name,
+              avatar: artist.avatar,
+              subtitle: `${artist.tier.toUpperCase()} Artist`,
+              statLine: (
+                <div className="text-right">
+                  <span className="block text-[8px] text-slate-500 uppercase font-black">ROYALTIES</span>
+                  <span className="text-xs text-emerald-400 font-mono font-bold">${artist.royaltyRate.toLocaleString()}/mo</span>
+                </div>
+              )
+            })}
+          />
         </div>
       )}
 
