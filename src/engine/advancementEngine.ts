@@ -113,6 +113,7 @@ export function advanceMonth(
   const news: (string | TickerMessage)[] = [];
   let newPl = { ...pl };
   newPl.isIncarcerated = newPl.inJail;
+  newPl.scoutedTalentPool = [];
   let newMarket = currentMarket;
 
   // Evaluate reputation tick and update public reputation

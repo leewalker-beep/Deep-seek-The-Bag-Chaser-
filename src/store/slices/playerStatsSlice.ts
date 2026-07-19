@@ -33,6 +33,7 @@ export interface PlayerStatsSlice {
   setCampaignVP: (vp: string) => void;
   setCampaignDelegates: (delegates: number) => void;
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
+  signScoutedArtist: (artistId: string) => void;
   dropArtist: (artistId: string) => void;
   unlockLegacyUpgrade: (upgradeId: string) => void;
   updatePl: (updates: Partial<PlayerStats>) => void;
@@ -307,42 +308,71 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       return pool[Math.floor(Math.random() * pool.length)];
     };
 
-    const tierAvatar = getTierAvatar(tier);
+    const candidatesCount = Math.floor(Math.random() * 2) + 2; // generates 2 or 3
+    const candidates: RecordLabelArtist[] = [];
 
-    // 1. Generate a consistent structural character profile from the engine
-    const npcProfile = generateGlobalNPC('CREATOR', undefined, tierAvatar);
+    for (let i = 0; i < candidatesCount; i++) {
+      const tierAvatar = getTierAvatar(tier);
+      const npcProfile = generateGlobalNPC('CREATOR', undefined, tierAvatar);
 
-    const newArtist: RecordLabelArtist = {
-      id: npcProfile.id,
-      name: npcProfile.name,
-      avatar: npcProfile.avatar,
-      contractMonthsLeft: 120,
-      monthlyRetainer: Math.floor(royalty * 0.2),
-      monthlyRevenue: Math.floor(royalty * 1.2),
-      hypeFactor: 1.0,
-      isTargetedByRival: false,
-      tier,
-      royaltyRate: royalty,
-      monthsActive: 0,
-      hasReleased: false,
-      status: 'IN STUDIO',
-    };
+      const candidateArtist: RecordLabelArtist = {
+        id: npcProfile.id,
+        name: npcProfile.name,
+        avatar: npcProfile.avatar,
+        contractMonthsLeft: 120,
+        monthlyRetainer: Math.floor(royalty * 0.2),
+        monthlyRevenue: Math.floor(royalty * 1.2),
+        hypeFactor: 1.0,
+        isTargetedByRival: false,
+        tier,
+        royaltyRate: royalty,
+        monthsActive: 0,
+        hasReleased: false,
+        status: 'IN STUDIO',
+      };
+      candidates.push(candidateArtist);
+    }
 
-    // 2. Persist this character to the global NPC database so they exist in world history
+    const plFinal = enforceStatCaps({
+      ...plAfterCost,
+      scoutedTalentPool: candidates
+    });
+
+    set({
+      pl: plFinal,
+      news: [`🔍 Scouting successful: Found ${candidatesCount} candidates in the talent pool!`, ...state.news.slice(0, 49)]
+    });
+
+    return { success: true, artist: candidates[0], message: 'Success' };
+  },
+
+  signScoutedArtist: (artistId) => {
+    const state = get();
+    const artist = state.pl.scoutedTalentPool.find(a => a.id === artistId);
+    if (!artist) return;
+
+    if (state.pl.artists.length >= 10) {
+      if (typeof alert !== 'undefined') {
+        alert('Maximum 10 artists allowed in roster');
+      }
+      return;
+    }
+
+    // Persist this character to the global NPC database so they exist in world history
     const persistentArtistNPC: PersistentNPC = {
-      id: npcProfile.id,
-      name: npcProfile.name,
-      avatar: npcProfile.avatar,
-      reputation: npcProfile.reputation,
-      disposition: npcProfile.disposition,
-      currentRole: npcProfile.role === 'INTERN' ? 'STREET_INTERN' : npcProfile.role,
+      id: artist.id,
+      name: artist.name,
+      avatar: artist.avatar,
+      reputation: 50,
+      disposition: 50,
+      currentRole: 'CREATOR',
       interactionLog: ['SCOUTED_BY_PLAYER'],
-      originAge: plAfterCost.month,
+      originAge: state.pl.month,
       originHustleId: 'music_label_studio',
-      currentHustleId: npcProfile.currentHustleId
+      currentHustleId: 'music_label_studio'
     };
 
-    const currentNpcs = plAfterCost.npcs || [];
+    const currentNpcs = state.pl.npcs || [];
     const alreadyExists = currentNpcs.some(n => n.id === persistentArtistNPC.id);
     const updatedNpcs = alreadyExists ? currentNpcs : [
       ...currentNpcs,
@@ -351,8 +381,9 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
 
     const isFirstEmployee = state.pl.artists.length === 0;
     let plFinalArtist = enforceStatCaps({
-      ...plAfterCost,
-      artists: [...plAfterCost.artists, newArtist],
+      ...state.pl,
+      artists: [...state.pl.artists, artist],
+      scoutedTalentPool: [], // Clear unpicked candidates
       npcs: updatedNpcs,
     });
 
@@ -362,12 +393,10 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
 
     set({
       pl: plFinalArtist,
-      news: [`🎤 SUCCESS! Signed ${tier} artist: ${npcProfile.name}`, ...state.news.slice(0, 49)]
+      news: [`🎤 SUCCESS! Signed ${artist.tier} artist: ${artist.name}`, ...state.news.slice(0, 49)]
     });
 
-    get().logEvent('INVESTMENT_MADE', { type: 'ARTIST_SCOUT', tier, artistName: npcProfile.name, cost });
-
-    return { success: true, artist: newArtist, message: 'Success' };
+    get().logEvent('INVESTMENT_MADE', { type: 'ARTIST_SCOUT', tier: artist.tier, artistName: artist.name, cost: 0 });
   },
 
   dropArtist: (artistId) => {

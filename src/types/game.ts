@@ -1075,6 +1075,7 @@ export interface GameState {
   advanceTier: () => boolean;
   purchaseFlexAsset: (assetId: string) => boolean;
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
+  signScoutedArtist: (artistId: string) => void;
   dropArtist: (artistId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
   setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;
