@@ -763,5 +763,117 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       progress: (state: GameState) => ({ current: state.pl.masteredHustles.includes('unique_hustle_deli') ? 1 : 0, target: 1 })
     },
     reward: { clout: 100, aura: 100, legacyPoints: 200 }
+  },
+
+  // ROSTER MILESTONES
+  {
+    id: 'ROSTER_ARTIST_1',
+    name: 'First Signing',
+    description: 'Sign your first artist to your record label roster.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.artists || []).length >= 1,
+      progress: (state: GameState) => ({ current: (state.pl.artists || []).length, target: 1 })
+    },
+    reward: { clout: 50, aura: 20, legacyPoints: 50 }
+  },
+  {
+    id: 'ROSTER_ARTIST_5',
+    name: 'Label Boss',
+    description: 'Sign 5 artists to your record label roster.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.artists || []).length >= 5,
+      progress: (state: GameState) => ({ current: (state.pl.artists || []).length, target: 5 })
+    },
+    reward: { clout: 200, aura: 100, legacyPoints: 200 }
+  },
+  {
+    id: 'ROSTER_ROLODEX_1',
+    name: 'Rolodex Recruit',
+    description: 'Sign your first celebrity or creator to your Talent Agency Rolodex.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.rolodex || []).length >= 1,
+      progress: (state: GameState) => ({ current: (state.pl.rolodex || []).length, target: 1 })
+    },
+    reward: { clout: 50, aura: 20, legacyPoints: 50 }
+  },
+  {
+    id: 'ROSTER_ROLODEX_5',
+    name: 'A-List Rolodex',
+    description: 'Sign 5 celebrities or creators to your Talent Agency Rolodex.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.rolodex || []).length >= 5,
+      progress: (state: GameState) => ({ current: (state.pl.rolodex || []).length, target: 5 })
+    },
+    reward: { clout: 200, aura: 100, legacyPoints: 200 }
+  },
+  {
+    id: 'ROSTER_FOUNDER_1',
+    name: 'Angel Investor',
+    description: 'Back your first founder in the Venture Capital pitch room.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.foundersBacked || []).length >= 1,
+      progress: (state: GameState) => ({ current: (state.pl.foundersBacked || []).length, target: 1 })
+    },
+    reward: { cash: 100000, clout: 50, legacyPoints: 50 }
+  },
+  {
+    id: 'ROSTER_FOUNDER_5',
+    name: 'Venture Catalyst',
+    description: 'Back 5 unique founders with your VC funds.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.foundersBacked || []).length >= 5,
+      progress: (state: GameState) => ({ current: (state.pl.foundersBacked || []).length, target: 5 })
+    },
+    reward: { cash: 500000, clout: 200, legacyPoints: 250 }
+  },
+  {
+    id: 'ROSTER_CEO_1',
+    name: 'Delegated Authority',
+    description: 'Appoint your first Regional CEO to manage a division.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length >= 1,
+      progress: (state: GameState) => ({ current: Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length, target: 1 })
+    },
+    reward: { clout: 100, aura: 50, legacyPoints: 100 }
+  },
+  {
+    id: 'ROSTER_CEO_4',
+    name: 'Global Boardroom',
+    description: 'Appoint Regional CEOs to all four divisions of your Global Conglomerate.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length >= 4,
+      progress: (state: GameState) => ({ current: Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length, target: 4 })
+    },
+    reward: { clout: 500, aura: 500, legacyPoints: 500 }
+  },
+  {
+    id: 'ROSTER_CABINET_1',
+    name: 'Executive Appointment',
+    description: 'Appoint your first Cabinet Member as President.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => Object.values(state.pl.cabinet || {}).filter(Boolean).length >= 1,
+      progress: (state: GameState) => ({ current: Object.values(state.pl.cabinet || {}).filter(Boolean).length, target: 1 })
+    },
+    reward: { clout: 100, aura: 100, legacyPoints: 200 }
+  },
+  {
+    id: 'ROSTER_CABINET_FULL',
+    name: 'Full Cabinet',
+    description: 'Fill all four cabinet positions in your presidential administration.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => Object.values(state.pl.cabinet || {}).filter(Boolean).length >= 4,
+      progress: (state: GameState) => ({ current: Object.values(state.pl.cabinet || {}).filter(Boolean).length, target: 4 })
+    },
+    reward: { clout: 1000, aura: 1000, legacyPoints: 1000 }
   }
 ];
