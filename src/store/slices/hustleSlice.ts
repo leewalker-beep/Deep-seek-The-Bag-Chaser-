@@ -288,7 +288,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
 
       const isJailSetback = state.pl.inJail && !state.pl.inJail; // Will be handled on direct property transition, or if metadata says arrest
-      const isSetback = type === 'SCANDAL_TRIGGERED' || (type === 'SPECIAL_EVENT' && (metadata as any)?.type === 'RIVAL_SABOTAGE');
+      const isSetback = type === 'SCANDAL_TRIGGERED' || (type === 'SPECIAL_EVENT' && (metadata as any)?.type === 'RIVAL_SABOTAGE') || isJailSetback;
 
       const updatedPl = enforceStatCaps({
         ...state.pl,

@@ -293,6 +293,7 @@ export interface GameAction {
   marketMult?: { yield: number; expense: number; heat: number };
   marketName?: string;
   variation?: number;
+  heatHit?: number;
 }
 
 export interface Artist extends RosterCharacter {
@@ -1117,6 +1118,8 @@ export interface GameState {
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
+  registerAdvice: (insights: any[]) => void;
+  triggerSetback: () => void;
   checkMilestones: () => void;
   processLogin: () => void;
   dailyChallenges: DailyChallenge[];
