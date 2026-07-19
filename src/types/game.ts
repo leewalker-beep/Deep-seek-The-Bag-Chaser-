@@ -293,6 +293,7 @@ export interface GameAction {
   marketMult?: { yield: number; expense: number; heat: number };
   marketName?: string;
   variation?: number;
+  heatHit?: number;
 }
 
 export interface Artist extends RosterCharacter {
@@ -925,6 +926,12 @@ export interface PlayerStats {
   recordedBioKeys: string[];
   history?: HistoryEvent[];
   narrativeFlags: Record<string, string | number | boolean>;
+  adviceGivenCount?: number;
+  adviceFollowedCount?: number;
+  activeAdviceTriggers?: { id: string; extraCondition?: string; hustleIds?: string[]; actionsChecked: number; resolved?: boolean }[];
+  escalationCount?: number;
+  retreatCount?: number;
+  setbackActionsRemaining?: number;
   actionLog: GameAction[];
   milestones: Milestone[];
   events: GameEvent[];
@@ -1111,6 +1118,8 @@ export interface GameState {
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE') => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
+  registerAdvice: (insights: any[]) => void;
+  triggerSetback: () => void;
   checkMilestones: () => void;
   processLogin: () => void;
   dailyChallenges: DailyChallenge[];
