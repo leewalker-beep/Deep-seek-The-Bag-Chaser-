@@ -611,13 +611,14 @@ export function generateStrategicAdvice(
 
   // --- DYNAMIC REPUTATION INTEGRATION ---
   const activeRep = pl.narrativeFlags?.publicReputation as string || "The Hustler";
+  const customWhy = pl.narrativeFlags?.reputationWhy as string || `The business community now sees you as "${activeRep}" due to your metric choices.`;
   insights.push({
     id: 'reputation_insight',
     category: 'Legacy',
     priority: 'Information',
     title: `Active Public Persona: ${activeRep}`,
     whatIsHappening: `The public increasingly views you as "${activeRep}".`,
-    whyItHappened: `The business community now sees you as "${activeRep}" due to your metric choices.`,
+    whyItHappened: customWhy,
     recommendation: `This reputation may open opportunities across your operations. Check your Reputation tab in the Advisor console to leverage its active flavorful modifiers and drawback mitigations.`,
     confidence: 100,
   });

@@ -377,7 +377,276 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     scores["The Hustler"] += 50;
   }
 
+  // --- ROSTER INFLUENCE ON REPUTATION ---
+
+  // 1. Rolodex / Talent Agency Creators (pl.rolodex)
+  const rolodex = pl.rolodex || [];
+  rolodex.forEach(celebrity => {
+    if (celebrity.isUnlocked) {
+      scores["The Celebrity"] += 15;
+      scores["The Controversial Tycoon"] += 10;
+      if (celebrity.relationshipScore >= 75) {
+        scores["The People's Champion"] += 5;
+      }
+    }
+  });
+
+  // 2. VC Backed Founders (pl.foundersBacked)
+  const founders = pl.foundersBacked || [];
+  founders.forEach(founder => {
+    const stats = founder.stats || {};
+    const burnDiscipline = stats.burnDiscipline || 50;
+    const vision = stats.vision || 50;
+    const followOnCount = founder.followOnCount || 0;
+
+    // Ethical Founder
+    if (burnDiscipline >= 60) {
+      scores["The Investor"] += 15;
+      scores["The Philanthropist"] += 10;
+    }
+    // Aggressive/Disruptive Founder
+    if (burnDiscipline < 40 && vision >= 60) {
+      scores["The Controversial Tycoon"] += 15;
+      scores["The Shadow Broker"] += 10;
+    }
+    // Highly Funded Founder
+    if (followOnCount >= 2) {
+      scores["The Billionaire"] += 10;
+    }
+  });
+
+  // 3. Record Label Artists (pl.artists)
+  const artists = pl.artists || [];
+  artists.forEach(artist => {
+    scores["The Celebrity"] += 15;
+
+    // Exploitative Contract (royalty rate <= 15%)
+    if (artist.royaltyRate <= 15) {
+      scores["The Controversial Tycoon"] += 15;
+    }
+    // Artist-Friendly Contract (royalty rate >= 40%)
+    if (artist.royaltyRate >= 40) {
+      scores["The Reformer"] += 10;
+      scores["The People's Champion"] += 10;
+    }
+    // Grammy Winner
+    if (artist.isGrammyWinner) {
+      scores["The Celebrity"] += 20;
+      scores["The Media Emperor"] += 10;
+    }
+  });
+
+  // 4. Cabinet Members (pl.cabinet)
+  const cabinet = pl.cabinet || {};
+  const cabinetMembers = Object.values(cabinet);
+  if (cabinetMembers.length > 0) {
+    const totalIntegrity = cabinetMembers.reduce((sum, member) => sum + (member.integrity || 50), 0);
+    const avgIntegrity = totalIntegrity / cabinetMembers.length;
+    if (avgIntegrity >= 70) {
+      scores["The Reformer"] += 30;
+    } else if (avgIntegrity < 45) {
+      scores["The Crime Boss"] += 20;
+      scores["The Controversial Tycoon"] += 20;
+    }
+
+    const hasTrustedAlly = cabinetMembers.some(member => member.isTrustedAlly === true || member.trustedAlly === true);
+    if (hasTrustedAlly) {
+      scores["The Kingmaker"] += 15;
+    }
+  }
+
+  // 5. Conglomerate CEOs (pl.conglomerateCEOs)
+  const ceos = pl.conglomerateCEOs || {};
+  Object.values(ceos).forEach(ceo => {
+    if (ceo) {
+      if (ceo.riskTolerance >= 70) {
+        scores["The Controversial Tycoon"] += 15;
+        scores["The Crime Boss"] += 10;
+      }
+      if (ceo.competence >= 70 && ceo.riskTolerance <= 40) {
+        scores["The Mogul"] += 15;
+        scores["The Investor"] += 10;
+      }
+    }
+  });
+
   return scores;
+}
+
+export function compileReputationWhy(pl: PlayerStats, targetRep: string): string {
+  const rolodex = pl.rolodex || [];
+  const founders = pl.foundersBacked || [];
+  const artists = pl.artists || [];
+  const cabinet = pl.cabinet || {};
+  const cabinetMembers = Object.values(cabinet);
+  const ceos = pl.conglomerateCEOs || {};
+  const ceoValues = Object.values(ceos).filter(Boolean) as any[];
+
+  const formatList = (arr: string[]): string => {
+    if (arr.length === 0) return '';
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+    return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`;
+  };
+
+  switch (targetRep) {
+    case "The Celebrity": {
+      const activeCreators = rolodex.filter(c => c.isUnlocked).map(c => c.name);
+      const signedArtists = artists.map(a => a.name);
+      const parts: string[] = [];
+      if (activeCreators.length > 0) {
+        parts.push(`signing high-profile creators like ${formatList(activeCreators.slice(0, 2))} to your Talent Agency`);
+      }
+      if (signedArtists.length > 0) {
+        parts.push(`cultivating a popular recording roster featuring ${formatList(signedArtists.slice(0, 2))}`);
+      }
+      const driver = parts.length > 0 ? parts.join(', as well as ') : 'your high-profile public appearances and media talent contracts';
+      return `Your rise as a Celebrity is heavily driven by ${driver}.`;
+    }
+
+    case "The Investor": {
+      const ethicalFounders = founders.filter(f => (f.stats?.burnDiscipline || 50) >= 60).map(f => f.name);
+      const disciplinedCEOs = ceoValues.filter(c => c.competence >= 70 && c.riskTolerance <= 40).map(c => c.name);
+      const parts: string[] = [];
+      if (ethicalFounders.length > 0) {
+        parts.push(`your strategic backing of ethical, disciplined founders like ${formatList(ethicalFounders.slice(0, 2))}`);
+      }
+      if (disciplinedCEOs.length > 0) {
+        parts.push(`appointing low-risk, highly competent corporate executives like ${formatList(disciplinedCEOs.slice(0, 2))}`);
+      }
+      const driver = parts.length > 0 ? parts.join(' and ') : 'your steady accumulation of stable corporate partnerships and real estate rental assets';
+      return `Your standing as a calculated Investor is fueled by ${driver}.`;
+    }
+
+    case "The Philanthropist": {
+      const ethicalFounders = founders.filter(f => (f.stats?.burnDiscipline || 50) >= 60).map(f => f.name);
+      const donation = pl.philanthropyDonation || 0;
+      const parts: string[] = [];
+      if (donation > 0) {
+        parts.push(`your generous charity contributions totaling $${donation.toLocaleString()}`);
+      }
+      if (ethicalFounders.length > 0) {
+        parts.push(`backing high-integrity, disciplined startup founders like ${formatList(ethicalFounders.slice(0, 2))}`);
+      }
+      const driver = parts.length > 0 ? parts.join(', alongside ') : 'your clean compliance record and active community charity efforts';
+      return `Your reputation as a Philanthropist is solidified by ${driver}.`;
+    }
+
+    case "The Controversial Tycoon": {
+      const lowRoyaltyArtists = artists.filter(a => a.royaltyRate <= 15).map(a => a.name);
+      const aggressiveFounders = founders.filter(f => (f.stats?.burnDiscipline || 50) < 40 && (f.stats?.vision || 50) >= 60).map(f => f.name);
+      const volatileCEOs = ceoValues.filter(c => c.riskTolerance >= 70).map(c => c.name);
+      const corruptCabinet = cabinetMembers.length > 0 && (cabinetMembers.reduce((sum, m) => sum + (m.integrity || 50), 0) / cabinetMembers.length) < 45;
+
+      const parts: string[] = [];
+      if (lowRoyaltyArtists.length > 0) {
+        parts.push(`exploiting record label artists like ${formatList(lowRoyaltyArtists.slice(0, 2))} under highly favorable low-royalty contracts`);
+      }
+      if (aggressiveFounders.length > 0) {
+        parts.push(`funding aggressive, hyper-growth startup founders like ${formatList(aggressiveFounders.slice(0, 2))}`);
+      }
+      if (volatileCEOs.length > 0) {
+        parts.push(`appointing high-risk, volatile conglomerate executives like ${formatList(volatileCEOs.slice(0, 2))}`);
+      }
+      if (corruptCabinet) {
+        parts.push('retaining corrupt cabinet officials with poor integrity metrics');
+      }
+
+      const driver = parts.length > 0 ? formatList(parts) : 'your high-profile corporate bidding wars, active lawsuits, and volatile public controversies';
+      return `You are viewed as a Controversial Tycoon due to ${driver}.`;
+    }
+
+    case "The Crime Boss": {
+      const volatileCEOs = ceoValues.filter(c => c.riskTolerance >= 70).map(c => c.name);
+      const corruptCabinet = cabinetMembers.length > 0 && (cabinetMembers.reduce((sum, m) => sum + (m.integrity || 50), 0) / cabinetMembers.length) < 45;
+
+      const parts: string[] = [];
+      if (volatileCEOs.length > 0) {
+        parts.push(`appointing high-risk, compliance-ignoring conglomerate executives like ${formatList(volatileCEOs.slice(0, 2))}`);
+      }
+      if (corruptCabinet) {
+        parts.push('coordinating with corrupt and easily influenced cabinet officials in your administration');
+      }
+
+      const driver = parts.length > 0 ? formatList(parts) : 'your extremely high criminal Heat profile, past arrest record, and underground business operations';
+      return `Your perception as an intimidating Crime Boss is driven by ${driver}.`;
+    }
+
+    case "The Reformer": {
+      const integralCabinet = cabinetMembers.length > 0 && (cabinetMembers.reduce((sum, m) => sum + (m.integrity || 50), 0) / cabinetMembers.length) >= 70;
+      const fairArtists = artists.filter(a => a.royaltyRate >= 40).map(a => a.name);
+
+      const parts: string[] = [];
+      if (integralCabinet) {
+        parts.push('appointing a highly principled, high-integrity cabinet to steer the executive administration');
+      }
+      if (fairArtists.length > 0) {
+        parts.push(`establishing highly equitable, artist-friendly recording contracts for creators like ${formatList(fairArtists.slice(0, 2))}`);
+      }
+
+      const driver = parts.length > 0 ? formatList(parts) : 'your progressive legislative policies, clean background record, and strong legislative consensus';
+      return `Your legacy as a progressive Reformer is built on ${driver}.`;
+    }
+
+    case "The People's Champion": {
+      const fairArtists = artists.filter(a => a.royaltyRate >= 40).map(a => a.name);
+      const grassrootsCreators = rolodex.filter(c => c.isUnlocked && c.relationshipScore >= 75).map(c => c.name);
+
+      const parts: string[] = [];
+      if (grassrootsCreators.length > 0) {
+        parts.push(`maintaining deep, authentic connections with popular creators like ${formatList(grassrootsCreators.slice(0, 2))}`);
+      }
+      if (fairArtists.length > 0) {
+        parts.push(`protecting recording artists like ${formatList(fairArtists.slice(0, 2))} with generous, artist-first deals`);
+      }
+
+      const driver = parts.length > 0 ? formatList(parts) : 'your authentic street-kid roots, peak mental resilience, and outstanding public Aura';
+      return `The public hails you as the People's Champion, inspired by ${driver}.`;
+    }
+
+    case "The Mogul": {
+      const competentCEOs = ceoValues.filter(c => c.competence >= 70 && c.riskTolerance <= 40).map(c => c.name);
+      const driver = competentCEOs.length > 0
+        ? `appointing highly competent, disciplined division executives like ${formatList(competentCEOs.slice(0, 2))} to scale your global holdings`
+        : 'your masterful acquisition and upgrading of diverse top-tier business sectors';
+      return `You are celebrated as an elite Mogul, driven by ${driver}.`;
+    }
+
+    case "The Kingmaker": {
+      const trustedAllies = cabinetMembers.filter(m => m.isTrustedAlly === true || m.trustedAlly === true).map(m => m.name);
+      const driver = trustedAllies.length > 0
+        ? `having powerful, fiercely loyal cabinet allies like ${formatList(trustedAllies.slice(0, 2))} stationed across the federal administration`
+        : 'your deep political influence, extensive lobbying networks, and behind-the-scenes elite cabinet relationships';
+      return `Your status as a shadow Kingmaker is established by ${driver}.`;
+    }
+
+    case "The Billionaire": {
+      const fundedFounders = founders.filter(f => (f.followOnCount || 0) >= 2).map(f => f.name);
+      const driver = fundedFounders.length > 0
+        ? `allocating massive multi-million dollar venture capital expansions to backed founders like ${formatList(fundedFounders.slice(0, 2))}`
+        : 'your accumulation of an astronomical liquid capital reserve of over one billion dollars';
+      return `Your profile as a Billionaire is defined by ${driver}.`;
+    }
+
+    case "The Media Emperor": {
+      const grammyArtists = artists.filter(a => a.isGrammyWinner).map(a => a.name);
+      const driver = grammyArtists.length > 0
+        ? `scaling national media syndicates and managing legendary, Grammy-winning music legends like ${formatList(grammyArtists.slice(0, 2))}`
+        : 'your dominant ownership of major media networks and high-clout film production syndicates';
+      return `You are defined as a Media Emperor, leveraging ${driver}.`;
+    }
+
+    case "The Shadow Broker": {
+      const disruptiveFounders = founders.filter(f => (f.stats?.burnDiscipline || 50) < 40 && (f.stats?.vision || 50) >= 60).map(f => f.name);
+      const driver = disruptiveFounders.length > 0
+        ? `dominating encrypted data networks and backing high-risk, highly visionary technology founders like ${formatList(disruptiveFounders.slice(0, 2))}`
+        : 'your low-profile aura coupled with absolute dominance over crypto mining and massive digital analytics hubs';
+      return `Your standing as a Shadow Broker is built on ${driver}.`;
+    }
+
+    default:
+      return `The business community now sees you as "${targetRep}" due to your macro performance metrics and recent operational history.`;
+  }
 }
 
 /**
@@ -448,6 +717,10 @@ export function evaluateReputationTick(pl: PlayerStats): { newPl: PlayerStats; n
         newPl.narrativeFlags.publicReputation = targetRep;
         newPl.narrativeFlags.reputationCandidate = "";
         newPl.narrativeFlags.reputationSustainedMonths = 0;
+
+        // Compile custom "why" explanation based on roster actions
+        const whyReason = compileReputationWhy(newPl, targetRep);
+        newPl.narrativeFlags.reputationWhy = whyReason;
 
         // Record major historical milestone and biography reference
         const desc = `The public increasingly views you as "${targetRep}". The business community now sees you as "${targetRep}". This reputation may open opportunities across your operations.`;
