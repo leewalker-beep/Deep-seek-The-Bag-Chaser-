@@ -612,6 +612,9 @@ export function advanceMonth(
 
     // Re-evaluate threats and trigger milestones / challenges
     newPl.rivals.forEach(rival => {
+      if (rival.status === 'ally') {
+        return;
+      }
       const ratio = rival.netWorth / Math.max(1, newPl.bag);
       let threat: 'RIVAL_DOMINANT' | 'NEUTRAL' | 'PLAYER_DOMINANT' = 'NEUTRAL';
 

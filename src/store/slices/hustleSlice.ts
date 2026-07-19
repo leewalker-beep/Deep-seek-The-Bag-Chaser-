@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata, Founder } from '../../types/game';
+import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata, Founder, RegionalExecutive, PlayerStats } from '../../types/game';
 
 const FOUNDER_FIRST_NAMES = ["Alex", "Jordan", "Taylor", "Casey", "Morgan", "Sam", "Jamie", "Robin", "Drew", "Skyler"];
 const FOUNDER_LAST_NAMES = ["Chen", "Smith", "Altman", "Musk", "Jobs", "Wozniak", "Thiel", "Horowitz", "Andreessen", "Page"];
@@ -18,6 +18,9 @@ const PITCH_IDEAS = [
 const FOUNDER_AVATARS = ["👓", "🧠", "💻", "🚀", "🕶️", "💼", "🤖", "👔"];
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
+import { CHARACTERS } from '../../config/characters';
+import { getRivalAvatarId } from '../../config/avatars';
+import { getRivalRosterProfile, isRivalEligibleForRecruit } from '../../utils/rivalUtils';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
 import { HUSTLE_BADGES } from '../../config/badges';
@@ -61,6 +64,7 @@ export interface HustleSlice {
   retaliateRival: (rivalId: string) => boolean;
   sabotageRival: (rivalId: string) => void;
   counterBid: (rivalId: string) => void;
+  recruitRival: (rivalId: string) => boolean;
   resolveNarrativeEvent: (choiceId: string) => void;
   resolveInteractiveStoryEvent: (choiceIndex: number) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
@@ -2457,6 +2461,98 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     });
 
     get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_COUNTER_BID', rivalId, cost });
+  },
+
+  recruitRival: (rivalId) => {
+    const state = get();
+    const rival = state.pl.rivals.find(r => r.id === rivalId);
+    if (!rival) return false;
+
+    // Check eligibility using our helper
+    if (!isRivalEligibleForRecruit(rival)) {
+      get().addTickerMessage(`Cannot recruit ${rival.name}: Requirements not met!`, "text-red-400");
+      return false;
+    }
+
+    // Set Rival status to 'ally' and clear bid
+    const updatedRivals = state.pl.rivals.map(r =>
+      r.id === rivalId ? { ...r, status: 'ally' as any, currentBid: 0 } : r
+    );
+
+    // Generate roster profile
+    const profile = getRivalRosterProfile(rival);
+
+    let name = rival.name;
+    let avatarId = getRivalAvatarId(rival.name);
+    let bio = `${rival.name} was recruited after a hard-fought rivalry in ${rival.tier}.`;
+
+    if (rival.characterId) {
+      const char = CHARACTERS.find(c => c.id === rival.characterId);
+      if (char) {
+        name = char.name;
+        avatarId = char.portraitId;
+        bio = char.background;
+      }
+    }
+
+    const plUpdate: Partial<PlayerStats> = {
+      rivals: updatedRivals,
+    };
+
+    const isStartupOrLower = ['MUD', 'STREET', 'STARTUP'].includes(rival.tier);
+    if (isStartupOrLower) {
+      const newFounder: Founder = {
+        id: `founder_${rival.id}`,
+        name,
+        avatar: "💼",
+        avatarId,
+        companyName: `${name} Ventures`,
+        pitchIdea: bio,
+        followOnCount: 0,
+        stats: {
+          execution: profile.execution,
+          vision: profile.vision,
+          burnDiscipline: profile.burnDiscipline,
+        }
+      };
+      plUpdate.foundersBacked = [...(state.pl.foundersBacked || []), newFounder];
+    } else {
+      const newExec: RegionalExecutive = {
+        id: `exec_${rival.id}`,
+        name,
+        avatar: "👔",
+        avatarId,
+        competence: profile.competence,
+        loyalty: profile.loyalty,
+        riskTolerance: profile.riskTolerance,
+        bio,
+        personalityTraits: rival.preferredIndustries || []
+      };
+      plUpdate.conglomerateCandidates = [...(state.pl.conglomerateCandidates || []), newExec];
+    }
+
+    // Add biography / history log
+    let finalPl = enforceStatCaps({
+      ...state.pl,
+      ...plUpdate,
+    });
+
+    const bioUpdate = Bio.recordRivalRecruitment(finalPl, name);
+    if (bioUpdate) {
+      finalPl = {
+        ...finalPl,
+        biography: [...(finalPl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(finalPl.recordedBioKeys || []), bioUpdate.key!]
+      };
+    }
+
+    set({
+      pl: finalPl,
+      news: [{ text: `🤝 RECRUITED: Turned longtime rival ${name} into an ally!`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'RIVAL_RECRUITED', rivalId, rivalName: name });
+    return true;
   },
 
   resolveNarrativeEvent: (choiceId) => {
