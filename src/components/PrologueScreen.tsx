@@ -26,6 +26,31 @@ interface PrologueScreenProps {
   ) => void;
 }
 
+const renderCinematicText = (text: string, name: string) => {
+  if (!text) return null;
+  if (!name) return <span>{text}</span>;
+
+  // Escape special regex characters in the name
+  const escapedName = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(`(${escapedName})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.toLowerCase() === name.toLowerCase()) {
+          return (
+            <span key={index} className="font-mono text-emerald-400 font-bold">
+              {part}
+            </span>
+          );
+        }
+        return <React.Fragment key={index}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
 const GrainOverlay = () => (
   <>
     <style>{`
@@ -243,7 +268,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
           }
           return prev + 1;
         });
-      }, 3000);
+      }, 4000);
       return () => clearInterval(timer);
     }
   }, [phase, cinematicLines]);
@@ -817,7 +842,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                   textShadow: '0 0 40px rgba(255,255,255,0.1)',
                 }}
               >
-                {cinematicLines[cinematicIndex]?.text}
+                {renderCinematicText(cinematicLines[cinematicIndex]?.text, playerName || 'STRANGER')}
               </h2>
             </motion.div>
 

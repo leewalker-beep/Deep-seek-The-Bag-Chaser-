@@ -55,6 +55,9 @@ const playChime = () => {
 };
 
 export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwork, onComplete }) => {
+  // FLAG FOR REVIEW: Consider whether the tier-promotion moment should include the player's name
+  // (e.g. "Congratulations, {playerName}. Back to the grind...") in the congratulatoryLine
+  // by pulling playerName from the global game store (useGameStore(state => state.pl.name)) or props.
   const isTier = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'LEGEND', 'PRESIDENT'].includes(artwork.id);
   const congratulatoryLine = ADVISOR_CONGRATULATIONS[artwork.id];
 
@@ -62,7 +65,7 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
     if (isTier) {
       playChime();
     }
-    const timer = setTimeout(onComplete, 3000);
+    const timer = setTimeout(onComplete, 4000);
     return () => clearTimeout(timer);
   }, [onComplete, isTier]);
 
@@ -165,7 +168,7 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
-              transition={{ duration: 2.8, ease: "linear" }}
+              transition={{ duration: 3.8, ease: "linear" }}
               className="h-full"
               style={{ backgroundColor: artwork.color }}
             />
