@@ -10,6 +10,7 @@ interface StreetwearPanelProps {
 
 export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComplete }) => {
   const { executeHustle } = useGameStore();
+  const activeLevel = useGameStore(state => state.pl.hustleLevels[hustle.id] || 1);
 
   const handleComplete = (multiplier: number) => {
     const result = executeHustle(hustle.id, multiplier);
@@ -18,6 +19,29 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
     }
   };
 
+  const getLevelInfo = (lvl: number) => {
+    switch (lvl) {
+      case 1:
+        return {
+          title: "Screenprint Tees",
+          desc: "Small-batch printing. Match the target colors of parts and tags before the timer runs out.",
+        };
+      case 2:
+        return {
+          title: "Pop-Up Tour",
+          desc: "Rush Service: serve customers in queue rapidly. Redirection to substitutes is required when requested items run out of stock!",
+        };
+      case 3:
+      default:
+        return {
+          title: "Flagship Store",
+          desc: "Inventory Forecast: allocate your 100 units of collection budget based on expected demand, then resolve sales sell-through.",
+        };
+    }
+  };
+
+  const levelInfo = getLevelInfo(activeLevel);
+
   return (
     <div className="space-y-4">
       <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
@@ -25,7 +49,7 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
           <div className="text-5xl">{hustle.icon}</div>
           <div>
             <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">
-              {hustle.name}
+              {hustle.name} - {levelInfo.title}
             </h3>
             <p className="text-slate-500 text-xs font-bold uppercase">{hustle.description}</p>
           </div>
@@ -34,13 +58,13 @@ export const StreetwearPanel: React.FC<StreetwearPanelProps> = ({ hustle, onComp
         <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
           <div className="text-[10px] text-slate-500 uppercase font-bold mb-2">DESIGN STRATEGY</div>
           <p className="text-slate-300 text-sm">
-            Consistency is key. Match the color swatches to the target outfit parts for maximum hype.
+            {levelInfo.desc}
           </p>
         </div>
 
         <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest text-[10px] animate-pulse">Initializing Design Studio...</div>}>
           <StreetwearMatch
-            level={useGameStore.getState().pl.hustleLevels[hustle.id] || 1}
+            level={activeLevel}
             onComplete={handleComplete}
           />
         </Suspense>
