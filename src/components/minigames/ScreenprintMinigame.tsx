@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface ScreenprintMinigameProps {
   onComplete: (multiplier: number) => void;
@@ -45,7 +44,7 @@ export const ScreenprintMinigame: React.FC<ScreenprintMinigameProps> = ({ onComp
       setTimeLeft((t) => {
         if (t <= 0.1) {
           clearInterval(interval);
-          handleFinish(true); // timed out
+          handleFinish(); // timed out
           return 0;
         }
         return Number((t - 0.1).toFixed(1));
@@ -68,7 +67,7 @@ export const ScreenprintMinigame: React.FC<ScreenprintMinigameProps> = ({ onComp
     }
   };
 
-  const handleFinish = (isTimeout = false) => {
+  const handleFinish = () => {
     setGameActive(false);
 
     // Calculate matches
@@ -192,7 +191,7 @@ export const ScreenprintMinigame: React.FC<ScreenprintMinigameProps> = ({ onComp
           </div>
 
           <button
-            onClick={() => handleFinish(false)}
+            onClick={() => handleFinish()}
             disabled={!allSelected}
             className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all border-b-4 ${
               allSelected

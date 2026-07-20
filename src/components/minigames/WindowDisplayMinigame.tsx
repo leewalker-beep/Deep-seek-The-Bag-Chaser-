@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 
 interface WindowDisplayMinigameProps {
   onComplete: (multiplier: number) => void;
