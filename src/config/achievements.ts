@@ -779,7 +779,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'ROSTER_ARTIST_5',
-    name: 'Label Boss',
+    name: 'Full Roster',
     description: 'Sign 5 artists to your record label roster.',
     category: 'COLLECTION',
     requirement: {
@@ -812,7 +812,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'ROSTER_FOUNDER_1',
-    name: 'Angel Investor',
+    name: 'First Bet',
     description: 'Back your first founder in the Venture Capital pitch room.',
     category: 'COLLECTION',
     requirement: {
@@ -823,7 +823,7 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
   },
   {
     id: 'ROSTER_FOUNDER_5',
-    name: 'Venture Catalyst',
+    name: 'Portfolio Builder',
     description: 'Back 5 unique founders with your VC funds.',
     category: 'COLLECTION',
     requirement: {
@@ -875,5 +875,27 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       progress: (state: GameState) => ({ current: Object.values(state.pl.cabinet || {}).filter(Boolean).length, target: 4 })
     },
     reward: { clout: 1000, aura: 1000, legacyPoints: 1000 }
+  },
+  {
+    id: 'ROSTER_CEO_3',
+    name: 'Global Reach',
+    description: 'Appoint Regional CEOs to 3+ regional divisions in your Global Conglomerate.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length >= 3,
+      progress: (state: GameState) => ({ current: Object.values(state.pl.conglomerateCEOs || {}).filter(Boolean).length, target: 3 })
+    },
+    reward: { clout: 250, aura: 250, legacyPoints: 250 }
+  },
+  {
+    id: 'ROSTER_RIVAL_ALLY_1',
+    name: 'Turned Coat',
+    description: 'Recruit your first rival as an ally.',
+    category: 'COLLECTION',
+    requirement: {
+      check: (state: GameState) => (state.pl.rivals || []).some(r => r.status === 'ally'),
+      progress: (state: GameState) => ({ current: (state.pl.rivals || []).some(r => r.status === 'ally') ? 1 : 0, target: 1 })
+    },
+    reward: { clout: 100, aura: 100, legacyPoints: 100 }
   }
 ];
