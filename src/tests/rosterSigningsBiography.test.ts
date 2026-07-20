@@ -8,10 +8,10 @@ describe('Roster-Signing Biography Integrations', () => {
     useGameStore.getState().resetGame('sk_scrap');
   });
 
-  it('should record biography when signing a scouted artist and booking them for a performance', () => {
+  it('Festival artist booking - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
 
-    // Simulate finding an artist in scouted pool
+    // Setup an artist
     const mockArtist = {
       id: 'artist_test_prodigy',
       name: 'Vocal Prodigy Test',
@@ -38,20 +38,27 @@ describe('Roster-Signing Biography Integrations', () => {
       line.includes('Signed local artist Vocal Prodigy Test')
     )).toBe(true);
 
-    // 2. Festival artist booking
-    const draftPl = { ...stateAfterSign.pl };
+    // 2. Festival artist booking (First Trigger)
+    let draftPl = { ...stateAfterSign.pl };
     const draftNewsFeed: string[] = [];
     completeConcertPerformanceWithLineup(draftPl, 10, 1, ['artist_test_prodigy'], draftNewsFeed);
 
-    expect(draftPl.biography.some(line =>
+    const firstCount = draftPl.biography.filter(line =>
       line.includes('Booked Vocal Prodigy Test for a live performance')
-    )).toBe(true);
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Repeated Trigger
+    completeConcertPerformanceWithLineup(draftPl, 10, 1, ['artist_test_prodigy'], draftNewsFeed);
+    const secondCount = draftPl.biography.filter(line =>
+      line.includes('Booked Vocal Prodigy Test for a live performance')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1, no duplicate added
   });
 
-  it('should record biography when signing talent at Boutique Talent Agency', () => {
+  it('Talent Agency signing - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
 
-    // Simulate completing the talent agency minigame
     const signedCelebrity = {
       id: 'cel_test_jules',
       name: 'Jules the Legend',
@@ -60,27 +67,48 @@ describe('Roster-Signing Biography Integrations', () => {
       isUnlocked: true
     };
 
-    const currentRolodex = store.pl.rolodex || [];
-    const updatedRolodex = [...currentRolodex, signedCelebrity];
-
-    const bioUpdate = Bio.recordTalentSigning(store.pl, signedCelebrity.name, signedCelebrity.relationshipScore);
+    // First trigger
+    let state = useGameStore.getState();
+    let updatedRolodex = [...(state.pl.rolodex || []), signedCelebrity];
+    let bioUpdate = Bio.recordTalentSigning(state.pl, signedCelebrity.name, signedCelebrity.relationshipScore);
     expect(bioUpdate).not.toBeNull();
-    expect(bioUpdate?.entry).toContain('Signed high-profile talent Jules the Legend');
 
-    const biography = bioUpdate ? [...(store.pl.biography || []), bioUpdate.entry] : (store.pl.biography || []);
-    store.updatePl({
+    let biography = bioUpdate ? [...(state.pl.biography || []), bioUpdate.entry] : (state.pl.biography || []);
+    let recordedBioKeys = bioUpdate ? [...(state.pl.recordedBioKeys || []), bioUpdate.key!] : (state.pl.recordedBioKeys || []);
+
+    useGameStore.getState().updatePl({
       rolodex: updatedRolodex,
-      biography
+      biography,
+      recordedBioKeys
     });
 
-    const finalState = useGameStore.getState();
-    expect(finalState.pl.rolodex?.length).toBeGreaterThan(0);
-    expect(finalState.pl.biography.some(line =>
+    let finalState = useGameStore.getState();
+    const firstCount = finalState.pl.biography.filter(line =>
       line.includes('Signed high-profile talent Jules the Legend')
-    )).toBe(true);
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Second trigger with exact same parameters
+    state = useGameStore.getState();
+    bioUpdate = Bio.recordTalentSigning(state.pl, signedCelebrity.name, signedCelebrity.relationshipScore);
+    expect(bioUpdate).toBeNull(); // Should be null on repeated trigger because key already exists
+
+    biography = bioUpdate ? [...(state.pl.biography || []), bioUpdate.entry] : (state.pl.biography || []);
+    recordedBioKeys = bioUpdate ? [...(state.pl.recordedBioKeys || []), bioUpdate.key!] : (state.pl.recordedBioKeys || []);
+
+    useGameStore.getState().updatePl({
+      biography,
+      recordedBioKeys
+    });
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes('Signed high-profile talent Jules the Legend')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
   });
 
-  it('should record biography when casting celebrity in Movie', () => {
+  it('Movie casting - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
     const mockActor = {
       id: 'cel_test_actor',
@@ -97,23 +125,94 @@ describe('Roster-Signing Biography Integrations', () => {
       }
     });
 
-    const state = useGameStore.getState();
-    const bioUpdate = Bio.recordMovieCasting(state.pl, mockActor.name, 'Galaxy Odyssey', 'BLOCKBUSTER');
+    // First casting
+    let state = useGameStore.getState();
+    let bioUpdate = Bio.recordMovieCasting(state.pl, mockActor.name, 'Galaxy Odyssey', 'BLOCKBUSTER');
     expect(bioUpdate).not.toBeNull();
-    expect(bioUpdate?.entry).toContain('Cast Superstar Actor in "Galaxy Odyssey", which went on to become a blockbuster');
 
     state.updatePl({
       biography: [...(state.pl.biography || []), bioUpdate!.entry],
       recordedBioKeys: [...(state.pl.recordedBioKeys || []), bioUpdate!.key!]
     });
 
-    const finalState = useGameStore.getState();
-    expect(finalState.pl.biography.some(line =>
+    let finalState = useGameStore.getState();
+    const firstCount = finalState.pl.biography.filter(line =>
       line.includes('Cast Superstar Actor in "Galaxy Odyssey"')
-    )).toBe(true);
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Second casting of exact same movie/actor
+    state = useGameStore.getState();
+    bioUpdate = Bio.recordMovieCasting(state.pl, mockActor.name, 'Galaxy Odyssey', 'BLOCKBUSTER');
+    expect(bioUpdate).toBeNull(); // Should be null
+
+    if (bioUpdate) {
+      state.updatePl({
+        biography: [...(state.pl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(state.pl.recordedBioKeys || []), bioUpdate.key!]
+      });
+    }
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes('Cast Superstar Actor in "Galaxy Odyssey"')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
   });
 
-  it('should record biography when backing VC founders', () => {
+  it('Marry a Celebrity - should record exactly one biography entry with no duplicates on repeated triggers', () => {
+    const store = useGameStore.getState();
+    const mockSpouse = {
+      id: 'cel_test_spouse',
+      name: 'Superstar Marcus',
+      avatar: '🏀',
+      relationshipScore: 100,
+      isUnlocked: true
+    };
+
+    useGameStore.setState({
+      pl: {
+        ...store.pl,
+        rolodex: [mockSpouse]
+      }
+    });
+
+    // First Marriage
+    let state = useGameStore.getState();
+    let bioUpdate = Bio.recordCelebrityMarriage(state.pl, mockSpouse.name, mockSpouse.relationshipScore);
+    expect(bioUpdate).not.toBeNull();
+
+    state.updatePl({
+      biography: [...(state.pl.biography || []), bioUpdate!.entry],
+      recordedBioKeys: [...(state.pl.recordedBioKeys || []), bioUpdate!.key!]
+    });
+
+    let finalState = useGameStore.getState();
+    const firstCount = finalState.pl.biography.filter(line =>
+      line.includes('Married the renowned celebrity Superstar Marcus')
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Second Marriage to the exact same celebrity
+    state = useGameStore.getState();
+    bioUpdate = Bio.recordCelebrityMarriage(state.pl, mockSpouse.name, mockSpouse.relationshipScore);
+    expect(bioUpdate).toBeNull(); // Should be null
+
+    if (bioUpdate) {
+      state.updatePl({
+        biography: [...(state.pl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(state.pl.recordedBioKeys || []), bioUpdate.key!]
+      });
+    }
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes('Married the renowned celebrity Superstar Marcus')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
+  });
+
+  it('VC Founder backed - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
 
     // Advance tier to allow ELITE hustles like venture_capital
@@ -121,25 +220,42 @@ describe('Roster-Signing Biography Integrations', () => {
       pl: {
         ...store.pl,
         currentTier: 'ELITE',
-        bag: 10000000,
+        bag: 100000000,
         foundersBacked: []
       }
     });
 
-    // Execute VC hustle (venture_capital)
-    const result = useGameStore.getState().executeHustle('venture_capital', 1.0, true);
+    // Execute VC hustle (First Trigger)
+    useGameStore.getState().executeHustle('venture_capital', 1.0, true);
 
-    const finalState = useGameStore.getState();
+    let finalState = useGameStore.getState();
     expect(finalState.pl.foundersBacked.length).toBe(1);
     const backedFounder = finalState.pl.foundersBacked[0];
 
-    expect(finalState.pl.biography.some(line =>
-      line.includes(`Invested venture capital into backed founder ${backedFounder.name}`) &&
-      line.includes(backedFounder.companyName)
-    )).toBe(true);
+    const firstCount = finalState.pl.biography.filter(line =>
+      line.includes(`Invested venture capital into backed founder ${backedFounder.name}`)
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Triggering it again using Bio.recordFounderBacked directly with identical parameters to simulate duplicate trigger
+    const bioUpdate = Bio.recordFounderBacked(finalState.pl, backedFounder.name, backedFounder.companyName);
+    expect(bioUpdate).toBeNull(); // Duplicates blocked!
+
+    if (bioUpdate) {
+      useGameStore.getState().updatePl({
+        biography: [...(finalState.pl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(finalState.pl.recordedBioKeys || []), bioUpdate.key!]
+      });
+    }
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes(`Invested venture capital into backed founder ${backedFounder.name}`)
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
   });
 
-  it('should record biography when appointing a Regional CEO', () => {
+  it('Regional CEO appointed - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
     const mockCEO = {
       id: 'ceo_test_sterling',
@@ -160,17 +276,36 @@ describe('Roster-Signing Biography Integrations', () => {
       }
     });
 
-    // Appoint CEO to division
+    // Appoint CEO (First Trigger)
     useGameStore.getState().appointConglomerateCEO!('na_tech', mockCEO);
 
-    const finalState = useGameStore.getState();
+    let finalState = useGameStore.getState();
     expect(finalState.pl.conglomerateCEOs?.['na_tech']?.name).toBe('Jack Sterling Test');
-    expect(finalState.pl.biography.some(line =>
+
+    const firstCount = finalState.pl.biography.filter(line =>
       line.includes('Appointed Jack Sterling Test as Regional CEO of the North America Technology division')
-    )).toBe(true);
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Re-appoint / trigger appointment again
+    const bioUpdate = Bio.recordCEOAppointment(finalState.pl, mockCEO.name, 'na_tech');
+    expect(bioUpdate).toBeNull(); // Duplicates blocked!
+
+    if (bioUpdate) {
+      useGameStore.getState().updatePl({
+        biography: [...(finalState.pl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(finalState.pl.recordedBioKeys || []), bioUpdate.key!]
+      });
+    }
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes('Appointed Jack Sterling Test as Regional CEO of the North America Technology division')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
   });
 
-  it('should record biography when appointing a Cabinet member', () => {
+  it('Cabinet appointment - should record exactly one biography entry with no duplicates on repeated triggers', () => {
     const store = useGameStore.getState();
     const mockCabinetMember = {
       id: 'test_vp',
@@ -191,13 +326,32 @@ describe('Roster-Signing Biography Integrations', () => {
       }
     });
 
-    // Appoint Cabinet Member
+    // Appoint Cabinet Member (First Trigger)
     useGameStore.getState().appointCabinetMember!(mockCabinetMember);
 
-    const finalState = useGameStore.getState();
+    let finalState = useGameStore.getState();
     expect(finalState.pl.cabinet['test_vp']?.name).toBe('Vice President Test');
-    expect(finalState.pl.biography.some(line =>
+
+    const firstCount = finalState.pl.biography.filter(line =>
       line.includes('Appointed Vice President Test as Vice President')
-    )).toBe(true);
+    ).length;
+    expect(firstCount).toBe(1);
+
+    // Re-appoint / trigger appointment again
+    const bioUpdate = Bio.recordCabinetAppointment(finalState.pl, mockCabinetMember.name, mockCabinetMember.role);
+    expect(bioUpdate).toBeNull(); // Duplicates blocked!
+
+    if (bioUpdate) {
+      useGameStore.getState().updatePl({
+        biography: [...(finalState.pl.biography || []), bioUpdate.entry],
+        recordedBioKeys: [...(finalState.pl.recordedBioKeys || []), bioUpdate.key!]
+      });
+    }
+
+    finalState = useGameStore.getState();
+    const secondCount = finalState.pl.biography.filter(line =>
+      line.includes('Appointed Vice President Test as Vice President')
+    ).length;
+    expect(secondCount).toBe(1); // Still exactly 1
   });
 });
