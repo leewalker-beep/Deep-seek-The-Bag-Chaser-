@@ -382,7 +382,7 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
   // 1. Rolodex / Talent Agency Creators (pl.rolodex)
   const rolodex = pl.rolodex || [];
   let signingCount = 0;
-  rolodex.forEach(celebrity => {
+  for (const celebrity of rolodex) {
     if (celebrity.isUnlocked) {
       scores["The Celebrity"] += 15;
       if (celebrity.relationshipScore >= 75) {
@@ -394,17 +394,17 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
         signingCount++;
       }
     }
-  });
+  }
 
   // 2. VC Backed Founders (pl.foundersBacked)
   const founders = pl.foundersBacked || [];
   let vcReformerContribution = 0;
   let vcTycoonContribution = 0;
-  founders.forEach(founder => {
+  for (const founder of founders) {
     const stats = founder.stats || {};
-    const burnDiscipline = stats.burnDiscipline || 50;
-    const vision = stats.vision || 50;
-    const followOnCount = founder.followOnCount || 0;
+    const burnDiscipline = stats.burnDiscipline ?? 50;
+    const vision = stats.vision ?? 50;
+    const followOnCount = founder.followOnCount ?? 0;
 
     if (burnDiscipline >= 70) {
       vcReformerContribution += 10;
@@ -427,13 +427,13 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     if (followOnCount >= 2) {
       scores["The Billionaire"] += 10;
     }
-  });
+  }
   scores["The Reformer"] += Math.min(75, vcReformerContribution);
   scores["The Controversial Tycoon"] += Math.min(75, vcTycoonContribution);
 
   // 3. Record Label Artists (pl.artists)
   const artists = pl.artists || [];
-  artists.forEach(artist => {
+  for (const artist of artists) {
     scores["The Celebrity"] += 15;
 
     // Exploitative Contract (royalty rate <= 15%)
@@ -450,7 +450,7 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
       scores["The Celebrity"] += 20;
       scores["The Media Emperor"] += 10;
     }
-  });
+  }
 
   // 4. Cabinet Members (pl.cabinet)
   const cabinet = pl.cabinet || {};
@@ -473,13 +473,13 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     // Cabinet Corruption risk contribution
     let cabinetCorruptionTycoon = 0;
     let cabinetCorruptionCrime = 0;
-    cabinetMembers.forEach(member => {
+    for (const member of cabinetMembers) {
       const risk = member.corruptionRisk ?? 0;
       if (risk >= 50) {
         cabinetCorruptionTycoon += 10;
         cabinetCorruptionCrime += 10;
       }
-    });
+    }
     scores["The Controversial Tycoon"] += Math.min(75, cabinetCorruptionTycoon);
     scores["The Crime Boss"] += Math.min(75, cabinetCorruptionCrime);
   }
@@ -488,7 +488,7 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
   const ceos = pl.conglomerateCEOs || {};
   let ceoKingmakerContribution = 0;
   let ceoTycoonContribution = 0;
-  Object.values(ceos).forEach(ceo => {
+  for (const ceo of Object.values(ceos)) {
     if (ceo) {
       if (ceo.loyalty >= 70) {
         ceoKingmakerContribution += 10;
@@ -506,7 +506,7 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
         scores["The Investor"] += 10;
       }
     }
-  });
+  }
   scores["The Kingmaker"] += Math.min(75, ceoKingmakerContribution);
   scores["The Controversial Tycoon"] += Math.min(75, ceoTycoonContribution);
 

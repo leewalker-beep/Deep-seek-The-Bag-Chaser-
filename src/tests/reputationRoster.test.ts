@@ -196,6 +196,67 @@ describe('Roster-to-Reputation Vector Integration Tests', () => {
     expect(scoresCorrupt["The Controversial Tycoon"]).toBe(initialScores["The Controversial Tycoon"] + 20);
   });
 
+  it('should verify that cabinet integrity is not double-counted if already present', () => {
+    const basePl = useGameStore.getState().pl;
+    const initialScores = calculateReputationScores(basePl);
+
+    // Create a base high-integrity cabinet
+    const plHigh: PlayerStats = {
+      ...basePl,
+      cabinet: {
+        treasury: {
+          id: 'treasury',
+          name: 'Honest Abe',
+          role: 'Treasury Secretary',
+          loyalty: 80,
+          integrity: 75, // average integrity will be >= 70
+          strengths: [],
+          weaknesses: [],
+          politicalAlignment: 'center',
+          impacts: {},
+          bonus: { type: 'cash', value: 1.1 }
+        },
+        state: {
+          id: 'state',
+          name: 'Fair Fiona',
+          role: 'Secretary of State',
+          loyalty: 85,
+          integrity: 75,
+          strengths: [],
+          weaknesses: [],
+          politicalAlignment: 'center',
+          impacts: {},
+          bonus: { type: 'approval', value: 1.1 }
+        }
+      }
+    };
+
+    const scoresHigh = calculateReputationScores(plHigh);
+    // Expect +30 to Reformer
+    expect(scoresHigh["The Reformer"]).toBe(initialScores["The Reformer"] + 30);
+
+    // Now raise the integrity values further
+    const plEvenHigher: PlayerStats = {
+      ...plHigh,
+      cabinet: {
+        ...plHigh.cabinet,
+        treasury: {
+          ...plHigh.cabinet!.treasury,
+          integrity: 95
+        },
+        state: {
+          ...plHigh.cabinet!.state,
+          integrity: 95
+        }
+      }
+    };
+
+    const scoresEvenHigher = calculateReputationScores(plEvenHigher);
+    // Raising the integrity should still yield exactly +30 to Reformer, indicating no dynamic double-counting or scaling per-point
+    expect(scoresEvenHigher["The Reformer"]).toBe(scoresHigh["The Reformer"]);
+    expect(scoresEvenHigher["The Reformer"]).toBe(initialScores["The Reformer"] + 30);
+  });
+
   it('should adjust Mogul/Investor and Controversial Tycoon/Crime Boss scores based on CEO traits', () => {
     const basePl = useGameStore.getState().pl;
     const initialScores = calculateReputationScores(basePl);

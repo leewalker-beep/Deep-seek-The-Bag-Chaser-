@@ -610,6 +610,7 @@ export function generateStrategicAdvice(
   }
 
   // --- DYNAMIC REPUTATION INTEGRATION ---
+  // Surfaces the most contributing roster action or gameplay metric as whyItHappened
   const activeRep = pl.narrativeFlags?.publicReputation as string || "The Hustler";
   const customWhy = pl.narrativeFlags?.reputationWhy as string || `The business community now sees you as "${activeRep}" due to your metric choices.`;
   insights.push({
