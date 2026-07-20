@@ -381,23 +381,37 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
 
   // 1. Rolodex / Talent Agency Creators (pl.rolodex)
   const rolodex = pl.rolodex || [];
+  let signingCount = 0;
   rolodex.forEach(celebrity => {
     if (celebrity.isUnlocked) {
       scores["The Celebrity"] += 15;
-      scores["The Controversial Tycoon"] += 10;
       if (celebrity.relationshipScore >= 75) {
         scores["The People's Champion"] += 5;
+      }
+      if (signingCount < 5) {
+        scores["The Controversial Tycoon"] += 15;
+        scores["The Crime Boss"] += 10;
+        signingCount++;
       }
     }
   });
 
   // 2. VC Backed Founders (pl.foundersBacked)
   const founders = pl.foundersBacked || [];
+  let vcReformerContribution = 0;
+  let vcTycoonContribution = 0;
   founders.forEach(founder => {
     const stats = founder.stats || {};
     const burnDiscipline = stats.burnDiscipline || 50;
     const vision = stats.vision || 50;
     const followOnCount = founder.followOnCount || 0;
+
+    if (burnDiscipline >= 70) {
+      vcReformerContribution += 10;
+    }
+    if (burnDiscipline < 30) {
+      vcTycoonContribution += 10;
+    }
 
     // Ethical Founder
     if (burnDiscipline >= 60) {
@@ -414,6 +428,8 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
       scores["The Billionaire"] += 10;
     }
   });
+  scores["The Reformer"] += Math.min(75, vcReformerContribution);
+  scores["The Controversial Tycoon"] += Math.min(75, vcTycoonContribution);
 
   // 3. Record Label Artists (pl.artists)
   const artists = pl.artists || [];
@@ -453,14 +469,36 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     if (hasTrustedAlly) {
       scores["The Kingmaker"] += 15;
     }
+
+    // Cabinet Corruption risk contribution
+    let cabinetCorruptionTycoon = 0;
+    let cabinetCorruptionCrime = 0;
+    cabinetMembers.forEach(member => {
+      const risk = member.corruptionRisk ?? 0;
+      if (risk >= 50) {
+        cabinetCorruptionTycoon += 10;
+        cabinetCorruptionCrime += 10;
+      }
+    });
+    scores["The Controversial Tycoon"] += Math.min(75, cabinetCorruptionTycoon);
+    scores["The Crime Boss"] += Math.min(75, cabinetCorruptionCrime);
   }
 
   // 5. Conglomerate CEOs (pl.conglomerateCEOs)
   const ceos = pl.conglomerateCEOs || {};
+  let ceoKingmakerContribution = 0;
+  let ceoTycoonContribution = 0;
   Object.values(ceos).forEach(ceo => {
     if (ceo) {
+      if (ceo.loyalty >= 70) {
+        ceoKingmakerContribution += 10;
+      }
       if (ceo.riskTolerance >= 70) {
-        scores["The Controversial Tycoon"] += 15;
+        ceoTycoonContribution += 10;
+      }
+
+      // Existing CEO rules
+      if (ceo.riskTolerance >= 70) {
         scores["The Crime Boss"] += 10;
       }
       if (ceo.competence >= 70 && ceo.riskTolerance <= 40) {
@@ -469,6 +507,12 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
       }
     }
   });
+  scores["The Kingmaker"] += Math.min(75, ceoKingmakerContribution);
+  scores["The Controversial Tycoon"] += Math.min(75, ceoTycoonContribution);
+
+  // 6. Rival recruitment (allies in pl.rivals)
+  const recruitedRivalsCount = (pl.rivals || []).filter(r => r.status === 'ally').length;
+  scores["The Reformer"] += recruitedRivalsCount * 20;
 
   return scores;
 }
@@ -649,6 +693,79 @@ export function compileReputationWhy(pl: PlayerStats, targetRep: string): string
   }
 }
 
+export function getRosterContributionsForPersona(pl: PlayerStats, persona: string): Record<string, number> {
+  const contributions: Record<string, number> = {
+    "Talent Agency Signings": 0,
+    "VC Founders Backed": 0,
+    "Regional CEO Appointments": 0,
+    "Cabinet Appointments": 0,
+    "Rival Recruitment": 0
+  };
+
+  // 1. Talent Agency signings
+  const rolodex = pl.rolodex || [];
+  let signingCount = 0;
+  rolodex.forEach(celebrity => {
+    if (celebrity.isUnlocked) {
+      if (signingCount < 5) {
+        if (persona === "The Controversial Tycoon") contributions["Talent Agency Signings"] += 15;
+        if (persona === "The Crime Boss") contributions["Talent Agency Signings"] += 10;
+        signingCount++;
+      }
+    }
+  });
+
+  // 2. VC Founders backed
+  const founders = pl.foundersBacked || [];
+  let vcReformer = 0;
+  let vcTycoon = 0;
+  founders.forEach(founder => {
+    const stats = founder.stats || {};
+    const burnDiscipline = stats.burnDiscipline || 50;
+
+    if (burnDiscipline >= 70) vcReformer += 10;
+    if (burnDiscipline < 30) vcTycoon += 10;
+  });
+  if (persona === "The Reformer") contributions["VC Founders Backed"] += Math.min(75, vcReformer);
+  if (persona === "The Controversial Tycoon") contributions["VC Founders Backed"] += Math.min(75, vcTycoon);
+
+  // 3. Regional CEO appointments
+  const ceos = pl.conglomerateCEOs || {};
+  let ceoKingmaker = 0;
+  let ceoTycoon = 0;
+  Object.values(ceos).forEach(ceo => {
+    if (ceo) {
+      if (ceo.loyalty >= 70) ceoKingmaker += 10;
+      if (ceo.riskTolerance >= 70) ceoTycoon += 10;
+    }
+  });
+  if (persona === "The Kingmaker") contributions["Regional CEO Appointments"] += Math.min(75, ceoKingmaker);
+  if (persona === "The Controversial Tycoon") contributions["Regional CEO Appointments"] += Math.min(75, ceoTycoon);
+
+  // 4. Cabinet appointments
+  const cabinet = pl.cabinet || {};
+  const cabinetMembers = Object.values(cabinet);
+  let cabinetCorruptionTycoon = 0;
+  let cabinetCorruptionCrime = 0;
+  cabinetMembers.forEach(member => {
+    const risk = member.corruptionRisk ?? 0;
+    if (risk >= 50) {
+      cabinetCorruptionTycoon += 10;
+      cabinetCorruptionCrime += 10;
+    }
+  });
+  if (persona === "The Controversial Tycoon") contributions["Cabinet Appointments"] += Math.min(75, cabinetCorruptionTycoon);
+  if (persona === "The Crime Boss") contributions["Cabinet Appointments"] += Math.min(75, cabinetCorruptionCrime);
+
+  // 5. Rival Recruitment
+  const recruitedRivalsCount = (pl.rivals || []).filter(r => r.status === 'ally').length;
+  if (persona === "The Reformer") {
+    contributions["Rival Recruitment"] += recruitedRivalsCount * 20;
+  }
+
+  return contributions;
+}
+
 /**
  * Main Reputation Evaluation Tick.
  * Evaluates candidate state machine, updates publicReputation, and returns news ticker references.
@@ -718,9 +835,41 @@ export function evaluateReputationTick(pl: PlayerStats): { newPl: PlayerStats; n
         newPl.narrativeFlags.reputationCandidate = "";
         newPl.narrativeFlags.reputationSustainedMonths = 0;
 
-        // Compile custom "why" explanation based on roster actions
-        const whyReason = compileReputationWhy(newPl, targetRep);
-        newPl.narrativeFlags.reputationWhy = whyReason;
+        // Custom "why" explanation based on roster actions if any contributed meaningfully
+        const rosterContributions = getRosterContributionsForPersona(newPl, targetRep);
+        const categoryLabels: Record<string, string> = {
+          "Talent Agency Signings": "Talent Agency signings",
+          "VC Founders Backed": "VC Founders backed",
+          "Regional CEO Appointments": "Regional CEO appointments",
+          "Cabinet Appointments": "Cabinet appointments",
+          "Rival Recruitment": "Rival recruitment"
+        };
+
+        let winningCategory = "";
+        let maxVal = 0;
+        const categoriesOrder = [
+          "Talent Agency Signings",
+          "VC Founders Backed",
+          "Regional CEO Appointments",
+          "Cabinet Appointments",
+          "Rival Recruitment"
+        ];
+        for (const cat of categoriesOrder) {
+          const val = rosterContributions[cat] || 0;
+          if (val > maxVal) {
+            maxVal = val;
+            winningCategory = cat;
+          }
+        }
+
+        if (maxVal > 0 && winningCategory) {
+          const label = categoryLabels[winningCategory];
+          newPl.narrativeFlags.reputationWhy = `Your transition to ${targetRep} is primarily driven by your ${label}.`;
+        } else {
+          // Compile custom "why" explanation based on roster actions
+          const whyReason = compileReputationWhy(newPl, targetRep);
+          newPl.narrativeFlags.reputationWhy = whyReason;
+        }
 
         // Record major historical milestone and biography reference
         const desc = `The public increasingly views you as "${targetRep}". The business community now sees you as "${targetRep}". This reputation may open opportunities across your operations.`;
