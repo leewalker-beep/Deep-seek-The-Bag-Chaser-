@@ -187,6 +187,18 @@ export const recordCabinetAppointment = (pl: PlayerStats, name: string, role: st
   );
 };
 
+export const recordCelebrityMarriage = (pl: PlayerStats, name: string, relationship: number): BiographyUpdate | null => {
+  return recordEvent(
+    pl,
+    `Married the renowned celebrity ${name} (Chemistry: ${relationship}/100) in a lavish high-society wedding, solidifying an elite power couple status.`,
+    `marry_celebrity_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Married Celebrity',
+    [name]
+  );
+};
+
 export const recordCabinetDismissal = (pl: PlayerStats, name: string, role: string): BiographyUpdate | null => {
   return recordEvent(
     pl,
