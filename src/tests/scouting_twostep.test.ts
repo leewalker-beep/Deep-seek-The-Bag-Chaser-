@@ -17,9 +17,9 @@ describe('Two-step Talent Scouting Flow', () => {
     }));
   });
 
-  it('populates scoutedTalentPool with 2-3 candidate artists on successful scout roll', () => {
+  it('populates scoutedTalentPool with exactly 3 candidate artists on successful scout roll', () => {
     const originalRandom = Math.random;
-    // Mock Math.random to always succeed (< successRate) and also deterministic candidate count
+    // Mock Math.random to always succeed (< successRate)
     Math.random = vi.fn().mockReturnValue(0.01);
 
     const store = useGameStore.getState();
@@ -31,9 +31,8 @@ describe('Two-step Talent Scouting Flow', () => {
     expect(result.success).toBe(true);
 
     const pl = useGameStore.getState().pl;
-    // Should populate the pool with 2 or 3 candidates
-    expect(pl.scoutedTalentPool.length).toBeGreaterThanOrEqual(2);
-    expect(pl.scoutedTalentPool.length).toBeLessThanOrEqual(3);
+    // Should populate the pool with exactly 3 candidates
+    expect(pl.scoutedTalentPool.length).toBe(3);
 
     // Main artist roster must still be empty because we have not selected/signed anyone yet
     expect(pl.artists.length).toBe(0);
@@ -141,5 +140,46 @@ describe('Two-step Talent Scouting Flow', () => {
     store.advanceMonthAction?.();
     const finalPl = useGameStore.getState().pl;
     expect(finalPl.scoutedTalentPool.length).toBe(0);
+  });
+
+  it('replaces (not appends to) stale pool on next successful scout', () => {
+    // Manually populate with 1 item
+    const mockArtist: RecordLabelArtist = {
+      id: 'artist_temp',
+      name: 'Temp Artist',
+      avatar: '🎤',
+      contractMonthsLeft: 120,
+      monthlyRetainer: 400,
+      monthlyRevenue: 2400,
+      hypeFactor: 1.0,
+      isTargetedByRival: false,
+      tier: 'local',
+      royaltyRate: 2000,
+      monthsActive: 0,
+      hasReleased: false,
+      status: 'IN STUDIO',
+    };
+
+    useGameStore.setState(state => ({
+      pl: {
+        ...state.pl,
+        scoutedTalentPool: [mockArtist]
+      }
+    }));
+
+    const originalRandom = Math.random;
+    Math.random = vi.fn().mockReturnValue(0.01);
+
+    const store = useGameStore.getState();
+    const result = store.scoutArtist('local');
+
+    Math.random = originalRandom;
+
+    expect(result.success).toBe(true);
+
+    const pl = useGameStore.getState().pl;
+    // Should populate with exactly 3, not 4 (it should replace the stale candidate, not append)
+    expect(pl.scoutedTalentPool.length).toBe(3);
+    expect(pl.scoutedTalentPool.some(a => a.id === 'artist_temp')).toBe(false);
   });
 });

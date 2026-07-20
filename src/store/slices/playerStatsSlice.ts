@@ -318,7 +318,7 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       return pool[Math.floor(Math.random() * pool.length)];
     };
 
-    const candidatesCount = Math.floor(Math.random() * 2) + 2; // generates 2 or 3
+    const candidatesCount = 3;
     const candidates: RecordLabelArtist[] = [];
 
     for (let i = 0; i < candidatesCount; i++) {
