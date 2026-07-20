@@ -6,292 +6,314 @@ interface PopUpFrenzyMinigameProps {
   scaling: number;
 }
 
-const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange'];
-const ITEMS = ['Hoodie', 'Tee', 'Pants', 'Hat', 'Shoes', 'Jacket'];
-const MODIFIERS = ['Distressed', 'Acid-wash', 'Cyberpunk', 'Vintage', 'Reflective', 'Oversized'];
-
-interface Order {
-  color: string;
-  item: string;
-  modifier?: string;
-}
-
-interface ProductCard {
+interface Customer {
   id: string;
-  color: string;
-  item: string;
-  modifier?: string;
+  name: string;
+  item: 'Red Tee' | 'Blue Tee' | 'Red Hoodie' | 'Blue Hoodie';
+  size: 'S' | 'M' | 'L';
+  patience: number; // 0 to 100
 }
+
+const SKU_LIST: ('Red Tee' | 'Blue Tee' | 'Red Hoodie' | 'Blue Hoodie')[] = [
+  'Red Tee',
+  'Blue Tee',
+  'Red Hoodie',
+  'Blue Hoodie',
+];
+
+const CUSTOMER_NAMES = ['Aiden', 'Sophia', 'Kai', 'Chloe', 'Zane', 'Luna', 'Tyler', 'Mia'];
 
 export const PopUpFrenzyMinigame: React.FC<PopUpFrenzyMinigameProps> = ({ onComplete, scaling }) => {
-  const [timeLeft, setTimeLeft] = useState(12.0);
+  // Timer Factor: higher difficulty = faster countdown
+  const timerFactor = Math.max(0.4, 1.1 - (scaling - 1) * 0.25);
+  const totalDuration = Number((15 * timerFactor).toFixed(1));
+
+  const [timeLeft, setTimeLeft] = useState(totalDuration);
   const [score, setScore] = useState(0);
   const [customersServed, setCustomersServed] = useState(0);
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const [cards, setCards] = useState<ProductCard[]>([]);
+  const [customersWalked, setCustomersWalked] = useState(0);
   const [gameActive, setGameActive] = useState(true);
-  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
-  const timerRef = useRef<number | null>(null);
+  // Stock per SKU
+  const [stocks, setStocks] = useState<Record<string, number>>({
+    'Red Tee': 3,
+    'Blue Tee': 3,
+    'Red Hoodie': 3,
+    'Blue Hoodie': 3,
+  });
 
-  // Generate a random order based on number of customers already served
-  const generateOrder = (index: number): Order => {
-    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-    const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+  // Active Queue
+  const [queue, setQueue] = useState<Customer[]>([]);
+  const customerIdCounter = useRef(0);
 
-    if (index >= 2) {
-      // Add a modifier from customer 3 onward
-      const modifier = MODIFIERS[Math.floor(Math.random() * MODIFIERS.length)];
-      return { color, item, modifier };
-    }
+  // Generate a random customer
+  const createCustomer = (): Customer => {
+    customerIdCounter.current += 1;
+    const randomName = CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
+    const randomItem = SKU_LIST[Math.floor(Math.random() * SKU_LIST.length)];
+    const randomSize = (['S', 'M', 'L'] as const)[Math.floor(Math.random() * 3)];
 
-    return { color, item };
+    return {
+      id: `c_${customerIdCounter.current}`,
+      name: `${randomName} #${customerIdCounter.current}`,
+      item: randomItem,
+      size: randomSize,
+      patience: 100,
+    };
   };
 
-  // Generate 4 cards (1 correct, 3 near-misses)
-  const generateCardsForOrder = (order: Order): ProductCard[] => {
-    const correct: ProductCard = {
-      id: 'correct',
-      color: order.color,
-      item: order.item,
-      modifier: order.modifier
-    };
-
-    // Card 2: Same item, different color, same/random modifier
-    const wrongColor = COLORS.filter(c => c !== order.color)[Math.floor(Math.random() * (COLORS.length - 1))];
-    const card2: ProductCard = {
-      id: 'wrong_color',
-      color: wrongColor,
-      item: order.item,
-      modifier: order.modifier
-    };
-
-    // Card 3: Same color, different item, same/random modifier
-    const wrongItem = ITEMS.filter(i => i !== order.item)[Math.floor(Math.random() * (ITEMS.length - 1))];
-    const card3: ProductCard = {
-      id: 'wrong_item',
-      color: order.color,
-      item: wrongItem,
-      modifier: order.modifier
-    };
-
-    // Card 4: Different modifier (if active) OR different both
-    let card4: ProductCard;
-    if (order.modifier) {
-      const wrongMod = MODIFIERS.filter(m => m !== order.modifier)[Math.floor(Math.random() * (MODIFIERS.length - 1))];
-      card4 = {
-        id: 'wrong_modifier',
-        color: order.color,
-        item: order.item,
-        modifier: wrongMod
-      };
-    } else {
-      const wrongColor2 = COLORS.filter(c => c !== order.color && c !== wrongColor)[Math.floor(Math.random() * (COLORS.length - 2))];
-      const wrongItem2 = ITEMS.filter(i => i !== order.item && i !== wrongItem)[Math.floor(Math.random() * (ITEMS.length - 2))];
-      card4 = {
-        id: 'wrong_both',
-        color: wrongColor2,
-        item: wrongItem2
-      };
-    }
-
-    // Shuffle the cards
-    const list = [correct, card2, card3, card4];
-    for (let i = list.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [list[i], list[j]] = [list[j], list[i]];
-    }
-
-    return list;
-  };
-
-  // Start the timer loop
+  // Initial Queue setup
   useEffect(() => {
-    // Generate initial order
-    const firstOrder = generateOrder(0);
-    setCurrentOrder(firstOrder);
-    setCards(generateCardsForOrder(firstOrder));
-
-    timerRef.current = window.setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 0.05) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          setGameActive(false);
-          return 0;
-        }
-        return Number((t - 0.05).toFixed(2));
-      });
-    }, 50);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    setQueue([createCustomer(), createCustomer()]);
   }, []);
 
-  // Handle final completion multiplier mapping when game is not active anymore
+  // Main game tick: overall game timer & patience depletion
   useEffect(() => {
-    if (!gameActive) {
-      // Threshold mapping:
-      // Served 12+ = 3.0x multiplier
-      // Served 8-11 = 2.0x multiplier
-      // Served 5-7 = 1.2x multiplier
-      // Served 3-4 = 0.8x multiplier
-      // Served <3 = 0.5x multiplier
-      // Scale further based on general multiplier utilities
-      let baseMult = 0.5;
-      if (customersServed >= 12) baseMult = 3.0;
-      else if (customersServed >= 8) baseMult = 2.0;
-      else if (customersServed >= 5) baseMult = 1.2;
-      else if (customersServed >= 3) baseMult = 0.8;
-      else baseMult = 0.5;
+    if (!gameActive) return;
 
-      const finalMultiplier = Math.max(0.5, Math.min(3.0, baseMult * (0.8 + scaling * 0.2)));
+    const interval = setInterval(() => {
+      // Shave game time
+      setTimeLeft((prev) => {
+        if (prev <= 0.1) {
+          clearInterval(interval);
+          handleEndGame();
+          return 0;
+        }
+        return Number((prev - 0.1).toFixed(1));
+      });
 
-      setTimeout(() => {
-        onComplete(finalMultiplier);
-      }, 1500);
-    }
-  }, [gameActive, customersServed, scaling, onComplete]);
+      // Deplete customer patience
+      setQueue((prevQueue) => {
+        const updated = prevQueue
+          .map((cust) => ({
+            ...cust,
+            patience: cust.patience - 8 * (1 / timerFactor), // patience drains faster on high difficulty
+          }))
+          .filter((cust) => {
+            if (cust.patience <= 0) {
+              setCustomersWalked((w) => w + 1);
+              if (navigator.vibrate) navigator.vibrate([40, 40]);
+              return false; // Customer walks!
+            }
+            return true;
+          });
 
-  const handleSelectCard = (card: ProductCard) => {
-    if (!gameActive || !currentOrder) return;
+        return updated;
+      });
+    }, 100);
 
-    const isMatch =
-      card.color === currentOrder.color &&
-      card.item === currentOrder.item &&
-      card.modifier === currentOrder.modifier;
+    return () => clearInterval(interval);
+  }, [gameActive, timerFactor]);
 
-    if (isMatch) {
-      setFeedback('correct');
-      setScore(s => s + 100);
-      setCustomersServed(c => c + 1);
-      setTimeLeft(t => Math.min(15.0, t + 1.0)); // capped at 15s max to prevent infinite runs
+  // Spawn new customers if queue length < 3
+  useEffect(() => {
+    if (!gameActive) return;
 
-      if (navigator.vibrate) navigator.vibrate(20);
+    const spawnInterval = setInterval(() => {
+      setQueue((prevQueue) => {
+        if (prevQueue.length < 3) {
+          return [...prevQueue, createCustomer()];
+        }
+        return prevQueue;
+      });
+    }, 2500 * timerFactor); // Spawns faster at high difficulty
 
-      setTimeout(() => {
-        setFeedback(null);
-        const nextIdx = customersServed + 1;
-        const nextOrder = generateOrder(nextIdx);
-        setCurrentOrder(nextOrder);
-        setCards(generateCardsForOrder(nextOrder));
-      }, 300);
+    return () => clearInterval(spawnInterval);
+  }, [gameActive, timerFactor]);
+
+  const handleServe = (sku: 'Red Tee' | 'Blue Tee' | 'Red Hoodie' | 'Blue Hoodie') => {
+    if (!gameActive || queue.length === 0) return;
+
+    const activeCust = queue[0];
+    const isTargetItem = activeCust.item === sku;
+    const isTargetInStock = stocks[activeCust.item] > 0;
+
+    if (isTargetInStock) {
+      if (isTargetItem) {
+        // Correct Item served!
+        setStocks((prev) => ({ ...prev, [sku]: prev[sku] - 1 }));
+        setScore((s) => s + 100);
+        setCustomersServed((c) => c + 1);
+        setQueue((prev) => prev.slice(1)); // Dequeue
+
+        if (navigator.vibrate) navigator.vibrate(20);
+      } else {
+        // Wrong item tapped while the correct item is still in stock!
+        // Show a quick penalty
+        setQueue((prev) => {
+          if (prev.length === 0) return prev;
+          const updated = [...prev];
+          updated[0].patience = Math.max(0, updated[0].patience - 25);
+          return updated;
+        });
+        if (navigator.vibrate) navigator.vibrate([50, 20]);
+      }
     } else {
-      setFeedback('wrong');
-      setScore(s => Math.max(0, s - 25));
-      setTimeLeft(t => Math.max(0, t - 0.5));
+      // The target item is OUT OF STOCK.
+      // Tapping ANY other item with stock > 0 redirects to a substitute!
+      if (stocks[sku] > 0) {
+        setStocks((prev) => ({ ...prev, [sku]: prev[sku] - 1 }));
+        setScore((s) => s + 60); // slightly fewer points for substitute
+        setCustomersServed((c) => c + 1);
+        setQueue((prev) => prev.slice(1)); // Dequeue
 
-      if (navigator.vibrate) navigator.vibrate([30, 30]);
-
-      setTimeout(() => {
-        setFeedback(null);
-      }, 300);
+        if (navigator.vibrate) navigator.vibrate(40);
+      }
     }
   };
 
-  const getEmojiForCard = (item: string) => {
-    switch (item) {
-      case 'Hoodie': return '🧥';
-      case 'Tee': return '👕';
-      case 'Pants': return '👖';
-      case 'Hat': return '🧢';
-      case 'Shoes': return '👟';
-      case 'Jacket': return '🧥';
-      default: return '🛍️';
-    }
+  const handleEndGame = () => {
+    setGameActive(false);
+
+    // Map score/served to final multiplier (0.5 to 3.0)
+    let baseMult = 0.5;
+    if (customersServed >= 8) baseMult = 3.0;
+    else if (customersServed >= 6) baseMult = 2.2;
+    else if (customersServed >= 4) baseMult = 1.5;
+    else if (customersServed >= 2) baseMult = 1.0;
+    else baseMult = 0.5;
+
+    // Apply difficulty scaling factor
+    const finalMult = Math.max(0.5, Math.min(3.0, baseMult * (0.8 + scaling * 0.2)));
+
+    setTimeout(() => {
+      onComplete(finalMult);
+    }, 1500);
   };
 
-  const getColorClass = (colorName: string) => {
-    switch (colorName) {
-      case 'Red': return 'bg-red-500';
-      case 'Blue': return 'bg-blue-500';
-      case 'Green': return 'bg-green-500';
-      case 'Yellow': return 'bg-yellow-400 text-slate-950';
-      case 'Purple': return 'bg-purple-500';
-      case 'Orange': return 'bg-orange-500';
-      default: return 'bg-slate-700';
-    }
+  const getEmojiForItem = (item: string) => {
+    return item.includes('Hoodie') ? '🧥' : '👕';
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-slate-950 text-white rounded-3xl border-2 border-slate-800 relative overflow-hidden min-h-[450px]">
-      <div className="absolute top-4 right-4 text-xs font-mono font-black text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
-        ⏱️ {timeLeft.toFixed(1)}s
-      </div>
-
-      <div className="text-center mb-6">
-        <h3 className="text-xl font-black text-indigo-400 tracking-tight italic">POP-UP TOUR</h3>
-        <div className="flex justify-center gap-8 mt-2">
-          <div className="text-center">
-            <span className="text-slate-500 text-[8px] font-black uppercase tracking-widest block">SERVED</span>
-            <span className="text-white text-sm font-black font-mono">{customersServed}</span>
+    <div className="p-4 bg-slate-950 text-white rounded-3xl border-2 border-slate-800 relative overflow-hidden min-h-[500px] flex flex-col justify-between">
+      {/* Top HUD */}
+      <div className="flex justify-between items-center mb-2 border-b border-slate-900 pb-2">
+        <div>
+          <h3 className="text-lg font-black text-indigo-400 tracking-tight italic">POP-UP TOUR: RUSH SERVICE</h3>
+          <div className="flex gap-4 text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+            <span>Served: <strong className="text-white font-mono">{customersServed}</strong></span>
+            <span>Walked: <strong className="text-red-500 font-mono">{customersWalked}</strong></span>
+            <span>Hype Score: <strong className="text-indigo-400 font-mono">{score}</strong></span>
           </div>
-          <div className="text-center">
-            <span className="text-slate-500 text-[8px] font-black uppercase tracking-widest block">HYPE SCORE</span>
-            <span className="text-blue-400 text-sm font-black font-mono">{score}</span>
-          </div>
+        </div>
+        <div className={`text-xs font-mono font-black px-2.5 py-1 rounded-full border ${
+          timeLeft < 4.0 ? 'text-red-500 bg-red-500/10 border-red-500/30 animate-pulse' : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+        }`}>
+          ⏱️ {timeLeft.toFixed(1)}s
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {gameActive && currentOrder ? (
-          <motion.div
-            key={customersServed}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="w-full max-w-sm flex flex-col items-center"
-          >
-            {/* Customer Demand Bubble */}
-            <div className="bg-slate-900 border-2 border-slate-800 rounded-2xl px-6 py-4 text-center shadow-lg relative mb-6">
-              <span className="text-xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1">Hypebeast Request:</span>
-              <div className="text-lg font-black tracking-tight text-white flex flex-col items-center gap-1">
-                {currentOrder.modifier && (
-                  <span className="text-[10px] bg-purple-500/20 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded font-black uppercase tracking-wider mb-1 animate-pulse">
-                    ⚡ {currentOrder.modifier}
-                  </span>
-                )}
-                <span>
-                  {currentOrder.color} {currentOrder.item}
-                </span>
-              </div>
-            </div>
+      {/* Main Customers Queue area */}
+      <div className="flex-1 flex flex-col justify-center my-4">
+        <AnimatePresence mode="popLayout">
+          {queue.length > 0 ? (
+            <div className="space-y-4">
+              {/* Active Customer Details */}
+              <motion.div
+                key={queue[0].id}
+                initial={{ scale: 0.9, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, x: -100 }}
+                className="bg-slate-900/90 border-2 border-indigo-900/40 p-4 rounded-2xl shadow-xl relative"
+              >
+                <div className="absolute top-2 right-3 text-[8px] bg-indigo-500/20 text-indigo-300 font-bold px-1.5 py-0.5 rounded uppercase">
+                  ACTIVE CUSTOMER
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">{getEmojiForItem(queue[0].item)}</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-black text-slate-100">{queue[0].name}</div>
+                    <div className="text-sm font-extrabold text-white mt-0.5">
+                      wants: <span className="text-amber-400 uppercase">{queue[0].size} {queue[0].item}</span>
+                    </div>
 
-            {/* Grid of Options */}
-            <div className="grid grid-cols-2 gap-3 w-full">
-              {cards.map((card, i) => (
-                <button
-                  key={`${card.color}-${card.item}-${card.modifier || ''}-${i}`}
-                  onClick={() => handleSelectCard(card)}
-                  className={`relative flex flex-col items-center bg-slate-900 border-2 border-slate-800 hover:border-slate-700 p-4 rounded-xl shadow-md transition-all active:scale-95 ${
-                    feedback === 'correct' && card.id === 'correct' ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''
-                  }`}
-                >
-                  <div className="text-4xl mb-2 filter drop-shadow">
-                    {getEmojiForCard(card.item)}
-                  </div>
-
-                  <div className="flex flex-col items-center text-center gap-1">
-                    <span className="text-xs font-black uppercase text-slate-100">{card.item}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${getColorClass(card.color)}`}>
-                      {card.color}
-                    </span>
-                    {card.modifier && (
-                      <span className="text-[8px] text-slate-400 uppercase font-black tracking-tight">{card.modifier}</span>
+                    {/* Stock Alert helper */}
+                    {stocks[queue[0].item] === 0 && (
+                      <div className="text-[9px] text-yellow-500 font-bold uppercase tracking-wider mt-1 animate-pulse">
+                        ⚠️ Requested item is OUT OF STOCK! Redirect to any substitute SKU!
+                      </div>
                     )}
                   </div>
-                </button>
-              ))}
+                </div>
+
+                {/* Patience Bar */}
+                <div className="mt-3">
+                  <div className="flex justify-between text-[8px] font-bold text-slate-500 uppercase mb-1">
+                    <span>Patience</span>
+                    <span className={queue[0].patience < 40 ? 'text-red-500' : 'text-slate-400'}>
+                      {Math.ceil(queue[0].patience)}%
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-100 ${
+                        queue[0].patience < 35 ? 'bg-red-500' : queue[0].patience < 65 ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${queue[0].patience}%` }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Customers lined up behind them */}
+              {queue.length > 1 && (
+                <div className="flex gap-2 justify-center pt-2">
+                  {queue.slice(1).map((cust, idx) => (
+                    <div
+                      key={cust.id}
+                      className="bg-slate-900/40 border border-slate-800 rounded-xl px-3 py-1.5 text-center text-[9px] text-slate-400 font-bold shrink-0"
+                    >
+                      <span>Line #{idx + 1}: </span>
+                      <strong className="text-slate-300 uppercase">{cust.item.split(' ')[0]} {getEmojiForItem(cust.item)}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </motion.div>
-        ) : (
-          <div className="text-center py-8">
-            <span className="text-6xl mb-4 block">🚚</span>
-            <h4 className="text-2xl font-black text-emerald-400 italic">TOUR STOP COMPLETE</h4>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Served {customersServed} Customers</p>
-          </div>
-        )}
-      </AnimatePresence>
+          ) : (
+            <div className="text-center py-6 text-slate-500 font-bold uppercase tracking-widest text-xs animate-pulse">
+              Waiting for next Customer...
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* SKU Stocks & Tap Serve Controls */}
+      <div className="space-y-3 bg-slate-900/40 p-3 rounded-2xl border border-slate-900">
+        <div className="text-[9px] text-slate-500 font-black uppercase tracking-wider text-center">
+          STORE INVENTORY / TAP TO SERVE
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {SKU_LIST.map((sku) => {
+            const stock = stocks[sku];
+            const isOutOfStock = stock === 0;
+
+            return (
+              <button
+                key={sku}
+                onClick={() => handleServe(sku)}
+                disabled={!gameActive || queue.length === 0}
+                className={`flex flex-col items-center justify-between p-2.5 rounded-xl border transition-all active:scale-95 ${
+                  isOutOfStock
+                    ? 'bg-red-950/10 border-red-900/30 text-red-700 cursor-not-allowed'
+                    : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl">{getEmojiForItem(sku)}</span>
+                  <span className="text-[10px] font-black uppercase text-slate-100">{sku}</span>
+                </div>
+                <div className={`text-[8px] font-bold uppercase mt-1 px-1.5 py-0.5 rounded ${
+                  isOutOfStock ? 'bg-red-900/20 text-red-500' : 'bg-slate-900 text-slate-400'
+                }`}>
+                  {isOutOfStock ? 'OUT OF STOCK' : `Stock: ${stock}`}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };

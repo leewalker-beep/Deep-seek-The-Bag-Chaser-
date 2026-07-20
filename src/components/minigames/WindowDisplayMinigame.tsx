@@ -1,292 +1,281 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 interface WindowDisplayMinigameProps {
   onComplete: (multiplier: number) => void;
   scaling: number;
 }
 
-interface ClosetItem {
-  id: string;
-  category: 'Hoodie' | 'Tee' | 'Pants' | 'Hat' | 'Shoes';
-  color: 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Purple';
-  vibe: 'Distressed' | 'Acid-wash' | 'Cyberpunk' | 'Vintage' | 'Minimalist';
+interface SKUStyle {
+  key: string;
   name: string;
+  emoji: string;
+  hypeText: string;
+  trend: 'UP' | 'DOWN' | 'STABLE' | 'ROCKET';
+  estimatedRange: string;
 }
 
-interface MannequinSlot {
-  index: number;
-  label: string;
-  constraints: {
-    color: 'Red' | 'Blue' | 'Green' | 'Yellow' | 'Purple';
-    category: 'Hoodie' | 'Tee' | 'Pants' | 'Hat' | 'Shoes';
-    vibe: 'Distressed' | 'Acid-wash' | 'Cyberpunk' | 'Vintage' | 'Minimalist';
-  };
-  itemPool: ClosetItem[];
-}
+const STYLE_TEMPLATES: SKUStyle[] = [
+  {
+    key: 'windbreaker',
+    name: 'Retro Windbreaker',
+    emoji: '🧥',
+    hypeText: '🔥 High-street subculture adoption is growing rapidly.',
+    trend: 'UP',
+    estimatedRange: '',
+  },
+  {
+    key: 'hoodie',
+    name: 'Deconstructed Hoodie',
+    emoji: '👕',
+    hypeText: '✨ Spotted on a prominent supermodel during fashion week.',
+    trend: 'ROCKET',
+    estimatedRange: '',
+  },
+  {
+    key: 'cargo',
+    name: 'Distressed Cargoes',
+    emoji: '👖',
+    hypeText: '📉 Market is over-saturated with generic utility wear.',
+    trend: 'DOWN',
+    estimatedRange: '',
+  },
+  {
+    key: 'sneakers',
+    name: 'Luxury Sneakers',
+    emoji: '👟',
+    hypeText: '🚀 Online sub-forums are hyping up a rumored collaboration.',
+    trend: 'ROCKET',
+    estimatedRange: '',
+  },
+];
 
 export const WindowDisplayMinigame: React.FC<WindowDisplayMinigameProps> = ({ onComplete, scaling }) => {
-  // Setup 3 distinct mannequins, each with 1 unique color, 1 category, and 1 vibe constraint.
-  const slots: MannequinSlot[] = useMemo(() => {
-    return [
-      {
-        index: 0,
-        label: "MANNEQUIN A",
-        constraints: { color: 'Red', category: 'Hoodie', vibe: 'Distressed' },
-        itemPool: [
-          { id: 'm1_perfect', category: 'Hoodie', color: 'Red', vibe: 'Distressed', name: 'Cherry Distressed Hoodie' },
-          { id: 'm1_trap_color_cat', category: 'Hoodie', color: 'Red', vibe: 'Minimalist', name: 'Cherry Minimalist Hoodie' },
-          { id: 'm1_trap_cat_vibe', category: 'Hoodie', color: 'Blue', vibe: 'Distressed', name: 'Cobalt Distressed Hoodie' },
-          { id: 'm1_trap_color_vibe', category: 'Tee', color: 'Red', vibe: 'Distressed', name: 'Cherry Distressed Tee' },
-          { id: 'm1_trash', category: 'Hat', color: 'Green', vibe: 'Acid-wash', name: 'Forest Acid Hat' },
-        ]
-      },
-      {
-        index: 1,
-        label: "MANNEQUIN B",
-        constraints: { color: 'Blue', category: 'Tee', vibe: 'Acid-wash' },
-        itemPool: [
-          { id: 'm2_perfect', category: 'Tee', color: 'Blue', vibe: 'Acid-wash', name: 'Acid Cobalt Tee' },
-          { id: 'm2_trap_color_cat', category: 'Tee', color: 'Blue', vibe: 'Cyberpunk', name: 'Cyber Cobalt Tee' },
-          { id: 'm2_trap_cat_vibe', category: 'Tee', color: 'Purple', vibe: 'Acid-wash', name: 'Acid Plum Tee' },
-          { id: 'm2_trap_color_vibe', category: 'Pants', color: 'Blue', vibe: 'Acid-wash', name: 'Acid Cobalt Jeans' },
-          { id: 'm2_trash', category: 'Shoes', color: 'Red', vibe: 'Minimalist', name: 'Minimalist Cherry Sneakers' },
-        ]
-      },
-      {
-        index: 2,
-        label: "MANNEQUIN C",
-        constraints: { color: 'Purple', category: 'Pants', vibe: 'Cyberpunk' },
-        itemPool: [
-          { id: 'm3_perfect', category: 'Pants', color: 'Purple', vibe: 'Cyberpunk', name: 'Cyber Plum Cargoes' },
-          { id: 'm3_trap_color_cat', category: 'Pants', color: 'Purple', vibe: 'Vintage', name: 'Vintage Plum Pants' },
-          { id: 'm3_trap_cat_vibe', category: 'Pants', color: 'Yellow', vibe: 'Cyberpunk', name: 'Cyber Neon Pants' },
-          { id: 'm3_trap_color_vibe', category: 'Hat', color: 'Purple', vibe: 'Cyberpunk', name: 'Cyber Plum Beanie' },
-          { id: 'm3_trash', category: 'Hoodie', color: 'Blue', vibe: 'Minimalist', name: 'Minimalist Blue Hoodie' },
-        ]
-      }
+  const [targetDemands, setTargetDemands] = useState<number[]>([]);
+  const [allocations, setAllocations] = useState<number[]>([0, 0, 0, 0]);
+  const [isResolving, setIsResolving] = useState(false);
+  const [isResolved, setIsResolved] = useState(false);
+  const [accuracy, setAccuracy] = useState(0);
+
+  // Generate target demands summing to exactly 100
+  useEffect(() => {
+    const raw = [
+      Math.random() * 0.3 + 0.1, // windbreaker
+      Math.random() * 0.4 + 0.2, // hoodie
+      Math.random() * 0.15 + 0.05, // cargo
+      Math.random() * 0.25 + 0.1, // sneakers
     ];
+    const sum = raw.reduce((a, b) => a + b, 0);
+    const normalized = raw.map((v) => Math.round((v / sum) * 100));
+
+    // Ensure sum is exactly 100
+    const finalSum = normalized.reduce((a, b) => a + b, 0);
+    const diff = 100 - finalSum;
+    normalized[0] += diff;
+
+    setTargetDemands(normalized);
   }, []);
 
-  // Currently selected items for the 3 mannequins
-  const [selections, setSelections] = useState<(ClosetItem | null)[]>([null, null, null]);
-  const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null);
-  const [showSummary, setShowSummary] = useState(false);
+  // Compute total allocated units
+  const totalAllocated = allocations.reduce((a, b) => a + b, 0);
+  const remainingBudget = 100 - totalAllocated;
 
-  const handleSelectItem = (item: ClosetItem) => {
-    if (activeSlotIndex === null) return;
-    const next = [...selections];
-    next[activeSlotIndex] = item;
-    setSelections(next);
-    setActiveSlotIndex(null);
+  const handleAdjust = (index: number, amount: number) => {
+    if (isResolved || isResolving) return;
 
-    if (navigator.vibrate) navigator.vibrate(20);
-  };
+    setAllocations((prev) => {
+      const next = [...prev];
+      const newAllocation = next[index] + amount;
 
-  const handleFinish = () => {
-    // Score matches
-    let matchCount = 0;
-    selections.forEach((item, i) => {
-      if (!item) return;
-      const target = slots[i].constraints;
-      if (item.color === target.color) matchCount++;
-      if (item.category === target.category) matchCount++;
-      if (item.vibe === target.vibe) matchCount++;
+      // Bound checks: cannot go below 0, cannot exceed remaining budget
+      if (newAllocation < 0) return prev;
+      if (amount > 0 && remainingBudget - amount < 0) {
+        // adjust to exactly remaining budget if too high
+        next[index] += remainingBudget;
+        return next;
+      }
+
+      next[index] = newAllocation;
+      return next;
     });
 
-    // 9 maximum possible matched attributes
-    // Multiplier calculation:
-    // 9/9 = 3.0x multiplier
-    // 8/9 = 2.5x multiplier
-    // 7/9 = 2.0x multiplier
-    // 5-6/9 = 1.4x multiplier
-    // 3-4/9 = 1.0x multiplier
-    // <3/9 = 0.5x multiplier
-    let baseMult = 0.5;
-    if (matchCount === 9) baseMult = 3.0;
-    else if (matchCount === 8) baseMult = 2.5;
-    else if (matchCount === 7) baseMult = 2.0;
-    else if (matchCount >= 5) baseMult = 1.4;
-    else if (matchCount >= 3) baseMult = 1.0;
-    else baseMult = 0.5;
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
 
-    const finalMultiplier = Math.max(0.5, Math.min(3.0, baseMult * (0.8 + scaling * 0.2)));
+  const handleResolve = () => {
+    if (totalAllocated !== 100) return;
+    setIsResolving(true);
 
-    setShowSummary(true);
-
-    if (navigator.vibrate) navigator.vibrate(100);
+    if (navigator.vibrate) navigator.vibrate(50);
 
     setTimeout(() => {
-      onComplete(finalMultiplier);
+      setIsResolving(false);
+      setIsResolved(true);
+
+      // Compute total error and accuracy
+      let totalError = 0;
+      allocations.forEach((alloc, i) => {
+        totalError += Math.abs(alloc - targetDemands[i]);
+      });
+
+      const matchedAccuracy = Math.max(0, 100 - totalError / 2);
+      setAccuracy(matchedAccuracy);
+
+      // Score Mapping
+      let baseMult = 0.5;
+      if (matchedAccuracy >= 90) baseMult = 3.0;
+      else if (matchedAccuracy >= 75) baseMult = 2.0;
+      else if (matchedAccuracy >= 50) baseMult = 1.3;
+      else if (matchedAccuracy >= 30) baseMult = 0.8;
+      else baseMult = 0.5;
+
+      const finalMultiplier = Math.max(0.5, Math.min(3.0, baseMult * (0.8 + scaling * 0.2)));
+
+      setTimeout(() => {
+        onComplete(finalMultiplier);
+      }, 2500);
     }, 2000);
   };
 
-  const getEmojiForCategory = (cat: string) => {
-    switch (cat) {
-      case 'Hoodie': return '🧥';
-      case 'Tee': return '👕';
-      case 'Pants': return '👖';
-      case 'Hat': return '🧢';
-      case 'Shoes': return '👟';
-      default: return '🛍️';
+  const getHypeColorClass = (trend: string) => {
+    switch (trend) {
+      case 'ROCKET': return 'text-purple-400 font-extrabold';
+      case 'UP': return 'text-emerald-400 font-bold';
+      case 'DOWN': return 'text-red-500';
+      default: return 'text-slate-400';
     }
   };
-
-  const getColorHex = (colorName: string) => {
-    switch (colorName) {
-      case 'Red': return '#ef4444';
-      case 'Blue': return '#3b82f6';
-      case 'Green': return '#22c55e';
-      case 'Yellow': return '#eab308';
-      case 'Purple': return '#a855f7';
-      default: return '#64748b';
-    }
-  };
-
-  const allSlotsFilled = selections.every(s => s !== null);
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-slate-950 text-white rounded-3xl border-2 border-slate-800 relative overflow-hidden min-h-[500px]">
-      <div className="text-center mb-6">
-        <h3 className="text-xl font-black text-purple-400 tracking-tight italic">FLAGSHIP CURATOR</h3>
-        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">STYLE THE DISPLAY WINDOWS</p>
+    <div className="p-4 bg-slate-950 text-white rounded-3xl border-2 border-slate-800 relative overflow-hidden min-h-[500px] flex flex-col justify-between">
+      {/* Top Header */}
+      <div className="text-center mb-2 pb-2 border-b border-slate-900 flex justify-between items-center">
+        <div className="text-left">
+          <h3 className="text-lg font-black text-purple-400 tracking-tight italic">FLAGSHIP STORE: INVENTORY FORECAST</h3>
+          <p className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Pre-allocate your 100 units of collection budget based on market sentiment</p>
+        </div>
+        <div className="text-right">
+          <span className="text-[8px] text-slate-500 font-bold uppercase block">BUDGET LEFT</span>
+          <span className={`text-base font-mono font-black ${remainingBudget === 0 ? 'text-emerald-400' : 'text-amber-500'}`}>
+            {remainingBudget} / 100
+          </span>
+        </div>
       </div>
 
-      {!showSummary ? (
-        <>
-          {/* Main Display Windows */}
-          <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-6">
-            {slots.map((slot) => {
-              const selectedItem = selections[slot.index];
-              const isActive = activeSlotIndex === slot.index;
+      {/* Main Panel */}
+      <div className="flex-1 my-3 space-y-3">
+        {STYLE_TEMPLATES.map((style, i) => {
+          // Generate a helpful estimated range centered near target demand
+          const demand = targetDemands[i] || 25;
+          const rangeOffset = 8;
+          const minRange = Math.max(0, demand - rangeOffset);
+          const maxRange = Math.min(100, demand + rangeOffset);
 
-              return (
-                <div key={slot.index} className="flex flex-col items-center">
-                  {/* Slot Target Constraints Header Card */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-lg p-2 text-[8px] text-center uppercase tracking-tight w-full mb-2">
-                    <span className="text-slate-500 font-extrabold block mb-1">GOAL:</span>
-                    <div className="flex flex-col gap-0.5 font-bold">
-                      <span className="text-white" style={{ color: getColorHex(slot.constraints.color) }}>🎨 {slot.constraints.color}</span>
-                      <span className="text-slate-300">📦 {slot.constraints.category}</span>
-                      <span className="text-purple-300">⚡ {slot.constraints.vibe}</span>
+          return (
+            <div key={style.key} className="bg-slate-900/60 border border-slate-900 p-3 rounded-2xl flex flex-col justify-between">
+              {/* Style Info */}
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{style.emoji}</span>
+                  <div>
+                    <span className="text-xs font-black uppercase text-white">{style.name}</span>
+                    <p className="text-[8.5px] text-slate-400 leading-tight mt-0.5">{style.hypeText}</p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[7.5px] text-slate-500 font-bold block uppercase">EXPECTED TARGET</span>
+                  <span className={`text-[10px] font-bold ${getHypeColorClass(style.trend)}`}>
+                    {minRange}% - {maxRange}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Slider Allocation Adjuster */}
+              <div className="mt-3 flex items-center justify-between bg-slate-950/80 p-2 rounded-xl border border-slate-900">
+                <div className="text-left">
+                  <span className="text-[8px] text-slate-500 font-bold uppercase block">ALLOCATED</span>
+                  <span className="text-xs font-mono font-black text-white">{allocations[i]} units</span>
+                </div>
+
+                {!isResolved && !isResolving ? (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleAdjust(i, -10)}
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] font-black rounded-lg transition-colors border border-slate-800"
+                    >
+                      -10
+                    </button>
+                    <button
+                      onClick={() => handleAdjust(i, -5)}
+                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] font-black rounded-lg transition-colors border border-slate-800"
+                    >
+                      -5
+                    </button>
+                    <button
+                      onClick={() => handleAdjust(i, 5)}
+                      className="px-2 py-1 bg-purple-950/40 hover:bg-purple-900/40 text-purple-300 text-[10px] font-black rounded-lg transition-colors border border-purple-900/20"
+                    >
+                      +5
+                    </button>
+                    <button
+                      onClick={() => handleAdjust(i, 10)}
+                      className="px-2.5 py-1 bg-purple-950/40 hover:bg-purple-900/40 text-purple-300 text-[10px] font-black rounded-lg transition-colors border border-purple-900/20"
+                    >
+                      +10
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-4 items-center font-mono">
+                    <div className="text-right">
+                      <span className="text-[7px] text-slate-500 uppercase block">ACTUAL DEMAND</span>
+                      <span className="text-xs font-black text-indigo-400">{demand}%</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[7px] text-slate-500 uppercase block">SELL-THROUGH</span>
+                      <span className={`text-xs font-black ${allocations[i] <= demand ? 'text-emerald-400' : 'text-yellow-500'}`}>
+                        {Math.min(100, Math.round((Math.min(allocations[i], demand) / (allocations[i] || 1)) * 100))}%
+                      </span>
                     </div>
                   </div>
-
-                  {/* Window frame / Mannequin Container */}
-                  <button
-                    onClick={() => setActiveSlotIndex(isActive ? null : slot.index)}
-                    className={`w-full aspect-[2/3] bg-slate-900 border-2 rounded-xl flex flex-col items-center justify-center relative transition-all active:scale-95 ${
-                      isActive ? 'border-amber-400 bg-amber-500/5' :
-                      selectedItem ? 'border-indigo-500 bg-indigo-500/5' : 'border-dashed border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    {selectedItem ? (
-                      <div className="flex flex-col items-center p-2 text-center h-full justify-between">
-                        <div className="text-4xl filter drop-shadow">
-                          {getEmojiForCategory(selectedItem.category)}
-                        </div>
-                        <div className="flex flex-col items-center gap-0.5 mt-1">
-                          <span className="text-[8px] font-black uppercase text-slate-100 line-clamp-2 leading-none">
-                            {selectedItem.name}
-                          </span>
-                          <span className="text-[6.5px] px-1 bg-slate-800 text-slate-400 rounded-full font-bold uppercase">
-                            {selectedItem.vibe}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center text-slate-600">
-                        <span className="text-3xl animate-pulse">👤</span>
-                        <span className="text-[7.5px] font-black uppercase tracking-widest mt-1">EMPTY</span>
-                      </div>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Curation Closet Overlay Container */}
-          <AnimatePresence mode="wait">
-            {activeSlotIndex !== null ? (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 15 }}
-                className="w-full max-w-sm bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 mb-6 shadow-2xl relative"
-              >
-                <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
-                  <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                    CLOSET POOL FOR SLOT {String.fromCharCode(65 + activeSlotIndex)}
-                  </span>
-                  <button
-                    onClick={() => setActiveSlotIndex(null)}
-                    className="text-xs text-slate-500 hover:text-white font-bold"
-                  >
-                    ✕ CLOSE
-                  </button>
-                </div>
-
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  {slots[activeSlotIndex].itemPool.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelectItem(item)}
-                      className="w-full flex items-center justify-between p-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl transition-all text-left"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{getEmojiForCategory(item.category)}</span>
-                        <div>
-                          <div className="text-[10px] font-black uppercase text-slate-100">{item.name}</div>
-                          <div className="flex gap-1.5 mt-0.5">
-                            <span className="text-[7px] text-slate-400 bg-slate-900 px-1 rounded uppercase font-bold">
-                              {item.category}
-                            </span>
-                            <span className="text-[7px] font-bold px-1 rounded uppercase bg-slate-900" style={{ color: getColorHex(item.color) }}>
-                              {item.color}
-                            </span>
-                            <span className="text-[7px] text-purple-300 bg-purple-950/40 px-1 rounded uppercase font-bold">
-                              {item.vibe}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-[9px] text-indigo-400 font-extrabold uppercase">SELECT</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            ) : (
-              <div className="w-full max-w-sm text-center py-4 bg-slate-900/30 border border-slate-900 rounded-2xl mb-6">
-                <span className="text-xs text-slate-500 font-black uppercase tracking-widest">
-                  TAP A MANNEQUIN TO START CURATING
-                </span>
+                )}
               </div>
-            )}
-          </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
 
-          {/* Submit Button */}
-          <div className="w-full max-w-xs">
-            <button
-              onClick={handleFinish}
-              disabled={!allSlotsFilled}
-              className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all duration-100 ${
-                allSlotsFilled
-                  ? 'bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white border-b-4 border-purple-800 active:translate-y-1 active:border-b-0 shadow-lg'
-                  : 'bg-slate-800 text-slate-600 cursor-not-allowed border-b-2 border-slate-950'
-              }`}
-            >
-              APPROVE DESIGN WINDOW
-            </button>
+      {/* Footer Resolve Area */}
+      <div>
+        {isResolving && (
+          <div className="w-full bg-slate-900 p-4 rounded-xl border border-slate-800 text-center animate-pulse">
+            <span className="text-xl mr-2">📊</span>
+            <span className="text-xs font-black uppercase text-purple-400 tracking-wider">RUNNING REVENUE SELL-THROUGH FORECASTS...</span>
           </div>
-        </>
-      ) : (
-        <div className="text-center py-10 animate-pulse">
-          <span className="text-6xl mb-4 block">🏆</span>
-          <h4 className="text-2xl font-black text-purple-400 italic uppercase">WINDOW LOCKED IN</h4>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Evaluating Curation Score...</p>
-        </div>
-      )}
+        )}
+
+        {isResolved && (
+          <div className="w-full bg-slate-900/90 border border-purple-900/40 p-4 rounded-xl text-center">
+            <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider italic">FORECAST COMPLETE</h4>
+            <p className="text-xs text-slate-300 mt-1">
+              Your Allocation matched actual demand with <strong className="text-indigo-400 font-mono text-sm">{accuracy.toFixed(1)}%</strong> accuracy!
+            </p>
+          </div>
+        )}
+
+        {!isResolving && !isResolved && (
+          <button
+            onClick={handleResolve}
+            disabled={totalAllocated !== 100}
+            className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all border-b-4 ${
+              totalAllocated === 100
+                ? 'bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white border-purple-800 active:translate-y-0.5 active:border-b-0 shadow-lg'
+                : 'bg-slate-800 text-slate-600 border-slate-950 cursor-not-allowed'
+            }`}
+          >
+            {totalAllocated === 100 ? 'RESOLVE SALES WINDOW' : `ALLOCATE ${remainingBudget} MORE UNITS`}
+          </button>
+        )}
+      </div>
     </div>
   );
 };
