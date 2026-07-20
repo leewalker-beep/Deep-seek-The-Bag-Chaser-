@@ -5,6 +5,7 @@ import { completeConcertPerformanceWithLineup } from './store/slices/hustleSlice
 import * as Bio from './engine/biographyEngine';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
+import { analyzeBehavior } from './utils/personalityAnalyzer';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
 import { BranchChoice } from './components/BranchChoice';
@@ -544,6 +545,18 @@ function App() {
   const [isHydrated, setIsHydrated] = useState(false);
   const forceUpdate = useReducer(() => ({}), {})[1];
   const [isLedgerPinned, setIsLedgerPinned] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<'clout' | 'mental' | 'aura' | 'heat' | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.stat-tooltip-container')) {
+        setActiveTooltip(null);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     // Check if the store has hydrated
@@ -938,6 +951,7 @@ function App() {
       if (!sessionStorage.getItem(saveKey)) {
         const finalStat = getDominantStat(pl);
         const ending = getEnding(pl.legacyScore || 0, finalStat);
+        const behavior = analyzeBehavior(pl);
 
         saveHallOfFameEntry({
           runId: pl.runId,
@@ -952,6 +966,17 @@ function App() {
           date: new Date().toISOString(),
           month: pl.month,
           biography: pl.biography || [],
+          blueprint: {
+            primaryColor: behavior.primaryColor,
+            dominantPersona: behavior.dominantPersona,
+            paceSeconds: behavior.paceSeconds,
+            paceLabel: behavior.paceLabel,
+            adviceRatio: behavior.adviceRatio,
+            setbackRatio: behavior.setbackRatio,
+            riskCadenceRatio: behavior.riskCadenceRatio,
+            orientationLabel: behavior.orientationLabel,
+            headlineSynthesis: behavior.synthesisLines[0] || ''
+          }
         });
         sessionStorage.setItem(saveKey, 'true');
       }
@@ -1186,17 +1211,31 @@ function App() {
             </div>
           </div>
           <div className="grid grid-cols-4 gap-1 text-center">
-            <div className="flex flex-col group relative cursor-help">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(prev => prev === 'clout' ? null : 'clout');
+              }}
+              className="flex flex-col group relative cursor-help stat-tooltip-container"
+            >
               <span className="text-[8px] text-slate-500 uppercase">Clout</span>
               <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
                 {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
               </span>
-              <div className="absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+              <div className={`absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                activeTooltip === 'clout' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+              }`}>
                 <span className="font-black text-blue-400 uppercase block mb-1">👑 Clout (Influence)</span>
                 Represents your public reach, street rep, and political sway. Reaching the max allows tier promotions. Failing active checks reduces your fame.
               </div>
             </div>
-            <div className="flex flex-col group relative cursor-help">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(prev => prev === 'mental' ? null : 'mental');
+              }}
+              className="flex flex-col group relative cursor-help stat-tooltip-container"
+            >
               <span className="text-[8px] text-slate-500 uppercase">Mental</span>
               <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
                 {Math.floor(pl.mentalHealth)}%
@@ -1204,27 +1243,45 @@ function App() {
                   <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
                 )}
               </span>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                activeTooltip === 'mental' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+              }`}>
                 <span className="font-black text-red-400 uppercase block mb-1">🧠 Mental Health</span>
                 Your psychological capacity. Exhausting work drains your mental health. Reaching <span className="font-black text-red-500">0% causes burnout (Death)</span>. Restore it via sleep/recreation.
               </div>
             </div>
-            <div className="flex flex-col group relative cursor-help">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(prev => prev === 'aura' ? null : 'aura');
+              }}
+              className="flex flex-col group relative cursor-help stat-tooltip-container"
+            >
               <span className="text-[8px] text-slate-500 uppercase">Aura</span>
               <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
                 {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
               </span>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                activeTooltip === 'aura' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+              }`}>
                 <span className="font-black text-purple-400 uppercase block mb-1">✨ Aura (Mystique)</span>
                 Represents your personal presence, charisma, and star power. Necessary for massive negotiations, business deals, and general respect.
               </div>
             </div>
-            <div className="flex flex-col group relative cursor-help">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTooltip(prev => prev === 'heat' ? null : 'heat');
+              }}
+              className="flex flex-col group relative cursor-help stat-tooltip-container"
+            >
               <span className="text-[8px] text-slate-500 uppercase">Heat</span>
               <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
                 {Math.floor(pl.heat)}%
               </span>
-              <div className="absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-2xl text-left leading-relaxed">
+              <div className={`absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                activeTooltip === 'heat' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+              }`}>
                 <span className="font-black text-orange-400 uppercase block mb-1">🔥 Heat (WANTED)</span>
                 Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
               </div>

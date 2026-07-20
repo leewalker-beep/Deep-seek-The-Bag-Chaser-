@@ -13,6 +13,17 @@ interface ShareCardProps {
   deathMessage: string;
   deathBadge: string;
   originBonus?: string;
+  blueprint?: {
+    primaryColor: 'CRIMSON' | 'GOLD' | 'COBALT' | 'VIOLET';
+    dominantPersona: string;
+    paceSeconds: number;
+    paceLabel: string;
+    adviceRatio: number;
+    setbackRatio: number;
+    riskCadenceRatio: number;
+    orientationLabel: string;
+    headlineSynthesis?: string;
+  };
 }
 
 const formatBag = (n: number) => {
@@ -40,7 +51,8 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>((props, ref)
     endingTitle,
     endingEmoji,
     deathMessage,
-    deathBadge
+    deathBadge,
+    blueprint
   } = props;
 
   return (
@@ -117,14 +129,59 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>((props, ref)
         </div>
 
         {/* TIER JOURNEY */}
-        <div className="mt-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
+        <div className="mt-2 text-center">
+          <div className="text-[10px] text-slate-500 uppercase tracking-wider">
             Started in MUD · Reached <span className="text-slate-300">{tier}</span> tier
           </div>
         </div>
 
+        {/* BLUEPRINT SUB-PANEL */}
+        {blueprint && (
+          <div className="mt-3 bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 text-left flex flex-col gap-1">
+            <div className="flex justify-between items-center border-b border-slate-850 pb-1">
+              <span className="text-[7.5px] text-slate-500 uppercase tracking-widest font-black">ADVISOR BLUEPRINT</span>
+              <span
+                className="text-[7.5px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border"
+                style={{
+                  backgroundColor: `${
+                    blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                  }15`,
+                  color:
+                    blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308',
+                  borderColor: `${
+                    blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                  }40`
+                }}
+              >
+                {blueprint.primaryColor} ({blueprint.dominantPersona})
+              </span>
+            </div>
+
+            {blueprint.headlineSynthesis && (
+              <p className="text-[8.5px] text-slate-300 leading-normal italic font-serif">
+                "{blueprint.headlineSynthesis}"
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 text-[8px] text-slate-400 mt-0.5">
+              <div>
+                PACE: <span className="text-white font-mono">{blueprint.paceLabel}</span>
+              </div>
+              <div>
+                ORIENTATION: <span className="text-white font-mono">{blueprint.orientationLabel}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* DEATH CARD */}
-        <div className="mt-6 w-full bg-slate-900/80 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden">
+        <div className="mt-3 w-full bg-slate-900/80 border border-slate-700/50 rounded-2xl p-4 relative overflow-hidden">
           <div className="text-[9px] text-slate-600 uppercase tracking-widest">💀 CAUSE OF DEATH</div>
           <div className="text-base font-bold text-white leading-snug mt-2 italic">
             "{deathMessage}"
