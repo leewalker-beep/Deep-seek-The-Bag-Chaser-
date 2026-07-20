@@ -546,6 +546,15 @@ const openMovieStrategy: HustleStrategy = (hustleId, state, marketType, levelDat
   return defaultStrategy(hustleId, state, marketType, customLevelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
 };
 
+const openCelebrityStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat) => {
+  const result = defaultStrategy(hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat);
+  if (result.success) {
+    result.yieldClout = Math.floor(result.yieldClout * minigameMultiplier);
+    result.yieldAura = Math.floor(result.yieldAura * minigameMultiplier);
+  }
+  return result;
+};
+
 const globalConglomerateStrategy: HustleStrategy = (_hustleId, state, _marketType, levelData, _currentLevel, _minigameMultiplier, _forceSuccess, _rivalThreat) => {
   const ceos = state.conglomerateCEOs || {};
   const divisions = [
@@ -654,6 +663,7 @@ export const HUSTLE_REGISTRY: Record<string, HustleStrategy> = {
   open_island: openIslandStrategy,
   open_sports_league: openSportsLeagueStrategy,
   open_movie: openMovieStrategy,
+  open_celebrity: openCelebrityStrategy,
   h_global_conglomerate: globalConglomerateStrategy,
 };
 

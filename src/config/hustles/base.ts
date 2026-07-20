@@ -876,6 +876,8 @@ HUSTLES.open_celebrity = {
   icon: '💍',
   description: 'Power couple status',
   miniGame: 'PinchToZoom',
+  hasPanel: true,
+  panelType: 'MARRY_CELEBRITY',
   levels: [
     { level: 1, cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 200, mentalHit: 10, cloutReq: 100, auraReq: 200, passiveYield: 0 }
   ]
