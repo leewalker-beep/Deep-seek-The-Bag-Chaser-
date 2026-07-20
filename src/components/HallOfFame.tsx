@@ -130,6 +130,50 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
           <StatCard label="Death Badge" value={bestRun.deathBadge || 'N/A'} icon="💀" />
         </div>
 
+        {bestRun.blueprint && (
+          <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-left space-y-2 mt-4">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+              <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black">ADVISOR BLUEPRINT</span>
+              <span
+                className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border"
+                style={{
+                  backgroundColor: `${
+                    bestRun.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    bestRun.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    bestRun.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                  }15`,
+                  color:
+                    bestRun.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    bestRun.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    bestRun.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308',
+                  borderColor: `${
+                    bestRun.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                    bestRun.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                    bestRun.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                  }40`
+                }}
+              >
+                {bestRun.blueprint.primaryColor} ({bestRun.blueprint.dominantPersona})
+              </span>
+            </div>
+
+            {bestRun.blueprint.headlineSynthesis && (
+              <p className="text-[10px] text-slate-300 italic leading-relaxed">
+                "{bestRun.blueprint.headlineSynthesis}"
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400">
+              <div>
+                PACE: <span className="text-white font-mono">{bestRun.blueprint.paceLabel}</span>
+              </div>
+              <div>
+                ORIENTATION: <span className="text-white font-mono">{bestRun.blueprint.orientationLabel}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="pt-4">
           <BaseButton
             variant="secondary"
@@ -192,6 +236,50 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
                         <div className="text-slate-500 uppercase font-bold">Badge:</div>
                         <div className="text-slate-300 text-right">{run.deathBadge || 'N/A'}</div>
                       </div>
+
+                      {run.blueprint && (
+                        <div className="mb-4 bg-slate-900/30 border border-slate-800 p-3 rounded-xl text-left space-y-2">
+                          <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+                            <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black">ADVISOR BLUEPRINT</span>
+                            <span
+                              className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border"
+                              style={{
+                                backgroundColor: `${
+                                  run.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                                  run.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                                  run.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                                }15`,
+                                color:
+                                  run.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                                  run.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                                  run.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308',
+                                borderColor: `${
+                                  run.blueprint.primaryColor === 'CRIMSON' ? '#Ef4444' :
+                                  run.blueprint.primaryColor === 'COBALT' ? '#3b82f6' :
+                                  run.blueprint.primaryColor === 'VIOLET' ? '#8b5cf6' : '#eab308'
+                                }40`
+                              }}
+                            >
+                               {run.blueprint.primaryColor} ({run.blueprint.dominantPersona})
+                            </span>
+                          </div>
+
+                          {run.blueprint.headlineSynthesis && (
+                            <p className="text-[10px] text-slate-300 italic leading-relaxed">
+                              "{run.blueprint.headlineSynthesis}"
+                            </p>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400">
+                            <div>
+                              PACE: <span className="text-white font-mono">{run.blueprint.paceLabel}</span>
+                            </div>
+                            <div>
+                              ORIENTATION: <span className="text-white font-mono">{run.blueprint.orientationLabel}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {run.biography && run.biography.length > 0 && (
                         <div className="mb-4 space-y-1.5 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
@@ -300,6 +388,7 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
             endingEmoji={ENDINGS.find(e => e.title === sharingRun.ending)?.emoji || '💀'}
             deathMessage={DEATH_MESSAGES[sharingRun.lastHustle || '']?.message || 'The streets claimed another one.'}
             deathBadge={sharingRun.deathBadge || DEATH_MESSAGES[sharingRun.lastHustle || '']?.badge || 'UNKNOWN'}
+            blueprint={sharingRun.blueprint}
           />
         )}
       </div>

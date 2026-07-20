@@ -672,6 +672,17 @@ export interface HallOfFameEntry {
   date: string;
   month: number;
   biography: string[];
+  blueprint?: {
+    primaryColor: 'CRIMSON' | 'GOLD' | 'COBALT' | 'VIOLET';
+    dominantPersona: string;
+    paceSeconds: number;
+    paceLabel: string;
+    adviceRatio: number;
+    setbackRatio: number;
+    riskCadenceRatio: number;
+    orientationLabel: string;
+    headlineSynthesis?: string;
+  };
 }
 
 export type WorldFeedCategory = 'SOCIAL' | 'BUSINESS' | 'POLITICS' | 'OPINION' | 'MARKET' | 'NEWS' | 'WORLD';
