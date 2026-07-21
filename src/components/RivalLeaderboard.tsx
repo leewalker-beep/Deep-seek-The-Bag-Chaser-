@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Rival } from '../types/game';
-import { BaseButton } from './ui/BaseButton';
 import { useGameStore } from '../store/gameStore';
 import { GAME_CONSTANTS } from '../config/gameConstants';
 import { getRivalAvatarId } from '../config/avatars';
@@ -22,6 +21,16 @@ const TIER_HELP_COSTS: Record<string, number> = {
   MOGUL: 20000000,
   PRESIDENT: 50000000,
   OPEN: 100000000
+};
+
+const formatGapValue = (amount: number): string => {
+  if (amount >= 1000000) {
+    return `$${(amount / 1000000).toFixed(2)}M`;
+  }
+  if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(0)}K`;
+  }
+  return `$${amount}`;
 };
 
 export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
@@ -149,9 +158,44 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     )}
                   </div>
                 </div>
-                <div className={`text-xs font-mono ${amountStyle}`}>
-                  ${p.netWorth.toLocaleString()}
-                </div>
+                {isPlayer ? (
+                  (() => {
+                    const isFirst = allParticipants[0].id === 'player';
+                    if (isFirst) {
+                      const nextBest = allParticipants[1];
+                      if (nextBest) {
+                        const gap = p.netWorth - nextBest.netWorth;
+                        return (
+                          <div className="text-[10px] text-emerald-400 font-black uppercase text-right leading-tight shrink-0">
+                            <div>LEADING</div>
+                            <div className="text-[8px] text-slate-500 font-mono">+{formatGapValue(gap)} ahead</div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="text-[10px] text-emerald-400 font-black uppercase text-right leading-tight shrink-0">
+                            LEADING
+                          </div>
+                        );
+                      }
+                    } else {
+                      const leader = allParticipants[0];
+                      const gap = leader.netWorth - p.netWorth;
+                      return (
+                        <div className="text-[10px] text-red-400 font-black uppercase text-right leading-tight shrink-0">
+                          <div>−{formatGapValue(gap)}</div>
+                          <div className="text-[7.5px] text-slate-500 font-bold tracking-tighter truncate max-w-[120px]">
+                            BEHIND {leader.name}
+                          </div>
+                        </div>
+                      );
+                    }
+                  })()
+                ) : (
+                  <div className={`text-xs font-mono ${amountStyle} shrink-0`}>
+                    ${p.netWorth.toLocaleString()}
+                  </div>
+                )}
               </div>
 
               {!isPlayer && (
@@ -174,61 +218,81 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     </div>
                   )}
 
-                  <div className="flex gap-2 flex-wrap items-center">
+                  <div className="mt-2 space-y-2">
                     {pAsRival.status === 'ally' ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded px-2 py-0.5">
                         🤝 ALLIED
                       </span>
                     ) : (
                       <>
-                        {p.netWorth > playerBag && (
-                          <button
-                            disabled={pAsRival.lastSabotagedMonth === pl.month}
-                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-950/60 text-red-400 border border-red-500/30 rounded px-2 py-0.5 disabled:opacity-50"
-                            onClick={() => handleSabotage(p.id)}
-                          >
-                            ⚔️ {pAsRival.lastSabotagedMonth === pl.month ? 'SABOTAGED' : `SABOTAGE ACTIVE · $${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K`}
-                          </button>
-                        )}
+                        <div className="flex gap-2 w-full">
+                          {p.netWorth > playerBag && (
+                            <button
+                              disabled={pAsRival.lastSabotagedMonth === pl.month}
+                              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/20 text-red-400 font-bold transition-all disabled:opacity-50 text-center select-none"
+                              onClick={() => handleSabotage(p.id)}
+                            >
+                              <span className="text-[16px] leading-none">⚔️</span>
+                              <span className="text-[9px] uppercase tracking-tighter leading-tight font-black">
+                                {pAsRival.lastSabotagedMonth === pl.month ? 'Sabotaged' : 'Sabotage'}
+                              </span>
+                              <span className="text-[8px] font-mono text-red-500/70 font-medium">
+                                ${(GAME_CONSTANTS.SABOTAGE_COST / 1000).toLocaleString()}K
+                              </span>
+                            </button>
+                          )}
 
-                        {helpRival && !isPlayer && (
-                          <button
-                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 rounded px-2 py-0.5"
-                            onClick={() => handleHelp(p.id)}
-                          >
-                            🤝 PARTNER (${((TIER_HELP_COSTS[pAsRival.tier] || 10000) / 1000).toLocaleString()}K)
-                          </button>
-                        )}
+                          {helpRival && !isPlayer && (
+                            <button
+                              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/20 text-emerald-400 font-bold transition-all text-center select-none"
+                              onClick={() => handleHelp(p.id)}
+                            >
+                              <span className="text-[16px] leading-none">🤝</span>
+                              <span className="text-[9px] uppercase tracking-tighter leading-tight font-black">Partner</span>
+                              <span className="text-[8px] font-mono text-emerald-500/70 font-medium">
+                                ${((TIER_HELP_COSTS[pAsRival.tier] || 10000) / 1000).toLocaleString()}K
+                              </span>
+                            </button>
+                          )}
 
-                        {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
-                           <BaseButton
-                            variant="ghost"
-                            size="sm"
-                            className="text-[8px] py-1 h-auto bg-blue-500/20 border border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
-                            onClick={() => counterBid(p.id)}
-                          >
-                            ⚡ Counter-Bid (${(Math.floor(p.currentBid * 1.5) / 1000).toLocaleString()}k)
-                          </BaseButton>
-                        )}
+                          {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && (
+                            <button
+                              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-orange-950/40 hover:bg-orange-900/40 border border-orange-500/20 text-orange-400 font-bold transition-all text-center select-none"
+                              onClick={() => retaliateRival(p.id)}
+                            >
+                              <span className="text-[16px] leading-none">🔥</span>
+                              <span className="text-[9px] uppercase tracking-tighter leading-tight font-black">Retaliate</span>
+                              <span className="text-[8px] font-mono text-orange-500/70 font-medium">10% Bag</span>
+                            </button>
+                          )}
+                        </div>
 
-                        {pl.rivalThreats?.[pAsRival.tier] === 'RIVAL_DOMINANT' && (
-                           <BaseButton
-                            variant="ghost"
-                            size="sm"
-                            className="text-[8px] py-1 h-auto bg-orange-500/20 border border-orange-500/40 hover:bg-orange-500/30 text-orange-400"
-                            onClick={() => retaliateRival(p.id)}
-                          >
-                            🔥 RETALIATE (10% Bag)
-                          </BaseButton>
-                        )}
+                        {((p.currentBid > 0 && pAsRival.tier === pl.currentTier) || (recruitRival && isRivalEligibleForRecruit(pAsRival))) && (
+                          <div className="flex gap-2 w-full">
+                            {p.currentBid > 0 && pAsRival.tier === pl.currentTier && (
+                              <button
+                                className="flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-blue-950/40 hover:bg-blue-900/40 border border-blue-500/20 text-blue-400 font-bold transition-all text-center select-none"
+                                onClick={() => counterBid(p.id)}
+                              >
+                                <span className="text-[16px] leading-none">⚡</span>
+                                <span className="text-[9px] uppercase tracking-tighter leading-tight font-black">Counter</span>
+                                <span className="text-[8px] font-mono text-blue-500/70 font-medium">
+                                  ${(Math.floor(p.currentBid * 1.5) / 1000).toLocaleString()}K
+                                </span>
+                              </button>
+                            )}
 
-                        {recruitRival && isRivalEligibleForRecruit(pAsRival) && (
-                          <button
-                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-blue-950/60 text-blue-400 border border-blue-500/30 rounded px-2 py-0.5 hover:bg-blue-900/60"
-                            onClick={() => recruitRival(p.id)}
-                          >
-                            🤝 RECRUIT
-                          </button>
+                            {recruitRival && isRivalEligibleForRecruit(pAsRival) && (
+                              <button
+                                className="flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-purple-950/40 hover:bg-purple-900/40 border border-purple-500/20 text-purple-400 font-bold transition-all text-center select-none"
+                                onClick={() => recruitRival(p.id)}
+                              >
+                                <span className="text-[16px] leading-none">🤝</span>
+                                <span className="text-[9px] uppercase tracking-tighter leading-tight font-black">Recruit</span>
+                                <span className="text-[8px] font-mono text-purple-500/70 font-medium">Free</span>
+                              </button>
+                            )}
+                          </div>
                         )}
                       </>
                     )}
