@@ -1146,70 +1146,88 @@ function App() {
       )}
 
       {/* Top Bar */}
-      <div className="sticky top-0 z-30 bg-slate-950 border-b border-slate-800 px-4 py-2">
-        <div className="max-w-md mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          <div>RANK: <span className="text-white">{pl.currentTier}</span></div>
+      <div className="sticky top-0 z-30 bg-slate-950 border-b border-slate-800 px-4 py-2 scroll-hint-wrapper">
+        <div className="max-w-md mx-auto flex flex-nowrap overflow-x-auto gap-3 items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-400 no-scrollbar pr-8 py-0.5">
           {pl.activeSentiment ? (
-            <div className={`animate-pulse ${pl.activeSentiment.multiplier > 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 animate-pulse ${
+              pl.activeSentiment.multiplier > 1
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-red-500/10 text-red-400 border-red-500/20'
+            }`}>
               📰 {pl.activeSentiment.label} ({pl.activeSentiment.monthsRemaining}m)
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
+            <div className="rounded-full py-0.5 pl-0.5 pr-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1.5 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
               <Avatar
                 avatarId={pl.avatarId || 'av_m1'}
-                size={22}
-                ring="ring-emerald-500/50"
+                size={18}
+                ring="ring-emerald-500/30"
               />
-              <span className="text-white font-black
-                text-[10px]">{pl.name}</span>
+              <span className="text-white font-black">{pl.name}</span>
             </div>
           )}
-          <div className="flex items-center gap-1">
-            {MARKET_CONFIGS[currentMarket].icon} <span className="text-white">{MARKET_CONFIGS[currentMarket].name}</span>
+          <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 ${
+            currentMarket === 'RECESSION'
+              ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'
+              : currentMarket === 'CRACKDOWN'
+              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse'
+              : currentMarket === 'BULL_MARKET'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse'
+              : 'bg-slate-800/40 text-slate-300 border-slate-800/60'
+          }`}>
+            <span>{MARKET_CONFIGS[currentMarket].icon}</span>
+            <span className="text-white font-black">{MARKET_CONFIGS[currentMarket].name}</span>
           </div>
-          <div>AGE: <span className="text-white">{ageYears}y {ageMonths}m</span></div>
+          <div className="rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
+            📅 AGE: <span className="text-white font-black">{ageYears}y {ageMonths}m</span>
+          </div>
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="sticky top-[33px] z-20 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
         <div className="max-w-md mx-auto">
-          <div className="flex justify-between items-end mb-1">
+          <div className="flex justify-between items-center mb-2">
             <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
               ${pl.bag.toLocaleString()}
             </div>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setShowScoreboard(true)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
-              >
-                📊 Stats
-              </button>
-              <button
-                onClick={() => setShowChallenges(true)}
-                className="text-[9px] bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
-              >
-                🔥 Goals
-              </button>
-              <button
-                onClick={() => setShowReceipts(true)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter"
-              >
-                Receipts
-              </button>
-              <button
-                onClick={() => setShowPhoneFeed(true)}
-                className="text-[9px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 flex items-center gap-1"
-              >
-                📱 Feed
-              </button>
-              <button
-                onClick={() => setShowAdvisor(true)}
-                className="text-[9px] bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 px-2 py-1 rounded font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20 flex items-center gap-1"
-              >
-                🧠 Advisor
-              </button>
-            </div>
+          </div>
+          <div className="flex w-full gap-[6px] mb-3">
+            <button
+              onClick={() => setShowScoreboard(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+            >
+              <span className="text-[15px] leading-none">📊</span>
+              <span className="text-[9.5px] leading-none font-black uppercase">Stats</span>
+            </button>
+            <button
+              onClick={() => setShowChallenges(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+            >
+              <span className="text-[15px] leading-none">🔥</span>
+              <span className="text-[9.5px] leading-none font-black uppercase">Goals</span>
+            </button>
+            <button
+              onClick={() => setShowReceipts(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+            >
+              <span className="text-[15px] leading-none">🧾</span>
+              <span className="text-[9.5px] leading-none font-black uppercase">Receipts</span>
+            </button>
+            <button
+              onClick={() => setShowPhoneFeed(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20"
+            >
+              <span className="text-[15px] leading-none">📱</span>
+              <span className="text-[9.5px] leading-none font-black uppercase">Feed</span>
+            </button>
+            <button
+              onClick={() => setShowAdvisor(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20"
+            >
+              <span className="text-[15px] leading-none">🧠</span>
+              <span className="text-[9.5px] leading-none font-black uppercase">Advisor</span>
+            </button>
           </div>
           <div className="grid grid-cols-4 gap-1 text-center">
             <div
@@ -1318,12 +1336,14 @@ function App() {
             </div>
 
             {/* Monthly Net Summary */}
-            <div className="flex justify-between items-center text-[8.5px] font-mono text-slate-400 mb-1.5 bg-slate-900/40 p-1.5 rounded-lg border border-slate-900">
-              <div>
-                RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
-              </div>
-              <div>
-                PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
+            <div className="scroll-hint-wrapper">
+              <div className="flex flex-nowrap overflow-x-auto justify-between items-center text-[8.5px] font-mono text-slate-400 mb-1.5 bg-slate-900/40 p-1.5 rounded-lg border border-slate-900 no-scrollbar pr-8">
+                <div className="shrink-0 mr-4">
+                  RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
+                </div>
+                <div className="shrink-0">
+                  PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
+                </div>
               </div>
             </div>
 
