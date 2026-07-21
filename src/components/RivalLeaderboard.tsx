@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Rival } from '../types/game';
-import { BaseButton } from './ui/BaseButton';
 import { useGameStore } from '../store/gameStore';
 import { GAME_CONSTANTS } from '../config/gameConstants';
 import { getRivalAvatarId } from '../config/avatars';
