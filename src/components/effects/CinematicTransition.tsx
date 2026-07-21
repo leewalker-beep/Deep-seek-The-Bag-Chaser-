@@ -1,6 +1,10 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { type HeroArtwork } from '../../config/heroArtwork';
+import { useGameStore } from '../../store/gameStore';
+import { BACKGROUND_CATEGORIES } from '../../config/backgrounds';
+import { analyzeBehavior } from '../../utils/personalityAnalyzer';
+import { type PlayerStats } from '../../types/game';
 
 interface CinematicTransitionProps {
   artwork: HeroArtwork;
@@ -17,6 +21,110 @@ const ADVISOR_CONGRATULATIONS: Record<string, string> = {
   PRESIDENT: "Mr. President. Commander-in-Chief. You've reached the absolute peak of power.",
   LEGEND: "You've broken past the mortal grid. The sandbox is yours to reshape as you see fit."
 };
+
+export function generateDynamicChapterIntro(pl: PlayerStats, tier: string): string {
+  if (!pl) return "Welcome to the next level of the grind.";
+
+  const name = pl.name || "CHASER";
+
+  // Find Origin Category Name and Variation Name
+  let originName = "humble origins";
+  let backgroundVariationName = "Hustler";
+
+  const cat = BACKGROUND_CATEGORIES.find(c => c.id === pl.categoryId);
+  if (cat) {
+    originName = cat.name;
+    const variation = cat.variations.find(v => v.id === pl.variationId);
+    if (variation) {
+      backgroundVariationName = variation.name;
+    }
+  }
+
+  // Determine Public Reputation
+  const publicReputation = (pl.narrativeFlags?.publicReputation as string) || "The Hustler";
+
+  // Analyze playstyle via behavior
+  const behavior = analyzeBehavior(pl);
+
+  // Playstyle classification criteria
+  const isCrimeBoss = publicReputation === 'The Crime Boss' || (pl.arrestCount && pl.arrestCount > 0) || pl.heat > 75;
+  const isCharitable = publicReputation === 'The Philanthropist' || (pl.hustleLevels?.['philanthropy_empire'] || 0) > 0;
+  const isInvestor = publicReputation === 'The Investor' || publicReputation === 'The Billionaire' || (pl.lastPassiveBreakdown?.finalTotal && pl.lastPassiveBreakdown.finalTotal > 50000) || pl.rentalCount > 0;
+  const isRiskTaker = publicReputation === 'The Controversial Tycoon' || behavior.riskCadenceRatio > 0.4 || pl.heat > 60;
+
+  let playstyleQuote = "Every block of this city was fought for. Every deal was earned.";
+
+  if (isCrimeBoss) {
+    playstyleQuote = "They respect you... or they fear you.";
+  } else if (isRiskTaker) {
+    playstyleQuote = "The city whispers your name. Some call you reckless. Others call you fearless.";
+  } else if (isInvestor) {
+    playstyleQuote = "Your empire wasn't built overnight. Every decision was calculated.";
+  } else if (isCharitable) {
+    playstyleQuote = "Success gave you influence. You chose to lift others.";
+  }
+
+  // Major choices and milestones strings
+  const majorChoices: string[] = [];
+
+  // Specialization
+  if (pl.activeSpecializationId) {
+    const specLabel = pl.activeSpecializationId.replace(/_/g, ' ').toUpperCase();
+    majorChoices.push(`forging ahead as a specialized ${specLabel}`);
+  }
+
+  // Recruited rivals
+  const recruitedRivalsCount = (pl.rivals || []).filter(r => r.status === 'ally').length;
+  if (recruitedRivalsCount > 0) {
+    majorChoices.push(`with ${recruitedRivalsCount} recruited former rival allies standing by your side`);
+  }
+
+  // Cabinet
+  const cabinetSize = Object.keys(pl.cabinet || {}).length;
+  if (cabinetSize > 0) {
+    majorChoices.push(`backed by a hand-picked federal cabinet of ${cabinetSize} members`);
+  }
+
+  // Venture Capital Backed Founders
+  const foundersCount = (pl.foundersBacked || []).length;
+  if (foundersCount > 0) {
+    majorChoices.push(`backing ${foundersCount} founders you believed in`);
+  }
+
+  // Record Label
+  const artistsCount = (pl.artists || []).length;
+  if (artistsCount > 0) {
+    majorChoices.push(`managing a talent roster of ${artistsCount} signed artists`);
+  }
+
+  // Let's build the final text!
+  let choicesText = "";
+  if (majorChoices.length > 0) {
+    choicesText = " Now, " + majorChoices.join(" and ") + ", you step onto the global stage.";
+  }
+
+  // Tier-specific narrative acknowledgment
+  let tierAcknowledge = "";
+  if (tier === 'STREET') {
+    tierAcknowledge = `You survived the mud of the blocks, ${name}. As ${publicReputation}, your trajectory from a ${backgroundVariationName} is undeniable.`;
+  } else if (tier === 'STARTUP') {
+    tierAcknowledge = `Incorporation is complete, ${name}. From your ${originName} beginnings, you are turning ideas into systemic leverage.`;
+  } else if (tier === 'CORPORATE') {
+    tierAcknowledge = `Welcome to institutional power, ${name}. No longer just a ${backgroundVariationName}, you are playing the ultimate leverage game.`;
+  } else if (tier === 'ELITE') {
+    tierAcknowledge = `Sovereign wealth is yours, ${name}. The shadows of your ${originName} start are a lifetime away; protect your neck.`;
+  } else if (tier === 'MOGUL') {
+    tierAcknowledge = `A true global titan has risen, ${name}. Your diverse commercial holdings have reshaped the marketplace.`;
+  } else if (tier === 'PRESIDENT') {
+    tierAcknowledge = `Hail to the Chief, ${name}. From your beginnings as a ${backgroundVariationName}, you now command the executive fate of the nation.`;
+  } else if (tier === 'OPEN' || tier === 'LEGEND') {
+    tierAcknowledge = `You have transitioned past the mortal grid, ${name}. Your footprint as ${publicReputation} is permanently etched into the city's legend.`;
+  } else {
+    tierAcknowledge = `Back to the grind, ${name}. Your story as a ${backgroundVariationName} with ${originName} continues to unfold.`;
+  }
+
+  return `${tierAcknowledge} "${playstyleQuote}"${choicesText}`;
+}
 
 const playChime = () => {
   try {
@@ -55,11 +163,11 @@ const playChime = () => {
 };
 
 export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwork, onComplete }) => {
-  // FLAG FOR REVIEW: Consider whether the tier-promotion moment should include the player's name
-  // (e.g. "Congratulations, {playerName}. Back to the grind...") in the congratulatoryLine
-  // by pulling playerName from the global game store (useGameStore(state => state.pl.name)) or props.
+  const pl = useGameStore(state => state.pl);
   const isTier = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'LEGEND', 'PRESIDENT'].includes(artwork.id);
-  const congratulatoryLine = ADVISOR_CONGRATULATIONS[artwork.id];
+  const congratulatoryLine = isTier
+    ? generateDynamicChapterIntro(pl, artwork.id)
+    : ADVISOR_CONGRATULATIONS[artwork.id];
 
   useEffect(() => {
     if (isTier) {
@@ -157,7 +265,7 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
               <span className="text-[9px] text-emerald-400 font-black uppercase tracking-widest block">
                 🧠 Advisor Message
               </span>
-              <p className="text-xs font-semibold text-slate-200 uppercase tracking-wide leading-relaxed">
+              <p className="text-xs font-semibold text-slate-200 leading-relaxed">
                 "{congratulatoryLine}"
               </p>
             </motion.div>
