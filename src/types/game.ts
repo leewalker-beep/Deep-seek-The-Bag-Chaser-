@@ -27,6 +27,17 @@ export interface WorldEventInstance {
   eventId: string;
   monthsRemaining: number;
 }
+
+export interface FinancialDebt {
+  id: string;
+  loanType: 'STUDENT' | 'EMERGENCY' | 'EQUIPMENT' | 'BUSINESS' | 'MORTGAGE';
+  principal: number;
+  interestRate: number; // annual rate, e.g. 0.04 for 4%
+  remainingTerm: number; // months remaining
+  monthlyPayment: number;
+  totalTerm: number; // original term in months
+}
+
 export type MarketType = 'NORMAL' | 'RECESSION' | 'BULL_MARKET' | 'CRACKDOWN';
 export type CrisisType = 'shadowban' | 'blacklist' | 'strike' | 'frozen';
 
@@ -785,6 +796,7 @@ export interface PlayerStats {
   age?: string;
   worldFeed?: WorldFeedItem[];
   consequences?: Consequence[];
+  financialDebts?: FinancialDebt[];
   activeLiveEvent?: LiveWorldEvent | null;
   completedLiveEvents?: string[];
   avatarId: string;
@@ -1078,6 +1090,8 @@ export interface GameState {
   selectSpecialization: (specializationId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
   resolveInteractiveStoryEvent: (choiceIndex: number) => void;
+  takeLoan: (loanType: 'STUDENT' | 'EMERGENCY' | 'EQUIPMENT' | 'BUSINESS' | 'MORTGAGE') => boolean;
+  repayLoan: (loanId: string) => boolean;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;

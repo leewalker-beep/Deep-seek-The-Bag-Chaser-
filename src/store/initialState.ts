@@ -15,6 +15,7 @@ export const getInitialStats = (
     worldFeed: [],
     ambitions: [],
     consequences: [],
+    financialDebts: [],
     activeLiveEvent: null,
     completedLiveEvents: [],
     bag: 0,

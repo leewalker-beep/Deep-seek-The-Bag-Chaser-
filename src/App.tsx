@@ -132,6 +132,7 @@ import { getEnding } from './config/endings';
 import { getDominantStat } from './utils/endingUtils';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
+import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from './utils/financialObligationsUtils';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier, AppTab } from './types/game';
@@ -548,6 +549,22 @@ function App() {
   const forceUpdate = useReducer(() => ({}), {})[1];
   const [isLedgerPinned, setIsLedgerPinned] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<'clout' | 'mental' | 'aura' | 'heat' | null>(null);
+
+  useEffect(() => {
+    // Automatically activate the Financial Obligations & Upkeeps system for live browser play
+    const pl = useGameStore.getState().pl;
+    if (pl && pl.narrativeFlags && !pl.narrativeFlags.upkeep_active) {
+      useGameStore.setState({
+        pl: {
+          ...pl,
+          narrativeFlags: {
+            ...pl.narrativeFlags,
+            upkeep_active: true
+          }
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -1366,6 +1383,14 @@ function App() {
                   <div className="shrink-0 mr-4">
                     RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
                   </div>
+                  <div className="shrink-0 mr-4">
+                    UPKEEP: <span className="text-red-400 font-bold">-${calculateMonthlyUpkeep(pl).toLocaleString()}</span>
+                  </div>
+                  {calculateMonthlyDebtService(pl) > 0 && (
+                    <div className="shrink-0 mr-4">
+                      DEBT: <span className="text-red-400 font-bold">-${calculateMonthlyDebtService(pl).toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="shrink-0">
                     PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
                   </div>
