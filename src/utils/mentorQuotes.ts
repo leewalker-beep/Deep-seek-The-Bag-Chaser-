@@ -165,15 +165,15 @@ export function determineDominantIdentity(pl: PlayerStats): 'risk' | 'investor' 
 
   // 4. Leader
   if (publicReputation === 'The Kingmaker') leader += 50;
-  if (pl.employeeCount && pl.employeeCount > 0) leader += 30;
+  if (flags.advisor_shown_first_employee) leader += 30;
   if (Object.keys(pl.cabinet || {}).length > 0) leader += 45;
   if ((pl.conglomerateCandidates || []).some((c: any) => c.assignedDivision)) leader += 40;
-  if (flags.advisor_shown_first_employee) leader += 20;
 
   // 5. Resilient
   if (pl.mentalHealth < 50) resilient += 30;
   if (behavior.setbackRatio > 0.5) resilient += 25;
-  if (pl.sabotagedCount && pl.sabotagedCount > 0) resilient += 20;
+  const totalSabotaged = pl.rivals?.reduce((sum, r) => sum + (r.sabotagedCount || 0), 0) || 0;
+  if (totalSabotaged > 0) resilient += 20;
   if (pl.arrestCount && pl.arrestCount > 0) resilient += 20;
   const setbackTotal = (pl.escalationCount || 0) + (pl.retreatCount || 0);
   if (setbackTotal > 0) {

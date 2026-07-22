@@ -21,10 +21,9 @@ describe('determineDominantIdentity', () => {
       lastPassiveBreakdown: { finalTotal: 0 },
       hustleLevels: {},
       rentPortfolioCount: 0,
-      employeeCount: 0,
       cabinet: {},
       conglomerateCandidates: [],
-      sabotagedCount: 0,
+      rivals: [],
       arrestCount: 0,
       escalationCount: 0,
       retreatCount: 0,
@@ -58,15 +57,15 @@ describe('determineDominantIdentity', () => {
 
   it('classifies leader player correctly', () => {
     mockPlayer.narrativeFlags!.publicReputation = 'The Kingmaker';
-    mockPlayer.employeeCount = 50;
-    mockPlayer.cabinet = { member1: {} };
+    mockPlayer.narrativeFlags!.advisor_shown_first_employee = true;
+    mockPlayer.cabinet = { member1: {} as any };
     const identity = determineDominantIdentity(mockPlayer);
     expect(identity).toBe('leader');
   });
 
   it('classifies resilient player correctly', () => {
     mockPlayer.mentalHealth = 30;
-    mockPlayer.sabotagedCount = 3;
+    mockPlayer.rivals = [{ id: 'rival1', sabotagedCount: 3 } as any];
     mockPlayer.escalationCount = 5;
     const identity = determineDominantIdentity(mockPlayer);
     expect(identity).toBe('resilient');
@@ -127,7 +126,7 @@ describe('getOrAssignQuoteForPrompt', () => {
 
     // Force resilient identity
     mockPlayer.mentalHealth = 10;
-    mockPlayer.sabotagedCount = 5;
+    mockPlayer.rivals = [{ id: 'rival1', sabotagedCount: 5 } as any];
 
     // Simulate all 15 quotes being shown
     INSPIRATIONAL_QUOTES.forEach(q => {
