@@ -693,6 +693,44 @@ export function compileReputationWhy(pl: PlayerStats, targetRep: string): string
   }
 }
 
+export function applyReputationGainScale(clout: number, aura: number, reputation: string): { clout: number; aura: number } {
+  let cloutMult = 1.0;
+  let auraMult = 1.0;
+
+  if (reputation === "The Celebrity") {
+    cloutMult = 1.2;
+  } else if (reputation === "The Investor") {
+    cloutMult = 0.8;
+  } else if (reputation === "The People's Champion") {
+    auraMult = 1.2;
+  }
+
+  return {
+    clout: Math.floor(clout * cloutMult),
+    aura: Math.floor(aura * auraMult)
+  };
+}
+
+export function applyReputationLossScale(clout: number, aura: number, reputation: string): { clout: number; aura: number } {
+  let cloutMult = 1.0;
+  let auraMult = 1.0;
+
+  if (reputation === "The Celebrity") {
+    cloutMult = 1.5;
+  } else if (reputation === "The Investor") {
+    cloutMult = 0.5;
+  } else if (reputation === "The Crime Boss") {
+    auraMult = 0.5;
+  } else if (reputation === "The People's Champion") {
+    auraMult = 1.5;
+  }
+
+  return {
+    clout: Math.floor(clout * cloutMult),
+    aura: Math.floor(aura * auraMult)
+  };
+}
+
 export function getRosterContributionsForPersona(pl: PlayerStats, persona: string): Record<string, number> {
   const contributions: Record<string, number> = {
     "Talent Agency Signings": 0,

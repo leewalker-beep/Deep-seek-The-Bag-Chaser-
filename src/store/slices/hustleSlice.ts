@@ -38,6 +38,7 @@ import { getUnlockedHustles, getInitialStats } from '../initialState';
 import { executeHustleAction, type HustleExecutionResult } from '../../engine/hustleEngine';
 import { checkAchievements } from '../../engine/achievementEngine';
 import { recordHistoryEvent } from '../../engine/historyEngine';
+import { applyReputationLossScale } from '../../engine/reputationEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
@@ -612,6 +613,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustleLevels: { ...state.pl.hustleLevels, [hustleId]: branch.level },
       stats: newStats,
       hustlePlays: newHustlePlays,
+      monthsSinceLastHustle: 0, // Reset inactivity tracker on any attempt
       tierStats: newTierStats,
       totalHustlesCompleted,
     });
@@ -849,6 +851,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustlePlays: newHustlePlays,
       tierStats: newTierStats,
       totalHustlesCompleted,
+      monthsSinceLastHustle: 0, // Reset inactivity tracker on any attempt
     });
     nextPl.legacyScore = calculateLegacyScore(nextPl);
 
@@ -1344,6 +1347,34 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       });
     }
 
+    const currentStreak = result.success ? (state.pl.streak || 0) + 1 : 0;
+    const isStreakAuraRewardActive = result.success && currentStreak >= 5;
+    const streakAuraBonus = isStreakAuraRewardActive ? 2 : 0;
+
+    if (isStreakAuraRewardActive) {
+      if (!result.tickerMessages) result.tickerMessages = [];
+      result.tickerMessages.push({
+        text: `🔥 WINNING STREAK: Momentum boost! +2 Aura.`,
+        colorClass: 'text-emerald-400 font-medium',
+        tier: state.pl.currentTier
+      });
+    }
+
+    let finalAuraYield = state.pl.aura + result.yieldAura + streakAuraBonus;
+    if (!result.success) {
+      const isMajor = ['CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'].includes(hustle.tier);
+      const auraLossAmt = isMajor ? 10 : 5;
+      const reputation = state.pl.narrativeFlags?.publicReputation as string || "The Hustler";
+      const failedLosses = applyReputationLossScale(0, auraLossAmt, reputation);
+      finalAuraYield = Math.max(0, finalAuraYield - failedLosses.aura);
+      if (!result.tickerMessages) result.tickerMessages = [];
+      result.tickerMessages.push({
+        text: `📉 FAILING VENTURE: Lost -${failedLosses.aura} Aura due to operational setback.`,
+        colorClass: 'text-red-400 font-medium',
+        tier: state.pl.currentTier
+      });
+    }
+
     const hustleResultPl = enforceStatCaps({
       ...state.pl,
       foundersBacked: updatedFounders,
@@ -1357,9 +1388,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       approvalRating: Math.max(0, Math.min(100, state.pl.approvalRating + (result.approvalBonus || 0))),
       bag: newBag,
       clout: state.pl.clout + result.yieldClout,
-      aura: state.pl.aura + result.yieldAura,
+      aura: finalAuraYield,
       mentalHealth: state.pl.mentalHealth + result.mentalHit,
       heat: state.pl.heat + result.heatHit,
+      monthsSinceLastHustle: 0, // Reset inactivity tracker on any attempt
       legacyPoints: (state.pl.legacyPoints || 0) + (result.legacyGain || 0),
       dynamicPassives: newDynamicPassives,
       vendingCount: state.pl.vendingCount + (hustleId === 'r_vending' ? 1 : 0),
@@ -1397,6 +1429,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
       sideEvents.push({ type: 'SCANDAL_TRIGGERED', metadata: { type: 'DATA_BREACH' } });
+      runningPl.scandalCount = (runningPl.scandalCount || 0) + 1;
       const bioUpdate = Bio.recordScandal(runningPl, 'DATA_BREACH');
       if (bioUpdate) {
         runningPl = {
@@ -1868,6 +1901,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       hustlePlays: newHustlePlays,
       tierStats: newTierStats,
       totalHustlesCompleted,
+      monthsSinceLastHustle: 0, // Reset inactivity tracker on any attempt
     });
     newPl.legacyScore = calculateLegacyScore(newPl);
 

@@ -17,6 +17,9 @@ describe('Edge Case Tests', () => {
   it('detects death from 0 mental health and assigns correct ending', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.9);
     const pl = getInitialStats(3);
+    pl.currentTier = 'OPEN'; // Prevent stat capping
+    pl.clout = 1000;
+    pl.aura = 1000;
     pl.mentalHealth = 0;
     pl.isTutorialSkipped = true;
 

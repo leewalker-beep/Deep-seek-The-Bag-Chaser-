@@ -9,6 +9,7 @@ import { getMasteryCount } from '../utils/masteryUtils';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { SPECIALIZATIONS } from '../config/specializations';
 import { getConsequenceMultiplier } from './consequenceEngine';
+import { applyReputationGainScale } from './reputationEngine';
 
 interface SynergyContext {
   backgroundId: string;
@@ -419,6 +420,9 @@ export function calculateHustleStatsAdditive(
     if (hustleId === 'president_campaign') {
       effectiveResult.cost = Math.floor(effectiveResult.cost * 1.3);
     }
+    if (effectiveResult.heatHit > 0) {
+      effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.2);
+    }
   } else if (reputation === "The Investor") {
     effectiveResult.cost = Math.floor(effectiveResult.cost * 0.9);
   } else if (reputation === "The Media Emperor") {
@@ -468,8 +472,19 @@ export function calculateHustleStatsAdditive(
   const totalCloutMultiplier = (1.0 + badgeCloutBonus + streetStreakBonus + eliteCloutBonus + legacyBonus + specCloutBonus + flexCloutBonus + repCloutBonus) * specMatchingBonus * efficiencyMult;
   effectiveResult.yieldClout = Math.max(0, Math.floor(result.yieldClout * totalCloutMultiplier));
 
+  let finalBaseAuraYield = result.yieldAura;
+  if (['r_sleep', 'power_nap', 'therapy_session', 'wellness_retreat', 'psychiatrist'].includes(hustleId) && player.mentalHealth > 80) {
+    // If it's a rest action at high health, guarantee at least a baseline Aura yield to apply the +3 recovery reward
+    finalBaseAuraYield = Math.max(finalBaseAuraYield, 0) + 3;
+  }
+
   const totalAuraMultiplier = (1.0 + badgeAuraBonus + legacyBonus + specAuraBonus + flexAuraBonus + presidentAuraBonus + repAuraBonus) * specMatchingBonus * efficiencyMult;
-  effectiveResult.yieldAura = Math.max(0, Math.floor(result.yieldAura * totalAuraMultiplier));
+  effectiveResult.yieldAura = Math.max(0, Math.floor(finalBaseAuraYield * totalAuraMultiplier));
+
+  // --- Dynamic Reputation Gain Scaling ---
+  const scaledGains = applyReputationGainScale(effectiveResult.yieldClout, effectiveResult.yieldAura, reputation);
+  effectiveResult.yieldClout = scaledGains.clout;
+  effectiveResult.yieldAura = scaledGains.aura;
 
   // --- Clamp Clout/Aura yields ---
   effectiveResult.yieldClout = Math.floor(Math.max(0, Math.min(1000, effectiveResult.yieldClout)));
