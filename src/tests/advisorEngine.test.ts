@@ -119,4 +119,49 @@ describe('Strategic Intelligence Advisor System', () => {
     expect(auraInsight?.priority).toBe('Opportunity');
     expect(auraInsight?.recommendation).toContain('cabinet member loyalty');
   });
+
+  it('should flag imminent severe burnout and high credit leverage squeeze warnings', () => {
+    const pl: PlayerStats = {
+      ...useGameStore.getState().pl,
+      consequences: [
+        {
+          id: 'cons_burnout_active',
+          source: 'burnout_state',
+          triggerCondition: 'Severe Exhaustion',
+          delay: 0,
+          severity: 'severe',
+          expiry: 4,
+          affectedSystems: ['businesses', 'clout', 'aura'],
+          status: 'active',
+          description: 'Severe Burnout'
+        }
+      ],
+      financialDebts: [
+        {
+          id: 'debt_high',
+          loanType: 'BUSINESS',
+          principal: 45000,
+          interestRate: 0.05,
+          remainingTerm: 24,
+          monthlyPayment: 2000,
+          totalTerm: 24
+        }
+      ]
+    };
+
+    const advice = generateStrategicAdvice(pl, 'NORMAL');
+
+    const burnoutStateInsight = advice.insights.find(i => i.id === 'burnout_state_insight');
+    const leverageSqueezeInsight = advice.insights.find(i => i.id === 'leverage_squeeze_insight');
+
+    expect(burnoutStateInsight).toBeDefined();
+    expect(burnoutStateInsight?.priority).toBe('Critical');
+    expect(burnoutStateInsight?.title).toBe('Imminent Severe Burnout');
+    expect(burnoutStateInsight?.recommendation).toContain('Wellness Retreat');
+
+    expect(leverageSqueezeInsight).toBeDefined();
+    expect(leverageSqueezeInsight?.priority).toBe('Important');
+    expect(leverageSqueezeInsight?.title).toBe('Aggressive Debt Scrutiny');
+    expect(leverageSqueezeInsight?.recommendation).toContain('Retire outstanding debts');
+  });
 });

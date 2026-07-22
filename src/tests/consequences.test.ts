@@ -182,4 +182,120 @@ describe('Dynamic Consequence Engine Tests', () => {
     const runResult = executeHustleAction('cleaning', pl, 'NORMAL', levelData, 1, 1.0, true);
     expect(runResult.tickerMessages?.some(m => m.text.includes('CARELESS MISTAKE'))).toBe(false);
   });
+
+  it('should detect and queue burnout_state when mental health is low', () => {
+    let pl = getInitialStats(3);
+    pl.consequences = [];
+    pl.mentalHealth = 25; // below 35
+
+    const news: any[] = [];
+    pl = detectAndCreateConsequences(pl, news);
+
+    expect(pl.consequences?.some(c => c.source === 'burnout_state')).toBe(true);
+    const burnoutCons = pl.consequences?.find(c => c.source === 'burnout_state');
+    expect(burnoutCons?.status).toBe('pending');
+    expect(burnoutCons?.delay).toBe(1);
+    expect(news.some(n => n.text.includes('BURNOUT WARNING'))).toBe(true);
+  });
+
+  it('should apply burnout_state modifier (30% penalty) to active and passive business yields once active', () => {
+    let pl = getInitialStats(3);
+    pl.consequences = [
+      {
+        id: 'cons_burnout_active',
+        source: 'burnout_state',
+        triggerCondition: 'Severe Exhaustion',
+        delay: 0,
+        severity: 'severe',
+        expiry: 4,
+        affectedSystems: ['businesses', 'clout', 'aura'],
+        status: 'active',
+        description: 'Severe Burnout',
+        effectModifier: { yieldCashMult: 0.70, cloutGainMult: 0.75, auraGainMult: 0.75 }
+      }
+    ];
+
+    const finalCashMult = getConsequenceMultiplier(pl, 'businesses', 'yieldCashMult', 1.0);
+    const finalCloutMult = getConsequenceMultiplier(pl, 'clout', 'cloutGainMult', 1.0);
+    const finalAuraMult = getConsequenceMultiplier(pl, 'aura', 'auraGainMult', 1.0);
+
+    expect(finalCashMult).toBe(0.70);
+    expect(finalCloutMult).toBe(0.75);
+    expect(finalAuraMult).toBe(0.75);
+  });
+
+  it('should auto-resolve/clear burnout_state when mental health rises above 60', () => {
+    let pl = getInitialStats(3);
+    pl.mentalHealth = 70; // recovered
+    pl.consequences = [
+      {
+        id: 'cons_burnout_active',
+        source: 'burnout_state',
+        triggerCondition: 'Severe Exhaustion',
+        delay: 0,
+        severity: 'severe',
+        expiry: 4,
+        affectedSystems: ['businesses', 'clout', 'aura'],
+        status: 'active',
+        description: 'Severe Burnout',
+        effectModifier: { yieldCashMult: 0.70, cloutGainMult: 0.75, auraGainMult: 0.75 }
+      }
+    ];
+
+    const news: any[] = [];
+    pl = detectAndCreateConsequences(pl, news);
+
+    expect(pl.consequences?.some(c => c.source === 'burnout_state')).toBe(false);
+    expect(news.some(n => n.text.includes('RECOVERY SUCCESS'))).toBe(true);
+  });
+
+  it('should detect and queue leverage_squeeze when debt principal is high', () => {
+    let pl = getInitialStats(3);
+    pl.consequences = [];
+    pl.financialDebts = [
+      {
+        id: 'debt_large',
+        loanType: 'BUSINESS',
+        principal: 50000,
+        interestRate: 0.05,
+        remainingTerm: 12,
+        monthlyPayment: 2600,
+        totalTerm: 12
+      }
+    ];
+
+    const news: any[] = [];
+    pl = detectAndCreateConsequences(pl, news);
+
+    expect(pl.consequences?.some(c => c.source === 'leverage_squeeze')).toBe(true);
+    const leverageCons = pl.consequences?.find(c => c.source === 'leverage_squeeze');
+    expect(leverageCons?.status).toBe('pending');
+    expect(leverageCons?.delay).toBe(1);
+    expect(news.some(n => n.text.includes('LEVERAGE WARNING'))).toBe(true);
+  });
+
+  it('should auto-resolve/clear leverage_squeeze once debt principal is fully paid off (below 10,000)', () => {
+    let pl = getInitialStats(3);
+    pl.financialDebts = []; // No debts (principal = 0)
+    pl.consequences = [
+      {
+        id: 'cons_leverage_active',
+        source: 'leverage_squeeze',
+        triggerCondition: 'High Outstanding Debt Principal',
+        delay: 0,
+        severity: 'moderate',
+        expiry: 6,
+        affectedSystems: ['politics', 'aura', 'clout'],
+        status: 'active',
+        description: 'Your aggressive debt leverage is triggering creditor panic!',
+        effectModifier: { cloutGainMult: 0.80, auraGainMult: 0.80 }
+      }
+    ];
+
+    const news: any[] = [];
+    pl = detectAndCreateConsequences(pl, news);
+
+    expect(pl.consequences?.some(c => c.source === 'leverage_squeeze')).toBe(false);
+    expect(news.some(n => n.text.includes('LEVERAGE RESOLVED'))).toBe(true);
+  });
 });

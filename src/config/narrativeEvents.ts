@@ -170,6 +170,124 @@ const BASE_EVENTS: NarrativeEvent[] = [
       }
     ]
   },
+  {
+    id: 'opp_cost_coo_vs_bootstrap',
+    title: 'The Personnel Gamble',
+    pacingCategory: 'MAJOR',
+    description: 'Your operations are scaling rapidly, but managing the daily grind is taking a heavy toll on your mental stamina. An elite Chief Operating Officer (COO) offers their services. You can hire them to permanently streamline your operations, or keep bootstrapping to maintain a lean overhead.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'hire_coo_active',
+        label: 'Hire Elite COO',
+        description: 'Hire the COO. Costs $4,000/month in overhead, but simplifies your workload (+30 Clout, +10 Aura).',
+        consequences: {
+          passiveCash: -4000,
+          clout: 30,
+          aura: 10
+        },
+        setFlags: { 'opp_cost_coo_hired': true }
+      },
+      {
+        id: 'stay_bootstrapping',
+        label: 'Stay Bootstrapping',
+        description: 'Manage the details yourself. Save $4,000/month in fixed costs but absorb heavy immediate fatigue (-10 Mental Health, +15 Aura).',
+        consequences: {
+          mentalHealth: -10,
+          aura: 15
+        },
+        setFlags: { 'opp_cost_bootstrap_active': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_buyout_vs_real_estate',
+    title: 'Distressed Competitor Buyout',
+    pacingCategory: 'MAJOR',
+    description: 'A local competitor is liquidating their fleet and assets for exactly $50,000. Purchasing it immediately will permanently boost your active cash yields (+25% active yields). However, doing so will wipe out your current liquid reserves, forcing you to pass on a high-yield passive residential duplex opportunity.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'buy_competitor_assets',
+        label: 'Buy Out Competitor',
+        description: 'Invest $50,000 of cash to acquire their assets, expanding active execution yields (+100 Clout).',
+        consequences: {
+          bag: -50000,
+          clout: 100
+        },
+        setFlags: { 'opp_cost_competitor_bought': true }
+      },
+      {
+        id: 'pass_and_save_cash',
+        label: 'Pass and Save Cash',
+        description: 'Maintain liquid capital to secure high-yield passive real estate later (+15 Mental Health, +30 Aura).',
+        consequences: {
+          aura: 30,
+          mentalHealth: 15
+        },
+        setFlags: { 'opp_cost_real_estate_reserved': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_leverage_vs_organic',
+    title: 'Leverage Crossroads',
+    pacingCategory: 'MAJOR',
+    description: 'To capture a rapid market surge, you can either take out an emergency Business Loan to scale your infrastructure overnight, accepting heavy future debt obligations and scrutiny, OR grow organically at a slower, safer pace.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'take_leverage_debt',
+        label: 'Take High-Leverage Debt',
+        description: 'Borrow $40,000 immediately to scale up operations, but face future investor scrutiny (+50 Clout).',
+        consequences: {
+          bag: 40000,
+          clout: 50
+        },
+        setFlags: { 'opp_cost_high_leverage_active': true },
+        createConsequences: [
+          {
+            id: 'cons_leverage_sq_1',
+            source: 'leverage_squeeze_consequence',
+            triggerCondition: 'Heavy Debt-Fueled Leverage',
+            delay: 1,
+            severity: 'moderate',
+            expiry: 6,
+            affectedSystems: ['politics', 'aura', 'clout'],
+            status: 'pending',
+            description: 'Your aggressive debt-funded expansion has raised concerns about your long-term solvency among investors and public commentators.',
+            effectModifier: { cloutGainMult: 0.85, auraGainMult: 0.85 },
+            newsTemplates: [
+              'Financial analysts warn that your heavy debt obligations are crowding out productive reinvestment.',
+              'Bystanders observe a growing list of creditors following your public outings.'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'grow_organically_safe',
+        label: 'Grow Organically',
+        description: 'Grow slow, safe, and debt-free (+20 Mental Health, +20 Aura).',
+        consequences: {
+          mentalHealth: 20,
+          aura: 20
+        },
+        setFlags: { 'opp_cost_organic_growth_active': true }
+      }
+    ]
+  },
 
   // STREET KID / SCAVENGER - MUD/STREET
   {

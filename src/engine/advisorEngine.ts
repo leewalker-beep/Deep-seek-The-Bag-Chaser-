@@ -456,6 +456,20 @@ export function generateStrategicAdvice(
     });
   }
 
+  const hasBurnoutConsequence = pl.consequences?.some(c => c.source === 'burnout_state' && (c.status === 'active' || c.status === 'pending'));
+  if (hasBurnoutConsequence) {
+    insights.push({
+      id: 'burnout_state_insight',
+      category: 'MentalHealth',
+      priority: 'Critical',
+      title: 'Imminent Severe Burnout',
+      whatIsHappening: 'Your extreme mental fatigue is causing an active/pending Burnout state.',
+      whyItHappened: 'You continuous hustled at critically low Mental Health without prioritizing rest cycles.',
+      recommendation: 'Execute "Rest & Recover", Therapy, or a Wellness Retreat immediately! Rest will fully clear the Burnout penalty and restore your 30% docked yields.',
+      confidence: 98
+    });
+  }
+
   // 12. STRESS ANALYSIS
   const isHighStress = pl.mentalHealth < 30 && pl.heat > 60;
   if (isHighStress) {
@@ -468,6 +482,23 @@ export function generateStrategicAdvice(
       whyItHappened: 'Your mental health is depleted (< 30%) and law enforcement Heat is extreme (> 60%).',
       recommendation: 'You risk triggering "Careless Mistakes" (direct financial losses and +10 Heat) on standard actions. Take therapeutic rest immediately.',
       confidence: 95,
+    });
+  }
+
+  // 12.5 DEBT LEVERAGE ANALYSIS
+  const outstandingDebts = pl.financialDebts || [];
+  const totalOutstandingPrincipal = outstandingDebts.reduce((sum, d) => sum + d.principal, 0);
+  const totalDebtCarryingCost = outstandingDebts.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  if (totalOutstandingPrincipal >= 40000 || totalDebtCarryingCost >= 2500) {
+    insights.push({
+      id: 'leverage_squeeze_insight',
+      category: 'Economy',
+      priority: 'Important',
+      title: 'Aggressive Debt Scrutiny',
+      whatIsHappening: `You are carrying $${totalOutstandingPrincipal.toLocaleString()} in outstanding liabilities, costing $${totalDebtCarryingCost.toLocaleString()}/month.`,
+      whyItHappened: 'You financed rapid operational growth using high-interest Business or Equipment loans.',
+      recommendation: 'Retire outstanding debts on your scorecard liabilities dashboard immediately to reduce monthly debt-carrying service and clear creditor scrutiny.',
+      confidence: 95
     });
   }
 

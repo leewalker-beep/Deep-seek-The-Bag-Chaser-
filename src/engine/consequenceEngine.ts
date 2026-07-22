@@ -165,6 +165,82 @@ export function detectAndCreateConsequences(pl: PlayerStats, news: any[]): Playe
     });
   }
 
+  // 6. Trigger: Severe Burnout from Continuous Hustling (Negative)
+  const isSeverelyFatigued = (updatedPl.mentalHealth || 0) <= 35;
+  if (isSeverelyFatigued && !hasExistingConsequence(updatedPl, 'burnout_state')) {
+    const delay = 1;
+    const cons: Consequence = {
+      id: `cons_burnout_state_${generateId()}`,
+      source: 'burnout_state',
+      triggerCondition: 'Severe Exhaustion & Low Mental Health',
+      delay,
+      severity: 'severe',
+      expiry: 4,
+      affectedSystems: ['businesses', 'clout', 'aura'],
+      status: 'pending',
+      description: `Your extreme exhaustion is leading to imminent severe Burnout! Rest next month to restore mental stability and avert drastic yield collapses.`,
+      effectModifier: { yieldCashMult: 0.70, cloutGainMult: 0.75, auraGainMult: 0.75 },
+      newsTemplates: [
+        'Fatigue begins taking a visible toll on your corporate decision-making and operational stamina.',
+        'Market insiders speculate your leadership team is facing severe operational fatigue and slow response times.'
+      ]
+    };
+    updatedPl.consequences.push(cons);
+    news.push({
+      text: `⚠️ BURNOUT WARNING: Your extreme mental exhaustion is reaching a tipping point. Schedule Rest immediately... (Starts in ${delay} months)`,
+      colorClass: 'text-red-400 font-bold'
+    });
+  }
+
+  // Auto-resolve Burnout if player rest/recovery brings mentalHealth back above 60
+  if ((updatedPl.mentalHealth || 0) > 60 && hasExistingConsequence(updatedPl, 'burnout_state')) {
+    updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'burnout_state');
+    news.push({
+      text: `🧘 RECOVERY SUCCESS: Your dedication to rest has successfully cleared your impending/active Burnout!`,
+      colorClass: 'text-emerald-400 font-bold'
+    });
+  }
+
+  // 7. Trigger: High Leverage Debt Squeeze (Negative)
+  const debts = updatedPl.financialDebts || [];
+  const totalDebtService = debts.reduce((sum, d) => sum + d.monthlyPayment, 0);
+  const totalPrincipal = debts.reduce((sum, d) => sum + d.principal, 0);
+
+  const isOverLeveraged = totalPrincipal >= 40000 || totalDebtService >= 2500;
+  if (isOverLeveraged && !hasExistingConsequence(updatedPl, 'leverage_squeeze')) {
+    const delay = 1;
+    const cons: Consequence = {
+      id: `cons_leverage_squeeze_${generateId()}`,
+      source: 'leverage_squeeze',
+      triggerCondition: 'High Outstanding Debt Principal',
+      delay,
+      severity: 'moderate',
+      expiry: 6,
+      affectedSystems: ['politics', 'aura', 'clout'],
+      status: 'pending',
+      description: `Your aggressive debt leverage is triggering creditor panic! Solvency concerns are diminishing your public Clout and Aura growth.`,
+      effectModifier: { cloutGainMult: 0.80, auraGainMult: 0.80 },
+      newsTemplates: [
+        'Unresolved credit liabilities and rising interest obligations raise concerns among local investors.',
+        'Market analysts caution that high leverage ratios are narrowing your investment options.'
+      ]
+    };
+    updatedPl.consequences.push(cons);
+    news.push({
+      text: `💸 LEVERAGE WARNING: High credit leverage detected ($${totalPrincipal.toLocaleString()} principal). Creditors are monitoring your cash flows... (Starts in ${delay} months)`,
+      colorClass: 'text-yellow-400 font-bold'
+    });
+  }
+
+  // Auto-resolve Debt/Leverage Squeeze once principal falls below 10000
+  if (totalPrincipal < 10000 && hasExistingConsequence(updatedPl, 'leverage_squeeze')) {
+    updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'leverage_squeeze');
+    news.push({
+      text: `🎉 LEVERAGE RESOLVED: Outstanding liabilities have been successfully settled, clearing creditor solvency concerns!`,
+      colorClass: 'text-emerald-400 font-bold'
+    });
+  }
+
   return updatedPl;
 }
 
