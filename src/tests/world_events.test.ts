@@ -22,6 +22,7 @@ describe('World Event Sector Modifiers', () => {
     activeSpecializationId: null,
     specializationHistory: [],
     aura: 0,
+    mentalHealth: 100,
   } as any;
 
   const baseResult = {
