@@ -92,6 +92,7 @@ import { InteractiveStoryModal } from './components/InteractiveStoryModal';
 import { EndgameSummary } from './components/EndgameSummary';
 import { StrategicAdvisorModal } from './components/StrategicAdvisorModal';
 import { AdvisorMentorModal } from './components/AdvisorMentorModal';
+import { getOrAssignQuoteForPrompt } from './utils/mentorQuotes';
 
 // Heavy Screens
 const HallOfFame = lazy(() => import('./components/HallOfFame').then(m => ({ default: m.HallOfFame })));
@@ -602,10 +603,12 @@ function App() {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [advisorTab, setAdvisorTab] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>('ALL');
   const [activeAdvisorPrompt, setActiveAdvisorPrompt] = useState<{
+    id?: string;
     title: string;
     subtitle: string;
     bullets?: string[];
     ctaLabel?: string;
+    quote?: { text: string; author: string } | null;
     tabToOpen?: 'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION';
     onTakeMeThereCustom?: (store: any) => void;
     onCloseExtra?: (store: any) => void;
@@ -758,6 +761,22 @@ function App() {
     const guidance = pl.guidanceSettings || 'Recommended';
     if (guidance === 'Off') return;
 
+    const resolvePromptWithQuote = (prompt: any) => {
+      if (!prompt || !prompt.id) return prompt;
+      const quote = getOrAssignQuoteForPrompt(pl, prompt.id, (newFlags) => {
+        useGameStore.setState(state => ({
+          pl: {
+            ...state.pl,
+            narrativeFlags: {
+              ...(state.pl.narrativeFlags || {}),
+              ...newFlags
+            }
+          }
+        }));
+      });
+      return { ...prompt, quote };
+    };
+
     // Ensure queue is initialized on pl safely
     const currentQueue = pl.advisorQueue || [];
 
@@ -786,7 +805,7 @@ function App() {
         };
       });
 
-      setActiveAdvisorPrompt(nextPrompt);
+      setActiveAdvisorPrompt(resolvePromptWithQuote(nextPrompt));
       return;
     }
 
@@ -830,7 +849,7 @@ function App() {
                   }
                 }
               }));
-              setActiveAdvisorPrompt(promptObj);
+              setActiveAdvisorPrompt(resolvePromptWithQuote(promptObj));
             } else {
               // Queue it!
               useGameStore.setState(state => ({
@@ -888,7 +907,7 @@ function App() {
               }
             }
           }));
-          setActiveAdvisorPrompt(promptObj);
+          setActiveAdvisorPrompt(resolvePromptWithQuote(promptObj));
         } else {
           // Queue it!
           useGameStore.setState(state => ({
@@ -1998,6 +2017,7 @@ function App() {
           subtitle={activeAdvisorPrompt.subtitle}
           bullets={activeAdvisorPrompt.bullets}
           ctaLabel={activeAdvisorPrompt.ctaLabel}
+          quote={activeAdvisorPrompt.quote}
           onClose={() => {
             if (activeAdvisorPrompt.onCloseExtra) {
               activeAdvisorPrompt.onCloseExtra(useGameStore.getState());

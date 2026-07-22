@@ -6,6 +6,7 @@ export interface AdvisorMentorModalProps {
   subtitle: string;
   bullets?: string[];
   ctaLabel?: string;
+  quote?: { text: string; author: string } | null;
   onClose: () => void;
   onTakeMeThere?: () => void;
 }
@@ -15,6 +16,7 @@ export const AdvisorMentorModal: React.FC<AdvisorMentorModalProps> = ({
   subtitle,
   bullets = [],
   ctaLabel = 'Take me there',
+  quote,
   onClose,
   onTakeMeThere,
 }) => {
@@ -45,6 +47,22 @@ export const AdvisorMentorModal: React.FC<AdvisorMentorModalProps> = ({
               </h3>
             </div>
           </div>
+
+          {/* Inspirational Quote Card */}
+          {quote && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-emerald-500/5 border-l-4 border-emerald-400 rounded-r-2xl space-y-1.5"
+            >
+              <p className="text-xs text-emerald-200 font-serif italic leading-relaxed">
+                "{quote.text}"
+              </p>
+              <p className="text-[10px] text-emerald-400 font-mono font-bold text-right uppercase tracking-wider">
+                — {quote.author}
+              </p>
+            </motion.div>
+          )}
 
           {/* Main Context Card */}
           <div className="space-y-3 pt-2">
