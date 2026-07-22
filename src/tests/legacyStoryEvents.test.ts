@@ -195,7 +195,8 @@ describe('Legacy Story Events & Branching Choice Modal (Patch 36)', () => {
       cash: 100000,
       clout: 100,
       aura: 500,
-      heat: 0
+      heat: 0,
+      rivals: [] // Clear rivals to prevent dominant rival Aura erosion
     };
 
     useGameStore.setState({

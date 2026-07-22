@@ -21,7 +21,7 @@ import { detectAndCreateConsequences, tickConsequences, getConsequenceMultiplier
 import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySummaryItem } from './storyEngine';
 import { processWorldReaction } from './reactiveWorldEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
-import { evaluateReputationTick } from './reputationEngine';
+import { evaluateReputationTick, applyReputationLossScale } from './reputationEngine';
 import { getLegacyBonus } from './mathEngine';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
@@ -115,6 +115,7 @@ export function advanceMonth(
   newPl.isIncarcerated = newPl.inJail;
   newPl.scoutedTalentPool = [];
   let newMarket = currentMarket;
+  const prevScandals = pl.scandalCount || 0;
 
   // Evaluate reputation tick and update public reputation
   const repTick = evaluateReputationTick(newPl);
@@ -130,16 +131,94 @@ export function advanceMonth(
   newPl = detectAndCreateConsequences(newPl, news);
   newPl = tickConsequences(newPl, news);
 
-  // Apply active monthly stat updates from consequences
+  // Apply active monthly stat updates from consequences (scaled by reputation)
   if (isConsequenceActive(newPl, 'sabotage_retaliation')) {
-    newPl.clout = Math.max(0, newPl.clout - 15);
-    newPl.aura = Math.max(0, newPl.aura - 15);
+    const sabotageLosses = applyReputationLossScale(15, 15, reputation);
+    newPl.clout = Math.max(0, newPl.clout - sabotageLosses.clout);
+    newPl.aura = Math.max(0, newPl.aura - sabotageLosses.aura);
     newPl.approvalRating = Math.max(0, newPl.approvalRating - 2);
   }
   if (isConsequenceActive(newPl, 'philanthropic_halo')) {
     newPl.clout = Math.min(10000, newPl.clout + 10);
     newPl.aura = Math.min(10000, newPl.aura + 20);
     newPl.approvalRating = Math.min(100, newPl.approvalRating + 1.5);
+  }
+
+  // --- DYNAMIC REPUTATION CONSEQUENCES ENGINE ---
+
+  // 1. Inactivity decay ("Being Forgotten")
+  newPl.monthsSinceLastHustle = (newPl.monthsSinceLastHustle || 0) + 1;
+  if (newPl.monthsSinceLastHustle >= 12) {
+    const forgottenLoss = applyReputationLossScale(Math.max(5, Math.floor(newPl.clout * 0.01)), 0, reputation);
+    newPl.clout = Math.max(0, newPl.clout - forgottenLoss.clout);
+    news.push({
+      text: `📰 BEING FORGOTTEN: Long period without active ventures decays your clout (-${forgottenLoss.clout} Clout).`,
+      colorClass: 'text-yellow-500 font-medium'
+    });
+  }
+
+  // 2. Active Negative Consequences Passive Clout Decay
+  const hasNegativeCons = isConsequenceActive(newPl, 'regulatory_crackdown') ||
+                          isConsequenceActive(newPl, 'housing_affordability_crisis') ||
+                          isConsequenceActive(newPl, 'sabotage_retaliation');
+  if (hasNegativeCons) {
+    const consDecay = applyReputationLossScale(Math.floor(newPl.clout * 0.02), 0, reputation);
+    newPl.clout = Math.max(0, newPl.clout - consDecay.clout);
+    news.push({
+      text: `📉 NEGATIVE COOLDOWN: Active social/regulatory crises erode your public stance (-${consDecay.clout} Clout).`,
+      colorClass: 'text-orange-400 font-medium'
+    });
+  }
+
+  // 3. High Heat passive erosion / Philanthropic Shield
+  const justDonatedCharity = newPl.narrativeFlags?.just_donated_charity === true;
+  if (justDonatedCharity) {
+    newPl.narrativeFlags = { ...newPl.narrativeFlags, just_donated_charity: false };
+  }
+
+  if (newPl.heat >= 70) {
+    let decayClout = 3;
+    let decayAura = 3;
+    if (justDonatedCharity) {
+      decayClout = Math.floor(decayClout * 0.5);
+      decayAura = Math.floor(decayAura * 0.5);
+      news.push({
+        text: `🕊️ PHILANTHROPIC SHIELD: Charity donations halved high heat reputation decay this month.`,
+        colorClass: 'text-emerald-300 font-medium'
+      });
+    }
+    const heatErosion = applyReputationLossScale(decayClout, decayAura, reputation);
+    newPl.clout = Math.max(0, newPl.clout - heatErosion.clout);
+    newPl.aura = Math.max(0, newPl.aura - heatErosion.aura);
+    news.push({
+      text: `⚠️ PUBLIC TRUST EROSION: High Heat continues to slowly erode your reputation (-${heatErosion.clout} Clout, -${heatErosion.aura} Aura).`,
+      colorClass: 'text-red-300 font-medium'
+    });
+  }
+
+  // 4. Critical Mental Health / Burnout
+  if (newPl.mentalHealth <= 30) {
+    const burnoutErosion = applyReputationLossScale(0, 5, reputation);
+    newPl.aura = Math.max(0, newPl.aura - burnoutErosion.aura);
+    news.push({
+      text: `🔥 BURNOUT PASSIVE: Critically low mental health erodes your aura (-${burnoutErosion.aura} Aura).`,
+      colorClass: 'text-red-300 font-medium'
+    });
+  }
+
+  // 5. Good Behavior Recovery
+  if (newPl.heat === 0) {
+    newPl.monthsAtZeroHeat = (newPl.monthsAtZeroHeat || 0) + 1;
+    if (newPl.monthsAtZeroHeat === 6) {
+      newPl.clout += 50;
+      newPl.aura += 50;
+      news.push({
+        text: `🕊️ COMMUNITY TRUST: Maintaining a clean public profile for 6 months has restored public trust (+50 Clout, +50 Aura)!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    }
+  } else {
+    newPl.monthsAtZeroHeat = 0;
   }
 
   // Calculate rent based on tier
@@ -496,9 +575,19 @@ export function advanceMonth(
       newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
       newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
     }
+
+    // Onset arrest consequences: 15% current Clout and 20% current Aura penalty upon arrest (scaled by reputation)
+    const arrestLosses = applyReputationLossScale(Math.floor(newPl.clout * 0.15), Math.floor(newPl.aura * 0.20), reputation);
+    newPl.clout = Math.max(0, newPl.clout - arrestLosses.clout);
+    newPl.aura = Math.max(0, newPl.aura - arrestLosses.aura);
+
     news.push({
       text: `🚔 BUSTED. ${sentence.charge}. ${sentence.months} months.`,
       colorClass: 'text-red-500 font-black'
+    });
+    news.push({
+      text: `🚔 ARREST CONSEQUENCE: Public profile shattered. Lost -${arrestLosses.clout} Clout and -${arrestLosses.aura} Aura.`,
+      colorClass: 'text-red-500 font-bold'
     });
   }
 
@@ -508,7 +597,10 @@ export function advanceMonth(
 
     // Passive losses while inside (no longer double deducting bag here because processEntertainmentTimelineTick handles drains)
     newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
-    newPl.clout = Math.max(0, newPl.clout - sentence.cloutLossPerMonth);
+
+    // Scale jail monthly passive Clout loss by reputation
+    const jailPassives = applyReputationLossScale(sentence.cloutLossPerMonth, 0, reputation);
+    newPl.clout = Math.max(0, newPl.clout - jailPassives.clout);
 
     newPl.jailMonthsRemaining--;
 
@@ -562,6 +654,7 @@ export function advanceMonth(
           const fine = 2500000;
           newPl.bag = Math.max(0, newPl.bag - fine);
           newPl.heat = Math.min(100, newPl.heat + 10);
+          newPl.scandalCount = (newPl.scandalCount || 0) + 1;
           news.push({
             text: `⚠️ CONGLOMERATE SCANDAL: ${ceo.name} (${div.name}) caused a compliance breach! Fined $${fine.toLocaleString()} and gained +10 Heat.`,
             colorClass: 'text-red-400 font-bold'
@@ -622,6 +715,10 @@ export function advanceMonth(
       if (ratio > 2) {
         threat = 'RIVAL_DOMINANT';
         if (rival.tier === newPl.currentTier) {
+          const domLoss = applyReputationLossScale(0, 3, reputation);
+          newPl.aura = Math.max(0, newPl.aura - domLoss.aura);
+        }
+        if (rival.tier === newPl.currentTier) {
           news.push({ text: `⚠️ ${rival.name} is running your tier. Costs up 25% until you take it back.`, colorClass: 'text-red-400 font-bold' });
         }
       } else if (ratio < 0.5) {
@@ -677,6 +774,8 @@ export function advanceMonth(
         // Challenge Failed
         const penalty = Math.floor(newPl.bag * 0.1);
         newPl.bag -= penalty;
+        const chalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.15), 0, reputation);
+        newPl.clout = Math.max(0, newPl.clout - chalLoss.clout);
         news.push({ text: `❌ CHALLENGE FAILED: ${challenge.rivalName} won the challenge. You lost $${penalty.toLocaleString()} (10% of bag).`, colorClass: 'text-red-500 font-bold' });
 
         // Rival wins, they gain 10% net worth
@@ -928,6 +1027,15 @@ export function advanceMonth(
     const approvalRating = newPl.approvalRating || 50;
     const scandals = newPl.scandalCount || 0;
 
+    if (approvalRating < 45) {
+      const termLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.25), 0, reputation);
+      newPl.clout = Math.max(0, newPl.clout - termLoss.clout);
+      news.push({
+        text: `🗳️ TERM COMPLETE: Low public approval rating has severely damaged your political Clout (-${termLoss.clout} Clout).`,
+        colorClass: 'text-red-500 font-black'
+      });
+    }
+
     let verdict = '';
     let verdictEmoji = '';
     let legacyBonus = 0;
@@ -959,6 +1067,23 @@ export function advanceMonth(
     newPl.termVerdict = verdict;
     newPl.termVerdictEmoji = verdictEmoji;
     newPl.legacyScore = (newPl.legacyScore || 0) + legacyBonus;
+  }
+
+  // Centralized Public Scandal Monitor & Penalty
+  const currentScandals = newPl.scandalCount || 0;
+  if (currentScandals > prevScandals) {
+    const scandalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.10), 0, reputation);
+    newPl.clout = Math.max(0, newPl.clout - scandalLoss.clout);
+    news.push({
+      text: `🚨 PUBLIC SCANDAL: Media backlash has damaged your public Clout (-${scandalLoss.clout} Clout).`,
+      colorClass: 'text-red-400 font-bold'
+    });
+  }
+
+  // Bankruptcy Clout Penalty Check
+  if (pl.bag < 0 || newPl.bag < 0) {
+    const bankLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.20), 0, reputation);
+    newPl.clout = Math.max(0, newPl.clout - bankLoss.clout);
   }
 
   // Check for death conditions
@@ -1086,9 +1211,11 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     // Lock out incoming revenue streams entirely, processing only operational drains
     draftPl.bag = Math.max(0, draftPl.bag - negativeDrains);
 
-    // Eroding public influence and presence metrics behind bars
-    draftPl.clout = Math.max(0, draftPl.clout - 4);
-    draftPl.aura = Math.max(0, draftPl.aura - 8);
+    // Eroding public influence and presence metrics behind bars (scaled by reputation)
+    const reputation = draftPl.narrativeFlags?.publicReputation as string || "The Hustler";
+    const prisonErosion = applyReputationLossScale(4, 8, reputation);
+    draftPl.clout = Math.max(0, draftPl.clout - prisonErosion.clout);
+    draftPl.aura = Math.max(0, draftPl.aura - prisonErosion.aura);
 
     // Random legal fine discoveries processing tick
     if (Math.random() < 0.12) {
