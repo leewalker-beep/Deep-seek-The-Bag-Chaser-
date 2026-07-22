@@ -26,7 +26,7 @@ export const NavTabs: React.FC<NavTabsProps> = React.memo(({
     : [...PROGRESSION_ORDER, 'FLEX'];
 
   return (
-    <div className="scroll-hint-wrapper sticky top-[93px] z-10 bg-slate-950 border-b border-slate-800">
+    <div className="scroll-hint-wrapper bg-slate-950 border-b border-slate-800">
       <div className="flex flex-nowrap overflow-x-auto gap-2 px-4 py-2 no-scrollbar pr-8">
         {allTabs.map(tab => {
         if (tab === 'FLEX' && !flexUnlocked) return null;

@@ -1095,7 +1095,7 @@ function App() {
   const activeMinigame = pl?.activeMinigame;
 
   return (
-    <div className={`min-h-screen ${tierClass} text-white pb-16 transition-colors duration-1000 relative`}>
+    <div className={`h-screen flex flex-col ${tierClass} text-white transition-colors duration-1000 relative overflow-hidden`}>
       {activeMinigame && (
         <div className="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md">
@@ -1164,273 +1164,282 @@ function App() {
         </div>
       )}
 
-      {/* Top Bar */}
-      <div className="sticky top-0 z-30 bg-slate-950 border-b border-slate-800 px-4 py-2 scroll-hint-wrapper">
-        <div className="max-w-md mx-auto flex flex-nowrap overflow-x-auto gap-3 items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-400 no-scrollbar pr-8 py-0.5">
-          {pl.activeSentiment ? (
-            <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 animate-pulse ${
-              pl.activeSentiment.multiplier > 1
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : 'bg-red-500/10 text-red-400 border-red-500/20'
+      {/* STATUS BAR & GAME NAVIGATION (Always Fixed) */}
+      <div className="flex-shrink-0 w-full z-30 bg-slate-950/95 border-b border-slate-800">
+        {/* Top Bar */}
+        <div className="bg-slate-950 border-b border-slate-800 px-4 py-2 scroll-hint-wrapper">
+          <div className="max-w-md mx-auto flex flex-nowrap overflow-x-auto gap-3 items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-400 no-scrollbar pr-8 py-0.5">
+            {pl.activeSentiment ? (
+              <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 animate-pulse ${
+                pl.activeSentiment.multiplier > 1
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : 'bg-red-500/10 text-red-400 border-red-500/20'
+              }`}>
+                📰 {pl.activeSentiment.label} ({pl.activeSentiment.monthsRemaining}m)
+              </div>
+            ) : (
+              <div className="rounded-full py-0.5 pl-0.5 pr-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1.5 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
+                <Avatar
+                  avatarId={pl.avatarId || 'av_m1'}
+                  size={18}
+                  ring="ring-emerald-500/30"
+                />
+                <span className="text-white font-black">{pl.name}</span>
+              </div>
+            )}
+            <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 ${
+              currentMarket === 'RECESSION'
+                ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'
+                : currentMarket === 'CRACKDOWN'
+                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse'
+                : currentMarket === 'BULL_MARKET'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse'
+                : 'bg-slate-800/40 text-slate-300 border-slate-800/60'
             }`}>
-              📰 {pl.activeSentiment.label} ({pl.activeSentiment.monthsRemaining}m)
+              <span>{MARKET_CONFIGS[currentMarket].icon}</span>
+              <span className="text-white font-black">{MARKET_CONFIGS[currentMarket].name}</span>
             </div>
-          ) : (
-            <div className="rounded-full py-0.5 pl-0.5 pr-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1.5 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
-              <Avatar
-                avatarId={pl.avatarId || 'av_m1'}
-                size={18}
-                ring="ring-emerald-500/30"
-              />
-              <span className="text-white font-black">{pl.name}</span>
-            </div>
-          )}
-          <div className={`rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border shrink-0 ${
-            currentMarket === 'RECESSION'
-              ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'
-              : currentMarket === 'CRACKDOWN'
-              ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse'
-              : currentMarket === 'BULL_MARKET'
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse'
-              : 'bg-slate-800/40 text-slate-300 border-slate-800/60'
-          }`}>
-            <span>{MARKET_CONFIGS[currentMarket].icon}</span>
-            <span className="text-white font-black">{MARKET_CONFIGS[currentMarket].name}</span>
-          </div>
-          <div className="rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
-            📅 AGE: <span className="text-white font-black">{ageYears}y {ageMonths}m</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Row */}
-      <div className="sticky top-[33px] z-20 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-between items-center mb-2">
-            <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
-              ${pl.bag.toLocaleString()}
-            </div>
-          </div>
-          <div className="flex w-full gap-[6px] mb-3">
-            <button
-              onClick={() => setShowScoreboard(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
-            >
-              <span className="text-[15px] leading-none">📊</span>
-              <span className="text-[9.5px] leading-none font-black uppercase">Stats</span>
-            </button>
-            <button
-              onClick={() => setShowChallenges(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
-            >
-              <span className="text-[15px] leading-none">🔥</span>
-              <span className="text-[9.5px] leading-none font-black uppercase">Goals</span>
-            </button>
-            <button
-              onClick={() => setShowReceipts(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
-            >
-              <span className="text-[15px] leading-none">🧾</span>
-              <span className="text-[9.5px] leading-none font-black uppercase">Receipts</span>
-            </button>
-            <button
-              onClick={() => setShowPhoneFeed(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20"
-            >
-              <span className="text-[15px] leading-none">📱</span>
-              <span className="text-[9.5px] leading-none font-black uppercase">Feed</span>
-            </button>
-            <button
-              onClick={() => setShowAdvisor(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20"
-            >
-              <span className="text-[15px] leading-none">🧠</span>
-              <span className="text-[9.5px] leading-none font-black uppercase">Advisor</span>
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-1 text-center">
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveTooltip(prev => prev === 'clout' ? null : 'clout');
-              }}
-              className="flex flex-col group relative cursor-help stat-tooltip-container"
-            >
-              <span className="text-[8px] text-slate-500 uppercase">Clout</span>
-              <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
-                {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
-              </span>
-              <div className={`absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
-                activeTooltip === 'clout' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
-              }`}>
-                <span className="font-black text-blue-400 uppercase block mb-1">👑 Clout (Influence)</span>
-                Represents your public reach, street rep, and political sway. Reaching the max allows tier promotions. Failing active checks reduces your fame.
-              </div>
-            </div>
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveTooltip(prev => prev === 'mental' ? null : 'mental');
-              }}
-              className="flex flex-col group relative cursor-help stat-tooltip-container"
-            >
-              <span className="text-[8px] text-slate-500 uppercase">Mental</span>
-              <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
-                {Math.floor(pl.mentalHealth)}%
-                {pl.mentalShieldTurns > 0 && (
-                  <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
-                )}
-              </span>
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
-                activeTooltip === 'mental' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
-              }`}>
-                <span className="font-black text-red-400 uppercase block mb-1">🧠 Mental Health</span>
-                Your psychological capacity. Exhausting work drains your mental health. Reaching <span className="font-black text-red-500">0% causes burnout (Death)</span>. Restore it via sleep/recreation.
-              </div>
-            </div>
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveTooltip(prev => prev === 'aura' ? null : 'aura');
-              }}
-              className="flex flex-col group relative cursor-help stat-tooltip-container"
-            >
-              <span className="text-[8px] text-slate-500 uppercase">Aura</span>
-              <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
-                {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
-              </span>
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
-                activeTooltip === 'aura' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
-              }`}>
-                <span className="font-black text-purple-400 uppercase block mb-1">✨ Aura (Mystique)</span>
-                Represents your personal presence, charisma, and star power. Necessary for massive negotiations, business deals, and general respect.
-              </div>
-            </div>
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveTooltip(prev => prev === 'heat' ? null : 'heat');
-              }}
-              className="flex flex-col group relative cursor-help stat-tooltip-container"
-            >
-              <span className="text-[8px] text-slate-500 uppercase">Heat</span>
-              <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
-                {Math.floor(pl.heat)}%
-              </span>
-              <div className={`absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
-                activeTooltip === 'heat' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
-              }`}>
-                <span className="font-black text-orange-400 uppercase block mb-1">🔥 Heat (WANTED)</span>
-                Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
-              </div>
+            <div className="rounded-full py-1 px-2.5 text-[9px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-slate-800/40 text-slate-300 border-slate-800/60 shrink-0">
+              📅 AGE: <span className="text-white font-black">{ageYears}y {ageMonths}m</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Pinned Condensed Live Ledger */}
-      {isLedgerPinned && (
-        <div className="max-w-md mx-auto px-4 mt-2 mb-1 animate-in slide-in-from-top duration-300">
-          <div className="bg-slate-950/95 border-2 border-emerald-500/30 rounded-2xl p-3 shadow-[0_0_15px_rgba(16,185,129,0.1)] relative">
-            <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-slate-900">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs">📌</span>
-                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Live Ledger Summary</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setShowReceipts(true)}
-                  className="text-[7.5px] bg-slate-900 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black uppercase hover:text-white tracking-tighter"
-                >
-                  Expand Receipts
-                </button>
-                <button
-                  onClick={() => setIsLedgerPinned(false)}
-                  className="text-slate-500 hover:text-white font-black text-[9px] bg-slate-900 hover:bg-slate-800 rounded px-1"
-                  title="Unpin Ledger"
-                >
-                  ✕
-                </button>
+        {/* Stats Row */}
+        <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
+          <div className="max-w-md mx-auto">
+            <div className="flex justify-between items-center mb-2">
+              <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
+                ${pl.bag.toLocaleString()}
               </div>
             </div>
 
-            {/* Monthly Net Summary */}
-            <div className="scroll-hint-wrapper">
-              <div className="flex flex-nowrap overflow-x-auto justify-between items-center text-[8.5px] font-mono text-slate-400 mb-1.5 bg-slate-900/40 p-1.5 rounded-lg border border-slate-900 no-scrollbar pr-8">
-                <div className="shrink-0 mr-4">
-                  RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 gap-1 text-center mb-3">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(prev => prev === 'clout' ? null : 'clout');
+                }}
+                className="flex flex-col group relative cursor-help stat-tooltip-container"
+              >
+                <span className="text-[8px] text-slate-500 uppercase">Clout</span>
+                <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
+                  {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
+                </span>
+                <div className={`absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                  activeTooltip === 'clout' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+                }`}>
+                  <span className="font-black text-blue-400 uppercase block mb-1">👑 Clout (Influence)</span>
+                  Represents your public reach, street rep, and political sway. Reaching the max allows tier promotions. Failing active checks reduces your fame.
                 </div>
-                <div className="shrink-0">
-                  PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(prev => prev === 'mental' ? null : 'mental');
+                }}
+                className="flex flex-col group relative cursor-help stat-tooltip-container"
+              >
+                <span className="text-[8px] text-slate-500 uppercase">Mental</span>
+                <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
+                  {Math.floor(pl.mentalHealth)}%
+                  {pl.mentalShieldTurns > 0 && (
+                    <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
+                  )}
+                </span>
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                  activeTooltip === 'mental' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+                }`}>
+                  <span className="font-black text-red-400 uppercase block mb-1">🧠 Mental Health</span>
+                  Your psychological capacity. Exhausting work drains your mental health. Reaching <span className="font-black text-red-500">0% causes burnout (Death)</span>. Restore it via sleep/recreation.
+                </div>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(prev => prev === 'aura' ? null : 'aura');
+                }}
+                className="flex flex-col group relative cursor-help stat-tooltip-container"
+              >
+                <span className="text-[8px] text-slate-500 uppercase">Aura</span>
+                <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
+                  {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
+                </span>
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                  activeTooltip === 'aura' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+                }`}>
+                  <span className="font-black text-purple-400 uppercase block mb-1">✨ Aura (Mystique)</span>
+                  Represents your personal presence, charisma, and star power. Necessary for massive negotiations, business deals, and general respect.
+                </div>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTooltip(prev => prev === 'heat' ? null : 'heat');
+                }}
+                className="flex flex-col group relative cursor-help stat-tooltip-container"
+              >
+                <span className="text-[8px] text-slate-500 uppercase">Heat</span>
+                <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
+                  {Math.floor(pl.heat)}%
+                </span>
+                <div className={`absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
+                  activeTooltip === 'heat' ? 'opacity-100 pointer-events-auto' : 'pointer-events-none'
+                }`}>
+                  <span className="font-black text-orange-400 uppercase block mb-1">🔥 Heat (WANTED)</span>
+                  Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
                 </div>
               </div>
             </div>
 
-            {/* Last 3 Cash Actions */}
-            <div className="space-y-1">
-              {(pl.events || []).filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).slice(0, 3).map((event) => {
-                let text = '';
-                let cashChange = 0;
-                let isProfit = true;
+            {/* Action Buttons Row */}
+            <div className="flex w-full gap-[6px]">
+              <button
+                onClick={() => setShowScoreboard(true)}
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+              >
+                <span className="text-[15px] leading-none">📊</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Stats</span>
+              </button>
+              <button
+                onClick={() => setShowChallenges(true)}
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+              >
+                <span className="text-[15px] leading-none">🔥</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Goals</span>
+              </button>
+              <button
+                onClick={() => setShowReceipts(true)}
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+              >
+                <span className="text-[15px] leading-none">🧾</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Receipts</span>
+              </button>
+              <button
+                onClick={() => setShowPhoneFeed(true)}
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20"
+              >
+                <span className="text-[15px] leading-none">📱</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Feed</span>
+              </button>
+              <button
+                onClick={() => setShowAdvisor(true)}
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20"
+              >
+                <span className="text-[15px] leading-none">🧠</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Advisor</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
-                if (event.type === 'HUSTLE_COMPLETED') {
-                  const m = event.metadata as any;
-                  text = m.hustleName || 'Hustle';
-                  cashChange = m.profit || 0;
-                  isProfit = cashChange >= 0;
-                } else if (event.type === 'BUSINESS_PURCHASED') {
-                  const m = event.metadata as any;
-                  text = `Asset: ${m.assetId?.replace('_', ' ')}`;
-                  cashChange = m.cost || 0;
-                  isProfit = false;
-                } else if (event.type === 'PROPERTY_PURCHASED') {
-                  const m = event.metadata as any;
-                  text = `RE: ${m.branchName || m.type || 'Property'}`;
-                  cashChange = m.cost || 0;
-                  isProfit = false;
-                } else if (event.type === 'RIVAL_DEFEATED') {
-                  const m = event.metadata as any;
-                  text = `Defeated ${m.rivalName}`;
-                  cashChange = m.bonus || 0;
-                  isProfit = true;
-                }
+        {/* Pinned Condensed Live Ledger */}
+        {isLedgerPinned && (
+          <div className="max-w-md mx-auto px-4 mt-2 mb-1 animate-in slide-in-from-top duration-300">
+            <div className="bg-slate-950/95 border-2 border-emerald-500/30 rounded-2xl p-3 shadow-[0_0_15px_rgba(16,185,129,0.1)] relative">
+              <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-slate-900">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs">📌</span>
+                  <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Live Ledger Summary</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setShowReceipts(true)}
+                    className="text-[7.5px] bg-slate-900 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black uppercase hover:text-white tracking-tighter"
+                  >
+                    Expand Receipts
+                  </button>
+                  <button
+                    onClick={() => setIsLedgerPinned(false)}
+                    className="text-slate-500 hover:text-white font-black text-[9px] bg-slate-900 hover:bg-slate-800 rounded px-1"
+                    title="Unpin Ledger"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
 
-                return (
-                  <div key={event.id} className="flex justify-between items-center text-[9px] bg-slate-900/20 px-2 py-1 rounded-lg border border-slate-900/50">
-                    <span className="text-slate-300 font-bold uppercase tracking-tight truncate max-w-[180px]">{text}</span>
-                    <span className={`font-mono font-black ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {isProfit ? '+' : '-'}${Math.abs(cashChange).toLocaleString()}
-                    </span>
+              {/* Monthly Net Summary */}
+              <div className="scroll-hint-wrapper">
+                <div className="flex flex-nowrap overflow-x-auto justify-between items-center text-[8.5px] font-mono text-slate-400 mb-1.5 bg-slate-900/40 p-1.5 rounded-lg border border-slate-900 no-scrollbar pr-8">
+                  <div className="shrink-0 mr-4">
+                    RENT: <span className="text-red-400 font-bold">-${((pl.currentTier ? { MUD: 50, STREET: 1000, STARTUP: 5000, CORPORATE: 20000, ELITE: 100000, MOGUL: 500000, PRESIDENT: 2000000, OPEN: 0 }[pl.currentTier] || 0 : 0) * (MARKET_CONFIGS[currentMarket]?.expenseMultiplier || 1.0)).toLocaleString()}</span>
                   </div>
-                );
-              })}
-
-              {(!pl.events || pl.events.filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).length === 0) && (
-                <div className="text-[8px] text-slate-600 text-center italic py-1">
-                  No cash events logged yet.
+                  <div className="shrink-0">
+                    PASSIVE: <span className="text-emerald-400 font-bold">+${(pl.lastPassiveBreakdown?.finalTotal || 0).toLocaleString()}</span>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Last 3 Cash Actions */}
+              <div className="space-y-1">
+                {(pl.events || []).filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).slice(0, 3).map((event) => {
+                  let text = '';
+                  let cashChange = 0;
+                  let isProfit = true;
+
+                  if (event.type === 'HUSTLE_COMPLETED') {
+                    const m = event.metadata as any;
+                    text = m.hustleName || 'Hustle';
+                    cashChange = m.profit || 0;
+                    isProfit = cashChange >= 0;
+                  } else if (event.type === 'BUSINESS_PURCHASED') {
+                    const m = event.metadata as any;
+                    text = `Asset: ${m.assetId?.replace('_', ' ')}`;
+                    cashChange = m.cost || 0;
+                    isProfit = false;
+                  } else if (event.type === 'PROPERTY_PURCHASED') {
+                    const m = event.metadata as any;
+                    text = `RE: ${m.branchName || m.type || 'Property'}`;
+                    cashChange = m.cost || 0;
+                    isProfit = false;
+                  } else if (event.type === 'RIVAL_DEFEATED') {
+                    const m = event.metadata as any;
+                    text = `Defeated ${m.rivalName}`;
+                    cashChange = m.bonus || 0;
+                    isProfit = true;
+                  }
+
+                  return (
+                    <div key={event.id} className="flex justify-between items-center text-[9px] bg-slate-900/20 px-2 py-1 rounded-lg border border-slate-900/50">
+                      <span className="text-slate-300 font-bold uppercase tracking-tight truncate max-w-[180px]">{text}</span>
+                      <span className={`font-mono font-black ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {isProfit ? '+' : '-'}${Math.abs(cashChange).toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {(!pl.events || pl.events.filter(e => ['HUSTLE_COMPLETED', 'BUSINESS_PURCHASED', 'PROPERTY_PURCHASED', 'RIVAL_DEFEATED'].includes(e.type)).length === 0) && (
+                  <div className="text-[8px] text-slate-600 text-center italic py-1">
+                    No cash events logged yet.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Navigation Tabs */}
-      {!(pl.inJail || pl.isIncarcerated) && (
-        <div className="-mt-px">
-          <NavTabs
-            activeTab={activeTab}
-            currentTier={pl.currentTier}
-            onTabChange={(tab) => {
-              setActiveTab(tab as AppTab);
-              setShowMinigame(false);
-            }}
-          />
-        </div>
-      )}
+        {/* Navigation Tabs */}
+        {!(pl.inJail || pl.isIncarcerated) && (
+          <div className="-mt-px">
+            <NavTabs
+              activeTab={activeTab}
+              currentTier={pl.currentTier}
+              onTabChange={(tab) => {
+                setActiveTab(tab as AppTab);
+                setShowMinigame(false);
+              }}
+            />
+          </div>
+        )}
+      </div>
 
-      {/* Main Content */}
-      <div className="max-w-md mx-auto px-4 py-3 pb-24">
+      {/* SCROLLABLE GAME AREA */}
+      <div className="flex-grow overflow-y-auto relative no-scrollbar">
+        {/* Main Content */}
+        <div className="max-w-md mx-auto px-4 py-3 pb-24">
         {pl.inJail || pl.isIncarcerated ? (
           <JailOverlay />
         ) : activeTab === 'PRESIDENCY' ? (
@@ -1948,6 +1957,7 @@ function App() {
             })()}
           </div>
         )}
+      </div>
       </div>
 
       {/* Receipts Modal */}
