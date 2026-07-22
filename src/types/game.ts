@@ -1090,6 +1090,8 @@ export interface GameState {
   selectSpecialization: (specializationId: string) => void;
   resolveNarrativeEvent: (choiceId: string) => void;
   resolveInteractiveStoryEvent: (choiceIndex: number) => void;
+  takeLoan: (loanType: 'STUDENT' | 'EMERGENCY' | 'EQUIPMENT' | 'BUSINESS' | 'MORTGAGE') => boolean;
+  repayLoan: (loanId: string) => boolean;
   executeHustle: (hustleId: string, minigameMultiplier?: number, forceSuccess?: boolean) => {
     success: boolean;
     netChange: number;
