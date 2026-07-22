@@ -23,6 +23,7 @@ import { processWorldReaction } from './reactiveWorldEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
 import { evaluateReputationTick, applyReputationLossScale } from './reputationEngine';
 import { getLegacyBonus } from './mathEngine';
+import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from '../utils/financialObligationsUtils';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -496,7 +497,46 @@ export function advanceMonth(
   });
 
   // Apply financial changes
-  newPl.bag = newPl.bag + passiveIncome - totalRent;
+  const upkeep = calculateMonthlyUpkeep(newPl);
+  const debtService = calculateMonthlyDebtService(newPl);
+  const totalDeductions = totalRent + upkeep + debtService;
+
+  newPl.bag = newPl.bag + passiveIncome - totalDeductions;
+
+  // Track / apply liquidity crunch and debt service progression
+  const originalDebts = newPl.financialDebts || [];
+  const updatedDebts = [];
+  for (const debt of originalDebts) {
+    const nextTerm = debt.remainingTerm - 1;
+    if (nextTerm > 0) {
+      updatedDebts.push({
+        ...debt,
+        remainingTerm: nextTerm
+      });
+    } else {
+      news.push({
+        text: `🎉 DEBT RETIRED: Your ${debt.loanType} Loan of $${debt.principal.toLocaleString()} has been fully paid off!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    }
+  }
+  newPl.financialDebts = updatedDebts;
+
+  // Warnings & Overdraft effects
+  if (newPl.bag <= 0) {
+    newPl.bag = 0;
+    newPl.heat = Math.min(100, newPl.heat + 5);
+    newPl.mentalHealth = Math.max(0, newPl.mentalHealth - 5);
+    news.push({
+      text: `🚨 LIQUIDITY CRUNCH: You are completely broke ($0) after paying monthly obligations! Creditor pressure builds (+5 Heat) and financial stress mounts (-5 Mental Health).`,
+      colorClass: 'text-red-500 font-bold animate-pulse'
+    });
+  } else if (newPl.bag < totalDeductions) {
+    news.push({
+      text: `⚠️ LOW CASH FLOW WARNING: Your cash balance ($${newPl.bag.toLocaleString()}) is below next month's anticipated obligations ($${totalDeductions.toLocaleString()}). Adjust your strategy immediately!`,
+      colorClass: 'text-yellow-400 font-medium'
+    });
+  }
 
   // Record First Passive Income
   if (passiveIncome > 0 && !newPl.history?.some(h => h.id === 'first_passive_income')) {

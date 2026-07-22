@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, PlayerStats, RecordLabelArtist, PersistentNPC, RegionalExecutive } from '../../types/game';
+import type { GameState, PlayerStats, RecordLabelArtist, PersistentNPC, RegionalExecutive, FinancialDebt } from '../../types/game';
 import type { LegacyUpgrade } from '../../types/legacy';
 import { getInitialStats } from '../initialState';
 import { enforceStatCaps } from '../../engine/statEngine';
@@ -40,6 +40,8 @@ export interface PlayerStatsSlice {
   acceptAmbition: (id: string) => void;
   ignoreAmbition: (id: string) => void;
   replaceAmbition: (id: string, withId: string) => void;
+  takeLoan: (loanType: 'STUDENT' | 'EMERGENCY' | 'EQUIPMENT' | 'BUSINESS' | 'MORTGAGE') => boolean;
+  repayLoan: (loanId: string) => boolean;
 }
 
 export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStatsSlice> = (set, get) => ({
@@ -495,5 +497,94 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       }),
       news: [{ text: `🔄 Ambition Replaced: "${oldName}" with "${newName}".`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
     });
+  },
+
+  takeLoan: (loanType) => {
+    const state = get();
+    const pl = state.pl;
+
+    const config = {
+      STUDENT: { principal: 15000, interestRate: 0.04, term: 24, minTier: 'MUD' },
+      EMERGENCY: { principal: 10000, interestRate: 0.15, term: 6, minTier: 'MUD' },
+      EQUIPMENT: { principal: 75000, interestRate: 0.08, term: 18, minTier: 'STREET' },
+      BUSINESS: { principal: 500000, interestRate: 0.06, term: 36, minTier: 'STARTUP' },
+      MORTGAGE: { principal: 2500000, interestRate: 0.05, term: 60, minTier: 'CORPORATE' }
+    };
+
+    const loan = config[loanType];
+    if (!loan) return false;
+
+    const tierHierarchy = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'];
+    const plTierIndex = tierHierarchy.indexOf(pl.currentTier);
+    const requiredTierIndex = tierHierarchy.indexOf(loan.minTier);
+
+    if (plTierIndex < requiredTierIndex) {
+      set({
+        news: [{ text: `🚫 LOAN DENIED: Reaching ${loan.minTier} tier is required to access ${loanType} financing.`, colorClass: 'text-red-400' }, ...state.news.slice(0, 49)]
+      });
+      return false;
+    }
+
+    const currentDebts = pl.financialDebts || [];
+    if (currentDebts.length >= 3) {
+      set({
+        news: [{ text: `🚫 LOAN DENIED: Debt ceiling reached (Maximum 3 active loans allowed simultaneously).`, colorClass: 'text-red-400' }, ...state.news.slice(0, 49)]
+      });
+      return false;
+    }
+
+    const monthlyPayment = Math.round((loan.principal * (1 + loan.interestRate)) / loan.term);
+
+    const newDebt: FinancialDebt = {
+      id: `loan_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      loanType,
+      principal: loan.principal,
+      interestRate: loan.interestRate,
+      remainingTerm: loan.term,
+      monthlyPayment,
+      totalTerm: loan.term
+    };
+
+    const plUpdated = enforceStatCaps({
+      ...pl,
+      bag: pl.bag + loan.principal,
+      financialDebts: [...currentDebts, newDebt]
+    });
+
+    set({
+      pl: plUpdated,
+      news: [{ text: `🏦 LOAN SECURED: Borrowed $${loan.principal.toLocaleString()} via ${loanType} loan. Monthly Payment: -$${monthlyPayment.toLocaleString()}/mo.`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    return true;
+  },
+
+  repayLoan: (loanId) => {
+    const state = get();
+    const pl = state.pl;
+    const debts = pl.financialDebts || [];
+    const targetDebt = debts.find(d => d.id === loanId);
+    if (!targetDebt) return false;
+
+    const payoffCost = targetDebt.monthlyPayment * targetDebt.remainingTerm;
+    if (pl.bag < payoffCost) {
+      set({
+        news: [{ text: `🚫 REPAYMENT DENIED: Insufficient cash ($${pl.bag.toLocaleString()}) to cover the total early payoff cost ($${payoffCost.toLocaleString()}).`, colorClass: 'text-red-400' }, ...state.news.slice(0, 49)]
+      });
+      return false;
+    }
+
+    const plUpdated = enforceStatCaps({
+      ...pl,
+      bag: pl.bag - payoffCost,
+      financialDebts: debts.filter(d => d.id !== loanId)
+    });
+
+    set({
+      pl: plUpdated,
+      news: [{ text: `🎉 LOAN REPAID: Fully retired your ${targetDebt.loanType} loan early for $${payoffCost.toLocaleString()}!`, colorClass: 'text-emerald-400 font-bold' }, ...state.news.slice(0, 49)]
+    });
+
+    return true;
   },
 });

@@ -1,6 +1,176 @@
 import type { NarrativeEvent } from '../types/game';
 
 const BASE_EVENTS: NarrativeEvent[] = [
+  // OPPORTUNITY COST SYSTEM NARRATIVE CROSSROADS
+  {
+    id: 'opp_cost_property_vs_expansion',
+    title: 'Crossroads of Scale',
+    pacingCategory: 'MAJOR',
+    description: 'Your logistics manager presents a crossroads: Expand your warehouse (boosting active cash yield multipliers but adding $1,200/month in upkeep) OR acquire a local residential duplex (yielding stable monthly passive cash flow but freezing upgrade paths).',
+    trigger: {
+      tier: ['STREET', 'STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'upgrade_warehouse',
+        label: 'Expand Warehouse',
+        description: 'Upgrade the active infrastructure. Costs $1,200/month in operating upkeeps but increases professional clout.',
+        consequences: {
+          clout: 50,
+          passiveCash: -1200
+        },
+        setFlags: { 'opp_cost_warehouse_expanded': true }
+      },
+      {
+        id: 'acquire_duplex',
+        label: 'Acquire Residential Duplex',
+        description: 'Invest $25,000 to purchase a high-yield residential asset bringing in $1,800/month in passive income.',
+        consequences: {
+          bag: -25000,
+          passiveCash: 1800
+        },
+        setFlags: { 'opp_cost_duplex_acquired': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_machinery_vs_expertise',
+    title: 'The Efficiency Tax',
+    pacingCategory: 'MAJOR',
+    description: 'Your production line requires optimization. You can either purchase automated heavy machinery (reducing active mental health costs by adding automated routines but adding $2,000/month in equipment servicing) OR enroll in executive management education (massive clout/aura boost, costing $30,000 up front with zero ongoing costs).',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'automate_production',
+        label: 'Automate Machinery',
+        description: 'Spend $2,000/month on equipment financing to permanently safeguard operational mental health (+30 Mental Health).',
+        consequences: {
+          passiveCash: -2000,
+          mentalHealth: 30
+        },
+        setFlags: { 'opp_cost_automated_machinery': true }
+      },
+      {
+        id: 'executive_education',
+        label: 'Enroll in Executive Education',
+        description: 'Invest $30,000 in personal expertise, securing elite pedigree credentials (+200 Clout, +100 Aura).',
+        consequences: {
+          bag: -30000,
+          clout: 200,
+          aura: 100
+        },
+        setFlags: { 'opp_cost_education_completed': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_scale_vs_savings',
+    title: 'The Leverage Squeeze',
+    pacingCategory: 'MAJOR',
+    description: 'To scale your current operations, you must choose between hiring a high-priced general manager (deducting $2,000/month in salary, but yielding $4,500/month in automatic passive income) OR maintaining liquid cash savings to cushion future recessions.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'hire_manager',
+        label: 'Hire Dedicated Manager',
+        description: 'Hire the manager. Net yield of +$2,500/month in passive income (+40 Clout).',
+        consequences: {
+          passiveCash: 2500,
+          clout: 40
+        },
+        setFlags: { 'opp_cost_manager_hired': true }
+      },
+      {
+        id: 'retain_savings',
+        label: 'Retain Cash Reserves',
+        description: 'Avoid permanent overhead commitments. Hold liquid reserves (+15 Mental Health, +30 Aura).',
+        consequences: {
+          aura: 30,
+          mentalHealth: 15
+        },
+        setFlags: { 'opp_cost_savings_retained': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_rest_vs_push',
+    title: 'Vigor vs. Velocity',
+    pacingCategory: 'MAJOR',
+    description: 'Your workers are exhausted and your margins are tight. You can either fund a high-quality team retreat (costing $15,000, restoring 40 Mental Health but pausing development) OR enforce double-shifts to maximize active income (generating immediate cash but triggering employee friction and +20 Heat).',
+    trigger: {
+      tier: ['STREET', 'STARTUP'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'fund_retreat',
+        label: 'Fund Team Retreat',
+        description: 'Invest $15,000 in your team\'s mental health, restoring 40 Mental Health.',
+        consequences: {
+          bag: -15000,
+          mentalHealth: 40
+        },
+        setFlags: { 'opp_cost_retreat_funded': true }
+      },
+      {
+        id: 'enforce_shifts',
+        label: 'Enforce Double Shifts',
+        description: 'Push workers to the limit. Earns $20,000 immediately but adds +20 Heat due to worker protests.',
+        consequences: {
+          bag: 20000,
+          heat: 20,
+          mentalHealth: -30
+        },
+        setFlags: { 'opp_cost_shifts_enforced': true }
+      }
+    ]
+  },
+  {
+    id: 'opp_cost_marketing_vs_debt',
+    title: 'Brand vs. Solvency',
+    pacingCategory: 'MAJOR',
+    description: 'Your public profile is slipping while your operating liabilities grow. You can either invest heavily in a brand PR campaign (+1,000 clout, costing $50,000) OR pay down your running obligations immediately to bolster cash reserves.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE', 'ELITE'],
+      probability: 0.15,
+      once: true
+    },
+    choices: [
+      {
+        id: 'marketing_pr_blitz',
+        label: 'Invest in PR Blitz',
+        description: 'Spend $50,000 to launch a premier PR campaign, securing high public standing (+1,000 Clout, +200 Aura).',
+        consequences: {
+          bag: -50000,
+          clout: 1000,
+          aura: 200
+        },
+        setFlags: { 'opp_cost_pr_blitz_active': true }
+      },
+      {
+        id: 'pay_down_liabilities',
+        label: 'Pay Down Liabilities',
+        description: 'Use $15,000 of cash to retire outstanding obligations, reclaiming $1,500/month in passive cash flow.',
+        consequences: {
+          bag: -15000,
+          passiveCash: 1500
+        },
+        setFlags: { 'pay_down_liabilities_active': true }
+      }
+    ]
+  },
+
   // STREET KID / SCAVENGER - MUD/STREET
   {
     id: 'scavenger_prototype',

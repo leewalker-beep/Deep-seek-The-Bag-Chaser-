@@ -367,6 +367,24 @@ export const TheReceipts: React.FC<{
           </div>
         </div>
 
+        {/* Active liabilities summary if any exist */}
+        {pl.financialDebts && pl.financialDebts.length > 0 && (
+          <div className="bg-red-950/20 border border-red-500/20 rounded-xl p-4 mb-6 animate-in fade-in duration-300">
+            <div className="text-[10px] text-red-400 font-black uppercase tracking-widest mb-2 flex justify-between">
+              <span>⚠️ Active Liabilities</span>
+              <span>Monthly Service</span>
+            </div>
+            <div className="space-y-1">
+              {pl.financialDebts.map(debt => (
+                <div key={debt.id} className="flex justify-between items-center text-[10px] text-slate-300 font-bold uppercase tracking-tight">
+                  <span>{debt.loanType} LOAN ({debt.remainingTerm}mo remaining)</span>
+                  <span className="font-mono text-red-400 font-semibold">-${debt.monthlyPayment.toLocaleString()}/mo</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Filter */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
           {filterButtons.map(btn => (
