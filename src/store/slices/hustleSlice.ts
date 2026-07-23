@@ -1365,7 +1365,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const isMajor = ['CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'].includes(hustle.tier);
       const auraLossAmt = isMajor ? 10 : 5;
       const reputation = state.pl.narrativeFlags?.publicReputation as string || "The Hustler";
-      const failedLosses = applyReputationLossScale(0, auraLossAmt, reputation);
+      const failedLosses = applyReputationLossScale(0, auraLossAmt, reputation, state.pl);
       finalAuraYield = Math.max(0, finalAuraYield - failedLosses.aura);
       if (!result.tickerMessages) result.tickerMessages = [];
       result.tickerMessages.push({
@@ -2500,6 +2500,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       nextPlReacted.recordedBioKeys = [...(nextPlReacted.recordedBioKeys || []), bioUpdate.key!];
     }
 
+    recordHistoryEvent(nextPlReacted, {
+      id: `rival_retaliation_${rival.id}_${nextPlReacted.month}`,
+      title: `Retaliation Dispatched`,
+      description: `Launched a massive retaliatory operation against ${rival.name}, crushing their bottom line and reclaiming dominance.`,
+      category: 'RIVAL',
+      importance: 4,
+      participants: [rival.name],
+      month: nextPlReacted.month
+    });
+
     set({
       pl: nextPlReacted,
       news: [{ text: `🔥 RETALIATION: You hit ${rival.name}'s bottom line. Their net worth plummeted! (-$${cost.toLocaleString()})`, colorClass: 'text-orange-400 font-bold' }, ...state.news.slice(0, 49)]
@@ -2546,6 +2556,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       );
       nextPl.aura += 50;
       get().addTickerMessage(`🎯 SABOTAGE SUCCESS: ${rival.name}'s operations disrupted! Net worth -20%.`, "text-emerald-400 font-bold");
+
+      recordHistoryEvent(nextPl, {
+        id: `rival_sabotage_success_${rival.id}_${nextPl.month}`,
+        title: `Sabotage Dispatched: Success`,
+        description: `Successfully disrupted ${rival.name}'s business operations, cutting their net worth.`,
+        category: 'RIVAL',
+        importance: 3,
+        participants: [rival.name],
+        month: nextPl.month
+      });
+
       if (!nextPl.history?.some(h => h.id === 'first_sabotage')) {
         recordHistoryEvent(nextPl, {
           id: 'first_sabotage',
@@ -2570,6 +2591,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       nextPl.heat += 25;
       nextPl.aura -= 100;
       get().addTickerMessage(`🚫 SABOTAGE FAILED: You were nearly caught! Heat +25%, Aura -100.`, "text-red-500 font-bold");
+
+      recordHistoryEvent(nextPl, {
+        id: `rival_sabotage_fail_${rival.id}_${nextPl.month}`,
+        title: `Sabotage Dispatched: Failure`,
+        description: `Dispatched sabotage against ${rival.name} but the operation was compromised, increasing Heat.`,
+        category: 'RIVAL',
+        importance: 3,
+        participants: [rival.name],
+        month: nextPl.month
+      });
     }
 
     // Resolve advice trigger for sabotage
@@ -2619,6 +2650,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     let nextPlReacted = processWorldReaction(nextPl, 'RIVAL_PARTNERSHIP', { hustleName: rival.name }).updatedPl;
 
+    recordHistoryEvent(nextPlReacted, {
+      id: `rival_help_${rival.id}_${nextPlReacted.month}`,
+      title: `Relief Investment: ${rival.name}`,
+      description: `Backed ${rival.name}'s strategy with a $${cost.toLocaleString()} relief injection, establishing a solid partnership.`,
+      category: 'RIVAL',
+      importance: 3,
+      participants: [rival.name],
+      month: nextPlReacted.month
+    });
+
     if (!nextPlReacted.history?.some(h => h.id === 'first_partnership')) {
       recordHistoryEvent(nextPlReacted, {
         id: 'first_partnership',
@@ -2665,6 +2706,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       nextPlReacted.biography = [...(nextPlReacted.biography || []), bioUpdate.entry];
       nextPlReacted.recordedBioKeys = [...(nextPlReacted.recordedBioKeys || []), bioUpdate.key!];
     }
+
+    recordHistoryEvent(nextPlReacted, {
+      id: `rival_counter_bid_${rival.id}_${nextPlReacted.month}`,
+      title: `Bidding War Victory`,
+      description: `Out-bid ${rival.name}'s aggressive expansion, permanently capturing their sector position for $${cost.toLocaleString()}.`,
+      category: 'RIVAL',
+      importance: 3,
+      participants: [rival.name],
+      month: nextPlReacted.month
+    });
 
     // Resolve advice trigger for counter-bid
     let adviceFollowedCountCounterBid = nextPlReacted.adviceFollowedCount || 0;
@@ -2768,6 +2819,16 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         recordedBioKeys: [...(finalPl.recordedBioKeys || []), bioUpdate.key!]
       };
     }
+
+    recordHistoryEvent(finalPl, {
+      id: `rival_recruited_${rival.id}_${finalPl.month}`,
+      title: `Adversary Recruited`,
+      description: `Successfully recruited longtime rival ${name} as a dedicated business partner, converting a competitor into an ally.`,
+      category: 'RIVAL',
+      importance: 3,
+      participants: [name],
+      month: finalPl.month
+    });
 
     set({
       pl: finalPl,

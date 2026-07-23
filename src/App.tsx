@@ -651,6 +651,52 @@ const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
     };
   }
 
+  // LIVING MEMORY ADVISOR EVENTS
+  // A. Reflection on the Climb
+  if (['CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN'].includes(pl.currentTier) && pl.bag >= 1000000 && pl.month > 24 && !pl.narrativeFlags.advisor_shown_memory_concern) {
+    return {
+      id: 'advisor_shown_memory_concern',
+      title: '💭 REFLECTIONS ON THE CLIMB',
+      subtitle: `"I was looking over your early ledger sheets today. I remember when your biggest concern was making your first $500... Today, you are directing a colossal multi-million dollar empire. Never lose that hunger."`,
+      bullets: [
+        'You started from nothing and broke through every structural ceiling.',
+        'Your net worth is now counted in the millions, but the lessons of survival remain the same.',
+        'Remember your humble beginnings when negotiating your next high-stakes contract.'
+      ],
+      tabToOpen: 'BIOGRAPHY' as const,
+    };
+  }
+
+  // B. Scars of Experience
+  if (pl.mentalHealth < 45 && ((pl.arrestCount && pl.arrestCount > 0) || pl.narrativeFlags.had_bankruptcy_crisis || pl.narrativeFlags.rebounded_bankruptcy_millionaire) && !pl.narrativeFlags.advisor_shown_memory_setback) {
+    return {
+      id: 'advisor_shown_memory_setback',
+      title: '🛡️ TRUST YOUR EXPERIENCE',
+      subtitle: `"You're feeling the pressure right now, Chaser. But look back at where you've been. You've overcome severe setbacks before—the legal battles, the close calls, the cash squeezes. Trust your experience. This is just another bump on a historic rise."`,
+      bullets: [
+        'You have the operational scars and the tactical wisdom to survive this storm.',
+        'Do not panic-sell assets or over-leverage to cover temporary operational deficits.',
+        'Prioritize a tactical retreat, clear your Heat, and rest to restore your strategic focus.'
+      ],
+      tabToOpen: 'CRITICAL' as const,
+    };
+  }
+
+  // C. The Deliberate Architect
+  if (pl.month > 36 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0 && !pl.narrativeFlags.advisor_shown_memory_growth) {
+    return {
+      id: 'advisor_shown_memory_growth',
+      title: '📈 THE DELIBERATE ARCHITECT',
+      subtitle: `"I've been analyzing your historical cadence. You've always favoured steady growth over risky expansion, Chaser. That patient, disciplined architecture is exactly why your empire is still standing while more volatile competitors have burned out."`,
+      bullets: [
+        'Consistently clean compliance records have protected you from federal audits.',
+        'A stable portfolio of passive yields buffers you against sudden macroeconomic contractions.',
+        'Continue to execute with precision; patience is the ultimate leverage.'
+      ],
+      tabToOpen: 'OPPORTUNITIES' as const,
+    };
+  }
+
   return null;
 };
 

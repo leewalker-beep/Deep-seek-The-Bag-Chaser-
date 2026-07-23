@@ -13,6 +13,29 @@ export interface RivalSimResult {
 // Map help costs and properties according to player economy rules
 const RIVAL_OP_OVERHEAD_RATE = 0.02; // Monthly maintenance rate (2% of net worth) to prevent runaway snowballing
 
+export function getRivalMemories(pl: PlayerStats, rivalName: string): {
+  sabotaged: boolean;
+  helped: boolean;
+  counterBid: boolean;
+  retaliated: boolean;
+  betrayed: boolean;
+} {
+  const history = pl.history || [];
+  const rivalEvents = history.filter(h => h.participants?.includes(rivalName));
+
+  const sabotaged = rivalEvents.some(e => e.id.includes('sabotage_success') || e.id === 'first_sabotage');
+  const helped = rivalEvents.some(e => e.id.includes('help') || e.id === 'first_partnership');
+  const counterBid = rivalEvents.some(e => e.id.includes('counter_bid'));
+  const retaliated = rivalEvents.some(e => e.id.includes('retaliation'));
+
+  // Betrayed means we previously helped them, but then sabotaged them!
+  const helpedMonth = rivalEvents.find(e => e.id.includes('help') || e.id === 'first_partnership')?.month;
+  const sabotagedMonth = rivalEvents.find(e => e.id.includes('sabotage_success') || e.id === 'first_sabotage')?.month;
+  const betrayed = helpedMonth !== undefined && sabotagedMonth !== undefined && sabotagedMonth > helpedMonth;
+
+  return { sabotaged, helped, counterBid, retaliated, betrayed };
+}
+
 export const simulateRivals = (
   pl: PlayerStats,
   currentMarket: MarketType
@@ -288,14 +311,34 @@ export const simulateRivals = (
         const retaliations = ['POACH_REVENUE', 'TALK_RUMOURS', 'DIRECT_SABOTAGE'];
         const act = randomChoice(retaliations);
 
+        const mem = getRivalMemories(pl, r.name);
+
         let quote = '"Stay in your lane."';
-        if (reputation === "The Hustler") quote = '"You\'re just a basic street hustler."';
-        else if (reputation === "The Investor") quote = '"Let\'s see if your portfolio can buffer this strike, Investor."';
-        else if (reputation === "The Mogul") quote = '"Even Moguls can bleed."';
-        else if (reputation === "The Celebrity") quote = '"Your flashy fame won\'t shield your bank account."';
-        else if (reputation === "The Crime Boss") quote = '"You think you own the underground?"';
-        else if (reputation === "The Kingmaker") quote = '"Your political puppet strings won\'t save your holdings."';
-        else if (reputation === "The President") quote = '"Not even executive privilege can protect your assets."';
+        if (mem.betrayed) {
+          quote = '"You pretended to be my partner, then stabbed me in the back. Now it\'s my turn."';
+        } else if (mem.retaliated) {
+          quote = '"You tried to crush me with your retaliation. I don\'t forget. I\'m hitting back twice as hard."';
+        } else if (mem.sabotaged) {
+          quote = '"You think you can sabotage my operations and get away with it? I remember what you did."';
+        } else if (mem.counterBid) {
+          quote = '"You out-bid me and took my sector position. Let\'s see how your portfolio handles this strike."';
+        } else if (mem.helped) {
+          quote = '"I know you helped me before, but business is business. Don\'t take this personally."';
+        } else if (reputation === "The Hustler") {
+          quote = '"You\'re just a basic street hustler."';
+        } else if (reputation === "The Investor") {
+          quote = '"Let\'s see if your portfolio can buffer this strike, Investor."';
+        } else if (reputation === "The Mogul") {
+          quote = '"Even Moguls can bleed."';
+        } else if (reputation === "The Celebrity") {
+          quote = '"Your flashy fame won\'t shield your bank account."';
+        } else if (reputation === "The Crime Boss") {
+          quote = '"You think you own the underground?"';
+        } else if (reputation === "The Kingmaker") {
+          quote = '"Your political puppet strings won\'t save your holdings."';
+        } else if (reputation === "The President") {
+          quote = '"Not even executive privilege can protect your assets."';
+        }
 
         if (act === 'POACH_REVENUE' && Object.keys(pl.dynamicPassives).length > 0) {
           const target = randomChoice(Object.keys(pl.dynamicPassives));

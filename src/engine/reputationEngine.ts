@@ -390,6 +390,30 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     scores["The Celebrity"] += 40;
   }
 
+  // --- LONG-TERM BEHAVIOR MEMORY INFLUENCES ---
+  // A. Lifelong Philanthropy (+100 to Philanthropist and People's Champion)
+  const isLifelongPhilanthropist = (pl.philanthropyDonation && pl.philanthropyDonation > 10000000) ||
+    pl.narrativeFlags?.advisor_shown_charity === true ||
+    pl.ambitions?.some(a => a.id === 'leave_better_society' && a.status === 'COMPLETED');
+  if (isLifelongPhilanthropist) {
+    scores["The Philanthropist"] += 100;
+    scores["The People's Champion"] += 100;
+  }
+
+  // B. Repeat Offender (+100 to Crime Boss and Controversial Tycoon)
+  const isRepeatOffender = (pl.arrestCount || 0) >= 2;
+  if (isRepeatOffender) {
+    scores["The Crime Boss"] += 100;
+    scores["The Controversial Tycoon"] += 100;
+  }
+
+  // C. Consistently Honest Entrepreneur (+100 to Investor and Reformer)
+  const isHonestEntrepreneur = (pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0;
+  if (isHonestEntrepreneur) {
+    scores["The Investor"] += 100;
+    scores["The Reformer"] += 100;
+  }
+
   // --- ROSTER INFLUENCE ON REPUTATION ---
 
   // 1. Rolodex / Talent Agency Creators (pl.rolodex)
@@ -706,7 +730,7 @@ export function compileReputationWhy(pl: PlayerStats, targetRep: string): string
   }
 }
 
-export function applyReputationGainScale(clout: number, aura: number, reputation: string): { clout: number; aura: number } {
+export function applyReputationGainScale(clout: number, aura: number, reputation: string, pl?: PlayerStats): { clout: number; aura: number } {
   let cloutMult = 1.0;
   let auraMult = 1.0;
 
@@ -718,13 +742,26 @@ export function applyReputationGainScale(clout: number, aura: number, reputation
     auraMult = 1.2;
   }
 
+  // Repeat Offender penalty (-20% gains due to public skepticism)
+  if (pl && (pl.arrestCount || 0) >= 2) {
+    cloutMult *= 0.8;
+    auraMult *= 0.8;
+  }
+
+  // Consistently Honest Entrepreneur bonus (+15% gains)
+  const isHonest = pl && (pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0;
+  if (isHonest) {
+    cloutMult *= 1.15;
+    auraMult *= 1.15;
+  }
+
   return {
     clout: Math.floor(clout * cloutMult),
     aura: Math.floor(aura * auraMult)
   };
 }
 
-export function applyReputationLossScale(clout: number, aura: number, reputation: string): { clout: number; aura: number } {
+export function applyReputationLossScale(clout: number, aura: number, reputation: string, pl?: PlayerStats): { clout: number; aura: number } {
   let cloutMult = 1.0;
   let auraMult = 1.0;
 
@@ -736,6 +773,17 @@ export function applyReputationLossScale(clout: number, aura: number, reputation
     auraMult = 0.5;
   } else if (reputation === "The People's Champion") {
     auraMult = 1.5;
+  }
+
+  // Lifelong Philanthropy buffer (-30% losses due to immense trust)
+  const isLifelongPhilanthropist = pl && (
+    (pl.philanthropyDonation && pl.philanthropyDonation > 10000000) ||
+    pl.narrativeFlags?.advisor_shown_charity === true ||
+    pl.ambitions?.some(a => a.id === 'leave_better_society' && a.status === 'COMPLETED')
+  );
+  if (isLifelongPhilanthropist) {
+    cloutMult *= 0.7;
+    auraMult *= 0.7;
   }
 
   return {

@@ -130,6 +130,40 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
 
 export function generateHistoricalStories(pl: PlayerStats): TickerMessage[] {
   const stories: TickerMessage[] = [];
+  const pName = pl.name || 'the Chaser';
+
+  // Dynamic memory retrospectives from history
+  const firstBusiness = pl.history?.find(h => h.id.startsWith('business_') || h.title === 'First Business' || h.id === 'first_hustle');
+  const firstBusinessName = firstBusiness
+    ? firstBusiness.title.replace('Mastered ', '').replace('First Business', 'Vending Machine')
+    : 'Vending Machine';
+
+  const yearsElapsed = Math.floor(pl.month / 12);
+
+  if (yearsElapsed >= 5 && pl.bag > 5000000) {
+    stories.push({
+      text: `📰 ${yearsElapsed} years after establishing their first ${firstBusinessName}, ${pName} now commands a massive corporate empire.`,
+      colorClass: 'text-yellow-400 font-extrabold',
+      tier: pl.currentTier,
+    });
+  }
+
+  if (firstBusiness && pl.bag > 2000000) {
+    stories.push({
+      text: `📰 Critics once questioned ${pName}'s first ${firstBusinessName} investment. Today, it is recognized as a visionary masterclass.`,
+      colorClass: 'text-emerald-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
+
+  const firstPassive = pl.history?.find(h => h.id === 'first_passive_income');
+  if (firstPassive && pl.lastPassiveBreakdown && pl.lastPassiveBreakdown.finalTotal > 200000) {
+    stories.push({
+      text: `📰 From a humble first passive stream, ${pName} now pulls in $${pl.lastPassiveBreakdown.finalTotal.toLocaleString()}/mo entirely passively.`,
+      colorClass: 'text-indigo-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
 
   // Occasional Historical Story Reference based on older choices / milestones
   if (pl.month > 36 && pl.activeSentiment?.category === 'MARKET') {

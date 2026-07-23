@@ -482,7 +482,7 @@ export function calculateHustleStatsAdditive(
   effectiveResult.yieldAura = Math.max(0, Math.floor(finalBaseAuraYield * totalAuraMultiplier));
 
   // --- Dynamic Reputation Gain Scaling ---
-  const scaledGains = applyReputationGainScale(effectiveResult.yieldClout, effectiveResult.yieldAura, reputation);
+  const scaledGains = applyReputationGainScale(effectiveResult.yieldClout, effectiveResult.yieldAura, reputation, player);
   effectiveResult.yieldClout = scaledGains.clout;
   effectiveResult.yieldAura = scaledGains.aura;
 
