@@ -269,6 +269,116 @@ const TIER_ONBOARDING_DATA: Record<string, {
 const checkAdvisorTriggers = (pl: any, currentMarket: string) => {
   if (!pl || !pl.narrativeFlags) return null;
 
+  // Comeback Popup Triggers (Supreme Priority)
+  const comebackTrigger = pl.narrativeFlags.trigger_comeback_advisor_popup;
+  if (comebackTrigger) {
+    if (comebackTrigger === 'bankruptcy_millionaire') {
+      return {
+        id: 'advisor_shown_comeback_bankruptcy_millionaire',
+        title: '📈 THE RESILIENT PHOENIX',
+        subtitle: `"You've taken some hard hits, Chaser... Most people would have quit. You didn't. Going from completely broke to clearing over $5,000,000 takes an elite mindset."`,
+        bullets: [
+          'You survived a catastrophic liquidity crunch and rebuilt your foundation.',
+          'Markets have fully regained confidence in your operational stamina (+15 Clout, +15 Aura).',
+          'Leverage your new fortune to lock in advanced specializations.'
+        ],
+        tabToOpen: 'OPPORTUNITIES' as const,
+        onCloseExtra: (store: any) => {
+          store.updatePl({
+            narrativeFlags: {
+              ...store.pl.narrativeFlags,
+              trigger_comeback_advisor_popup: null
+            }
+          });
+        }
+      };
+    }
+    if (comebackTrigger === 'bankruptcy_billionaire') {
+      return {
+        id: 'advisor_shown_comeback_bankruptcy_billionaire',
+        title: '🏙️ FROM BANKRUPTCY TO BILLIONAIRE',
+        subtitle: `"This is a historic, decadal comeback. Rebuilding from Chapter 11 insolvency all the way to a ten-figure sovereign is near impossible. You have completed the ultimate phoenix rise."`,
+        bullets: [
+          'You are officially a certified billionaire giant.',
+          'Rivals are terrified of your sheer resilience (+50 Clout, +30 Aura).',
+          'Your legacy retirement rating is permanently secured.'
+        ],
+        tabToOpen: 'AMBITIONS' as const,
+        onCloseExtra: (store: any) => {
+          store.updatePl({
+            narrativeFlags: {
+              ...store.pl.narrativeFlags,
+              trigger_comeback_advisor_popup: null
+            }
+          });
+        }
+      };
+    }
+    if (comebackTrigger === 'prison_rebound') {
+      return {
+        id: 'advisor_shown_comeback_prison_rebound',
+        title: '🔓 THE PRISON COMEBACK',
+        subtitle: `"They thought the handcuffs would end your story, Chaser. Instead, you served your time and engineered an outstanding post-release recovery of over $500,000. That is true grit."`,
+        bullets: [
+          'Reclaiming half a million within a year of prison release is a masterclass.',
+          'Public perception has shifted to respect your relentless focus (+20 Clout, +20 Aura).',
+          'Your name is feared on the street and in the boardroom.'
+        ],
+        tabToOpen: 'HISTORY' as const,
+        onCloseExtra: (store: any) => {
+          store.updatePl({
+            narrativeFlags: {
+              ...store.pl.narrativeFlags,
+              trigger_comeback_advisor_popup: null
+            }
+          });
+        }
+      };
+    }
+    if (comebackTrigger === 'burnout_recovery') {
+      return {
+        id: 'advisor_shown_comeback_burnout_recovery',
+        title: '🧘 MIND OF STEEL',
+        subtitle: `"Severe operational burnout and low mental health can crush any leader. You stepped back, recovered your focus, and cleared your exhaustion. Your mental stamina is now steel."`,
+        bullets: [
+          'Cleared the devastating 30% yield and clout penalties of active burnout.',
+          'Public trust in your leadership has surged (+10 Clout, +15 Aura).',
+          'A true leader knows when to rest and when to strike.'
+        ],
+        tabToOpen: 'REPUTATION' as const,
+        onCloseExtra: (store: any) => {
+          store.updatePl({
+            narrativeFlags: {
+              ...store.pl.narrativeFlags,
+              trigger_comeback_advisor_popup: null
+            }
+          });
+        }
+      };
+    }
+    if (comebackTrigger === 'debt_recovery') {
+      return {
+        id: 'advisor_shown_comeback_debt_recovery',
+        title: '💸 LEVERAGE TAMED',
+        subtitle: `"You paid down your outstanding liabilities and resolved creditor solvency freezes. Operating completely debt-free is a massive strategic relief."`,
+        bullets: [
+          'Outstanding liability principals reduced under $10,000.',
+          'Solvency worries cleared, restoring full public Clout (+15 Clout, +15 Aura).',
+          'Your cash flow channels are running at absolute maximum efficiency.'
+        ],
+        tabToOpen: 'HISTORY' as const,
+        onCloseExtra: (store: any) => {
+          store.updatePl({
+            narrativeFlags: {
+              ...store.pl.narrativeFlags,
+              trigger_comeback_advisor_popup: null
+            }
+          });
+        }
+      };
+    }
+  }
+
   // A. FIRST EMPLOYEE HIRED (Leadership & delegation)
   if (pl.narrativeFlags.just_hired_employee && !pl.narrativeFlags.advisor_shown_first_employee) {
     return {

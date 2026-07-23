@@ -250,5 +250,15 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     buff: { type: 'aura', value: 1.25 },
     futureBenefit: '+10% Legacy Point gain during second term',
     relevantTier: 'PRESIDENT',
+  },
+  the_phoenix: {
+    id: 'badge_the_phoenix',
+    hustleId: 'the_phoenix',
+    name: 'The Phoenix',
+    description: 'Rebuild your empire and rise from the ashes of defeat.',
+    icon: '🔥',
+    buff: { type: 'aura', value: 1.15 },
+    futureBenefit: 'Sovereign respect (+20% Clout and Aura gain multipliers)',
+    relevantTier: 'STARTUP',
   }
 };
