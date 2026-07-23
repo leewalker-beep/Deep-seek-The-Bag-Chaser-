@@ -135,7 +135,7 @@ export function advanceMonth(
 
   // Apply active monthly stat updates from consequences (scaled by reputation)
   if (isConsequenceActive(newPl, 'sabotage_retaliation')) {
-    const sabotageLosses = applyReputationLossScale(15, 15, reputation);
+    const sabotageLosses = applyReputationLossScale(15, 15, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - sabotageLosses.clout);
     newPl.aura = Math.max(0, newPl.aura - sabotageLosses.aura);
     newPl.approvalRating = Math.max(0, newPl.approvalRating - 2);
@@ -151,7 +151,7 @@ export function advanceMonth(
   // 1. Inactivity decay ("Being Forgotten")
   newPl.monthsSinceLastHustle = (newPl.monthsSinceLastHustle || 0) + 1;
   if (newPl.monthsSinceLastHustle >= 12) {
-    const forgottenLoss = applyReputationLossScale(Math.max(5, Math.floor(newPl.clout * 0.01)), 0, reputation);
+    const forgottenLoss = applyReputationLossScale(Math.max(5, Math.floor(newPl.clout * 0.01)), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - forgottenLoss.clout);
     news.push({
       text: `📰 BEING FORGOTTEN: Long period without active ventures decays your clout (-${forgottenLoss.clout} Clout).`,
@@ -164,7 +164,7 @@ export function advanceMonth(
                           isConsequenceActive(newPl, 'housing_affordability_crisis') ||
                           isConsequenceActive(newPl, 'sabotage_retaliation');
   if (hasNegativeCons) {
-    const consDecay = applyReputationLossScale(Math.floor(newPl.clout * 0.02), 0, reputation);
+    const consDecay = applyReputationLossScale(Math.floor(newPl.clout * 0.02), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - consDecay.clout);
     news.push({
       text: `📉 NEGATIVE COOLDOWN: Active social/regulatory crises erode your public stance (-${consDecay.clout} Clout).`,
@@ -189,7 +189,7 @@ export function advanceMonth(
         colorClass: 'text-emerald-300 font-medium'
       });
     }
-    const heatErosion = applyReputationLossScale(decayClout, decayAura, reputation);
+    const heatErosion = applyReputationLossScale(decayClout, decayAura, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - heatErosion.clout);
     newPl.aura = Math.max(0, newPl.aura - heatErosion.aura);
     news.push({
@@ -200,7 +200,7 @@ export function advanceMonth(
 
   // 4. Critical Mental Health / Burnout
   if (newPl.mentalHealth <= 30) {
-    const burnoutErosion = applyReputationLossScale(0, 5, reputation);
+    const burnoutErosion = applyReputationLossScale(0, 5, reputation, newPl);
     newPl.aura = Math.max(0, newPl.aura - burnoutErosion.aura);
     news.push({
       text: `🔥 BURNOUT PASSIVE: Critically low mental health erodes your aura (-${burnoutErosion.aura} Aura).`,
@@ -478,8 +478,10 @@ export function advanceMonth(
     }
   }
 
+  const isHonestEntrepreneur = (newPl.totalHustlesCompleted || 0) >= 30 && (newPl.arrestCount || 0) === 0 && (newPl.scandalCount || 0) === 0;
+  const honestBoost = isHonestEntrepreneur ? 1.05 : 1.0;
   const chosenOneBoost = newPl.chosenBackground === 'lc_chosen' ? 1.10 : 1.0;
-  const passiveIncome = Math.floor(finalTotal * chosenOneBoost);
+  const passiveIncome = Math.floor(finalTotal * chosenOneBoost * honestBoost);
 
   // Grammy Award System (2% annual chance per released artist)
   // Divide by 12 since this runs monthly
@@ -620,7 +622,7 @@ export function advanceMonth(
     }
 
     // Onset arrest consequences: 15% current Clout and 20% current Aura penalty upon arrest (scaled by reputation)
-    const arrestLosses = applyReputationLossScale(Math.floor(newPl.clout * 0.15), Math.floor(newPl.aura * 0.20), reputation);
+    const arrestLosses = applyReputationLossScale(Math.floor(newPl.clout * 0.15), Math.floor(newPl.aura * 0.20), reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - arrestLosses.clout);
     newPl.aura = Math.max(0, newPl.aura - arrestLosses.aura);
 
@@ -642,7 +644,7 @@ export function advanceMonth(
     newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
 
     // Scale jail monthly passive Clout loss by reputation
-    const jailPassives = applyReputationLossScale(sentence.cloutLossPerMonth, 0, reputation);
+    const jailPassives = applyReputationLossScale(sentence.cloutLossPerMonth, 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - jailPassives.clout);
 
     newPl.jailMonthsRemaining--;
@@ -761,7 +763,7 @@ export function advanceMonth(
       if (ratio > 2) {
         threat = 'RIVAL_DOMINANT';
         if (rival.tier === newPl.currentTier) {
-          const domLoss = applyReputationLossScale(0, 3, reputation);
+          const domLoss = applyReputationLossScale(0, 3, reputation, newPl);
           newPl.aura = Math.max(0, newPl.aura - domLoss.aura);
         }
         if (rival.tier === newPl.currentTier) {
@@ -820,7 +822,7 @@ export function advanceMonth(
         // Challenge Failed
         const penalty = Math.floor(newPl.bag * 0.1);
         newPl.bag -= penalty;
-        const chalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.15), 0, reputation);
+        const chalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.15), 0, reputation, newPl);
         newPl.clout = Math.max(0, newPl.clout - chalLoss.clout);
         news.push({ text: `❌ CHALLENGE FAILED: ${challenge.rivalName} won the challenge. You lost $${penalty.toLocaleString()} (10% of bag).`, colorClass: 'text-red-500 font-bold' });
 
@@ -1074,7 +1076,7 @@ export function advanceMonth(
     const scandals = newPl.scandalCount || 0;
 
     if (approvalRating < 45) {
-      const termLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.25), 0, reputation);
+      const termLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.25), 0, reputation, newPl);
       newPl.clout = Math.max(0, newPl.clout - termLoss.clout);
       news.push({
         text: `🗳️ TERM COMPLETE: Low public approval rating has severely damaged your political Clout (-${termLoss.clout} Clout).`,
@@ -1118,7 +1120,7 @@ export function advanceMonth(
   // Centralized Public Scandal Monitor & Penalty
   const currentScandals = newPl.scandalCount || 0;
   if (currentScandals > prevScandals) {
-    const scandalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.10), 0, reputation);
+    const scandalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.10), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - scandalLoss.clout);
     news.push({
       text: `🚨 PUBLIC SCANDAL: Media backlash has damaged your public Clout (-${scandalLoss.clout} Clout).`,
@@ -1128,7 +1130,7 @@ export function advanceMonth(
 
   // Bankruptcy Clout Penalty Check
   if (pl.bag < 0 || newPl.bag < 0) {
-    const bankLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.20), 0, reputation);
+    const bankLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.20), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - bankLoss.clout);
   }
 
@@ -1155,6 +1157,111 @@ export function advanceMonth(
       fatalStat,
       fatalStatValue,
     };
+  }
+
+  // --- ANNIVERSARIES CHECK SYSTEM & HONEST ENTREPRENEUR NOTIFICATIONS ---
+  const historyList = newPl.history || [];
+  const pName = newPl.name || 'the Chaser';
+
+  // 1. First business (5 years = 60 months)
+  const firstBiz = historyList.find(h => h.id.startsWith('business_') || h.id === 'first_hustle');
+  if (firstBiz) {
+    const elapsed = newPl.month - firstBiz.month;
+    if (elapsed === 60) {
+      const anniversaryId = `anniversary_first_business_5y`;
+      if (!historyList.some(h => h.id === anniversaryId)) {
+        const firstBizName = firstBiz.title.replace('Mastered ', '').replace('First Business', 'Vending Machine');
+        recordHistoryEvent(newPl, {
+          id: anniversaryId,
+          title: `5-Year Business Anniversary`,
+          description: `Reflected on 5 years of commercial growth since launching their first ${firstBizName}. From humble beginnings to absolute power.`,
+          category: 'WORLD',
+          importance: 3,
+          month: newPl.month
+        });
+        news.push({
+          text: `🎉 ANNIVERSARY: 5 years since launching your first ${firstBizName}! Reflections of a legendary climb.`,
+          colorClass: 'text-yellow-400 font-bold'
+        });
+      }
+    }
+  }
+
+  // 2. First million (10 years = 120 months)
+  const firstMillion = historyList.find(h => h.id === 'first_million' || h.title.includes('Million') || h.id.includes('million'));
+  if (firstMillion) {
+    const elapsed = newPl.month - firstMillion.month;
+    if (elapsed === 120) {
+      const anniversaryId = `anniversary_first_million_10y`;
+      if (!historyList.some(h => h.id === anniversaryId)) {
+        recordHistoryEvent(newPl, {
+          id: anniversaryId,
+          title: `10-Year Millionaire Anniversary`,
+          description: `Reflected on a decade of elite status since hitting their first liquid million. A milestone that redefined their legacy.`,
+          category: 'WORLD',
+          importance: 3,
+          month: newPl.month
+        });
+        news.push({
+          text: `🎉 ANNIVERSARY: 10 years since hitting your first liquid million! A decade of compounding power.`,
+          colorClass: 'text-yellow-400 font-bold'
+        });
+      }
+    }
+  }
+
+  // 3. Becoming President (20 years = 240 months)
+  const firstPres = historyList.find(h => h.id === 'tier_PRESIDENT');
+  if (firstPres) {
+    const elapsed = newPl.month - firstPres.month;
+    if (elapsed === 240) {
+      const anniversaryId = `anniversary_became_president_20y`;
+      if (!historyList.some(h => h.id === anniversaryId)) {
+        recordHistoryEvent(newPl, {
+          id: anniversaryId,
+          title: `20-Year Presidential Anniversary`,
+          description: `Celebrated 20 years since President ${pName} was first elected to lead the nation. History remembers a transformative command.`,
+          category: 'WORLD',
+          importance: 4,
+          month: newPl.month
+        });
+        news.push({
+          text: `🎉 ANNIVERSARY: 20 years since becoming President! Two decades of legislative and sovereign authority.`,
+          colorClass: 'text-yellow-400 font-bold'
+        });
+      }
+    }
+  }
+
+  // 4. First passive income (25 years = 300 months)
+  const firstPass = historyList.find(h => h.id === 'first_passive_income');
+  if (firstPass) {
+    const elapsed = newPl.month - firstPass.month;
+    if (elapsed === 300) {
+      const anniversaryId = `anniversary_first_passive_25y`;
+      if (!historyList.some(h => h.id === anniversaryId)) {
+        recordHistoryEvent(newPl, {
+          id: anniversaryId,
+          title: `25-Year Passive Income Anniversary`,
+          description: `Reflected on a quarter-century of continuous passive cash flow. The strategic architecture of financial freedom.`,
+          category: 'WORLD',
+          importance: 3,
+          month: newPl.month
+        });
+        news.push({
+          text: `🎉 ANNIVERSARY: 25 years since your first passive stream! A quarter-century of stable financial independence.`,
+          colorClass: 'text-yellow-400 font-bold'
+        });
+      }
+    }
+  }
+
+  // B. Honest Entrepreneur passive yield notification (once a year)
+  if (isHonestEntrepreneur && newPl.month % 12 === 0) {
+    news.push({
+      text: `💼 INVESTOR CONFIDENCE: Consistently clean compliance records have granted a +5% passive yield bonus this year!`,
+      colorClass: 'text-emerald-400 font-bold'
+    });
   }
 
   // 1. Generate monthly summary item and push to worldFeed
@@ -1264,7 +1371,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
     // Eroding public influence and presence metrics behind bars (scaled by reputation)
     const reputation = draftPl.narrativeFlags?.publicReputation as string || "The Hustler";
-    const prisonErosion = applyReputationLossScale(4, 8, reputation);
+    const prisonErosion = applyReputationLossScale(4, 8, reputation, draftPl);
     draftPl.clout = Math.max(0, draftPl.clout - prisonErosion.clout);
     draftPl.aura = Math.max(0, draftPl.aura - prisonErosion.aura);
 
