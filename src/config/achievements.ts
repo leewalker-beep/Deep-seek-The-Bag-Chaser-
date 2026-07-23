@@ -897,5 +897,47 @@ export const ACHIEVEMENTS: AchievementConfig[] = [
       progress: (state: GameState) => ({ current: (state.pl.rivals || []).some(r => r.status === 'ally') ? 1 : 0, target: 1 })
     },
     reward: { clout: 100, aura: 100, legacyPoints: 100 }
+  },
+  {
+    id: 'COMEBACK_MILLIONAIRE',
+    name: 'The Phoenix Rise',
+    description: 'Rebuild your empire to over $5,000,000 after facing bankruptcy.',
+    category: 'LEGACY',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags?.rebounded_bankruptcy_millionaire,
+      progress: (state: GameState) => ({
+        current: state.pl.narrativeFlags?.rebounded_bankruptcy_millionaire ? 1 : 0,
+        target: 1
+      })
+    },
+    reward: { legacyPoints: 500, clout: 200, aura: 200 }
+  },
+  {
+    id: 'COMEBACK_BILLIONAIRE',
+    name: 'Bankruptcy to Billionaire',
+    description: 'Rebuild your empire to over $1,000,000,000 after facing bankruptcy.',
+    category: 'LEGACY',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags?.rebounded_bankruptcy_billionaire,
+      progress: (state: GameState) => ({
+        current: state.pl.narrativeFlags?.rebounded_bankruptcy_billionaire ? 1 : 0,
+        target: 1
+      })
+    },
+    reward: { legacyPoints: 2000, clout: 1000, aura: 1000 }
+  },
+  {
+    id: 'COMEBACK_PRISON',
+    name: 'The Unbelievable Return',
+    description: 'Earn over $500,000 within 12 months of being released from prison.',
+    category: 'LEGACY',
+    requirement: {
+      check: (state: GameState) => !!state.pl.narrativeFlags?.rebounded_prison,
+      progress: (state: GameState) => ({
+        current: state.pl.narrativeFlags?.rebounded_prison ? 1 : 0,
+        target: 1
+      })
+    },
+    reward: { legacyPoints: 500, clout: 200, aura: 200 }
   }
 ];

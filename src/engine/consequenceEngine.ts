@@ -1,5 +1,6 @@
 import type { PlayerStats, Consequence } from '../types/game';
 import { processWorldReaction } from './reactiveWorldEngine';
+import { triggerBurnoutRecovery, triggerDebtRecovery } from './comebackEngine';
 
 /**
  * Helper to generate a unique random ID
@@ -18,7 +19,7 @@ const hasExistingConsequence = (pl: PlayerStats, source: string): boolean => {
  * Scans player state and naturally schedules future consequences based on actions.
  */
 export function detectAndCreateConsequences(pl: PlayerStats, news: any[]): PlayerStats {
-  const updatedPl = { ...pl };
+  let updatedPl = { ...pl };
   if (!updatedPl.consequences) {
     updatedPl.consequences = [];
   }
@@ -194,10 +195,16 @@ export function detectAndCreateConsequences(pl: PlayerStats, news: any[]): Playe
 
   // Auto-resolve Burnout if player rest/recovery brings mentalHealth back above 60
   if ((updatedPl.mentalHealth || 0) > 60 && hasExistingConsequence(updatedPl, 'burnout_state')) {
-    updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'burnout_state');
-    news.push({
-      text: `🧘 RECOVERY SUCCESS: Your dedication to rest has successfully cleared your impending/active Burnout!`,
-      colorClass: 'text-emerald-400 font-bold'
+    if (updatedPl.consequences) {
+      updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'burnout_state');
+    }
+    const bRecovery = triggerBurnoutRecovery(updatedPl);
+    updatedPl = bRecovery.updatedPl;
+    bRecovery.news.forEach(n => {
+      news.push({
+        text: n,
+        colorClass: 'text-emerald-400 font-bold'
+      });
     });
   }
 
@@ -225,7 +232,7 @@ export function detectAndCreateConsequences(pl: PlayerStats, news: any[]): Playe
         'Market analysts caution that high leverage ratios are narrowing your investment options.'
       ]
     };
-    updatedPl.consequences.push(cons);
+    updatedPl.consequences!.push(cons);
     news.push({
       text: `💸 LEVERAGE WARNING: High credit leverage detected ($${totalPrincipal.toLocaleString()} principal). Creditors are monitoring your cash flows... (Starts in ${delay} months)`,
       colorClass: 'text-yellow-400 font-bold'
@@ -234,10 +241,16 @@ export function detectAndCreateConsequences(pl: PlayerStats, news: any[]): Playe
 
   // Auto-resolve Debt/Leverage Squeeze once principal falls below 10000
   if (totalPrincipal < 10000 && hasExistingConsequence(updatedPl, 'leverage_squeeze')) {
-    updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'leverage_squeeze');
-    news.push({
-      text: `🎉 LEVERAGE RESOLVED: Outstanding liabilities have been successfully settled, clearing creditor solvency concerns!`,
-      colorClass: 'text-emerald-400 font-bold'
+    if (updatedPl.consequences) {
+      updatedPl.consequences = updatedPl.consequences.filter(c => c.source !== 'leverage_squeeze');
+    }
+    const dRecovery = triggerDebtRecovery(updatedPl);
+    updatedPl = dRecovery.updatedPl;
+    dRecovery.news.forEach(n => {
+      news.push({
+        text: n,
+        colorClass: 'text-emerald-400 font-bold'
+      });
     });
   }
 

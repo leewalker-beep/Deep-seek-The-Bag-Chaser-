@@ -56,6 +56,27 @@ function getRivalComment(rival: Rival, _eventType: string, pName: string, _rep: 
   let quote = '';
   let type = 'criticism';
 
+  const isComeback = _eventType.toLowerCase().includes('comeback') || _eventType.toLowerCase().includes('recovery');
+
+  if (isComeback) {
+    if (rel > 40) {
+      type = 'support';
+      quote = `"Incredible resilience, ${pName}. Most people would have folded after those hits, but you proved everyone wrong. Respect."`;
+    } else if (rel < -40) {
+      if (aggression > 0.6) {
+        type = 'challenge';
+        quote = `"You crawled out of the gutter again, ${pName}? Don't get comfortable. Rebuilding just means you have more assets for me to strip next month."`;
+      } else {
+        type = 'mockery';
+        quote = `"Enjoy your little 'phoenix rise' media narrative, ${pName}. You defaulted once, you'll default again when the leverage squeeze hits."`;
+      }
+    } else {
+      type = 'respect';
+      quote = `"Admittedly, your survival metrics are statistically anomalous. Rebuilding an entire empire from near-ruin takes a rare grit."`;
+    }
+    return { quote, type };
+  }
+
   if (rel > 50) {
     // Highly Supportive Allies
     if (ethics > 0.6) {
@@ -790,6 +811,66 @@ export function processWorldReaction(
         updatedPl.clout = Math.min(10000, updatedPl.clout + 100);
         updatedPl.aura = Math.min(10000, updatedPl.aura + 100);
       }
+      break;
+    }
+
+    case 'COMEBACK_BANKRUPTCY_MILLIONAIRE': {
+      addMultiOutletReports({
+        business: `From Bankruptcy to Millionaire: {PLAYER} stages an extraordinary phoenix recovery, clearing over $5,000,000 in holdings.`,
+        popCulture: `Absolutely insane! {PLAYER} went from literally $0 to over $5,000,000! Rebuilding the entire empire from scratch! 📈👑 #Phoenix`,
+        politics: `Local commerce councils commend {PLAYER}'s persistence, praising their contribution to municipal wealth structures.`,
+        local: `Our neighbor {PLAYER} is officially back! Rebuilt their entire business empire to over $5M after almost losing it all.`,
+        financial: `Asset valuation: {PLAYER} successfully re-allocates core capital, transforming bankruptcy debt into an optimized $5M+ portfolio.`
+      });
+      addRivalCommentIfPossible('Comeback');
+      break;
+    }
+
+    case 'COMEBACK_BANKRUPTCY_BILLIONAIRE': {
+      addMultiOutletReports({
+        business: `Sovereign wealth: {PLAYER} achieves the near-impossible "Bankruptcy to Billionaire" phoenix comeback!`,
+        popCulture: `THE Phoenix rise! {PLAYER} is officially a certified billionaire after starting with literally $0! Absolute sovereign! 💸🐐 #FromBankruptcyToBillionaire`,
+        politics: `Bipartisan financial select committees review {PLAYER}'s decadal recovery as a textbook case of entrepreneurial resilience.`,
+        local: `Unbelievable: city landmark is unveiled celebrating tycoon {PLAYER}'s climb from bankruptcy all the way to Billionaire!`,
+        financial: `Chapter 11 resolved: {PLAYER} records absolute capital supremacy, securing $1B+ reserves from a previous insolvency.`
+      });
+      addRivalCommentIfPossible('Comeback');
+      break;
+    }
+
+    case 'COMEBACK_PRISON_RELEASE': {
+      addMultiOutletReports({
+        business: `Reclaiming direct command: {PLAYER} engineers an outstanding post-prison comeback, securing over $500,000 in active margins.`,
+        popCulture: `The comeback nobody expected! {PLAYER} is out of prison and already cleared $500k cash! Rebuilding his empire! 🔓🚀 #FreshStart`,
+        politics: `Debates surrounding incarceration reform are fueled by {PLAYER}'s rapid corporate comeback.`,
+        local: `{PLAYER} is proving that a setback is just a setup for a comeback, recovering $500,000 for local development.`,
+        financial: `Operational restart: {PLAYER}'s post-release business divisions report a surge in investor confidence, raising $500k liquidity.`
+      });
+      addRivalCommentIfPossible('Comeback');
+      break;
+    }
+
+    case 'COMEBACK_BURNOUT': {
+      addMultiOutletReports({
+        business: `Mental focus restored: {PLAYER} successfully recovers from severe operational burnout to resume direct active command.`,
+        popCulture: `Health is wealth! {PLAYER} is back after a massive self-care hiatus, stronger and sharper than ever! 🧠🌿 #MentalHealth`,
+        politics: `Critics praise President {PLAYER}'s focus on psychological wellness, establishing new benchmarks for executive self-care.`,
+        local: `Neighbor {PLAYER} is fully rested and back in action! Best of luck on this clean, healthy new chapter.`,
+        financial: `Resilient return: {PLAYER}'s decision-making and operational stamina are fully restored, securing +15 Aura.`
+      });
+      addRivalCommentIfPossible('Comeback');
+      break;
+    }
+
+    case 'COMEBACK_DEBT_SQUEEZE': {
+      addMultiOutletReports({
+        business: `Debt cleared: {PLAYER} successfully tames leverage ratios, retiring all high-interest business liabilities.`,
+        popCulture: `Debt-free is the ultimate flex! {PLAYER} just paid off their massive credit liabilities! Full financial freedom! 💸🎉 #CleanSlate`,
+        politics: `Lobbyist watchdogs praise {PLAYER}'s financial solvency, restoring complete public confidence.`,
+        local: `Neighbor {PLAYER} is completely debt-free after successfully retiring their credit accounts! Outstanding news.`,
+        financial: `Solvency optimization: {PLAYER} retires outstanding principals, clearing creditor freezes and unlocking +15 Clout.`
+      });
+      addRivalCommentIfPossible('Comeback');
       break;
     }
 

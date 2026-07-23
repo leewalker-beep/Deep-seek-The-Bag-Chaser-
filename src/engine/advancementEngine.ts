@@ -22,6 +22,7 @@ import { generateDynamicStoryNews, generateHistoricalStories, generateMonthlySum
 import { processWorldReaction } from './reactiveWorldEngine';
 import { checkAmbitionTriggersAndCompletions } from './ambitionEngine';
 import { evaluateReputationTick, applyReputationLossScale } from './reputationEngine';
+import { checkAndTriggerComebacks } from './comebackEngine';
 import { getLegacyBonus } from './mathEngine';
 import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from '../utils/financialObligationsUtils';
 const rentByTier: Record<Tier, number> = {
@@ -527,6 +528,8 @@ export function advanceMonth(
     newPl.bag = 0;
     newPl.heat = Math.min(100, newPl.heat + 5);
     newPl.mentalHealth = Math.max(0, newPl.mentalHealth - 5);
+    if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+    newPl.narrativeFlags.had_bankruptcy_crisis = true;
     news.push({
       text: `🚨 LIQUIDITY CRUNCH: You are completely broke ($0) after paying monthly obligations! Creditor pressure builds (+5 Heat) and financial stress mounts (-5 Mental Health).`,
       colorClass: 'text-red-500 font-bold animate-pulse'
@@ -647,6 +650,9 @@ export function advanceMonth(
     if (newPl.jailMonthsRemaining <= 0) {
       newPl.inJail = false;
       newPl.isIncarcerated = false;
+      if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+      newPl.narrativeFlags.released_from_prison_month = newPl.month;
+      newPl.narrativeFlags.prison_release_cash = newPl.bag;
       news.push({
         text: `🔓 RELEASED. You served your time for ${newPl.jailCharge}.`,
         colorClass: 'text-emerald-400 font-black'
@@ -1183,6 +1189,11 @@ export function advanceMonth(
   const ambitionRes = checkAmbitionTriggersAndCompletions(newPl);
   newPl = ambitionRes.updatedPl;
   news.push(...ambitionRes.news);
+
+  // Evaluate periodic comebacks
+  const comebackRes = checkAndTriggerComebacks(newPl);
+  newPl = comebackRes.updatedPl;
+  news.push(...comebackRes.news.map(msg => ({ text: msg, colorClass: 'text-yellow-400 font-bold' })));
 
   // Convert all news to TickerMessage objects and stamp current tier
   const stampedNews = news.map(m => {

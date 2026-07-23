@@ -377,6 +377,19 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     scores["The Hustler"] += 50;
   }
 
+  // --- COMEBACK AND RECOVERY REPUTATION BOOSTS ---
+  if (pl.narrativeFlags?.rebounded_bankruptcy_millionaire) {
+    scores["The Investor"] += 80;
+    scores["The People's Champion"] += 40;
+  }
+  if (pl.narrativeFlags?.rebounded_bankruptcy_billionaire) {
+    scores["The Billionaire"] += 150;
+  }
+  if (pl.narrativeFlags?.rebounded_prison) {
+    scores["The People's Champion"] += 80;
+    scores["The Celebrity"] += 40;
+  }
+
   // --- ROSTER INFLUENCE ON REPUTATION ---
 
   // 1. Rolodex / Talent Agency Creators (pl.rolodex)

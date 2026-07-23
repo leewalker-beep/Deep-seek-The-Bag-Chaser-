@@ -3068,6 +3068,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         fatalCause: finalFatalCause
       };
     });
+
+    get().logEvent('SPECIAL_EVENT', { type: 'MONTH_TICKED', month: get().pl.month });
   },
 });
 
