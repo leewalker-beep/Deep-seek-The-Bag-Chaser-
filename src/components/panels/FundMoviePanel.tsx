@@ -5,6 +5,7 @@ import * as Bio from '../../engine/biographyEngine';
 import type { Hustle } from '../../config/hustles/base';
 import { ProgressBar } from '../ui/ProgressBar';
 import { RosterSelectList } from '../ui/RosterSelectList';
+import { getCharacterCallbackLine } from '../../utils/rivalUtils';
 
 interface FundMoviePanelProps {
   hustle: Hustle;
@@ -279,6 +280,11 @@ export const FundMoviePanel: React.FC<FundMoviePanelProps> = ({ hustle }) => {
                           <h5 className="text-white font-black text-sm group-hover:text-purple-400 transition-colors">
                             {celeb.name}
                           </h5>
+                          {celeb.characterId && getCharacterCallbackLine(pl, celeb.characterId) && (
+                            <p className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">
+                              💡 {getCharacterCallbackLine(pl, celeb.characterId)}
+                            </p>
+                          )}
                           <p className={`text-[9px] uppercase font-bold tracking-wider ${perkColor}`}>
                             {perkText}
                           </p>

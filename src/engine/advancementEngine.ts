@@ -1362,6 +1362,73 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     return { ...artist, contractMonthsLeft: updatedClock };
   });
 
+  // 1. Founders Backed (Venture Capital Portfolio) Proactive Events
+  if (!draftPl.foundersBacked) draftPl.foundersBacked = [];
+  draftPl.foundersBacked = draftPl.foundersBacked.map((founder: any) => {
+    // 5% chance of pivot/crisis (burn rate spike)
+    if (Math.random() < 0.05) {
+      const updatedStats = {
+        ...founder.stats,
+        burnDiscipline: Math.max(10, (founder.stats?.burnDiscipline || 50) - 10)
+      };
+      newsFeed.unshift(`🚨 PORTFOLIO CRISIS: ${founder.companyName} managed by ${founder.name} hit a critical burn rate spike! Burn discipline degraded.`);
+      return { ...founder, stats: updatedStats };
+    }
+    // 5% chance of a competitor poaching threat
+    if (Math.random() < 0.05) {
+      newsFeed.unshift(`🦹 POACHING THREAT: Rival venture funds are attempting to poach ${founder.name} from ${founder.companyName}!`);
+    }
+    return founder;
+  });
+
+  // 2. Regional Executives (Global Conglomerate Division CEOs) Proactive Events
+  if (!draftPl.conglomerateCEOs) draftPl.conglomerateCEOs = {};
+  if (!draftPl.conglomerateCandidates) draftPl.conglomerateCandidates = [];
+
+  const updatedCEOs: Record<string, any> = {};
+  Object.entries(draftPl.conglomerateCEOs).forEach(([divisionId, exec]: [string, any]) => {
+    let updatedExec = { ...exec };
+    // 5% chance of headhunting threat
+    if (Math.random() < 0.05) {
+      updatedExec.loyalty = Math.max(10, (updatedExec.loyalty || 50) - 15);
+      newsFeed.unshift(`🦹 HEADHUNTING THREAT: A competitor is trying to poach division CEO ${exec.name}! Loyalty decreased.`);
+    }
+    // riskTolerance scaled scandal check (up to 10% chance)
+    else if (Math.random() < (exec.riskTolerance / 100) * 0.10) {
+      draftPl.heat = Math.min(100, (draftPl.heat || 0) + 15);
+      newsFeed.unshift(`🚨 EXECUTIVE SCANDAL: Division CEO ${exec.name}'s risky decisions triggered a public backlash! +15 Heat.`);
+    }
+    updatedCEOs[divisionId] = updatedExec;
+  });
+  draftPl.conglomerateCEOs = updatedCEOs;
+
+  // Candidate pool headhunting threats (5% chance per candidate)
+  draftPl.conglomerateCandidates = draftPl.conglomerateCandidates.map((exec: any) => {
+    if (Math.random() < 0.05) {
+      newsFeed.unshift(`🦹 HEADHUNTING THREAT: Competitors are whispering in candidate ${exec.name}'s ear!`);
+    }
+    return exec;
+  });
+
+  // 3. Rolodex Celebrities Proactive Events
+  if (!draftPl.rolodex) draftPl.rolodex = [];
+  draftPl.rolodex = draftPl.rolodex.map((celebrity: any) => {
+    // 8% chance of tabloid event (positive or negative)
+    if (Math.random() < 0.08) {
+      const isPositive = Math.random() < 0.5;
+      if (isPositive) {
+        const relationshipScore = Math.min(100, (celebrity.relationshipScore || 50) + 10);
+        newsFeed.unshift(`📸 TABLOID BUZZ: A glowing press article praised your close friendship with ${celebrity.name}! Relationship increased.`);
+        return { ...celebrity, relationshipScore };
+      } else {
+        const relationshipScore = Math.max(10, (celebrity.relationshipScore || 50) - 10);
+        newsFeed.unshift(`📸 TABLOID SCANDAL: Rumors of a dramatic fallout with ${celebrity.name} hit the front pages! Relationship decreased.`);
+        return { ...celebrity, relationshipScore };
+      }
+    }
+    return celebrity;
+  });
+
   // Real-estate maintenance costs stay active regardless of incarceration status
   negativeDrains += draftPl.currentRentObligations || 0;
 

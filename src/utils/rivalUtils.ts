@@ -72,3 +72,43 @@ export const isRivalEligibleForRecruit = (rival: Rival): boolean => {
   const help = rival.helpedCount ?? 0;
   return rel >= 40 || sab >= 3 || help >= 3;
 };
+
+/**
+ * Resolves a brief callback line referencing prior history of a character.
+ */
+export function getCharacterCallbackLine(player: any, characterId: string | undefined): string | null {
+  if (!characterId) return null;
+
+  // 1. crushedRivals
+  if (player.crushedRivals?.includes(characterId)) {
+    return `History: You crushed them as a rival, but they respect/fear your authority now.`;
+  }
+
+  // 2. completedNarrativeEvents
+  if (player.completedNarrativeEvents?.some((e: string) => e.includes(characterId))) {
+    return `History: You met during a prior key turning point in your journey.`;
+  }
+
+  // 3. rel_ flag
+  const relFlag = player.narrativeFlags?.[`rel_${characterId}`];
+  if (relFlag) {
+    const relVal = Number(relFlag);
+    if (relVal > 60) {
+      return `History: They remember your past generosity and support.`;
+    } else if (relVal < 40) {
+      return `History: Past tensions still linger under the surface.`;
+    }
+  }
+
+  // 4. persistent NPCs
+  const matchingNpc = player.npcs?.find((n: any) => n.id === characterId);
+  if (matchingNpc) {
+    if (matchingNpc.disposition > 60) {
+      return `History: A close contact who remembers your loyalty.`;
+    } else if (matchingNpc.disposition < 40) {
+      return `History: Tense past history. Watch your back.`;
+    }
+  }
+
+  return null;
+}

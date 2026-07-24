@@ -1318,8 +1318,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const companyName = `${companyPrefix}${companySuffix}`;
       const id = `founder_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
+      const lowerFounderName = founderName.toLowerCase();
+      const matchingChar = CHARACTERS.find(c =>
+        lowerFounderName.includes(c.name.split(' ')[0].toLowerCase()) ||
+        (c.nickname && lowerFounderName.includes(c.nickname.toLowerCase()))
+      );
+
       const newFounder: Founder = {
         id,
+        characterId: matchingChar?.id,
         name: founderName,
         avatar,
         companyName,
@@ -2777,6 +2784,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (isStartupOrLower) {
       const newFounder: Founder = {
         id: `founder_${rival.id}`,
+        characterId: rival.characterId,
         name,
         avatar: "💼",
         avatarId,
@@ -2793,6 +2801,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     } else {
       const newExec: RegionalExecutive = {
         id: `exec_${rival.id}`,
+        characterId: rival.characterId,
         name,
         avatar: "👔",
         avatarId,

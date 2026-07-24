@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ConcentrationMatch } from './ConcentrationMatch';
+import { CHARACTERS } from '../../config/characters';
 
 interface TalentAgencyGameProps {
   onComplete: (result: { success: boolean; multiplier: number; celebrity?: any }) => void;
@@ -66,8 +67,15 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
         Math.min(100, Math.floor(50 + timeLeft * 1.5 - mismatches * 4))
       );
 
+      const lowerName = randomCreator.name.toLowerCase();
+      const matchingChar = CHARACTERS.find(c =>
+        lowerName.includes(c.name.split(' ')[0].toLowerCase()) ||
+        (c.nickname && lowerName.includes(c.nickname.toLowerCase()))
+      );
+
       celebrityToSign = {
         id: `cel_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        characterId: matchingChar?.id,
         name: randomCreator.name,
         avatar: randomCreator.avatar,
         relationshipScore: calculatedScore,
