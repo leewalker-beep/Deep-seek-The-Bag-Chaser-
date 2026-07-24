@@ -15,6 +15,7 @@ interface BoardroomBattleProps {
   icon?: string;
   scoreLabel?: string;
   accentColor?: string;
+  selectedCharacter?: { name: string; avatar: string } | null;
 }
 
 export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
@@ -28,7 +29,8 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   instruction = "NEGOTIATION POWER",
   icon = "💼",
   scoreLabel = "BID",
-  accentColor = "blue"
+  accentColor = "blue",
+  selectedCharacter
 }) => {
   const [timeLeft, setTimeLeft] = useState(12);
   const [currentPlayerBid, setCurrentPlayerBid] = useState(initialPlayerBid);
@@ -172,6 +174,13 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
             {timeLeft}s
           </div>
         </div>
+
+        {selectedCharacter && (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-full text-[10px] font-bold text-blue-400 justify-center mb-6" data-testid="boardroom-battle-character">
+            <span className="text-sm" data-testid="boardroom-battle-character-avatar">{selectedCharacter.avatar}</span>
+            <span>Dealing with: <strong className="text-white" data-testid="boardroom-battle-character-name">{selectedCharacter.name}</strong></span>
+          </div>
+        )}
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-10 gap-6">
           <div className={`text-center transition-all duration-300 ${feedback === 'bid' ? 'scale-110' : ''}`}>

@@ -7,12 +7,13 @@ import { getCharacterCallbackLine } from '../../../utils/rivalUtils';
 
 interface VCPanelProps {
   hustle: Hustle;
-  onExecute: () => void;
+  onExecute: (selectedFounder?: any) => void;
 }
 
 export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
   const { pl, setVCChoices, updatePl, addTickerMessage } = useGameStore();
   const [selectedFounderId, setSelectedFounderId] = useState<string | null>(null);
+  const [isFunding, setIsFunding] = useState(false);
 
   const stage = pl.vcStage;
   const sector = pl.vcSector;
@@ -49,28 +50,33 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
       return;
     }
 
-    const updatedFounders = portfolio.map(f => {
-      if (f.id === founder.id) {
-        return {
-          ...f,
-          followOnCount: currentFollowOnCount + 1,
-          stats: {
-            execution: Math.min(100, currentExecution + 10),
-            vision: Math.min(100, currentVision + 10),
-            burnDiscipline: Math.min(100, currentBurn + 10),
-          }
-        };
-      }
-      return f;
-    });
+    setIsFunding(true);
 
-    updatePl({
-      bag: pl.bag - fee,
-      foundersBacked: updatedFounders
-    });
+    setTimeout(() => {
+      const updatedFounders = portfolio.map(f => {
+        if (f.id === founder.id) {
+          return {
+            ...f,
+            followOnCount: currentFollowOnCount + 1,
+            stats: {
+              execution: Math.min(100, currentExecution + 10),
+              vision: Math.min(100, currentVision + 10),
+              burnDiscipline: Math.min(100, currentBurn + 10),
+            }
+          };
+        }
+        return f;
+      });
 
-    const roundName = currentFollowOnCount === 0 ? 'Series A' : currentFollowOnCount === 1 ? 'Series B' : 'Series C';
-    addTickerMessage?.(`🚀 FOLLOW-ON: Injected $5M ${roundName} funding into ${founder.companyName}! Stats boosted!`, 'text-emerald-400 font-bold');
+      updatePl({
+        bag: pl.bag - fee,
+        foundersBacked: updatedFounders
+      });
+
+      const roundName = currentFollowOnCount === 0 ? 'Series A' : currentFollowOnCount === 1 ? 'Series B' : 'Series C';
+      addTickerMessage?.(`🚀 FOLLOW-ON: Injected $5M ${roundName} funding into ${founder.companyName}! Stats boosted!`, 'text-emerald-400 font-bold');
+      setIsFunding(false);
+    }, 1200);
   };
 
   return (
@@ -161,7 +167,7 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
       </div>
 
       <button
-        onClick={onExecute}
+        onClick={() => onExecute(selectedFounder)}
         disabled={pl.bag < investment * 1000000}
         className={`w-full py-4 font-black uppercase rounded-xl transition-all active:scale-95 italic ${
           pl.bag < investment * 1000000 ? 'bg-slate-800 text-slate-600 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
@@ -174,9 +180,12 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
       {selectedFounder && (
         <div className="bg-slate-950 p-4 rounded-xl border border-blue-500/50 space-y-3 font-mono">
           <div className="flex justify-between items-start">
-            <div>
-              <h4 className="text-sm font-black text-white uppercase">{selectedFounder.name}</h4>
-              <p className="text-[10px] text-blue-400 font-bold uppercase">{selectedFounder.companyName}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl" data-testid="selected-founder-avatar">{selectedFounder.avatar || '💼'}</span>
+              <div>
+                <h4 className="text-sm font-black text-white uppercase" data-testid="selected-founder-name">{selectedFounder.name}</h4>
+                <p className="text-[10px] text-blue-400 font-bold uppercase">{selectedFounder.companyName}</p>
+              </div>
             </div>
             <button
               onClick={() => setSelectedFounderId(null)}
@@ -214,19 +223,28 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
               <span className="text-red-400 font-black text-sm">{selectedFounder.stats.burnDiscipline}/100</span>
             </div>
           </div>
-          <button
-            onClick={() => handleFollowOn(selectedFounder)}
-            disabled={pl.bag < 5000000 || (selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3) || (selectedFounder.stats.execution >= 100 && selectedFounder.stats.vision >= 100 && selectedFounder.stats.burnDiscipline >= 100)}
-            className={`w-full py-2.5 text-[10px] font-black uppercase rounded-lg transition-all active:scale-95 italic ${
-              pl.bag < 5000000 || (selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3) || (selectedFounder.stats.execution >= 100 && selectedFounder.stats.vision >= 100 && selectedFounder.stats.burnDiscipline >= 100)
-                ? 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
-                : 'bg-blue-600 hover:bg-blue-500 text-white border border-blue-500'
-            }`}
-          >
-            {selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3
-              ? 'MAX FUNDING REACHED'
-              : `Inject Series ${selectedFounder.followOnCount === 1 ? 'B' : selectedFounder.followOnCount === 2 ? 'C' : 'A'} Capital ($5,000,000)`}
-          </button>
+
+          {isFunding ? (
+            <div className="flex flex-col items-center gap-2 py-4 animate-pulse bg-slate-900/50 rounded-lg border border-slate-800" data-testid="vc-funding-progress">
+              <div className="text-5xl animate-bounce">{selectedFounder.avatar || '💼'}</div>
+              <p className="text-xs font-black text-blue-400">DISPATCHING CAPITAL TO {selectedFounder.name.toUpperCase()}...</p>
+              <span className="text-[10px] text-slate-500 font-mono">WIRING $5,000,000 FUNDS 💸</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleFollowOn(selectedFounder)}
+              disabled={pl.bag < 5000000 || (selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3) || (selectedFounder.stats.execution >= 100 && selectedFounder.stats.vision >= 100 && selectedFounder.stats.burnDiscipline >= 100)}
+              className={`w-full py-2.5 text-[10px] font-black uppercase rounded-lg transition-all active:scale-95 italic ${
+                pl.bag < 5000000 || (selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3) || (selectedFounder.stats.execution >= 100 && selectedFounder.stats.vision >= 100 && selectedFounder.stats.burnDiscipline >= 100)
+                  ? 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
+                  : 'bg-blue-600 hover:bg-blue-500 text-white border border-blue-500'
+              }`}
+            >
+              {selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3
+                ? 'MAX FUNDING REACHED'
+                : `Inject Series ${selectedFounder.followOnCount === 1 ? 'B' : selectedFounder.followOnCount === 2 ? 'C' : 'A'} Capital ($5,000,000)`}
+            </button>
+          )}
         </div>
       )}
 

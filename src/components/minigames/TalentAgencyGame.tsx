@@ -110,6 +110,7 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
               initial={{ scale: 0.5, rotateY: 180 }}
               animate={{ scale: 1, rotateY: 0 }}
               className="text-6xl animate-bounce"
+              data-testid="signed-talent-avatar"
             >
               ✨{talent?.avatar || '👑'}✨
             </motion.div>
@@ -117,7 +118,7 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
               AUDITIONS COMPLETE!
             </div>
             <div className="text-purple-400 font-bold text-xs uppercase tracking-wider">
-              Signed: <span className="text-white font-black">{talent?.name}</span>
+              Signed: <span className="text-white font-black" data-testid="signed-talent-name">{talent?.name}</span>
             </div>
             <div className="text-slate-400 font-mono text-[10px] uppercase">
               Starting Rel: <span className="text-emerald-400 font-black">{talent?.relationshipScore}/100</span>

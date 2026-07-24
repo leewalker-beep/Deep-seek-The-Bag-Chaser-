@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-export const ConcertJam: React.FC<{ level: number; onComplete: (win: boolean) => void }> = ({ level, onComplete }) => {
+export const ConcertJam: React.FC<{
+  level: number;
+  onComplete: (win: boolean) => void;
+  performingArtists?: Array<{ name: string; avatar?: string }>;
+}> = ({ level, onComplete, performingArtists }) => {
   const [score, setScore] = useState(0);
   const [targetPos, setTargetPos] = useState(50);
   const [playerPos, setPlayerPos] = useState(50);
@@ -41,6 +45,18 @@ export const ConcertJam: React.FC<{ level: number; onComplete: (win: boolean) =>
         <span>HYPING: {score}/15 PTS</span>
         <span className="text-red-400 font-bold">{timeLeft.toFixed(1)}s</span>
       </div>
+
+      {performingArtists && performingArtists.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 justify-center py-1.5 px-2 bg-zinc-900/50 rounded-lg border border-zinc-800/50 w-full" data-testid="concert-jam-artists">
+          {performingArtists.map((artist, idx) => (
+            <span key={idx} className="text-[10px] font-bold text-purple-400 bg-purple-950/40 px-2.5 py-0.5 rounded-full border border-purple-500/20 flex items-center gap-1" data-testid={`artist-${artist.name}`}>
+              <span>{artist.avatar || '🎤'}</span>
+              <span>{artist.name}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       <p className="text-[11px] font-medium text-slate-200">Align with the beat tracker: Move slider and TAP!</p>
 
       <div className="w-full bg-zinc-900 h-8 rounded-lg relative overflow-hidden border border-zinc-800">
