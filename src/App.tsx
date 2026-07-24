@@ -1865,7 +1865,6 @@ function App() {
                       onOutbid={(amount) => {
                         addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
                       }}
-                      selectedCharacter={selectedCharacterForMinigame}
                     />
                   );
                 }
@@ -1883,6 +1882,7 @@ function App() {
                       onOutbid={(amount) => {
                         addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
                       }}
+                      selectedCharacter={selectedCharacterForMinigame}
                     />
                   );
                 }
@@ -2061,7 +2061,7 @@ function App() {
                 const customPanelTypes = ['CAPTCHA_GAME', 'CLICKBAIT_GAME', 'SIGN_SPINNER_GAME', 'REVIEW_FARM_GAME', 'CONCERT_JAM_GAME', 'TALENT_AGENT_GAME'];
                 if (customPanelTypes.includes(hustle.panelType || '')) {
                   const hustleLevel = pl.hustleLevels[hustle.id] || 1;
-                  return renderHustlePanel(hustle.panelType!, hustleLevel, (win) => {
+                  return renderHustlePanel(hustle.panelType!, hustleLevel, null, pl, (win: any) => {
                     const isWinObject = typeof win === 'object';
                     const multiplier = isWinObject ? win.multiplier : (win ? 1.5 : 0.5);
                     const result = executeHustle(hustle.id, multiplier);
