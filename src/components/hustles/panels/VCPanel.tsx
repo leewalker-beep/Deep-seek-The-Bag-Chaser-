@@ -3,6 +3,7 @@ import { useGameStore } from '../../../store/gameStore';
 import type { Hustle } from '../../../config/hustles/base';
 import { RosterSelectList } from '../../ui/RosterSelectList';
 import type { Founder } from '../../../types/game';
+import { getCharacterCallbackLine } from '../../../utils/rivalUtils';
 
 interface VCPanelProps {
   hustle: Hustle;
@@ -185,6 +186,11 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
             </button>
           </div>
           <p className="text-[10px] text-slate-400 italic">"{selectedFounder.pitchIdea}"</p>
+          {selectedFounder.characterId && getCharacterCallbackLine(pl, selectedFounder.characterId) && (
+            <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mt-1">
+              💡 {getCharacterCallbackLine(pl, selectedFounder.characterId)}
+            </p>
+          )}
           <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold uppercase">
             <span>Funding Round:</span>
             <span className={selectedFounder.followOnCount !== undefined && selectedFounder.followOnCount >= 3 ? 'text-red-400 font-black' : 'text-blue-400 font-black'}>
@@ -249,10 +255,12 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
                                 founder.followOnCount === 2 ? 'Series B' :
                                 founder.followOnCount !== undefined && founder.followOnCount >= 3 ? 'Series C' :
                                 'Seed';
+              const historyLine = founder.characterId ? getCharacterCallbackLine(pl, founder.characterId) : null;
+              const subtitleText = `${founder.companyName} (${stageText}) — "${founder.pitchIdea.substring(0, 30)}..."` + (historyLine ? ` [💡 ${historyLine}]` : '');
               return {
                 name: founder.name,
                 avatar: founder.avatar,
-                subtitle: `${founder.companyName} (${stageText}) — "${founder.pitchIdea.substring(0, 30)}..."`,
+                subtitle: subtitleText,
                 statLine: (
                   <div className="text-[10px] space-y-1 text-right font-mono">
                     <div className="flex gap-2 justify-end text-slate-400">

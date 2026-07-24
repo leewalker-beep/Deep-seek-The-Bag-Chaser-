@@ -2,6 +2,7 @@ export type Tier = 'MUD' | 'STREET' | 'STARTUP' | 'CORPORATE' | 'ELITE' | 'MOGUL
 
 export interface RosterCharacter {
   id: string;
+  characterId?: string;
   name: string;
   avatar?: string;
   avatarId?: string;
