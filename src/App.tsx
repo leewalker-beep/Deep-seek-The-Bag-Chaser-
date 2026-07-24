@@ -1290,7 +1290,7 @@ function App() {
       {activeMinigame && (
         <div className="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md">
-            {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, activeMinigame, pl, (win) => {
+            {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, activeMinigame, pl, (win: any) => {
               const resultScore = typeof win === 'number' ? win : (win ? 15 : 5);
               useGameStore.setState((state: any) => {
                 const performingIds = activeMinigame.performingArtistIds || [];
