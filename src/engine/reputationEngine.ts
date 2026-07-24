@@ -551,6 +551,12 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
   const recruitedRivalsCount = (pl.rivals || []).filter(r => r.status === 'ally').length;
   scores["The Reformer"] += recruitedRivalsCount * 20;
 
+  // Apply loyalty/removal penalties to "The Reformer" score
+  const loyaltyPenalty = Number(pl.narrativeFlags?.reputationLoyaltyPenalty || 0);
+  if (loyaltyPenalty > 0) {
+    scores["The Reformer"] = Math.max(0, scores["The Reformer"] - loyaltyPenalty);
+  }
+
   return scores;
 }
 

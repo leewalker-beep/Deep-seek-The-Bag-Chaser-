@@ -35,6 +35,8 @@ export interface PlayerStatsSlice {
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
   signScoutedArtist: (artistId: string) => void;
   dropArtist: (artistId: string) => void;
+  collapseFounderCompany: (founderId: string) => void;
+  lapseRolodexRelationship: (celebrityId: string) => void;
   unlockLegacyUpgrade: (upgradeId: string) => void;
   updatePl: (updates: Partial<PlayerStats>) => void;
   acceptAmbition: (id: string) => void;
@@ -173,11 +175,29 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
 
       let updatedBiography = [...(state.pl.biography || [])];
       let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+
+      let loyaltyPenaltyIncrement = 0;
+      if (previousCEO) {
+        const dismissBio = Bio.recordCEODismissal(state.pl, previousCEO.name, divisionId);
+        if (dismissBio) {
+          updatedBiography.push(dismissBio.entry);
+          updatedRecordedBioKeys.push(dismissBio.key!);
+        }
+        if (previousCEO.competence >= 70 || previousCEO.loyalty >= 70) {
+          loyaltyPenaltyIncrement = 15;
+        }
+      }
+
       const bioUpdate = Bio.recordCEOAppointment(state.pl, member.name, divisionId);
       if (bioUpdate) {
         updatedBiography.push(bioUpdate.entry);
         updatedRecordedBioKeys.push(bioUpdate.key!);
       }
+
+      const updatedNarrativeFlags = {
+        ...(state.pl.narrativeFlags || {}),
+        reputationLoyaltyPenalty: (Number(state.pl.narrativeFlags?.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement
+      };
 
       return {
         pl: enforceStatCaps({
@@ -186,7 +206,8 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
           conglomerateCandidates: updatedCandidates,
           dynamicPassives,
           biography: updatedBiography,
-          recordedBioKeys: updatedRecordedBioKeys
+          recordedBioKeys: updatedRecordedBioKeys,
+          narrativeFlags: updatedNarrativeFlags
         })
       };
     });
@@ -206,6 +227,24 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
       const updatedCandidates = [...currentCandidatePool, returnedCEO];
 
       delete ceos[divisionId];
+
+      let updatedBiography = [...(state.pl.biography || [])];
+      let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+      const dismissBio = Bio.recordCEODismissal(state.pl, previousCEO.name, divisionId);
+      if (dismissBio) {
+        updatedBiography.push(dismissBio.entry);
+        updatedRecordedBioKeys.push(dismissBio.key!);
+      }
+
+      let loyaltyPenaltyIncrement = 0;
+      if (previousCEO.competence >= 70 || previousCEO.loyalty >= 70) {
+        loyaltyPenaltyIncrement = 15;
+      }
+
+      const updatedNarrativeFlags = {
+        ...(state.pl.narrativeFlags || {}),
+        reputationLoyaltyPenalty: (Number(state.pl.narrativeFlags?.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement
+      };
 
       // Re-calculate new conglomerate passive yield
       const currentLevel = state.pl.hustleLevels['h_global_conglomerate'] || 1;
@@ -238,7 +277,10 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
           ...state.pl,
           conglomerateCEOs: ceos,
           conglomerateCandidates: updatedCandidates,
-          dynamicPassives
+          dynamicPassives,
+          biography: updatedBiography,
+          recordedBioKeys: updatedRecordedBioKeys,
+          narrativeFlags: updatedNarrativeFlags
         })
       };
     });
@@ -425,12 +467,110 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     const artist = state.pl.artists.find(a => a.id === artistId);
     if (!artist) return;
 
+    let updatedBiography = [...(state.pl.biography || [])];
+    let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+    const bioUpdate = Bio.recordArtistDropped(state.pl, artist.name);
+    if (bioUpdate) {
+      updatedBiography.push(bioUpdate.entry);
+      updatedRecordedBioKeys.push(bioUpdate.key!);
+    }
+
+    let loyaltyPenaltyIncrement = 0;
+    const isLongTenured = (artist.contractMonthsLeft !== undefined) && (artist.contractMonthsLeft <= 108);
+    const isHighPerforming = (artist.royaltyRate !== undefined && artist.royaltyRate >= 40) || artist.isGrammyWinner;
+    if (isLongTenured || isHighPerforming) {
+      loyaltyPenaltyIncrement = 15;
+    }
+
+    const updatedNarrativeFlags = {
+      ...(state.pl.narrativeFlags || {}),
+      reputationLoyaltyPenalty: (Number(state.pl.narrativeFlags?.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement
+    };
+
     set({
       pl: enforceStatCaps({
         ...state.pl,
         artists: state.pl.artists.filter(a => a.id !== artistId),
+        biography: updatedBiography,
+        recordedBioKeys: updatedRecordedBioKeys,
+        narrativeFlags: updatedNarrativeFlags
       }),
       news: [`📉 Dropped artist: ${artist.name}`, ...state.news.slice(0, 49)]
+    });
+  },
+
+  collapseFounderCompany: (founderId) => {
+    const state = get();
+    const founder = state.pl.foundersBacked?.find(f => f.id === founderId);
+    if (!founder) return;
+
+    let updatedBiography = [...(state.pl.biography || [])];
+    let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+    const bioUpdate = Bio.recordFounderCollapse(state.pl, founder.name, founder.companyName);
+    if (bioUpdate) {
+      updatedBiography.push(bioUpdate.entry);
+      updatedRecordedBioKeys.push(bioUpdate.key!);
+    }
+
+    let loyaltyPenaltyIncrement = 0;
+    const isHighPerforming = (founder.stats?.burnDiscipline !== undefined && founder.stats.burnDiscipline >= 70) ||
+      (founder.stats?.execution !== undefined && founder.stats.execution >= 70) ||
+      (founder.stats?.vision !== undefined && founder.stats.vision >= 70);
+
+    if (isHighPerforming) {
+      loyaltyPenaltyIncrement = 15;
+    }
+
+    const updatedNarrativeFlags = {
+      ...(state.pl.narrativeFlags || {}),
+      reputationLoyaltyPenalty: (Number(state.pl.narrativeFlags?.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement
+    };
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        foundersBacked: (state.pl.foundersBacked || []).filter(f => f.id !== founderId),
+        biography: updatedBiography,
+        recordedBioKeys: updatedRecordedBioKeys,
+        narrativeFlags: updatedNarrativeFlags
+      }),
+      news: [`🚨 COLLAPSE: ${founder.companyName} went bankrupt under ${founder.name}!`, ...state.news.slice(0, 49)]
+    });
+  },
+
+  lapseRolodexRelationship: (celebrityId) => {
+    const state = get();
+    const celebrity = state.pl.rolodex?.find(c => c.id === celebrityId);
+    if (!celebrity) return;
+
+    let updatedBiography = [...(state.pl.biography || [])];
+    let updatedRecordedBioKeys = [...(state.pl.recordedBioKeys || [])];
+    const bioUpdate = Bio.recordRolodexLapse(state.pl, celebrity.name);
+    if (bioUpdate) {
+      updatedBiography.push(bioUpdate.entry);
+      updatedRecordedBioKeys.push(bioUpdate.key!);
+    }
+
+    let loyaltyPenaltyIncrement = 0;
+    const isHighPerforming = (celebrity.relationshipScore !== undefined && celebrity.relationshipScore >= 75);
+    if (isHighPerforming) {
+      loyaltyPenaltyIncrement = 15;
+    }
+
+    const updatedNarrativeFlags = {
+      ...(state.pl.narrativeFlags || {}),
+      reputationLoyaltyPenalty: (Number(state.pl.narrativeFlags?.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement
+    };
+
+    set({
+      pl: enforceStatCaps({
+        ...state.pl,
+        rolodex: (state.pl.rolodex || []).filter(c => c.id !== celebrityId),
+        biography: updatedBiography,
+        recordedBioKeys: updatedRecordedBioKeys,
+        narrativeFlags: updatedNarrativeFlags
+      }),
+      news: [`❄️ COLD: Your relationship with ${celebrity.name} has ended.`, ...state.news.slice(0, 49)]
     });
   },
 

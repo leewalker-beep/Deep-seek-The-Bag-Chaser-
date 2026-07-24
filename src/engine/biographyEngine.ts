@@ -241,6 +241,89 @@ export const recordCabinetAppointment = (pl: PlayerStats, name: string, role: st
   );
 };
 
+export const recordArtistDropped = (pl: PlayerStats, name: string): BiographyUpdate | null => {
+  const pName = getPlayerName(pl);
+  const templates = [
+    `Terminated the record contract with ${name}, dropping them from the label's active roster. As the industry's focus shifted, ${pName} made the cold, calculated decision to sever ties, letting go of past alignments to clear the deck for more lucrative future assets.`,
+    `Severed ties with artist ${name}, ending their label representation. In a swift, business-first move, ${pName} pruned the talent lineup, demonstrating that in the high-stakes music business, sentimentality always takes a backseat to performance and synergy.`,
+    `Formally released ${name} from the record label contract. Seeking to optimize active roster efficiency, ${pName} executed the contract termination, showing a ruthless commitment to maintaining only top-tier performers who align with the brand's masterclass standards.`
+  ];
+  const entry = templates[Math.floor(Math.random() * templates.length)];
+  return recordEvent(
+    pl,
+    entry,
+    `drop_artist_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Artist Dropped',
+    [name]
+  );
+};
+
+export const recordCEODismissal = (pl: PlayerStats, name: string, division: string): BiographyUpdate | null => {
+  const pName = getPlayerName(pl);
+  const divisionNames: Record<string, string> = {
+    'na_tech': 'North America Technology',
+    'eu_mfg': 'Europe Manufacturing',
+    'apac_retail': 'Asia-Pacific Retail',
+    'latam_log': 'Latin America Logistics'
+  };
+  const divisionName = divisionNames[division] || division;
+  const templates = [
+    `Relieved ${name} of their duties as Regional CEO of the ${divisionName} division. To maintain absolute operational discipline, ${pName} executed the high-profile boardroom shakeup, reinforcing that poor performance or division alignment is met with swift, cold dismissal.`,
+    `Terminated the executive appointment of ${name} from the ${divisionName} division. Grounded in the ruthless realities of global commerce, ${pName} made the necessary leadership replacement to restore maximum profitability and operational focus.`,
+    `Boardroom changes saw the sudden removal of Regional CEO ${name} from leading the ${divisionName} division. ${pName} prioritized structural efficiency and conglomerate output, demonstrating that no executive, regardless of status, is immune to performance-driven shakeups.`
+  ];
+  const entry = templates[Math.floor(Math.random() * templates.length)];
+  return recordEvent(
+    pl,
+    entry,
+    `dismiss_ceo_${name.replace(/\s+/g, '_').toLowerCase()}_${division}`,
+    'BUSINESS',
+    3,
+    'Regional CEO Dismissed',
+    [name]
+  );
+};
+
+export const recordFounderCollapse = (pl: PlayerStats, name: string, companyName: string): BiographyUpdate | null => {
+  const pName = getPlayerName(pl);
+  const templates = [
+    `Faced a major portfolio setback when ${companyName}, managed by founder ${name}, collapsed. Despite initial high hopes and early capital backing, high burn rates or operational failures overwhelmed the startup, leaving ${pName} to write off the venture as a costly lesson in the volatile world of venture capital.`,
+    `Witnessed the collapse of backed venture ${companyName} under founder ${name}. The high-stakes tech startup was unable to sustain its growth, resulting in a liquidation that tested ${pName}'s portfolio resilience and underscored the harsh realities of seed-stage investing.`,
+    `The venture-backed startup ${companyName}, led by founder ${name}, officially shut down operations. Serving as a stark reminder of venture capital risk, the failure of ${companyName} forced ${pName} to re-evaluate active investments and prioritize sustainable execution over speculative hype.`
+  ];
+  const entry = templates[Math.floor(Math.random() * templates.length)];
+  return recordEvent(
+    pl,
+    entry,
+    `collapse_founder_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'BUSINESS',
+    3,
+    'Backed Venture Collapsed',
+    [name]
+  );
+};
+
+export const recordRolodexLapse = (pl: PlayerStats, name: string): BiographyUpdate | null => {
+  const pName = getPlayerName(pl);
+  const templates = [
+    `The once-lucrative connection with high-profile celebrity ${name} officially lapsed, going completely cold. Over time, as interests diverged and contact faded, the relationship dissolved, showing how quickly status alignments can slip away in the fickle arenas of high-society clout.`,
+    `Lost connection with celebrity contact ${name} as their relationship went cold. What once began as a prominent high-profile alliance was allowed to drift into obscurity, a reminder from the streets that even elite social alignments require constant, systematic cultivation.`,
+    `The strategic alignment with ${name} ended as professional and personal ties grew cold. Pruning the rolodex of inactive or distant partners, ${pName} moved forward, leaving the past alliance behind as a relic of a previous chapter.`
+  ];
+  const entry = templates[Math.floor(Math.random() * templates.length)];
+  return recordEvent(
+    pl,
+    entry,
+    `lapse_rolodex_${name.replace(/\s+/g, '_').toLowerCase()}`,
+    'CAREER',
+    3,
+    'Celebrity Connection Lapsed',
+    [name]
+  );
+};
+
 export const recordCelebrityMarriage = (pl: PlayerStats, name: string, relationship: number): BiographyUpdate | null => {
   const pName = getPlayerName(pl);
   const chemDesc = relationship >= 85
