@@ -162,4 +162,68 @@ describe('Behavioral Blueprint - Personality Analyzer Tests', () => {
       expect(result.primaryColor).toBe('VIOLET');
     });
   });
+
+  describe('Loyalty Axis (Roster Retention & Churn)', () => {
+    it('accurately computes High Retention / High Loyalty', () => {
+      const pl: PlayerStats = {
+        ...getInitialStats(3),
+        rolodex: [
+          { id: '1', name: 'Celeb 1', avatar: '', relationshipScore: 90, isUnlocked: true },
+          { id: '2', name: 'Celeb 2', avatar: '', relationshipScore: 80, isUnlocked: true }
+        ],
+        artists: [
+          { id: 'a1', name: 'Artist 1', avatar: '', tier: 'local', royaltyRate: 1000, monthsActive: 24, hasReleased: true, contractMonthsLeft: 12, monthlyRetainer: 100, monthlyRevenue: 1000, hypeFactor: 1.0, isTargetedByRival: false }
+        ],
+        actionLog: [
+          { id: '1', timestamp: 10000, month: 1, tier: 'MUD', hustleId: 'r_sleep', hustleName: 'Rest', level: 1, branchId: 'l1', branchName: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, netCash: 0, success: true },
+          { id: '2', timestamp: 15500, month: 1, tier: 'MUD', hustleId: 'r_sleep', hustleName: 'Rest', level: 1, branchId: 'l1', branchName: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, netCash: 0, success: true }
+        ] // 5.5s pace (normally Fast, but high loyalty skew should add +1.5s -> 7.0s Deliberate)
+      };
+
+      const result = analyzeBehavior(pl);
+      expect(result.loyaltyLabel).toBe('Loyal/Retentive');
+      expect(result.loyaltyScore).toBeGreaterThanOrEqual(70);
+      expect(result.paceLabel).toBe('Deliberate'); // Skewed!
+      expect(result.primaryColor).toBe('GOLD'); // Normally would be VIOLET
+    });
+
+    it('accurately computes High Churn / Low Loyalty', () => {
+      const pl: PlayerStats = {
+        ...getInitialStats(3),
+        rolodex: [
+          { id: '1', name: 'Celeb 1', avatar: '', relationshipScore: 20, isUnlocked: true }
+        ],
+        artists: [
+          { id: 'a1', name: 'Artist 1', avatar: '', tier: 'local', royaltyRate: 1000, monthsActive: 1, hasReleased: false, contractMonthsLeft: 12, monthlyRetainer: 100, monthlyRevenue: 1000, hypeFactor: 1.0, isTargetedByRival: false }
+        ],
+        actionLog: [
+          { id: '1', timestamp: 10000, month: 1, tier: 'MUD', hustleId: 'r_sleep', hustleName: 'Rest', level: 1, branchId: 'l1', branchName: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, netCash: 0, success: true },
+          { id: '2', timestamp: 16500, month: 1, tier: 'MUD', hustleId: 'r_sleep', hustleName: 'Rest', level: 1, branchId: 'l1', branchName: 'Rest', cost: 0, yieldCash: 0, yieldClout: 0, yieldAura: 0, netCash: 0, success: true }
+        ] // 6.5s pace (normally Deliberate, but high churn skew should subtract -1.5s -> 5.0s Fast)
+      };
+
+      const result = analyzeBehavior(pl);
+      expect(result.loyaltyLabel).toBe('High Churn');
+      expect(result.loyaltyScore).toBeLessThanOrEqual(40);
+      expect(result.paceLabel).toBe('Fast'); // Skewed!
+      expect(result.primaryColor).toBe('VIOLET'); // Normally would be GOLD
+    });
+
+    it('accurately computes Mixed / Balanced Loyalty', () => {
+      const pl: PlayerStats = {
+        ...getInitialStats(3),
+        rolodex: [
+          { id: '1', name: 'Celeb 1', avatar: '', relationshipScore: 50, isUnlocked: true }
+        ],
+        artists: [
+          { id: 'a1', name: 'Artist 1', avatar: '', tier: 'local', royaltyRate: 1000, monthsActive: 4, hasReleased: false, contractMonthsLeft: 12, monthlyRetainer: 100, monthlyRevenue: 1000, hypeFactor: 1.0, isTargetedByRival: false }
+        ]
+      };
+
+      const result = analyzeBehavior(pl);
+      expect(result.loyaltyLabel).toBe('Balanced');
+      expect(result.loyaltyScore).toBeGreaterThan(40);
+      expect(result.loyaltyScore).toBeLessThan(70);
+    });
+  });
 });
