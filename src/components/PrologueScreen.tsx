@@ -242,7 +242,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       };
     } else if (selectedCatId === 'benefactor') {
       return {
-        text: `A benefactor's child. You were born with a golden spoon, ${name}, but now you want to build a kingdom of your own design. You've got the capital and the early Aura to command boardrooms. ${focusTip} But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.`,
+        text: `A benefactor's child. You were born with a golden spoon, ${name}, but now you want to build a kingdom of your own design. You've got the capital and the latent corporate Aura to command boardrooms once you scale. ${focusTip} But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.`,
         highlight: "Sovereign Boardrooms and Capital, but Vulnerable to Early Stress."
       };
     } else {
