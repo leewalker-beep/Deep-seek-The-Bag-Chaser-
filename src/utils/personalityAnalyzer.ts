@@ -18,6 +18,8 @@ export interface BehavioralProfile {
   colorDescription: string;
   dominantPersona: string;
   synthesisLines: string[];
+  loyaltyScore: number;
+  loyaltyLabel: 'Loyal/Retentive' | 'High Churn' | 'Balanced';
 }
 
 export function calculateAveragePace(actionLog: GameAction[]): number {
@@ -47,7 +49,119 @@ export function analyzeBehavior(pl: PlayerStats): BehavioralProfile {
   // 1. Compute Pace
   const actionLog = pl.actionLog || [];
   const paceSeconds = calculateAveragePace(actionLog);
-  const paceLabel = paceSeconds <= 6.0 ? 'Fast' : 'Deliberate';
+
+  // 1.5 Loyalty and retention calculation
+  const artists = pl.artists || [];
+  const rolodex = pl.rolodex || [];
+  const foundersBacked = pl.foundersBacked || [];
+  const conglomerateCEOs = pl.conglomerateCEOs ? Object.values(pl.conglomerateCEOs) : [];
+  const cabinet = pl.cabinet ? Object.values(pl.cabinet) : [];
+
+  const artistsCount = artists.length;
+  const rolodexCount = rolodex.length;
+  const foundersCount = foundersBacked.length;
+  const conglomerateCEOsCount = conglomerateCEOs.length;
+  const cabinetCount = cabinet.length;
+
+  const totalRosterCount = artistsCount + rolodexCount + foundersCount + conglomerateCEOsCount + cabinetCount;
+
+  // Average relationship / loyalty
+  let relationshipSum = 0;
+  let relationshipCount = 0;
+
+  rolodex.forEach(c => {
+    if (c.relationshipScore !== undefined) {
+      relationshipSum += c.relationshipScore;
+      relationshipCount++;
+    }
+  });
+
+  conglomerateCEOs.forEach(c => {
+    if (c.loyalty !== undefined) {
+      relationshipSum += c.loyalty;
+      relationshipCount++;
+    }
+  });
+
+  cabinet.forEach(c => {
+    if (c.loyalty !== undefined) {
+      relationshipSum += c.loyalty;
+      relationshipCount++;
+    }
+  });
+
+  const averageRelationship = relationshipCount > 0 ? (relationshipSum / relationshipCount) : 50;
+
+  // Average tenure / months active
+  let tenureSum = 0;
+  let tenureCount = 0;
+
+  artists.forEach(a => {
+    if (a.monthsActive !== undefined) {
+      tenureSum += a.monthsActive;
+      tenureCount++;
+    }
+  });
+
+  cabinet.forEach(c => {
+    const t = c.loyaltyMonths ?? c.monthsAtHighLoyalty;
+    if (t !== undefined) {
+      tenureSum += t;
+      tenureCount++;
+    }
+  });
+
+  // Support founders backed / regional executives tenure if they happen to have monthsActive/monthsBacked
+  foundersBacked.forEach((f: any) => {
+    if (f.monthsActive !== undefined) {
+      tenureSum += f.monthsActive;
+      tenureCount++;
+    } else if (f.monthsBacked !== undefined) {
+      tenureSum += f.monthsBacked;
+      tenureCount++;
+    }
+  });
+
+  conglomerateCEOs.forEach((c: any) => {
+    if (c.monthsActive !== undefined) {
+      tenureSum += c.monthsActive;
+      tenureCount++;
+    }
+  });
+
+  const averageTenure = tenureCount > 0 ? (tenureSum / tenureCount) : 0;
+
+  // Calculate combined loyalty score (0-100)
+  let loyaltyScore = 50;
+  if (totalRosterCount > 0) {
+    const relationshipContribution = (averageRelationship / 100) * 50; // max 50
+    const tenureContribution = Math.min(50, (averageTenure / 12) * 50); // max 50, reaches 50 at 12 months average tenure
+    loyaltyScore = Math.round(relationshipContribution + tenureContribution);
+  }
+  loyaltyScore = Math.max(0, Math.min(100, loyaltyScore));
+
+  let loyaltyLabel: 'Loyal/Retentive' | 'High Churn' | 'Balanced' = 'Balanced';
+  if (totalRosterCount > 0) {
+    if (loyaltyScore >= 70) {
+      loyaltyLabel = 'Loyal/Retentive';
+    } else if (loyaltyScore <= 40) {
+      loyaltyLabel = 'High Churn';
+    }
+  }
+
+  // Loyalty-based pace modifier to skew high-loyalty toward GOLD/COBALT (Deliberate)
+  // and high-churn toward CRIMSON/VIOLET (Fast)
+  let loyaltyPaceModifier = 0;
+  if (totalRosterCount > 0) {
+    if (loyaltyScore >= 70) {
+      loyaltyPaceModifier = 1.5;
+    } else if (loyaltyScore <= 40) {
+      loyaltyPaceModifier = -1.5;
+    }
+  }
+
+  const adjustedPaceSeconds = paceSeconds + loyaltyPaceModifier;
+  const paceLabel = adjustedPaceSeconds <= 6.0 ? 'Fast' : 'Deliberate';
 
   // 2. Compute Advice Compliance
   const adviceGiven = pl.adviceGivenCount || 0;
@@ -210,6 +324,27 @@ export function analyzeBehavior(pl: PlayerStats): BehavioralProfile {
     );
   }
 
+  // TENSION 10: High Loyalty / Retention
+  if (totalRosterCount >= 2 && loyaltyScore >= 70) {
+    synthesisLines.push(
+      "You treat your inner circle like family, Chaser. Looking at your roster, you've stood by your artists, founders, and executives through thick and thin, letting them build real tenure and high loyalty. In a city where everyone is a transaction, that level of trust is rare—and it's a foundation that no competitor can easily shake."
+    );
+  }
+
+  // TENSION 11: High Churn / Low Loyalty
+  if (totalRosterCount >= 2 && loyaltyScore <= 40) {
+    synthesisLines.push(
+      "You treat people like replaceable cogs in a machine. You churn through artists, executives, and cabinet members the second they lose their luster or their loyalty wavers. It's a cold, transaction-first strategy that keeps your overhead flexible, but don't expect anyone to catch a bullet for you when the high-heat crackdowns come."
+    );
+  }
+
+  // TENSION 12: Mixed / Transactional Loyalty
+  if (totalRosterCount >= 2 && loyaltyScore > 40 && loyaltyScore < 70) {
+    synthesisLines.push(
+      "Your approach to relationships is highly pragmatic. You keep some core allies close for long periods, while ruthlessly replacing others to keep your operations agile. It's a selective loyalty that keeps your roster performant, though some partners are undoubtedly watching their backs."
+    );
+  }
+
   // TENSION 9: Neutral / Balance fallback
   if (synthesisLines.length === 0) {
     if (orientationScore >= 0) {
@@ -239,6 +374,8 @@ export function analyzeBehavior(pl: PlayerStats): BehavioralProfile {
     colorHex,
     colorDescription,
     dominantPersona: currentRep,
-    synthesisLines
+    synthesisLines,
+    loyaltyScore,
+    loyaltyLabel
   };
 }
