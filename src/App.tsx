@@ -137,7 +137,13 @@ import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier, AppTab } from './types/game';
 
-const renderHustlePanel = (panelType: string, currentLevel: number, handleGameFinished: (result: any) => void) => {
+const renderHustlePanel = (
+  panelType: string,
+  currentLevel: number,
+  activeMinigame: any,
+  pl: any,
+  handleGameFinished: (result: any) => void
+) => {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center p-6 bg-zinc-950 rounded-xl border border-zinc-900 font-mono text-[10px] text-zinc-500">
@@ -162,8 +168,18 @@ const renderHustlePanel = (panelType: string, currentLevel: number, handleGameFi
           case 'REVIEW_FARM_GAME':
             return <ReviewFarm level={currentLevel} onComplete={handleGameFinished} />;
 
-          case 'CONCERT_JAM_GAME':
-            return <ConcertJam level={currentLevel} onComplete={handleGameFinished} />;
+          case 'CONCERT_JAM_GAME': {
+            const performingArtists = pl?.artists?.filter((a: any) =>
+              activeMinigame?.performingArtistIds?.includes(a.id)
+            ) || [];
+            return (
+              <ConcertJam
+                level={currentLevel}
+                onComplete={handleGameFinished}
+                performingArtists={performingArtists}
+              />
+            );
+          }
 
           default:
             return (
@@ -705,6 +721,7 @@ function App() {
   const forceUpdate = useReducer(() => ({}), {})[1];
   const [isLedgerPinned, setIsLedgerPinned] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<'clout' | 'mental' | 'aura' | 'heat' | null>(null);
+  const [selectedCharacterForMinigame, setSelectedCharacterForMinigame] = useState<{ name: string; avatar: string } | null>(null);
 
   useEffect(() => {
     // Automatically activate the Financial Obligations & Upkeeps system for live browser play
@@ -1273,7 +1290,7 @@ function App() {
       {activeMinigame && (
         <div className="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md">
-            {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, (win) => {
+            {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, activeMinigame, pl, (win) => {
               const resultScore = typeof win === 'number' ? win : (win ? 15 : 5);
               useGameStore.setState((state: any) => {
                 const performingIds = activeMinigame.performingArtistIds || [];
@@ -1848,6 +1865,7 @@ function App() {
                       onOutbid={(amount) => {
                         addTickerMessage(`Outbid by rival! They offered $${amount.toLocaleString()}`, 'text-red-400');
                       }}
+                      selectedCharacter={selectedCharacterForMinigame}
                     />
                   );
                 }
@@ -1993,7 +2011,13 @@ function App() {
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
                   return (
                     <Suspense fallback={<PremiumLoader message="Reviewing Pitches..." subtitle="Reading Founder Decks" />}>
-                      <VCPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />
+                      <VCPanel
+                        hustle={hustle}
+                        onExecute={(founder) => {
+                          setSelectedCharacterForMinigame(founder || null);
+                          setShowMinigame(true);
+                        }}
+                      />
                     </Suspense>
                   );
                 }

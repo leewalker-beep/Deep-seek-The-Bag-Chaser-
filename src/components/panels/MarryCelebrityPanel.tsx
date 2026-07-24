@@ -232,107 +232,107 @@ export const MarryCelebrityPanel: React.FC<MarryCelebrityPanelProps> = ({ hustle
 
       {panelState === 'planning' && selectedSpouse && (
         <div className="space-y-6 relative z-10">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                marryClickedRef.current = false;
-                setPanelState('selection');
-              }}
-              className="text-xs font-black text-slate-500 hover:text-white uppercase tracking-wider"
-            >
-              ← BACK
-            </button>
-            <div className="w-px h-4 bg-slate-800" />
-            <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider">
-              WEDDING PLANNING
-            </h4>
-          </div>
-
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center gap-4">
-            <div className="text-4xl">{selectedSpouse.avatar || '👑'}</div>
-            <div className="text-left space-y-1">
-              <span className="block text-[8px] text-purple-400 font-black uppercase tracking-widest">
-                PROSPECTIVE SPOUSE
-              </span>
-              <h5 className="text-white font-black text-lg">{selectedSpouse.name}</h5>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-slate-500 font-black uppercase">Affinity:</span>
-                <span className="text-emerald-400 font-mono text-xs font-black">{selectedSpouse.relationshipScore}/100</span>
+          {isWeddinProgress ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-12 bg-slate-950 rounded-xl border border-slate-800 animate-pulse" data-testid="wedding-progress">
+              <div className="text-7xl animate-bounce" data-testid="wedding-spouse-avatar">{selectedSpouse.avatar || '👑'}</div>
+              <div className="text-center space-y-1">
+                <p className="text-[10px] text-purple-400 font-black uppercase tracking-widest">PREPARING WEDDING CHAMBERS</p>
+                <h4 className="text-white font-black text-lg uppercase tracking-tight" data-testid="wedding-spouse-name">MARRYING {selectedSpouse.name.toUpperCase()}</h4>
+                <p className="text-[9px] text-slate-500 font-mono">CONSTRUCTING THE VENUE FOR {weddingTheme || customTheme || 'ROYAL PALACE'} 🔔</p>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block text-left">
-              SELECT THE WEDDING VENUE / THEME
-            </label>
-            <div className="grid gap-2">
-              {WEDDING_THEMES.map((theme) => (
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
                 <button
-                  key={theme}
                   onClick={() => {
-                    setWeddingTheme(theme);
-                    setCustomTheme('');
+                    marryClickedRef.current = false;
+                    setPanelState('selection');
                   }}
-                  className={`p-3 text-left rounded-xl text-xs font-black border-2 transition-all uppercase ${
-                    weddingTheme === theme && !customTheme
-                      ? 'bg-purple-950/80 border-purple-500 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                  }`}
+                  className="text-xs font-black text-slate-500 hover:text-white uppercase tracking-wider"
                 >
-                  {theme}
+                  ← BACK
                 </button>
-              ))}
-            </div>
+                <div className="w-px h-4 bg-slate-800" />
+                <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider">
+                  WEDDING PLANNING
+                </h4>
+              </div>
 
-            <div className="space-y-1 text-left">
-              <span className="text-[9px] text-slate-500 font-black uppercase">OR DEFINE A CUSTOM VENUE/THEME:</span>
-              <input
-                type="text"
-                placeholder="Enter custom theme/venue..."
-                value={customTheme}
-                onChange={(e) => {
-                  setCustomTheme(e.target.value);
-                  setWeddingTheme(e.target.value);
-                }}
-                className="w-full bg-slate-950 text-white font-bold text-xs uppercase p-3 rounded-xl border-2 border-slate-800 focus:border-purple-500 focus:outline-none"
-              />
-            </div>
-          </div>
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center gap-4">
+                <div className="text-4xl">{selectedSpouse.avatar || '👑'}</div>
+                <div className="text-left space-y-1">
+                  <span className="block text-[8px] text-purple-400 font-black uppercase tracking-widest">
+                    PROSPECTIVE SPOUSE
+                  </span>
+                  <h5 className="text-white font-black text-lg">{selectedSpouse.name}</h5>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-slate-500 font-black uppercase">Affinity:</span>
+                    <span className="text-emerald-400 font-mono text-xs font-black">{selectedSpouse.relationshipScore}/100</span>
+                  </div>
+                </div>
+              </div>
 
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-500 uppercase">Wedding Expenses</span>
-              <span className="text-red-400">${totalCost.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-500 uppercase">Estimated Yield Multiplier</span>
-              <span className="text-emerald-400">
-                {(0.8 + (selectedSpouse.relationshipScore / 100) * 1.2).toFixed(2)}x
-              </span>
-            </div>
-          </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block text-left">
+                  SELECT THE WEDDING VENUE / THEME
+                </label>
+                <div className="grid gap-2">
+                  {WEDDING_THEMES.map((theme) => (
+                    <button
+                      key={theme}
+                      onClick={() => {
+                        setWeddingTheme(theme);
+                        setCustomTheme('');
+                      }}
+                      className={`p-3 text-left rounded-xl text-xs font-black border-2 transition-all uppercase ${
+                        weddingTheme === theme && !customTheme
+                          ? 'bg-purple-950/80 border-purple-500 text-white'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
+                    >
+                      {theme}
+                    </button>
+                  ))}
+                </div>
 
-          <button
-            onClick={handleMarry}
-            disabled={isWeddinProgress}
-            className={`w-full py-4 text-white font-black uppercase rounded-xl transition-all border-b-4 text-sm tracking-widest flex items-center justify-center gap-3 ${
-              isWeddinProgress
-                ? 'bg-purple-800 border-purple-950 opacity-80 cursor-wait'
-                : 'bg-purple-600 hover:bg-purple-500 border-purple-800 active:border-b-0 active:translate-y-1 shadow-[0_0_25px_rgba(147,51,234,0.4)]'
-            }`}
-          >
-            {isWeddinProgress ? (
-              <>
-                <span className="animate-spin text-lg">⏳</span>
-                <span>CONSTRUCTING THE VENUE...</span>
-              </>
-            ) : (
-              <>
+                <div className="space-y-1 text-left">
+                  <span className="text-[9px] text-slate-500 font-black uppercase">OR DEFINE A CUSTOM VENUE/THEME:</span>
+                  <input
+                    type="text"
+                    placeholder="Enter custom theme/venue..."
+                    value={customTheme}
+                    onChange={(e) => {
+                      setCustomTheme(e.target.value);
+                      setWeddingTheme(e.target.value);
+                    }}
+                    className="w-full bg-slate-950 text-white font-bold text-xs uppercase p-3 rounded-xl border-2 border-slate-800 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-500 uppercase">Wedding Expenses</span>
+                  <span className="text-red-400">${totalCost.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-500 uppercase">Estimated Yield Multiplier</span>
+                  <span className="text-emerald-400">
+                    {(0.8 + (selectedSpouse.relationshipScore / 100) * 1.2).toFixed(2)}x
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleMarry}
+                disabled={isWeddinProgress}
+                className={`w-full py-4 text-white font-black uppercase rounded-xl transition-all border-b-4 text-sm tracking-widest flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-500 border-purple-800 active:border-b-0 active:translate-y-1 shadow-[0_0_25px_rgba(147,51,234,0.4)]`}
+              >
                 <span>💍 HOST HIGH-SOCIETY WEDDING</span>
-              </>
-            )}
-          </button>
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -342,8 +342,12 @@ export const MarryCelebrityPanel: React.FC<MarryCelebrityPanelProps> = ({ hustle
             <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">
               NUPTIAL CELEBRATION
             </span>
-            <h4 className="text-white font-black text-xl uppercase tracking-tight italic">
-              "THE MARRIAGE OF JULES & {selectedSpouse.name.toUpperCase()}"
+            <h4 className="text-white font-black text-xl uppercase tracking-tight italic flex flex-wrap items-center justify-center gap-2" data-testid="wedding-outcome-title">
+              <span>THE MARRIAGE OF JULES &</span>
+              <span className="text-yellow-400 bg-yellow-950/40 border border-yellow-500/20 px-3 py-0.5 rounded-full flex items-center gap-1.5">
+                <span data-testid="wedding-outcome-spouse-avatar">{selectedSpouse.avatar || '👑'}</span>
+                <span data-testid="wedding-outcome-spouse-name">{selectedSpouse.name.toUpperCase()}</span>
+              </span>
             </h4>
             <div className="text-xs text-slate-400 uppercase font-black">
               VENUE: <span className="text-white">{weddingTheme || customTheme || 'ROYAL PALACE'}</span>

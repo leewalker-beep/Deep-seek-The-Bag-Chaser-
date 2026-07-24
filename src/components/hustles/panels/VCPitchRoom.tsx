@@ -12,6 +12,7 @@ interface VCPitchRoomProps {
   playerBid: number;
   rivalBid: number;
   onOutbid: (amount: number) => void;
+  selectedCharacter?: { name: string; avatar: string } | null;
 }
 
 export const VCPitchRoom: React.FC<VCPitchRoomProps> = ({
@@ -20,7 +21,8 @@ export const VCPitchRoom: React.FC<VCPitchRoomProps> = ({
   tier,
   playerBid,
   rivalBid,
-  onOutbid
+  onOutbid,
+  selectedCharacter
 }) => {
   return (
     <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest text-[10px] animate-pulse">Polishing the Deck...</div>}>
@@ -36,6 +38,7 @@ export const VCPitchRoom: React.FC<VCPitchRoomProps> = ({
         icon="💼"
         scoreLabel="DEAL VALUE"
         accentColor="emerald"
+        selectedCharacter={selectedCharacter}
       />
     </Suspense>
   );
