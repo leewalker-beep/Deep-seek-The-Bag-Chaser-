@@ -1042,7 +1042,8 @@ function App() {
     // Minimal guidance suppresses all contextual triggers
     if (guidance === 'Minimal') return;
 
-    const matchedTrigger = checkAdvisorTriggers(pl, currentMarket);
+    const hasMetThreshold = pl.month >= 3 || (pl.totalHustlesCompleted || 0) >= 5;
+    const matchedTrigger = hasMetThreshold ? checkAdvisorTriggers(pl, currentMarket) : null;
     if (matchedTrigger) {
       // Recommended guidance only allows critical or survival-level alerts
       if (guidance === 'Recommended') {
