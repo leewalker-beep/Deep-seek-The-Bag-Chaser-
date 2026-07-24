@@ -1364,22 +1364,59 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   // 1. Founders Backed (Venture Capital Portfolio) Proactive Events
   if (!draftPl.foundersBacked) draftPl.foundersBacked = [];
-  draftPl.foundersBacked = draftPl.foundersBacked.map((founder: any) => {
+  const keptFounders: any[] = [];
+  draftPl.foundersBacked.forEach((founder: any) => {
+    let currentFounder = { ...founder };
+    let collapsed = false;
+
     // 5% chance of pivot/crisis (burn rate spike)
     if (Math.random() < 0.05) {
       const updatedStats = {
-        ...founder.stats,
-        burnDiscipline: Math.max(10, (founder.stats?.burnDiscipline || 50) - 10)
+        ...currentFounder.stats,
+        burnDiscipline: Math.max(10, (currentFounder.stats?.burnDiscipline || 50) - 10)
       };
-      newsFeed.unshift(`🚨 PORTFOLIO CRISIS: ${founder.companyName} managed by ${founder.name} hit a critical burn rate spike! Burn discipline degraded.`);
-      return { ...founder, stats: updatedStats };
+      currentFounder.stats = updatedStats;
+      newsFeed.unshift(`🚨 PORTFOLIO CRISIS: ${currentFounder.companyName} managed by ${currentFounder.name} hit a critical burn rate spike! Burn discipline degraded.`);
+    } else if (Math.random() < 0.05) {
+      // 5% chance of a competitor poaching threat
+      newsFeed.unshift(`🦹 POACHING THREAT: Rival venture funds are attempting to poach ${currentFounder.name} from ${currentFounder.companyName}!`);
     }
-    // 5% chance of a competitor poaching threat
-    if (Math.random() < 0.05) {
-      newsFeed.unshift(`🦹 POACHING THREAT: Rival venture funds are attempting to poach ${founder.name} from ${founder.companyName}!`);
+
+    // Collapse check: If burnDiscipline has hit the absolute rock-bottom (10), there is a 20% chance of sudden collapse.
+    // Also, there is a tiny baseline chance (1%) of random company collapse for any startup.
+    if ((currentFounder.stats?.burnDiscipline <= 10 && Math.random() < 0.20) || (Math.random() < 0.01)) {
+      collapsed = true;
     }
-    return founder;
+
+    if (collapsed) {
+      // Log biography
+      const bioUpdate = Bio.recordFounderCollapse(draftPl, currentFounder.name, currentFounder.companyName);
+      if (bioUpdate) {
+        if (!draftPl.biography) draftPl.biography = [];
+        if (!draftPl.recordedBioKeys) draftPl.recordedBioKeys = [];
+        draftPl.biography.push(bioUpdate.entry);
+        draftPl.recordedBioKeys.push(bioUpdate.key!);
+      }
+
+      // Apply reputation penalty if high-performing
+      let loyaltyPenaltyIncrement = 0;
+      const isHighPerforming = (currentFounder.stats?.burnDiscipline !== undefined && currentFounder.stats.burnDiscipline >= 70) ||
+        (currentFounder.stats?.execution !== undefined && currentFounder.stats.execution >= 70) ||
+        (currentFounder.stats?.vision !== undefined && currentFounder.stats.vision >= 70);
+
+      if (isHighPerforming) {
+        loyaltyPenaltyIncrement = 15;
+      }
+
+      if (!draftPl.narrativeFlags) draftPl.narrativeFlags = {};
+      draftPl.narrativeFlags.reputationLoyaltyPenalty = (Number(draftPl.narrativeFlags.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement;
+
+      newsFeed.unshift(`🚨 COLLAPSE: ${currentFounder.companyName} went bankrupt under ${currentFounder.name}!`);
+    } else {
+      keptFounders.push(currentFounder);
+    }
   });
+  draftPl.foundersBacked = keptFounders;
 
   // 2. Regional Executives (Global Conglomerate Division CEOs) Proactive Events
   if (!draftPl.conglomerateCEOs) draftPl.conglomerateCEOs = {};
@@ -1412,22 +1449,57 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   // 3. Rolodex Celebrities Proactive Events
   if (!draftPl.rolodex) draftPl.rolodex = [];
-  draftPl.rolodex = draftPl.rolodex.map((celebrity: any) => {
+  const keptRolodex: any[] = [];
+  draftPl.rolodex.forEach((celebrity: any) => {
+    let currentCelebrity = { ...celebrity };
+    let lapsed = false;
+
     // 8% chance of tabloid event (positive or negative)
     if (Math.random() < 0.08) {
       const isPositive = Math.random() < 0.5;
       if (isPositive) {
-        const relationshipScore = Math.min(100, (celebrity.relationshipScore || 50) + 10);
-        newsFeed.unshift(`📸 TABLOID BUZZ: A glowing press article praised your close friendship with ${celebrity.name}! Relationship increased.`);
-        return { ...celebrity, relationshipScore };
+        const relationshipScore = Math.min(100, (currentCelebrity.relationshipScore || 50) + 10);
+        currentCelebrity.relationshipScore = relationshipScore;
+        newsFeed.unshift(`📸 TABLOID BUZZ: A glowing press article praised your close friendship with ${currentCelebrity.name}! Relationship increased.`);
       } else {
-        const relationshipScore = Math.max(10, (celebrity.relationshipScore || 50) - 10);
-        newsFeed.unshift(`📸 TABLOID SCANDAL: Rumors of a dramatic fallout with ${celebrity.name} hit the front pages! Relationship decreased.`);
-        return { ...celebrity, relationshipScore };
+        const relationshipScore = Math.max(10, (currentCelebrity.relationshipScore || 50) - 10);
+        currentCelebrity.relationshipScore = relationshipScore;
+        newsFeed.unshift(`📸 TABLOID SCANDAL: Rumors of a dramatic fallout with ${currentCelebrity.name} hit the front pages! Relationship decreased.`);
       }
     }
-    return celebrity;
+
+    // Relationship ending / lapse check: if score drops below 20, it lapses and goes cold.
+    // Also, 1% baseline monthly chance for any celebrity relationship to go cold/lapse.
+    if ((currentCelebrity.relationshipScore < 20) || (Math.random() < 0.01)) {
+      lapsed = true;
+    }
+
+    if (lapsed) {
+      // Log biography
+      const bioUpdate = Bio.recordRolodexLapse(draftPl, currentCelebrity.name);
+      if (bioUpdate) {
+        if (!draftPl.biography) draftPl.biography = [];
+        if (!draftPl.recordedBioKeys) draftPl.recordedBioKeys = [];
+        draftPl.biography.push(bioUpdate.entry);
+        draftPl.recordedBioKeys.push(bioUpdate.key!);
+      }
+
+      // Apply reputation penalty if high-performing
+      let loyaltyPenaltyIncrement = 0;
+      const isHighPerforming = (currentCelebrity.relationshipScore !== undefined && currentCelebrity.relationshipScore >= 75);
+      if (isHighPerforming) {
+        loyaltyPenaltyIncrement = 15;
+      }
+
+      if (!draftPl.narrativeFlags) draftPl.narrativeFlags = {};
+      draftPl.narrativeFlags.reputationLoyaltyPenalty = (Number(draftPl.narrativeFlags.reputationLoyaltyPenalty || 0)) + loyaltyPenaltyIncrement;
+
+      newsFeed.unshift(`❄️ COLD: Your relationship with ${currentCelebrity.name} has ended.`);
+    } else {
+      keptRolodex.push(currentCelebrity);
+    }
   });
+  draftPl.rolodex = keptRolodex;
 
   // Real-estate maintenance costs stay active regardless of incarceration status
   negativeDrains += draftPl.currentRentObligations || 0;

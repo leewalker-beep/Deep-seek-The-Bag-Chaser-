@@ -1112,6 +1112,8 @@ export interface GameState {
   scoutArtist: (tier: 'local' | 'regional' | 'global') => { success: boolean; artist?: RecordLabelArtist; message: string };
   signScoutedArtist: (artistId: string) => void;
   dropArtist: (artistId: string) => void;
+  collapseFounderCompany: (founderId: string) => void;
+  lapseRolodexRelationship: (celebrityId: string) => void;
   addTickerMessage: (text: string, colorClass?: string) => void;
   setFestivalChoices: (choices: PlayerStats['festivalChoices']) => void;
   setDataAnalyticsChoice: (choice: PlayerStats['dataAnalyticsChoice']) => void;
