@@ -84,7 +84,6 @@ const PodcastFlowState = lazy(() => import('./components/hustles/panels/PodcastF
 const VCPitchRoom = lazy(() => import('./components/hustles/panels/VCPitchRoom').then(m => ({ default: m.VCPitchRoom })));
 
 import { RivalLeaderboard } from './components/RivalLeaderboard';
-import { Scoreboard } from './components/Scoreboard';
 import { SpecializationModal } from './components/SpecializationModal';
 import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { LiveWorldEventModal } from './components/LiveWorldEventModal';
@@ -98,6 +97,11 @@ import { getOrAssignQuoteForPrompt } from './utils/mentorQuotes';
 const HallOfFame = lazy(() => import('./components/HallOfFame').then(m => ({ default: m.HallOfFame })));
 const LegacyShop = lazy(() => import('./components/LegacyShop').then(m => ({ default: m.LegacyShop })));
 const PresidentDashboard = lazy(() => import('./components/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
+const Scoreboard = lazy(() => import('./components/Scoreboard').then(m => ({ default: m.Scoreboard })));
+const EntertainmentDashboard = lazy(() => import('./components/dashboard/EntertainmentDashboard').then(m => ({ default: m.EntertainmentDashboard })));
+const VCPanel = lazy(() => import('./components/hustles/panels/VCPanel').then(m => ({ default: m.VCPanel })));
+const FundMoviePanel = lazy(() => import('./components/panels/FundMoviePanel').then(m => ({ default: m.FundMoviePanel })));
+const MarryCelebrityPanel = lazy(() => import('./components/panels/MarryCelebrityPanel').then(m => ({ default: m.MarryCelebrityPanel })));
 
 import { DailyChallenges } from './components/DailyChallenges';
 import { TutorialBox } from './components/TutorialBox';
@@ -110,17 +114,13 @@ import { RewardCard } from './components/effects/RewardCard';
 import { TierBadgeCelebration } from './components/effects/TierBadgeCelebration';
 import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
 import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
-import { EntertainmentDashboard } from './components/dashboard/EntertainmentDashboard';
 import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPanel';
 import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
 import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
 import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
 import { GlobalConglomeratePanel } from './components/hustles/panels/GlobalConglomeratePanel';
-import { VCPanel } from './components/hustles/panels/VCPanel';
 import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
 import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
-import { FundMoviePanel } from './components/panels/FundMoviePanel';
-import { MarryCelebrityPanel } from './components/panels/MarryCelebrityPanel';
 import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
 import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
 import { RestPanel } from './components/panels/RestPanel';
@@ -1968,7 +1968,11 @@ function App() {
                   );
                 }
                 if (hustle.panelType === 'FESTIVAL') {
-                  return <EntertainmentDashboard />;
+                  return (
+                    <Suspense fallback={<PremiumLoader message="Tuning Instruments..." subtitle="Setting up the Main Stage" />}>
+                      <EntertainmentDashboard />
+                    </Suspense>
+                  );
                 }
                 if (hustle.panelType === 'DATA_ANALYTICS') {
                   return <DataAnalyticsPanel hustle={hustle} />;
@@ -1986,16 +1990,28 @@ function App() {
                   return <GlobalConglomeratePanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
-                  return <VCPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />;
+                  return (
+                    <Suspense fallback={<PremiumLoader message="Reviewing Pitches..." subtitle="Reading Founder Decks" />}>
+                      <VCPanel hustle={hustle} onExecute={() => setShowMinigame(true)} />
+                    </Suspense>
+                  );
                 }
                 if (hustle.panelType === 'FILM_STUDIO') {
                   return <FilmStudioPanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'FUND_MOVIE') {
-                  return <FundMoviePanel hustle={hustle} />;
+                  return (
+                    <Suspense fallback={<PremiumLoader message="Casting Lead Actors..." subtitle="Reading Script Screenplays" />}>
+                      <FundMoviePanel hustle={hustle} />
+                    </Suspense>
+                  );
                 }
                 if (hustle.panelType === 'MARRY_CELEBRITY') {
-                  return <MarryCelebrityPanel hustle={hustle} />;
+                  return (
+                    <Suspense fallback={<PremiumLoader message="Sending Invitations..." subtitle="Renting a Hollywood Mansion" />}>
+                      <MarryCelebrityPanel hustle={hustle} />
+                    </Suspense>
+                  );
                 }
                 if (hustle.panelType === 'SPACE_INVESTMENT') {
                   return <SpaceInvestmentPanel hustle={hustle} />;
@@ -2195,7 +2211,11 @@ function App() {
         />
       )}
 
-      {showScoreboard && <Scoreboard onClose={() => setShowScoreboard(false)} />}
+      {showScoreboard && (
+        <Suspense fallback={<PremiumLoader message="Compiling Biography..." subtitle="Gathering Milestones" />}>
+          <Scoreboard onClose={() => setShowScoreboard(false)} />
+        </Suspense>
+      )}
       {showAdvisor && (
         <StrategicAdvisorModal
           onClose={() => setShowAdvisor(false)}
