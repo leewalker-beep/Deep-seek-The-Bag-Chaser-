@@ -205,7 +205,7 @@ export function generateDynamicChapterIntro(pl: PlayerStats, tier: string): stri
   // 5. Emotional Callbacks (Rare and meaningful)
   const callbacks: string[] = [];
 
-  const isLowIncomeOrigin = pl.categoryId === 'street_kid' || pl.categoryId === 'immigrant' || pl.categoryId === 'debt_bound';
+  const isLowIncomeOrigin = pl.categoryId === 'street_kid';
   if (isLowIncomeOrigin && (tier === 'STREET' || tier === 'STARTUP' || tier === 'CORPORATE')) {
     callbacks.push("I remember when your biggest concern was paying next week's rent.");
   }

@@ -172,11 +172,13 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
     if (startingFocusId === 'clout') focusDesc = 'relentless public influence';
     if (startingFocusId === 'aura') focusDesc = 'magnetic personal charisma';
 
+    const totalStartingCash = activeVariation.starterBag + 1000 + (startingFocusId === 'capital' ? 250 : 0);
+
     if (selectedCatId === 'street_kid') {
       return [
         { text: `In the concrete grid of the city, a new name emerges: ${name}.`, glow: 'shadow-emerald-500/25' },
         { text: `You grew up in the shadow of high rises, with survival etched in your bones.`, glow: 'shadow-rose-500/25' },
-        { text: `You choose the ${activeVariation.name} path, launching with only $${activeVariation.starterBag}.`, glow: 'shadow-yellow-500/25' },
+        { text: `You choose the ${activeVariation.name} path, launching with only $${totalStartingCash.toLocaleString()}.`, glow: 'shadow-yellow-500/25' },
         { text: `With your starting conditions tuned for ${focusDesc}.`, glow: 'shadow-blue-500/25' },
         { text: `No trust funds. No safety nets. Just raw determination and the mud beneath your feet.`, glow: 'shadow-red-500/25' },
         { text: `They think they can sweep you under the rug. They are wrong.`, glow: 'shadow-pink-500/25' },
@@ -186,7 +188,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       return [
         { text: `They told you to stay in school. They told you to follow the rules, ${name}.`, glow: 'shadow-blue-500/25' },
         { text: `But you dropped out. You chose the real world over their outdated lectures.`, glow: 'shadow-teal-500/25' },
-        { text: `Armed with a ${activeVariation.name} vehicle and a $${activeVariation.starterBag} war chest.`, glow: 'shadow-purple-500/25' },
+        { text: `Armed with a ${activeVariation.name} vehicle and a $${totalStartingCash.toLocaleString()} war chest.`, glow: 'shadow-purple-500/25' },
         { text: `Harnessing your potential for ${focusDesc} to dominate the airwaves.`, glow: 'shadow-emerald-500/25' },
         { text: `You have everything to prove, and the target on your back is burning.`, glow: 'shadow-rose-500/25' },
         { text: `Let them doubt you. Let them talk. Your clout will buy their corporations.`, glow: 'shadow-pink-500/25' },
@@ -196,7 +198,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       return [
         { text: `Wealth. Authority. The crushing weight of your ancestral family lineage, ${name}.`, glow: 'shadow-yellow-500/25' },
         { text: `The world knows your bloodline. But they do not know what you are capable of.`, glow: 'shadow-cyan-500/25' },
-        { text: `Stepping out as a ${activeVariation.name} with an elite $${activeVariation.starterBag} headstart.`, glow: 'shadow-emerald-500/25' },
+        { text: `Stepping out as a ${activeVariation.name} with an elite $${totalStartingCash.toLocaleString()} headstart.`, glow: 'shadow-emerald-500/25' },
         { text: `Fueled by a starting strategy of ${focusDesc}.`, glow: 'shadow-blue-500/25' },
         { text: `Some call it easy. But they do not understand the pressure of an empire.`, glow: 'shadow-rose-500/25' },
         { text: `You will not merely inherit history. You will define it.`, glow: 'shadow-purple-500/25' },
@@ -207,7 +209,7 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       return [
         { text: `The prophecy fulfills itself, ${name}. A legacy reborn across lifetimes.`, glow: 'shadow-yellow-500/30' },
         { text: `You step back into the arena of destiny with the crown of the Chosen.`, glow: 'shadow-purple-500/30' },
-        { text: `Starting with a legendary $${activeVariation.starterBag} and unmatched cosmic backing.`, glow: 'shadow-emerald-500/30' },
+        { text: `Starting with a legendary $${totalStartingCash.toLocaleString()} and unmatched cosmic backing.`, glow: 'shadow-emerald-500/30' },
         { text: `Executing with the absolute power of ${focusDesc}.`, glow: 'shadow-blue-500/30' },
         { text: `The rivals are already plotting your demise, terrified of your return.`, glow: 'shadow-red-500/30' },
         { text: `But they forget: this game is yours. This city is yours.`, glow: 'shadow-pink-500/30' },
@@ -242,12 +244,12 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
       };
     } else if (selectedCatId === 'benefactor') {
       return {
-        text: `A benefactor's child. You were born with a golden spoon, ${name}, but now you want to build a kingdom of your own design. You've got the capital and the early Aura to command boardrooms. ${focusTip} But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.`,
+        text: `A benefactor's child. You were born with a golden spoon, ${name}, but now you want to build a kingdom of your own design. You've got the capital, though you'll need to build up your Aura to eventually command corporate boardrooms. ${focusTip} But the streets are cold, and you lack the raw survival instincts. Do not underestimate the stress of the early grind. Leverage your wealth, buy passive assets, and let's dominate the political landscape.`,
         highlight: "Sovereign Boardrooms and Capital, but Vulnerable to Early Stress."
       };
     } else {
       return {
-        text: `The Chosen One has arrived. A destiny foretold, carrying the weight of ancient legacy. Welcome back, ${name}. Your starting advantages are unmatched. ${focusTip} But you have a massive target on your back. The rivals are ready. Step forward and claim your throne.`,
+        text: `The Chosen One has arrived. A destiny foretold, carrying the weight of ancient legacy. Welcome back, ${name}. Your starting advantages are unmatched. ${focusTip} My, what a target on your back. The rivals are ready. Step forward and claim your throne.`,
         highlight: "Overwhelming Advantages, but Relentless Rival Bids."
       };
     }
