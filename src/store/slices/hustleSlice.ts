@@ -46,6 +46,7 @@ import { GAME_CONSTANTS } from '../../config/gameConstants';
 import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 import * as Bio from '../../engine/biographyEngine';
 import { BACKGROUNDS } from '../../config/backgrounds';
+import { recordCharacterChoice } from '../../utils/characterFormation';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 
 
@@ -1516,6 +1517,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const netChange = result.yieldCash - result.cost;
       if (hustleId === 'philanthropy_empire') {
         reactedPl = processWorldReaction(reactedPl, 'PHILANTHROPY', { cost: result.cost }).updatedPl;
+        const charFormation = recordCharacterChoice(reactedPl, 'repeatable', 'philanthropy_empire');
+        reactedPl = charFormation.updatedPl;
+        if (charFormation.news && charFormation.news.length > 0) {
+          result.tickerMessages = [
+            ...(result.tickerMessages || []),
+            ...charFormation.news.map(text => ({ text, colorClass: 'text-yellow-400 font-bold' }))
+          ];
+        }
         reactedPl.narrativeFlags = {
           ...reactedPl.narrativeFlags,
           just_donated_charity: true
@@ -2942,13 +2951,22 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!nextPl.completedNarrativeEvents) nextPl.completedNarrativeEvents = [];
     nextPl.completedNarrativeEvents = [...nextPl.completedNarrativeEvents, eventId];
 
-    const { updatedPl: reactedPlDecision } = processWorldReaction(nextPl, 'NARRATIVE_DECISION', {
+    // Character Formation tracking
+    const charFormation = recordCharacterChoice(nextPl, eventId, choiceId);
+    const finalDecisionPl = charFormation.updatedPl;
+    const milestoneNews = charFormation.news;
+
+    const { updatedPl: reactedPlDecision } = processWorldReaction(finalDecisionPl, 'NARRATIVE_DECISION', {
       choiceText: choice.label
     });
 
     set({
       pl: enforceStatCaps(reactedPlDecision),
-      news: [{ text: choice.logMessage || `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' }, ...state.news.slice(0, 49)]
+      news: [
+        ...milestoneNews.map(text => ({ text, colorClass: 'text-yellow-400 font-bold' })),
+        { text: choice.logMessage || `🎭 DECISION: ${choice.label}`, colorClass: 'text-blue-400 font-bold' },
+        ...state.news.slice(0, 49)
+      ].slice(0, 50)
     });
 
     get().logEvent('REFLECTION', { eventId, choiceId, choiceLabel: choice.label });
