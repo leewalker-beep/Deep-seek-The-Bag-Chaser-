@@ -557,6 +557,28 @@ export function calculateReputationScores(pl: PlayerStats): Record<string, numbe
     scores["The Reformer"] = Math.max(0, scores["The Reformer"] - loyaltyPenalty);
   }
 
+  // --- CHARACTER FORMATION LONG-TERM BEHAVIOR COUNTS ---
+  const charityChoices = Number(pl.narrativeFlags?.charity_choices_count || 0);
+  const unethicalChoices = Number(pl.narrativeFlags?.unethical_choices_count || 0);
+  const educationChoices = Number(pl.narrativeFlags?.education_choices_count || 0);
+  const employeeSupportChoices = Number(pl.narrativeFlags?.employee_support_choices_count || 0);
+  const employeeExploitChoices = Number(pl.narrativeFlags?.employee_exploit_choices_count || 0);
+
+  scores["The Philanthropist"] += charityChoices * 30;
+  scores["The People's Champion"] += charityChoices * 20;
+
+  scores["The Crime Boss"] += unethicalChoices * 30;
+  scores["The Controversial Tycoon"] += unethicalChoices * 20;
+
+  scores["The Reformer"] += educationChoices * 30;
+  scores["The Mogul"] += educationChoices * 20;
+
+  scores["The People's Champion"] += employeeSupportChoices * 30;
+  scores["The Reformer"] += employeeSupportChoices * 20;
+
+  scores["The Controversial Tycoon"] += employeeExploitChoices * 30;
+  scores["The Crime Boss"] += employeeExploitChoices * 20;
+
   return scores;
 }
 

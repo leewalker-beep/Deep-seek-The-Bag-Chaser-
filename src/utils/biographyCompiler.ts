@@ -190,13 +190,33 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
     }
   }
 
+  // 4. Character Formation dynamic behavior passage
+  const charityChoices = Number(pl.narrativeFlags?.charity_choices_count || 0);
+  const unethicalChoices = Number(pl.narrativeFlags?.unethical_choices_count || 0);
+  const educationChoices = Number(pl.narrativeFlags?.education_choices_count || 0);
+  const employeeSupportChoices = Number(pl.narrativeFlags?.employee_support_choices_count || 0);
+  const employeeExploitChoices = Number(pl.narrativeFlags?.employee_exploit_choices_count || 0);
+
+  let formationPassage = "";
+  if (charityChoices >= 3) {
+    formationPassage = ` Their ascent was marked by a deep, unwavering commitment to philanthropy and communal welfare, consistently choosing compassion and public support over raw corporate greed.`;
+  } else if (unethicalChoices >= 3) {
+    formationPassage = ` Throughout their rise, they frequently operated in legal grey areas and made calculated, high-risk compromises, building an empire that prioritized margins over traditional ethics.`;
+  } else if (educationChoices >= 3) {
+    formationPassage = ` Their strategic climb was characterized by immense patience and a commitment to structured, academic pedigree, choosing education and expertise as the ultimate form of leverage.`;
+  } else if (employeeSupportChoices >= 3) {
+    formationPassage = ` As a leader, they demonstrated exceptional care for their workforce, consistently supporting, rewarding, and hiring staff to forge an organization built on fierce, mutual loyalty.`;
+  } else if (employeeExploitChoices >= 3) {
+    formationPassage = ` In the pursuit of pure velocity, they treated efficiency as a cold science, aggressively optimizing operational margins and pushing their workforce to the limit.`;
+  }
+
   // Determine chapter lock statuses
   const chapters: CompiledChapter[] = [
     {
       id: "beginnings",
       title: "Humble Beginnings",
       icon: "🌱",
-      intro: `Every monument starts in the dirt. Long before the headlines and the sovereign bank vaults, ${name} was merely another face in the crowd, navigating life in the ${pl.prePresidencyTier || pl.currentTier} tier as a ${backgroundVariationName}. This was a chapter written in the quiet vocabulary of raw survival, where ${name}'s ${playstyleAdjective} nature was first tested and forged against the cold indifference of ${originCategoryName}.`,
+      intro: `Every monument starts in the dirt. Long before the headlines and the sovereign bank vaults, ${name} was merely another face in the crowd, navigating life in the ${pl.prePresidencyTier || pl.currentTier} tier as a ${backgroundVariationName}. This was a chapter written in the quiet vocabulary of raw survival, where ${name}'s ${playstyleAdjective} nature was first tested and forged against the cold indifference of ${originCategoryName}.${formationPassage}`,
       entries: humbleBeginningsEntries,
       transition: `With some cash saved and a deep, intuitive understanding of the street's levers, ${name} realized that raw physical labour as a ${backgroundVariationName} would never buy freedom. It was time to stop working for the system, and start making the system work for them.`,
       isUnlocked: true // Always unlocked
