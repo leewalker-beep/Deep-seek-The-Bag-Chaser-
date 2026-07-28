@@ -344,7 +344,7 @@ function triggerMilestone(pl: PlayerStats, category: BehaviorCategory): string |
   const feedItem: WorldFeedItem = {
     id: `newspaper_${category}_${Date.now()}`,
     category: 'NEWS',
-    text: `📰 NEWSPAPER REPORT (${newspaperSource}): "${newspaperBody}"`,
+    text: `📰 NEWSPAPER (${newspaperSource}): ${newspaperTitle} — "${newspaperBody}"`,
     source: newspaperSource,
     timestamp: Date.now(),
     month: pl.month
