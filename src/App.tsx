@@ -724,22 +724,6 @@ function App() {
   const [selectedCharacterForMinigame, setSelectedCharacterForMinigame] = useState<{ name: string; avatar: string } | null>(null);
 
   useEffect(() => {
-    // Automatically activate the Financial Obligations & Upkeeps system for live browser play
-    const pl = useGameStore.getState().pl;
-    if (pl && pl.narrativeFlags && !pl.narrativeFlags.upkeep_active) {
-      useGameStore.setState({
-        pl: {
-          ...pl,
-          narrativeFlags: {
-            ...pl.narrativeFlags,
-            upkeep_active: true
-          }
-        }
-      });
-    }
-  }, []);
-
-  useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.stat-tooltip-container')) {
