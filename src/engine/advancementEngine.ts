@@ -25,6 +25,7 @@ import { evaluateReputationTick, applyReputationLossScale } from './reputationEn
 import { checkAndTriggerComebacks } from './comebackEngine';
 import { getLegacyBonus } from './mathEngine';
 import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from '../utils/financialObligationsUtils';
+import { compileIdentityProfile } from '../utils/identitySystem';
 const rentByTier: Record<Tier, number> = {
   MUD: 50,
   STREET: 1000,
@@ -588,6 +589,63 @@ export function advanceMonth(
 
   newPl.month += 1;
   newPl.monthsSinceLastEvent = (newPl.monthsSinceLastEvent || 0) + 1;
+
+  // LIFE TRAJECTORY & IDENTITY REFLECTION SYSTEM
+  // Every 36 months (3 years)
+  if (newPl.month > 0 && newPl.month % 36 === 0) {
+    const identityProfile = compileIdentityProfile(newPl);
+    const reflectionText = identityProfile.reflection;
+
+    // 1. Record History Event
+    recordHistoryEvent(newPl, {
+      id: `reflection_${newPl.month}`,
+      title: 'Identity Reflection',
+      description: reflectionText,
+      category: 'LEGACY',
+      importance: 3,
+      month: newPl.month
+    });
+
+    // 2. Add to biography
+    const bioEntry = `[Identity Reflection] ${reflectionText}`;
+    if (!newPl.biography.includes(bioEntry)) {
+      newPl.biography.push(bioEntry);
+    }
+
+    // 3. Push to World Feed
+    const feedItem = {
+      id: `reflection_feed_${newPl.month}_${Math.random().toString(36).substring(7)}`,
+      category: 'NEWS' as const,
+      text: `💡 IDENTITY REFLECTION: "${reflectionText}"`,
+      source: 'Self-Reflection',
+      timestamp: Date.now(),
+      month: newPl.month,
+      pinned: true
+    };
+    newPl.worldFeed = [feedItem, ...(newPl.worldFeed || [])].slice(0, 100);
+
+    // 4. Queue Advisor popup
+    if (!newPl.advisorQueue) {
+      newPl.advisorQueue = [];
+    }
+    newPl.advisorQueue.push({
+      id: `advisor_reflection_${newPl.month}`,
+      title: `💡 LIFETIME REFLECTION`,
+      subtitle: `"${reflectionText}"`,
+      bullets: [
+        identityProfile.evolutionTrajectory,
+        `Active Persona Archetype: ${identityProfile.dominantArchetype}`,
+        identityProfile.advisorObservation
+      ],
+      ctaLabel: 'Continue'
+    });
+
+    // 5. Push ticker message
+    news.push({
+      text: `💡 LIFETIME REFLECTION: "${reflectionText}"`,
+      colorClass: 'text-indigo-400 font-bold'
+    });
+  }
 
   // Evolve world NPCs as part of the background progression loop
   if (newPl.npcs && newPl.npcs.length > 0) {
