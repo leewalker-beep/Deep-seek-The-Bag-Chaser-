@@ -141,6 +141,103 @@ export function generateStrategicAdvice(
     });
   }
 
+  // --- CROSSROADS ADVISOR REACTIONS ---
+  if (pl.narrativeFlags?.crossroad_protected_employees) {
+    insights.push({
+      id: 'advisor_crossroad_layoffs_sacrifice',
+      category: 'WorldMemory',
+      priority: 'Opportunity',
+      title: 'Legacy of the Sacrifice',
+      whatIsHappening: 'I still reflect on the recession, Chaser. You chose your workers over your wallets.',
+      whyItHappened: 'You absorbed a heavy -$150,000 capital hit to protect all staff salaries from layoffs.',
+      recommendation: 'Your compassion cemented a legendary public trust. Leverage this high-aura standing to expand regional holdings.',
+      confidence: 100,
+    });
+  } else if (pl.narrativeFlags?.crossroad_laid_off_employees) {
+    insights.push({
+      id: 'advisor_crossroad_layoffs_pragmatic',
+      category: 'WorldMemory',
+      priority: 'Important',
+      title: 'Echoes of the Purge',
+      whatIsHappening: 'The market remembers the layoffs, Chaser. Wall Street loved the margins, but the street remembers.',
+      whyItHappened: 'You executed a 30% reduction in force to protect your liquid cushion, saving $100,000.',
+      recommendation: 'Morale is thin. Avoid high-risk actions that could trigger worker strikes or union conflicts while Aura is depleted.',
+      confidence: 100,
+    });
+  }
+
+  if (pl.narrativeFlags?.crossroad_sold_company) {
+    insights.push({
+      id: 'advisor_crossroad_sold_exit',
+      category: 'WorldMemory',
+      priority: 'Opportunity',
+      title: 'Generational Cash Exit',
+      whatIsHappening: 'You took the exit. $3,000,000 liquid capital is in your hands, but you ceded the empire.',
+      whyItHappened: 'You accepted the global conglomerate buyout, taking the easy wealth over independent control.',
+      recommendation: 'With unlimited liquidity, diversify your holdings immediately. Real estate is the ultimate passive bunker for your cash.',
+      confidence: 100,
+    });
+  } else if (pl.narrativeFlags?.crossroad_declined_buyout) {
+    insights.push({
+      id: 'advisor_crossroad_decline_war',
+      category: 'Rivals',
+      priority: 'Critical',
+      title: 'Conglomerate Retaliation War',
+      whatIsHappening: 'A massive global conglomerate is actively funding your direct competitors.',
+      whyItHappened: 'You defiantly rejected their multi-million dollar buyout, choosing absolute independence.',
+      recommendation: 'Expect intense sector undercutting on the Leaderboard. Sabotage or out-buy their positions to preserve your yields.',
+      confidence: 100,
+    });
+  }
+
+  if (pl.narrativeFlags?.crossroad_rescued_partner) {
+    insights.push({
+      id: 'advisor_crossroad_rescue_bond',
+      category: 'WorldMemory',
+      priority: 'Information',
+      title: 'An Unbreakable Bond',
+      whatIsHappening: 'Your old business partner is now one of your most loyal allies.',
+      whyItHappened: 'You paid $100,000 out of pocket to bail their family and collapsing venture out of rock bottom.',
+      recommendation: 'Fierce loyalty is priceless. Draw upon their renewed backing to bolster your strategic clout.',
+      confidence: 100,
+    });
+  } else if (pl.narrativeFlags?.crossroad_betrayed_partner) {
+    insights.push({
+      id: 'advisor_crossroad_betray_scars',
+      category: 'WorldMemory',
+      priority: 'Important',
+      title: 'Scars of the Betrayal',
+      whatIsHappening: 'A dark reputation follows you. People whisper about what you did to your original partner.',
+      whyItHappened: 'You ruthlessly liquidated their collapsing venture and seized their IP for pennies.',
+      recommendation: 'Your transactional coldness maximizes efficiency, but keep an eye on your back. Betrayed allies carry deep grudges.',
+      confidence: 100,
+    });
+  }
+
+  if (pl.narrativeFlags?.crossroad_exposed_corruption) {
+    insights.push({
+      id: 'advisor_crossroad_expose_glow',
+      category: 'WorldMemory',
+      priority: 'Opportunity',
+      title: 'The Whistleblower\'s Halo',
+      whatIsHappening: 'The public views you as a legendary hero of transparency and truth.',
+      whyItHappened: 'You leaked systemic corruption and tax evasion files, exposing political and corporate elites.',
+      recommendation: 'Your public Aura has reached legendary heights. Capitalize on this massive grassroots backing if you enter politics.',
+      confidence: 100,
+    });
+  } else if (pl.narrativeFlags?.crossroad_accepted_compromise) {
+    insights.push({
+      id: 'advisor_crossroad_compromise_guilt',
+      category: 'WorldMemory',
+      priority: 'Important',
+      title: 'The Weight of Complicity',
+      whatIsHappening: 'You are receiving massive confidential political backing, but carrying a heavy moral guilt.',
+      whyItHappened: 'You accepted the confidential hush agreement with corrupt leaders, locking in a +$15,000 monthly payout.',
+      recommendation: 'Do not let reform watchdogs inspect your offshore accounts. Re-invest the passive cash into stable media assets.',
+      confidence: 100,
+    });
+  }
+
   // --- HISTORIC ADVISOR REFLECTIONS (WORLD MEMORY SYSTEM) ---
   const isHighTier = pl.currentTier !== 'MUD' && pl.currentTier !== 'STREET';
   if (isHighTier) {

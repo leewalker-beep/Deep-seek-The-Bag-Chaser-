@@ -727,17 +727,102 @@ export function processWorldReaction(
 
     case 'NARRATIVE_DECISION': {
       const choice = metadata.choiceText || 'a critical decision';
-      addFeed(
-        'POLITICS',
-        `ETHICS ENQUIRY: Media debates ${pName}'s controversial choice regarding "${choice}".`,
-        'Capitol Press'
-      );
-      addFeed(
-        'SOCIAL',
-        `Did you see ${pName}'s latest move? Some people are mad, but honestly it was a genius play. 🧠🍿`,
-        'Chirper',
-        { effect: '+10 Clout | -5 Aura', author: '@PoliticalJunkie', avatarId: 'av_m3' }
-      );
+
+      // Let's check for specific crossroads choice results!
+      if (pl.narrativeFlags?.crossroad_protected_employees && (choice === 'Protect All Employees' || choice.includes('Protect All'))) {
+        addMultiOutletReports({
+          business: `In a stunning sacrifice of short-term profit, {PLAYER} chooses to absorb all payroll costs during the recession, protecting their entire workforce.`,
+          popCulture: `{PLAYER} is a hero! Absorb payroll and keep families safe during the recession. Absolute gold standard of a leader! 🛡️💼 #TheSacrifice #Hero`,
+          politics: `The Senate labor committee commends {PLAYER}'s employee protection policy as a model for corporate welfare.`,
+          local: `Local workers celebrate outside the warehouse as {PLAYER} vows to fund all employee salaries out of pocket!`,
+          financial: `Investor backlash: {PLAYER} absorbs -$150,000 in liquid capital to fund unprofitable operations, depressing quarterly ROI.`
+        });
+        addFeed('OPINION', `POLL SURGES: Grassroots voter approval rises by +12% following {PLAYER}'s worker protection vow.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('EmployeeProtection');
+      } else if (pl.narrativeFlags?.crossroad_laid_off_employees && (choice === 'Execute Layoffs' || choice.includes('Layoff'))) {
+        addMultiOutletReports({
+          business: `{PLAYER} executes a 30% reduction in force to streamline operations and secure investor margins against the recession.`,
+          popCulture: `Absolutely devastating. {PLAYER} just fired 30% of their staff with zero warning. Total corporate greed. 📉💔 #Layoffs #Greed`,
+          politics: `Labor unions condemn {PLAYER}'s mass layoffs, demanding federal investigations into severance compliance.`,
+          local: `Heartbroken workers gather outside {PLAYER}'s warehouse after receiving automated termination notices.`,
+          financial: `Solvency secured: {PLAYER} cushions their balance sheet, saving over $100,000 in immediate labor costs.`
+        });
+        addFeed('OPINION', `POLL DROPS: Worker favorability ratings slide by -15% following mass layoffs at {PLAYER}'s operations.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('EmployeeLayoffs');
+      } else if (pl.narrativeFlags?.crossroad_sold_company && (choice === 'Sell the Business' || choice.includes('Sell the'))) {
+        addMultiOutletReports({
+          business: `THE EXIT: {PLAYER} sells their entire core enterprise to a global conglomerate, ceding absolute voting control.`,
+          popCulture: `Absolute shocker! {PLAYER} just cashed out for $3,000,000, completely abandoning the brand! 💸🚪 #TheExit #GenerationalWealth`,
+          politics: `Regulators monitor antitrust filings as global conglomerate swallows {PLAYER}'s independent holdings.`,
+          local: `Local business owners speculate if {PLAYER}'s departure marks the death of community-led trade.`,
+          financial: `Cash reserves surging: {PLAYER} transitions from active corporate execution to purely liquid holding status.`
+        });
+        addFeed('OPINION', `POLL SLIDES: Supporters express disappointment at {PLAYER}'s exit, calling it a sell-out of the block's values.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('CompanyBuyoutSell');
+      } else if (pl.narrativeFlags?.crossroad_declined_buyout && (choice === 'Decline and Fight' || choice.includes('Decline'))) {
+        addMultiOutletReports({
+          business: `THE STAND: {PLAYER} defiantly rejects a multi-million dollar buyout, declaring war against global competitors.`,
+          popCulture: `{PLAYER} just told a global conglomerate to take their money and walk! Pure boss move! 🛡️😤 #Independence #DeclineAndFight`,
+          politics: `Lobbyist groups brace for an all-out trade war as independent operator {PLAYER} refuses takeover.`,
+          local: `Crowds applaud {PLAYER}'s decision to keep local operations independent, preserving neighborhood jobs.`,
+          financial: `Solvency warning: Conglomerate vows to fund direct predatory competitors to squeeze {PLAYER}'s margins.`
+        });
+        addFeed('OPINION', `POLL SURGES: Public respect for {PLAYER} reaches record highs as an authentic self-made champion.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('CompanyBuyoutDecline');
+      } else if (pl.narrativeFlags?.crossroad_rescued_partner && (choice === 'Provide the Lifeline' || choice.includes('Provide the'))) {
+        addMultiOutletReports({
+          business: `CREDIT INJECTION: {PLAYER} funds an emergency $100,000 bailout for a failing partner's collapsing venture.`,
+          popCulture: `Fierce loyalty! {PLAYER} just saved their original business partner from absolute ruin. Real friendship over profit! ❤️🥺 #TheSacrifice #Loyalty`,
+          politics: `Trade commissioners praise the private restructuring, avoiding severe regional job losses.`,
+          local: `The partner's family issues a heartfelt thank you to {PLAYER} for saving their home from foreclosure.`,
+          financial: `Operational drain: {PLAYER} absorbs a -$100,000 deficit to rescue a low-performing partner, depressing ROI.`
+        });
+        addFeed('OPINION', `POLL SURGES: Public approval rises as {PLAYER} is hailed as a high-integrity, compassionate leader.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('PartnerRescue');
+      } else if (pl.narrativeFlags?.crossroad_betrayed_partner && (choice === 'Ruthlessly Liquidate Them' || choice.includes('Liquidate'))) {
+        addMultiOutletReports({
+          business: `THE LIQUIDATION: {PLAYER} declines partner's bailout, instead launching a hostile bid to seize their remaining IP.`,
+          popCulture: `Absolutely brutal! {PLAYER} left their original partner to rot and bought their life's work for pennies! 🔪📉 #TheBetrayal #Cold`,
+          politics: `Antitrust regulators review the predatory acquisition of distressed intellectual assets.`,
+          local: `The partner's family is evicted as their company collapses, while {PLAYER} moves into their offices.`,
+          financial: `Asset surge: {PLAYER} captures valuable IP, scaling business execution efficiency by +$150,000.`
+        });
+        addFeed('OPINION', `POLL DROPS: Critics blast {PLAYER}'s ruthless treatment of a longtime friend, branding them a greedy corporate villain.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('PartnerBetrayal');
+      } else if (pl.narrativeFlags?.crossroad_exposed_corruption && (choice === 'Expose the Corruption' || choice.includes('Expose the'))) {
+        addMultiOutletReports({
+          business: `THE WHISTLEBLOWER: {PLAYER} leaks systemic tax evasion files, implicating key political and corporate elites.`,
+          popCulture: `HOLY COUPLING! {PLAYER} just dropped the files on the entire corrupt elite! Absolute superhero energy! 📁🦸 #TheReinvention #Whistleblower`,
+          politics: `Impeachment and regulatory hearings begin as Capitol Hill reels from {PLAYER}'s massive disclosures.`,
+          local: `Grassroots groups gather to support {PLAYER}, chanting their name as a champion of public truth.`,
+          financial: `High-heat surge: {PLAYER} faces massive physical heat (+40) and regulatory retaliation as old allies pull backing.`
+        });
+        addFeed('OPINION', `POLL SURGES: Grassroots public trust in {PLAYER} reaches an all-time high of 92% approval.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('ExposeCorruption');
+      } else if (pl.narrativeFlags?.crossroad_accepted_compromise && (choice === 'Accept the Compromise' || choice.includes('Accept the'))) {
+        addMultiOutletReports({
+          business: `THE COMPROMISE: {PLAYER} signs a confidential 'hush agreement' with political leaders, securing immense backing.`,
+          popCulture: `Hmm, {PLAYER} is playing golf with the very politicians under investigation. Smells like collusion? 🤫🏌️ #TheCompromise #InThePocket`,
+          politics: `Capitol Hill leaders secure a bipartisan consensus to fund {PLAYER}'s federal administrative programs.`,
+          local: `Neighborhood activists question why the promised corruption investigation was suddenly dropped.`,
+          financial: `Monopoly passive: {PLAYER} locks in a lucrative confidential monthly payout of +$15,000 passive cash.`
+        });
+        addFeed('OPINION', `POLL SLIDES: Reform watchdogs accuse {PLAYER} of systemic collusion, depressing public trust.`, 'Public Opinion Poll');
+        addRivalCommentIfPossible('AcceptCompromise');
+      } else {
+        // Fallback for generic narrative decisions
+        addFeed(
+          'POLITICS',
+          `ETHICS ENQUIRY: Media debates ${pName}'s controversial choice regarding "${choice}".`,
+          'Capitol Press'
+        );
+        addFeed(
+          'SOCIAL',
+          `Did you see ${pName}'s latest move? Some people are mad, but honestly it was a genius play. 🧠🍿`,
+          'Chirper',
+          { effect: '+10 Clout | -5 Aura', author: '@PoliticalJunkie', avatarId: 'av_m3' }
+        );
+      }
       break;
     }
 

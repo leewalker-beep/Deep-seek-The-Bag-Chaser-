@@ -1,6 +1,173 @@
 import type { NarrativeEvent } from '../types/game';
 
 const BASE_EVENTS: NarrativeEvent[] = [
+  // DEFINING MOMENTS & LIFE CROSSROADS SYSTEM
+  {
+    id: 'crossroad_recession_toll',
+    title: "The Recession's Toll",
+    pacingCategory: 'MAJOR',
+    description: 'A severe economic slump hits. Your VP of Finance presents a stark choice: Lay off 30% of your workforce to preserve profitability and safeguard investor confidence, OR absorb the losses yourself, protecting your employees but risking a major cash-flow drain.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE', 'ELITE'],
+      probability: 0.35,
+      once: true
+    },
+    choices: [
+      {
+        id: 'crossroad_employees_protect',
+        label: 'Protect All Employees',
+        description: 'Absorb the payroll costs. Earn deep workforce trust but lose a massive chunk of liquid capital.',
+        consequences: {
+          bag: -150000,
+          aura: 300,
+          mentalHealth: 15,
+          biographyEntry: '“The Sacrifice: In the depth of a harsh economic recession, chose to protect employee livelihood at massive personal expense.”'
+        },
+        setFlags: { 'crossroad_protected_employees': true },
+        logMessage: '🛡️ THE SACRIFICE: You chose to protect your workforce, absorbing $150,000 in costs. Your employees vow complete loyalty.'
+      },
+      {
+        id: 'crossroad_employees_layoff',
+        label: 'Execute Layoffs',
+        description: 'Terminate 30% of your staff immediately. Protect corporate margins and secure investor satisfaction, but face public backlash.',
+        consequences: {
+          bag: 100000,
+          aura: -200,
+          clout: 150,
+          biographyEntry: '“The Layoffs: Handled the recession with cold financial efficiency, executing widespread layoffs to protect corporate margins.”'
+        },
+        setFlags: { 'crossroad_laid_off_employees': true },
+        logMessage: '📉 THE LAYOFFS: You terminated 30% of your staff, saving $100,000 but drawing fierce public criticism.'
+      }
+    ]
+  },
+  {
+    id: 'crossroad_titans_exit',
+    title: "The Titan's Exit",
+    pacingCategory: 'MAJOR',
+    description: 'A massive global conglomerate offers to acquire 100% of your core business for $3,000,000. It is an astronomical exit that would make you instantly wealthy, but you would cede all voting power and corporate autonomy. Alternatively, you can decline the offer, retaining your absolute independence but facing their wrath as they vow to fund a relentless competitor to crush you.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE'],
+      probability: 0.25,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'bag', value: 500000 }
+    },
+    choices: [
+      {
+        id: 'crossroad_company_sell',
+        label: 'Sell the Business',
+        description: 'Cash out now. Secure generational wealth but cede control of your life\'s work.',
+        consequences: {
+          bag: 3000000,
+          clout: -400,
+          aura: -200,
+          mentalHealth: 20,
+          biographyEntry: '“The Choice That Defined the Empire: Decided to sell the core enterprise to a global conglomerate, securing astronomical wealth but ceding personal control of their life\'s work.”'
+        },
+        setFlags: { 'crossroad_sold_company': true },
+        logMessage: '💵 THE EXIT: You cashed out for $3,000,000, surrendering your active multipliers and ceding the brand control.'
+      },
+      {
+        id: 'crossroad_company_fight',
+        label: 'Decline and Fight',
+        description: 'Refuse the buyout. Maintain your corporate identity and independence, but accept intense market competition.',
+        consequences: {
+          clout: 300,
+          aura: 150,
+          heat: 30,
+          mentalHealth: -15,
+          biographyEntry: '“The Stand: Boldly rejected a multi-million dollar buyout offer, choosing independence over easy wealth and preparing for an all-out corporate war.”'
+        },
+        setFlags: { 'crossroad_declined_buyout': true },
+        logMessage: '🛡️ THE STAND: You rejected the buyout! Conglomerate agents vow to fund competitors to aggressively squeeze your margins.'
+      }
+    ]
+  },
+  {
+    id: 'crossroad_partners_redemption',
+    title: "The Partner's Redemption",
+    pacingCategory: 'MAJOR',
+    description: 'Your original business partner, who made a critical error that cost you thousands in the early days, has hit rock bottom. Their new venture is collapsing, and they are begging you for a $100,000 bailout to save their family from ruin. You can rescue them, establishing a bond of loyalty, or use their weakness to acquire their remaining IP for pennies, destroying what remains of your friendship.',
+    trigger: {
+      tier: ['STARTUP', 'CORPORATE'],
+      probability: 0.25,
+      once: true
+    },
+    choices: [
+      {
+        id: 'crossroad_partner_rescue',
+        label: 'Provide the Lifeline',
+        description: 'Bail them out. Save their family and cement an unbreakable bond of loyalty, but absorb a heavy financial hit.',
+        consequences: {
+          bag: -100000,
+          aura: 250,
+          mentalHealth: 15,
+          biographyEntry: '“The Sacrifice: Chose to rescue a failing partner from ruin, proving that loyalty and friendship are worth more than any balance sheet.”'
+        },
+        setFlags: { 'crossroad_rescued_partner': true },
+        logMessage: '🤝 THE REDEMPTION: You wired $100,000 to save your partner. They vow complete, lifelong loyalty.'
+      },
+      {
+        id: 'crossroad_partner_exploit',
+        label: 'Ruthlessly Liquidate Them',
+        description: 'Decline the bailout and launch a hostile bid to seize their valuable IP for pennies, completing their ruin but maximizing your profit.',
+        consequences: {
+          bag: 150000,
+          clout: 200,
+          aura: -250,
+          heat: 15,
+          mentalHealth: -10,
+          biographyEntry: '“The Betrayal: Capitalized on a former partner\'s collapse, ruthlessly seizing their intellectual property for pennies and ending the friendship forever.”'
+        },
+        setFlags: { 'crossroad_betrayed_partner': true },
+        logMessage: '🔪 THE BETRAYAL: You bought out your partner\'s IP for pennies. Their venture collapsed, completely ending your friendship.'
+      }
+    ]
+  },
+  {
+    id: 'crossroad_whistleblowers_gambit',
+    title: "The Whistleblower's Gambit",
+    pacingCategory: 'MAJOR',
+    description: 'You uncover undeniable proof of systemic corruption and tax evasion involving the city\'s key political figures and your closest corporate allies. Exposing the files to the press will trigger a massive political storm, winning public adoration, but it will permanently alienate the corporate elite and spike your physical heat. Alternatively, you can accept their \'hush agreement\'—a lucrative compromise that grants you massive political backing but locks in your complicity.',
+    trigger: {
+      tier: ['CORPORATE', 'ELITE', 'PRESIDENT'],
+      probability: 0.25,
+      once: true
+    },
+    choices: [
+      {
+        id: 'crossroad_corruption_expose',
+        label: 'Expose the Corruption',
+        description: 'Leak the files. Win the public\'s trust and clear your name, but alienate the political elite and face heavy blowback.',
+        consequences: {
+          clout: -150,
+          aura: 400,
+          heat: 40,
+          mentalHealth: 20,
+          biographyEntry: '“The Reinvention: Exposed systemic corruption at the highest levels, choosing truth and public trust over elite compliance.”'
+        },
+        setFlags: { 'crossroad_exposed_corruption': true },
+        logMessage: '📁 THE REINVENTION: You leaked the corruption files! The public hails you as a champion, but federal heat spikes (+40) as elites retaliate.'
+      },
+      {
+        id: 'crossroad_corruption_compromise',
+        label: 'Accept the Compromise',
+        description: 'Sign the hush agreement. Gain massive political backing and a passive monthly payout, but carry the weight of complicity.',
+        consequences: {
+          clout: 400,
+          aura: -300,
+          passiveCash: 15000,
+          mentalHealth: -15,
+          biographyEntry: '“The Compromise: Accepted a lucrative compromise with the political elite, securing immense systemic backing at the cost of personal integrity.”'
+        },
+        setFlags: { 'crossroad_accepted_compromise': true },
+        logMessage: '🤫 THE COMPROMISE: You signed the hush agreement, locking in a +$15,000 monthly payout but carrying heavy moral weight.'
+      }
+    ]
+  },
+
   // OPPORTUNITY COST SYSTEM NARRATIVE CROSSROADS
   {
     id: 'opp_cost_property_vs_expansion',

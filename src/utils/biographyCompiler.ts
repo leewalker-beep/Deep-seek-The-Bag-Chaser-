@@ -65,12 +65,26 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
   const reinventionEntries: string[] = [];
   const leadershipEntries: string[] = [];
   const legacyEntries: string[] = [];
+  const crossroadsEntries: string[] = [];
 
   originalEntries.forEach(entry => {
     const entryLower = entry.toLowerCase();
 
-    // Trials & Setbacks
+    // Crossroads Check first!
     if (
+      entryLower.includes('the sacrifice') ||
+      entryLower.includes('the betrayal') ||
+      entryLower.includes('the choice that defined the empire') ||
+      entryLower.includes('the compromise') ||
+      entryLower.includes('the stand') ||
+      entryLower.includes('the reinvention') ||
+      entryLower.includes('crossroad_') ||
+      entryLower.includes('the layoffs')
+    ) {
+      crossroadsEntries.push(entry);
+    }
+    // Trials & Setbacks
+    else if (
       entryLower.includes('scandal') ||
       entryLower.includes('arrest') ||
       entryLower.includes('behind bars') ||
@@ -213,6 +227,41 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
 
   const dominantArchetype = determineDominantIdentityArchetype(pl);
 
+  // Crossroads details resolution
+  let crossroadTitle = "The Life Crossroads";
+  let crossroadIcon = "⚖️";
+  let crossroadIntro = `Rare, unforgettable decisions define a lifetime, permanently shaping how the world understands a leader. In this pivotal chapter, ${name} faced a monumental crossroads that required trading immediate strategic margins for deep identity choices. This was the moment that changed everything.`;
+
+  if (pl.narrativeFlags?.crossroad_protected_employees) {
+    crossroadTitle = "The Sacrifice";
+    crossroadIcon = "🛡️";
+    crossroadIntro = `True leadership is not measured in profit margins, but in the protection of those who build the foundation. During a devastating economic recession, ${name} faced a defining moment of immense pressure: execute massive layoffs to satisfy investors, or absorb the losses directly. In an unforgettable stand, ${name} chose the people over the purse, forever defining the moral compass of the empire.`;
+  } else if (pl.narrativeFlags?.crossroad_betrayed_partner) {
+    crossroadTitle = "The Betrayal";
+    crossroadIcon = "🔪";
+    crossroadIntro = `The road to absolute power is often paved with broken promises and cold operational efficiency. When a former partner collapsed to the absolute bottom, ${name} was presented with a defining crossroads: rescue them from ruin, or liquidate their remaining assets for pennies. Choosing the path of the pragmatist, ${name} ruthlessly seized their valuable intellectual property, ending the friendship forever and proving that sentimentality has no place in the pursuit of wealth.`;
+  } else if (pl.narrativeFlags?.crossroad_sold_company) {
+    crossroadTitle = "The Choice That Defined the Empire";
+    crossroadIcon = "⚖️";
+    crossroadIntro = `Every entrepreneur eventually faces the ultimate question: what is the price of your life's work? When a global conglomerate offered an astronomical multi-million dollar buyout, ${name} stood at a monumental crossroads. By accepting the exit, ${name} secured generational wealth beyond imagination, but ceding all voting power and corporate autonomy, trading active command for liquid luxury.`;
+  } else if (pl.narrativeFlags?.crossroad_exposed_corruption) {
+    crossroadTitle = "The Whistleblower";
+    crossroadIcon = "🔍";
+    crossroadIntro = `True power is knowing the secrets of the elite; true courage is exposing them. Upon uncovering undeniable proof of systemic corruption among the city's key political figures and corporate titans, ${name} refused to stay silent. Leaking the classified files to the national press, ${name} chose truth and public trust over elite compliance, permanently altering their long-term identity and legacy.`;
+  } else if (pl.narrativeFlags?.crossroad_rescued_partner) {
+    crossroadTitle = "The Redemption";
+    crossroadIcon = "🤝";
+    crossroadIntro = `Fierce loyalty is a rare currency in a city built on transactional cogs. When their original business partner hit rock bottom, begging for an emergency bailout, ${name} chose to honor past bonds. Paying $100,000 out of pocket, ${name} rescued their partner from foreclosure, cementing an unbreakable bond of loyalty that would endure for decades.`;
+  } else if (pl.narrativeFlags?.crossroad_accepted_compromise) {
+    crossroadTitle = "The Compromise";
+    crossroadIcon = "🤫";
+    crossroadIntro = `In the halls of power, compromise is the silent architecture of success. Upon uncovering systemic corruption among political leaders, ${name} chose to accept a confidential 'hush agreement'—a lucrative compromise that granted immense political backing and a monthly payout, carrying the quiet, enduring weight of complicity.`;
+  } else if (pl.narrativeFlags?.crossroad_declined_buyout) {
+    crossroadTitle = "The Stand";
+    crossroadIcon = "🛡️";
+    crossroadIntro = `Autonomy is the ultimate asset. When offered a multi-million dollar conglomerate buyout, ${name} defiantly rejected the cash, choosing independence and preparing for an all-out corporate trade war.`;
+  }
+
   // Determine chapter lock statuses
   const chapters: CompiledChapter[] = [
     {
@@ -241,6 +290,15 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
       entries: buildingAnEmpireEntries,
       transition: `As the bank balances grew past the first hard-earned million to astronomical heights, the city's old elite could no longer ignore the rising giant. It was time to step out of the office and claim a seat in high society.`,
       isUnlocked: buildingAnEmpireEntries.length > 0 || !['MUD', 'STREET'].includes(pl.currentTier)
+    },
+    {
+      id: "crossroads",
+      title: crossroadTitle,
+      icon: crossroadIcon,
+      intro: crossroadIntro,
+      entries: crossroadsEntries,
+      transition: `These decisions would echo for years across the markets, defining how both allies and adversaries understood ${name}'s ultimate identity.`,
+      isUnlocked: crossroadsEntries.length > 0
     },
     {
       id: "public_recognition",
