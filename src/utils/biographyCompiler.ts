@@ -1,6 +1,7 @@
 import type { PlayerStats } from '../types/game';
 import { analyzeBehavior } from './personalityAnalyzer';
 import { BACKGROUND_CATEGORIES } from '../config/backgrounds';
+import { determineDominantIdentityArchetype } from './identitySystem';
 
 export interface CompiledChapter {
   id: string;
@@ -210,6 +211,8 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
     formationPassage = ` In the pursuit of pure velocity, they treated efficiency as a cold science, aggressively optimizing operational margins and pushing their workforce to the limit.`;
   }
 
+  const dominantArchetype = determineDominantIdentityArchetype(pl);
+
   // Determine chapter lock statuses
   const chapters: CompiledChapter[] = [
     {
@@ -232,7 +235,7 @@ export function compileBiographyChapters(pl: PlayerStats): CompiledChapter[] {
     },
     {
       id: "building_empire",
-      title: "Building an Empire",
+      title: dominantArchetype,
       icon: "🏢",
       intro: `One venture became two; two became a synchronized network. Starting from that initial ${firstBusinessName || 'venture'}, ${name} laid waste to localized competitors, building a formidable operational presence. Moving with ${playstyleAdjective} momentum, the empire expanded across diverse sectors, transforming raw cash flow into massive structural leverage.`,
       entries: buildingAnEmpireEntries,

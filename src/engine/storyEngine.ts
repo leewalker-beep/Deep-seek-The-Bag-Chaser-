@@ -1,4 +1,5 @@
 import type { PlayerStats, TickerMessage, WorldFeedItem, MarketType } from '../types/game';
+import { getIdentityAlignedBillionaireTone } from '../utils/identitySystem';
 
 const generateId = () => Math.random().toString(36).substring(7);
 
@@ -12,6 +13,15 @@ const generateId = () => Math.random().toString(36).substring(7);
 export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   const stories: TickerMessage[] = [];
   const pName = pl.name || 'You';
+
+  // 0. Identity Aligned World Reactions & Billionaire/Millionaire Tone
+  if (pl.bag >= 5000000) {
+    stories.push({
+      text: `📰 Profile: Capital circles analyze the strategic footprint of ${getIdentityAlignedBillionaireTone(pl)}.`,
+      colorClass: 'text-indigo-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
 
   // 1. Tech Investor Observation
   const hasTechFocus =
@@ -131,6 +141,15 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
 export function generateHistoricalStories(pl: PlayerStats): TickerMessage[] {
   const stories: TickerMessage[] = [];
   const pName = pl.name || 'the Chaser';
+
+  // 0. Identity Aligned Retrospective & Billionaire/Millionaire Tone
+  if (pl.bag >= 20000000) {
+    stories.push({
+      text: `📰 Retrospective: From their first basic venture to commanding a colossal dynasty, the city reacts to ${getIdentityAlignedBillionaireTone(pl)}.`,
+      colorClass: 'text-yellow-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
 
   // Dynamic memory retrospectives from history
   const firstBusiness = pl.history?.find(h => h.id.startsWith('business_') || h.title === 'First Business' || h.id === 'first_hustle');

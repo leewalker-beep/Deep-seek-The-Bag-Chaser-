@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/gameStore';
 import { BACKGROUND_CATEGORIES } from '../../config/backgrounds';
 import { analyzeBehavior } from '../../utils/personalityAnalyzer';
 import { type PlayerStats } from '../../types/game';
+import { detectIdentityEvolution } from '../../utils/identitySystem';
 
 interface CinematicTransitionProps {
   artwork: HeroArtwork;
@@ -198,9 +199,10 @@ export function generateDynamicChapterIntro(pl: PlayerStats, tier: string): stri
     businessChunk = ` Turning ideas into massive assets like your ${businessList}, you shifted from a simple worker to an empire builder.`;
   }
 
-  // 4. Playstyle Recognition
+  // 4. Playstyle Recognition & Identity Trajectory
   const playstyleInfo = determinePlaystyle(pl);
-  const playstyleChunk = ` ${playstyleInfo.narration}`;
+  const identityTrajectory = detectIdentityEvolution(pl);
+  const playstyleChunk = ` ${playstyleInfo.narration} ${identityTrajectory}`;
 
   // 5. Emotional Callbacks (Rare and meaningful)
   const callbacks: string[] = [];
