@@ -1052,6 +1052,49 @@ export function advanceMonth(
     }
   }
 
+  // --- COMMUNITY TRUST AND MEMORY (WORLD MEMORY SYSTEM) ---
+  const charityChoices = newPl.narrativeFlags?.charity_choices_count as number || 0;
+  const philanthropyLvl = newPl.hustleLevels?.['philanthropy_empire'] || 0;
+  let communityTrust = charityChoices * 15 + philanthropyLvl * 25;
+  const completedAmbitions = newPl.ambitions?.filter(a => a.status === 'COMPLETED') || [];
+  if (completedAmbitions.some(a => a.id === 'leave_better_society')) {
+    communityTrust += 30;
+  }
+  communityTrust = Math.min(100, communityTrust);
+
+  // If community trust is high, occasionally trigger helpful community interventions (~8% chance)
+  if (communityTrust >= 30 && Math.random() < 0.08) {
+    const trustRoll = Math.random();
+    if (trustRoll < 0.25) {
+      newPl.heat = Math.max(0, newPl.heat - 15);
+      news.push({
+        text: `🌟 COMMUNITY SHIELD: Local leaders remember your past generosity and rally to support you, cooling your legal Heat (-15 Heat)!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    } else if (trustRoll < 0.5) {
+      newPl.aura = Math.min(10000, newPl.aura + 50);
+      newPl.clout = Math.min(10000, newPl.clout + 100);
+      news.push({
+        text: `🤝 COMMUNITY ENDORSEMENT: District organizers publicly praise your long-term dedication to the neighborhood (+50 Aura, +100 Clout)!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    } else if (trustRoll < 0.75 && newPl.currentTier === 'PRESIDENT') {
+      newPl.approvalRating = Math.min(100, newPl.approvalRating + 5);
+      newPl.congressSupport = Math.min(100, newPl.congressSupport + 4);
+      news.push({
+        text: `🗳️ GRASSROOTS MOBILIZATION: Local neighborhoods launch a voting campaign, citing your decade of charity (+5% Presidential Approval, +4% Congress Support)!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    } else {
+      const gift = Math.max(5000, Math.floor(newPl.bag * 0.02));
+      newPl.bag += gift;
+      news.push({
+        text: `🎁 CRISIS ASSISTANCE: A community member you supported years ago offers logistics backing, saving you $${gift.toLocaleString()} in overhead!`,
+        colorClass: 'text-emerald-400 font-bold'
+      });
+    }
+  }
+
   // Occasional Background News Reference (~5% chance per month)
   if (newPl.chosenBackground && Math.random() < 0.05) {
     const bg = BACKGROUNDS.find(b => b.id === newPl.chosenBackground);
@@ -1283,8 +1326,10 @@ export function advanceMonth(
     }
   }
 
-  // 4. Occasionally generate historical references (~15% chance)
-  if (Math.random() < 0.15) {
+  // 4. Occasionally generate historical references (up to 30% chance in high tiers)
+  const isHighTierClass = newPl.currentTier !== 'MUD' && newPl.currentTier !== 'STREET';
+  const histChance = isHighTierClass ? 0.30 : 0.20;
+  if (Math.random() < histChance) {
     const historicalStories = generateHistoricalStories(newPl);
     if (historicalStories.length > 0) {
       const picked = historicalStories[Math.floor(Math.random() * historicalStories.length)];

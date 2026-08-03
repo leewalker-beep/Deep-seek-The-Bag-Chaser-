@@ -148,10 +148,43 @@ export function generateHistoricalStories(pl: PlayerStats): TickerMessage[] {
     });
   }
 
+  const earlyBizDisplay = firstBusinessName ? firstBusinessName.toLowerCase() : 'café';
+  if (yearsElapsed >= 10 && pl.bag > 10000000) {
+    stories.push({
+      text: `📰 Fifteen years after opening a small ${earlyBizDisplay}, ${pName} now leads one of the country's largest business empires.`,
+      colorClass: 'text-yellow-400 font-extrabold',
+      tier: pl.currentTier,
+    });
+  }
+
   if (firstBusiness && pl.bag > 2000000) {
     stories.push({
       text: `📰 Critics once questioned ${pName}'s first ${firstBusinessName} investment. Today, it is recognized as a visionary masterclass.`,
       colorClass: 'text-emerald-400 font-bold',
+      tier: pl.currentTier,
+    });
+    stories.push({
+      text: `📰 Critics once questioned ${pName}'s early investments. History has been kinder.`,
+      colorClass: 'text-emerald-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
+
+  const charityCount = pl.narrativeFlags?.charity_choices_count as number || 0;
+  if (charityCount >= 2 && yearsElapsed >= 5) {
+    const yearsAgo = Math.max(3, yearsElapsed - 2);
+    stories.push({
+      text: `📰 A donation made ${yearsAgo} years earlier by ${pName} has blossomed into a thriving local community center, praised by district leaders.`,
+      colorClass: 'text-emerald-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
+
+  const hasScandals = pl.history?.some(h => h.id.includes('scandal') || h.category === 'CRIME') || (pl.arrestCount && pl.arrestCount > 0);
+  if (hasScandals && pl.bag > 5000000) {
+    stories.push({
+      text: `📰 Recall the early business scandals? Critics wondered if ${pName} would survive. Today, they command a multi-million dollar empire.`,
+      colorClass: 'text-rose-400 font-semibold',
       tier: pl.currentTier,
     });
   }
