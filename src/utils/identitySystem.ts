@@ -51,6 +51,12 @@ export function evaluateIdentityDimensions(pl: PlayerStats): IdentityDimensions 
   if (donation > 5000000) compassion += 20;
   if (philanthropyLvl > 0) compassion += 25;
   if (activeRep === "The Philanthropist" || activeRep === "The People's Champion") compassion += 20;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_protected_employees) compassion += 25;
+  if (pl.narrativeFlags?.crossroad_rescued_partner) compassion += 20;
+  if (pl.narrativeFlags?.crossroad_exposed_corruption) compassion += 15;
+  if (pl.narrativeFlags?.crossroad_laid_off_employees) compassion -= 25;
+  if (pl.narrativeFlags?.crossroad_betrayed_partner) compassion -= 30;
   compassion = Math.max(0, Math.min(100, compassion));
 
   // 2. Integrity
@@ -59,6 +65,13 @@ export function evaluateIdentityDimensions(pl: PlayerStats): IdentityDimensions 
   if (pl.heat > 60) integrity -= 15;
   if (activeRep === "The Reformer" || activeRep === "The Philanthropist") integrity += 20;
   if (activeRep === "The Crime Boss") integrity -= 25;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_protected_employees) integrity += 20;
+  if (pl.narrativeFlags?.crossroad_rescued_partner) integrity += 25;
+  if (pl.narrativeFlags?.crossroad_exposed_corruption) integrity += 35;
+  if (pl.narrativeFlags?.crossroad_laid_off_employees) integrity -= 15;
+  if (pl.narrativeFlags?.crossroad_betrayed_partner) integrity -= 30;
+  if (pl.narrativeFlags?.crossroad_accepted_compromise) integrity -= 35;
   integrity = Math.max(0, Math.min(100, integrity));
 
   // 3. Ambition / Power Seeking
@@ -68,12 +81,20 @@ export function evaluateIdentityDimensions(pl: PlayerStats): IdentityDimensions 
   const uniqueHustles = Object.keys(pl.hustleLevels || {}).length;
   ambition += uniqueHustles * 4;
   if (activeRep === "The Mogul" || activeRep === "The Billionaire" || activeRep === "The Kingmaker") ambition += 20;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_laid_off_employees) ambition += 20;
+  if (pl.narrativeFlags?.crossroad_declined_buyout) ambition += 25;
+  if (pl.narrativeFlags?.crossroad_betrayed_partner) ambition += 25;
+  if (pl.narrativeFlags?.crossroad_accepted_compromise) ambition += 25;
+  if (pl.narrativeFlags?.crossroad_sold_company) ambition -= 20;
   ambition = Math.max(0, Math.min(100, ambition));
 
   // 4. Patience / Long-term Thinking
   let patience = educationChoices * 15 + Math.round(behavior.adviceRatio * 40);
   if (behavior.paceLabel === 'Deliberate') patience += 20;
   if (activeRep === "The Investor") patience += 20;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_sold_company) patience += 15;
   patience = Math.max(0, Math.min(100, patience));
 
   // 5. Risk-taking
@@ -81,6 +102,10 @@ export function evaluateIdentityDimensions(pl: PlayerStats): IdentityDimensions 
   if (pl.heat > 50) riskTaking += 15;
   if (behavior.paceLabel === 'Fast') riskTaking += 15;
   if (activeRep === "The Crime Boss" || activeRep === "The Controversial Tycoon") riskTaking += 20;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_declined_buyout) riskTaking += 20;
+  if (pl.narrativeFlags?.crossroad_betrayed_partner) riskTaking += 15;
+  if (pl.narrativeFlags?.crossroad_exposed_corruption) riskTaking += 20;
   riskTaking = Math.max(0, Math.min(100, riskTaking));
 
   // 6. Leadership
@@ -90,6 +115,9 @@ export function evaluateIdentityDimensions(pl: PlayerStats): IdentityDimensions 
   if (cabinetSize > 0) leadership += 15;
   if (alliesCount > 0) leadership += 15;
   if (activeRep === "The Reformer" || activeRep === "The Kingmaker" || activeRep === "The President") leadership += 15;
+  // Apply Crossroads system influences
+  if (pl.narrativeFlags?.crossroad_protected_employees) leadership += 25;
+  if (pl.narrativeFlags?.crossroad_rescued_partner) leadership += 20;
   leadership = Math.max(0, Math.min(100, leadership));
 
   // 7. Fame Seeking
