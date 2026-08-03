@@ -41,13 +41,13 @@ export function getRivalMemories(pl: PlayerStats, rivalName: string): {
 
   // rescued: if helped them when they were weak, or if they are recruited as allies
   const matchingRival = pl.rivals?.find(r => r.name === rivalName);
-  const rescued = helped || (matchingRival && (matchingRival.helpedCount || 0) >= 2) || (matchingRival?.status === 'ally');
+  const rescued = helped || (matchingRival ? (matchingRival.helpedCount || 0) >= 2 : false) || (matchingRival ? matchingRival.status === 'ally' : false);
 
   // liquidated: if they had to close a business or sell property due to capital crunch
   const liquidated = rivalEvents.some(e => e.id.includes('liquidation') || e.id.includes('business_close') || e.id.includes('dismiss'));
 
   // humiliated: multiple sabotages or extremely low relationship with high sabotaged count
-  const humiliated = (matchingRival && (matchingRival.sabotagedCount || 0) >= 3) || (matchingRival && (matchingRival.relationshipWithPlayer || 0) < -50);
+  const humiliated = (matchingRival ? (matchingRival.sabotagedCount || 0) >= 3 : false) || (matchingRival ? (matchingRival.relationshipWithPlayer || 0) < -50 : false);
 
   let earliestInteractionMonth: number | undefined = undefined;
   let earliestInteractionTier: string | undefined = undefined;
