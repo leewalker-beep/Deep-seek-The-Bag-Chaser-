@@ -19,12 +19,18 @@ export function getRivalMemories(pl: PlayerStats, rivalName: string): {
   counterBid: boolean;
   retaliated: boolean;
   betrayed: boolean;
+  rescued: boolean;
+  liquidated: boolean;
+  humiliated: boolean;
+  earliestInteractionMonth?: number;
+  earliestInteractionTier?: string;
+  earliestInteractionYearsPassed?: number;
 } {
   const history = pl.history || [];
   const rivalEvents = history.filter(h => h.participants?.includes(rivalName));
 
   const sabotaged = rivalEvents.some(e => e.id.includes('sabotage_success') || e.id === 'first_sabotage');
-  const helped = rivalEvents.some(e => e.id.includes('help') || e.id === 'first_partnership');
+  const helped = rivalEvents.some(e => e.id.includes('help') || e.id === 'first_partnership' || e.id.includes('partnership_gift') || e.id.includes('recruit'));
   const counterBid = rivalEvents.some(e => e.id.includes('counter_bid'));
   const retaliated = rivalEvents.some(e => e.id.includes('retaliation'));
 
@@ -33,7 +39,45 @@ export function getRivalMemories(pl: PlayerStats, rivalName: string): {
   const sabotagedMonth = rivalEvents.find(e => e.id.includes('sabotage_success') || e.id === 'first_sabotage')?.month;
   const betrayed = helpedMonth !== undefined && sabotagedMonth !== undefined && sabotagedMonth > helpedMonth;
 
-  return { sabotaged, helped, counterBid, retaliated, betrayed };
+  // rescued: if helped them when they were weak, or if they are recruited as allies
+  const matchingRival = pl.rivals?.find(r => r.name === rivalName);
+  const rescued = helped || (matchingRival && (matchingRival.helpedCount || 0) >= 2) || (matchingRival?.status === 'ally');
+
+  // liquidated: if they had to close a business or sell property due to capital crunch
+  const liquidated = rivalEvents.some(e => e.id.includes('liquidation') || e.id.includes('business_close') || e.id.includes('dismiss'));
+
+  // humiliated: multiple sabotages or extremely low relationship with high sabotaged count
+  const humiliated = (matchingRival && (matchingRival.sabotagedCount || 0) >= 3) || (matchingRival && (matchingRival.relationshipWithPlayer || 0) < -50);
+
+  let earliestInteractionMonth: number | undefined = undefined;
+  let earliestInteractionTier: string | undefined = undefined;
+  let earliestInteractionYearsPassed: number | undefined = undefined;
+
+  if (rivalEvents.length > 0) {
+    earliestInteractionMonth = Math.min(...rivalEvents.map(e => e.month));
+    const m = earliestInteractionMonth;
+    earliestInteractionYearsPassed = Math.floor((pl.month - m) / 12);
+    if (m < 12) earliestInteractionTier = "MUD";
+    else if (m < 24) earliestInteractionTier = "STREET";
+    else if (m < 48) earliestInteractionTier = "STARTUP";
+    else if (m < 72) earliestInteractionTier = "CORPORATE";
+    else if (m < 96) earliestInteractionTier = "ELITE";
+    else earliestInteractionTier = "MOGUL";
+  }
+
+  return {
+    sabotaged,
+    helped,
+    counterBid,
+    retaliated,
+    betrayed,
+    rescued,
+    liquidated,
+    humiliated,
+    earliestInteractionMonth,
+    earliestInteractionTier,
+    earliestInteractionYearsPassed
+  };
 }
 
 export const simulateRivals = (
@@ -315,11 +359,25 @@ export const simulateRivals = (
 
         let quote = '"Stay in your lane."';
         if (mem.betrayed) {
-          quote = '"You pretended to be my partner, then stabbed me in the back. Now it\'s my turn."';
+          quote = mem.earliestInteractionYearsPassed !== undefined && mem.earliestInteractionYearsPassed > 0
+            ? `"It's been ${mem.earliestInteractionYearsPassed} years since you stabbed me in the back after we partnered. I never forget a betrayal."`
+            : '"You pretended to be my partner, then stabbed me in the back. Now it\'s my turn."';
+        } else if (mem.earliestInteractionTier && mem.liquidated) {
+          quote = mem.earliestInteractionYearsPassed !== undefined && mem.earliestInteractionYearsPassed > 0
+            ? `"You took my company ${mem.earliestInteractionYearsPassed} years ago in the ${mem.earliestInteractionTier} years. I've been waiting for this moment."`
+            : `"You took my company in the ${mem.earliestInteractionTier} years. I've been waiting for this moment."`;
+        } else if (mem.liquidated) {
+          quote = '"You forced me to liquidate my assets. I had to claw my way back, and now I\'m coming for yours!"';
+        } else if (mem.humiliated) {
+          quote = '"You publicly humiliated me in the past, thinking I was weak. This is my payback!"';
         } else if (mem.retaliated) {
           quote = '"You tried to crush me with your retaliation. I don\'t forget. I\'m hitting back twice as hard."';
         } else if (mem.sabotaged) {
-          quote = '"You think you can sabotage my operations and get away with it? I remember what you did."';
+          quote = mem.earliestInteractionYearsPassed !== undefined && mem.earliestInteractionYearsPassed > 0
+            ? `"I still remember when you sabotaged my logistics ${mem.earliestInteractionYearsPassed} years ago. Time for some long-overdue interest on that debt."`
+            : mem.earliestInteractionMonth !== undefined
+            ? `"You think you can sabotage my operations and get away with it? I remember what you did back at Month ${mem.earliestInteractionMonth}."`
+            : '"You think you can sabotage my operations and get away with it? I remember what you did."';
         } else if (mem.counterBid) {
           quote = '"You out-bid me and took my sector position. Let\'s see how your portfolio handles this strike."';
         } else if (mem.helped) {

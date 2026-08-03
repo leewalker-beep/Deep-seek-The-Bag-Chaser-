@@ -140,6 +140,50 @@ export function generateStrategicAdvice(
       confidence: 100,
     });
   }
+
+  // --- HISTORIC ADVISOR REFLECTIONS (WORLD MEMORY SYSTEM) ---
+  const isHighTier = pl.currentTier !== 'MUD' && pl.currentTier !== 'STREET';
+  if (isHighTier) {
+    insights.push({
+      id: 'advisor_mem_rent',
+      category: 'WorldMemory',
+      priority: 'Information',
+      title: 'Reflections on the Climb',
+      whatIsHappening: 'I remember when your biggest concern was paying rent.',
+      whyItHappened: 'You rose from street-level grind to command high-tier commercial holdings.',
+      recommendation: 'Remember your humble beginnings to keep your strategic edge sharp.',
+      confidence: 100,
+    });
+  }
+
+  const hasSurvivedDifficult = (pl.arrestCount && pl.arrestCount > 0) || (pl.mentalHealth && pl.mentalHealth < 40) || (pl.history?.some(h => h.id.includes('comeback') || h.id.includes('rebound') || h.id.includes('phoenix')));
+  if (hasSurvivedDifficult) {
+    insights.push({
+      id: 'advisor_mem_resilience',
+      category: 'WorldMemory',
+      priority: 'Information',
+      title: 'Trust Your Experience',
+      whatIsHappening: "You've survived difficult periods before.",
+      whyItHappened: 'Your career has navigated critical setbacks, proving your operational resilience.',
+      recommendation: 'Draw confidence from past recoveries to handle any current market crises.',
+      confidence: 100,
+    });
+  }
+
+  const educationChoices = pl.narrativeFlags?.education_choices_count as number || 0;
+  const isPatient = educationChoices >= 1 || pl.month >= 36;
+  if (isPatient) {
+    insights.push({
+      id: 'advisor_mem_patience',
+      category: 'WorldMemory',
+      priority: 'Information',
+      title: 'The Deliberate Architect',
+      whatIsHappening: "Your patience has always been one of your greatest strengths.",
+      whyItHappened: 'You prioritized long-term pedigree, structured choices, or slow-and-steady growth.',
+      recommendation: 'Maintain your deliberate, calculating pace to avoid careless, high-heat mistakes.',
+      confidence: 100,
+    });
+  }
   const passiveCorporateHustles = ['data_monopoly', 'crypto_mining'];
   const activePassiveCorpHustles = activeHustleKeys.filter(h => passiveCorporateHustles.includes(h));
   if (activePassiveCorpHustles.length > 0) {

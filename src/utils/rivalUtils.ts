@@ -79,6 +79,62 @@ export const isRivalEligibleForRecruit = (rival: Rival): boolean => {
 export function getCharacterCallbackLine(player: any, characterId: string | undefined): string | null {
   if (!characterId) return null;
 
+  const flags = player.narrativeFlags || {};
+
+  // Character-specific historical memory overrides
+  if (characterId === 'char_cassie') {
+    const isInvolved = player.completedNarrativeEvents?.some((e: string) => e.includes('char_cassie_intel')) || flags['cassie_buy_shares'] || flags['cassie_take_control'];
+    if (isInvolved) {
+      return "History: Cassie remembers the thrift shop exchanges and shipping merger details you traded with her.";
+    }
+  }
+
+  if (characterId === 'char_marcus' || characterId === 'char_marcus_v2') {
+    if (flags['cut_ties_marcus']) {
+      return "History: Tensions linger after you cut ties with Marcus to protect your public persona.";
+    }
+    const isAlly = player.npcs?.some((n: any) => n.id === 'char_marcus' && n.disposition > 60) || flags['marcus_help'];
+    if (isAlly) {
+      return "History: Marcus Miller, your childhood confidant from the mud blocks. He still remembers when your biggest worry was paying rent.";
+    }
+  }
+
+  if (characterId === 'char_pops') {
+    if (flags['pops_give_back'] || flags['pops_fund_hub'] || flags['pops_reflect_roots']) {
+      return "History: Pops Jenkins remembers your promise to keep your feet on the dirt and your generosity to the old block.";
+    }
+    if (flags['pops_intimidate']) {
+      return "History: Pops still looks at you with weary disappointment after you used raw intimidation on the neighborhood anchor.";
+    }
+  }
+
+  if (characterId === 'char_slick') {
+    if (flags['slick_consignment_accept'] || flags['slick_heist'] || flags['slick_accept']) {
+      return "History: Terrence 'Slick' Reed remembers the high-stakes consignments and heist schemes you shared.";
+    }
+  }
+
+  if (characterId === 'char_rosa') {
+    if (flags['rosa_concede'] || flags['rosa_fund_campaign'] || flags['rosa_help']) {
+      return "History: Mama Rosa Mendez remembers your support for the neighborhood workers and clinic fundraiser.";
+    }
+    if (flags['rosa_break']) {
+      return "History: Rosa looks at you coldly, remembering how you prioritized corporate margins over neighborhood lives.";
+    }
+  }
+
+  if (characterId === 'char_sofia') {
+    if (flags['sofia_lead'] || flags['sofia_un_speech'] || flags['sofia_nobel']) {
+      return "History: Sofia Ramirez remembers your key funding during her Mayor and UN speech campaigns.";
+    }
+  }
+
+  if (characterId === 'char_victor' || characterId === 'char_victor_v2') {
+    if (player.crushedRivals?.includes('char_victor') || player.crushedRivals?.includes('char_victor_v2')) {
+      return "History: Chairman Kane remembers when you seized his corporate sectors. He wants to erase your name from history.";
+    }
+  }
+
   // 1. crushedRivals
   if (player.crushedRivals?.includes(characterId)) {
     return `History: You crushed them as a rival, but they respect/fear your authority now.`;
