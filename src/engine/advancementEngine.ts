@@ -1,5 +1,6 @@
 import type { PlayerStats, MarketType, Tier } from '../types/game';
 import { FLEX_ASSETS } from '../config/flexAssets';
+import { compileAnnualReview } from '../utils/annualReviewCompiler';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { HUSTLES } from '../config/hustles/base';
 import { enforceStatCaps } from './statEngine';
@@ -507,6 +508,11 @@ export function advanceMonth(
 
   newPl.bag = newPl.bag + passiveIncome - totalDeductions;
 
+  // Accumulate monthly passive income and deductions for annual statement
+  if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+  newPl.narrativeFlags.annualPassiveEarned = Number(newPl.narrativeFlags.annualPassiveEarned || 0) + passiveIncome;
+  newPl.narrativeFlags.annualPassiveSpent = Number(newPl.narrativeFlags.annualPassiveSpent || 0) + totalDeductions;
+
   // Track / apply liquidity crunch and debt service progression
   const originalDebts = newPl.financialDebts || [];
   const updatedDebts = [];
@@ -722,6 +728,16 @@ export function advanceMonth(
   }
 
   if (newPl.month > 0 && newPl.month % 12 === 0) {
+    const reviewData = compileAnnualReview(newPl);
+    if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+    newPl.narrativeFlags.lastAnnualReviewData = JSON.stringify(reviewData);
+
+    const bioUpdate = Bio.recordAnnualReviewBiography(newPl, reviewData);
+    if (bioUpdate) {
+      newPl.biography = [...(newPl.biography || []), bioUpdate.entry];
+      newPl.recordedBioKeys = [...(newPl.recordedBioKeys || []), bioUpdate.key!];
+    }
+
     newPl.pendingAnnualStatement = true;
   }
 

@@ -1593,7 +1593,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       passiveBreakdown,
       marketMult: { yield: 1, expense: 1, heat: 1 },
       marketName: state.currentMarket,
-      variation: 0
+      variation: 0,
+      heatHit: result.heatHit,
+      mentalHit: result.mentalHit
     };
 
     if (newMarket !== state.currentMarket) {

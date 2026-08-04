@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { BaseButton } from './ui/BaseButton';
@@ -21,6 +21,20 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [bioViewMode, setBioViewMode] = useState<'book' | 'log'>('book');
 
   const { setPh, updatePl, takeLoan, repayLoan } = useGameStore();
+
+  const targetTab = pl.narrativeFlags?.target_scoreboard_tab as string;
+  useEffect(() => {
+    if (targetTab) {
+      setActiveTab(targetTab as any);
+      updatePl({
+        narrativeFlags: {
+          ...(pl.narrativeFlags || {}),
+          target_scoreboard_tab: ''
+        }
+      });
+    }
+  }, [targetTab, updatePl, pl.narrativeFlags]);
+
   const stats = pl.stats || { totalHustles: 0, successfulHustles: 0, lifetimeEarnings: 0 };
   const successRate = stats.totalHustles > 0
     ? Math.floor((stats.successfulHustles / stats.totalHustles) * 100)
