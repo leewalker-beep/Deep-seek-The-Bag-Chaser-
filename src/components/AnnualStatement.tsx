@@ -379,7 +379,7 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   {Object.entries(dimNames).map(([key, label]) => {
                     const cVal = currentDimensions[key as keyof typeof currentDimensions] || 0;
-                    const sVal = startDimensions[key] || 0;
+                    const sVal = startDimensions[key as keyof typeof startDimensions] || 0;
                     const diff = cVal - sVal;
                     return (
                       <div key={key} className="space-y-1">

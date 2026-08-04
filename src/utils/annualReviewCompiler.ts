@@ -361,6 +361,7 @@ export function compileAnnualReview(pl: PlayerStats): AnnualReviewData {
   }
   const identityArchetype = determineDominantIdentityArchetype(pl);
   const _trajectory = detectIdentityEvolution(pl);
+  void _trajectory;
 
   const dimensionChanges: { name: string; change: number; text: string }[] = [];
   const dimNames = {
@@ -376,7 +377,7 @@ export function compileAnnualReview(pl: PlayerStats): AnnualReviewData {
 
   for (const [key, label] of Object.entries(dimNames)) {
     const cVal = currentDim[key as keyof typeof currentDim] || 0;
-    const sVal = startDim[key] || 0;
+    const sVal = startDim[key as keyof typeof startDim] || 0;
     const diff = cVal - sVal;
 
     let text = "";
