@@ -6,6 +6,8 @@ import * as Bio from './engine/biographyEngine';
 import { useSafariCompatible } from './hooks/useSafariCompatible';
 import { debounce } from './utils/performance';
 import { analyzeBehavior } from './utils/personalityAnalyzer';
+import { evaluateIdentityDimensions } from './utils/identitySystem';
+import { calculateNetWorth } from './utils/annualReviewCompiler';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
 import { BranchChoice } from './components/BranchChoice';
@@ -2283,14 +2285,30 @@ function App() {
 
       {pl.pendingAnnualStatement && (
         <AnnualStatement
-          onDismiss={() =>
+          onDismiss={() => {
+            const nextStartDimensions = evaluateIdentityDimensions(pl);
+            const nextStartNetWorth = calculateNetWorth(pl);
+            const updatedFlags = {
+              ...(pl.narrativeFlags || {}),
+              year_start_bag: pl.bag,
+              year_start_net_worth: nextStartNetWorth,
+              year_start_clout: pl.clout,
+              year_start_aura: pl.aura,
+              year_start_tier: pl.currentTier,
+              year_start_reputation: (pl.narrativeFlags?.publicReputation as string) || 'The Hustler',
+              year_start_dimensions: nextStartDimensions,
+              annualPassiveEarned: 0,
+              annualPassiveSpent: 0,
+            };
+
             useGameStore.getState().updatePl({
               pendingAnnualStatement: false,
               annualCashEarned: 0,
               annualCashSpent: 0,
               annualHustlesRun: 0,
-            })
-          }
+              narrativeFlags: updatedFlags,
+            });
+          }}
         />
       )}
 

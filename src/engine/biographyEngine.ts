@@ -241,6 +241,31 @@ export const recordCabinetAppointment = (pl: PlayerStats, name: string, role: st
   );
 };
 
+export const recordAnnualReviewBiography = (pl: PlayerStats, reviewData: any): BiographyUpdate | null => {
+  const name = pl.name || "the Chaser";
+
+  const financialSect = `Year ${reviewData.yearNumber} was defined as "${reviewData.chapterTitle}." Under the stewardship of ${name}, the empire experienced a net worth swing of $${reviewData.netWorthChange.toLocaleString()}, active cash inflows of $${reviewData.activeIncome.toLocaleString()}, and passive returns totaling $${reviewData.passiveIncome.toLocaleString()}. The best investment of the year was the ${reviewData.bestInvestment}.`;
+
+  const costSect = `This progress was earned through extreme grit: facing a toll of ${reviewData.totalMentalHit} mental stress and incurring ${reviewData.totalHeatHit} points of street heat.`;
+
+  const definingMomentSect = `The defining moment of the year came with "${reviewData.definingMomentTitle}" — ${reviewData.definingMomentDescription}`;
+
+  const identitySect = `On a personal level, ${reviewData.identitySummary} The world began to view them as ${reviewData.publicPerception}, with the media tone being ${reviewData.mediaTone.toLowerCase()}.`;
+
+  const relationshipSect = `The year also saw key alignments and movements: ${reviewData.newAlliances.join('; ')}. Meanwhile, ${reviewData.rivalOfTheYear} remained a notable presence in the industry.`;
+
+  const finalProse = `${financialSect} ${costSect} ${definingMomentSect} ${identitySect} ${relationshipSect} ${reviewData.legacyMoment} "${reviewData.emotionalSignature}"`;
+
+  return recordEvent(
+    pl,
+    finalProse,
+    `annual_review_year_${reviewData.yearNumber}`,
+    'CAREER',
+    3,
+    `Year ${reviewData.yearNumber} Review`
+  );
+};
+
 export const recordArtistDropped = (pl: PlayerStats, name: string): BiographyUpdate | null => {
   const pName = getPlayerName(pl);
   const templates = [
