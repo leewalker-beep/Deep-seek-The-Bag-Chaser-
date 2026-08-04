@@ -351,9 +351,16 @@ export function compileAnnualReview(pl: PlayerStats): AnnualReviewData {
 
   // 9. IDENTITY STORY (most important)
   const currentDim = evaluateIdentityDimensions(pl);
-  const startDim = pl.narrativeFlags?.year_start_dimensions as Record<string, number> || currentDim;
+  let startDim = currentDim;
+  if (pl.narrativeFlags?.year_start_dimensions) {
+    try {
+      startDim = JSON.parse(pl.narrativeFlags.year_start_dimensions as string);
+    } catch (e) {
+      // fallback
+    }
+  }
   const identityArchetype = determineDominantIdentityArchetype(pl);
-  const trajectory = detectIdentityEvolution(pl);
+  const _trajectory = detectIdentityEvolution(pl);
 
   const dimensionChanges: { name: string; change: number; text: string }[] = [];
   const dimNames = {

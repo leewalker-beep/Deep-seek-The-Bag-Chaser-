@@ -47,7 +47,14 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
   })();
 
   const currentDimensions = evaluateIdentityDimensions(pl);
-  const startDimensions = (pl.narrativeFlags?.year_start_dimensions as Record<string, number>) || currentDimensions;
+  let startDimensions = currentDimensions;
+  if (pl.narrativeFlags?.year_start_dimensions) {
+    try {
+      startDimensions = JSON.parse(pl.narrativeFlags.year_start_dimensions as string);
+    } catch (e) {
+      // fallback
+    }
+  }
 
   // Sound effects on slide change
   useEffect(() => {
@@ -80,7 +87,7 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
       year_start_aura: pl.aura,
       year_start_tier: pl.currentTier,
       year_start_reputation: (pl.narrativeFlags?.publicReputation as string) || 'The Hustler',
-      year_start_dimensions: nextStartDimensions,
+      year_start_dimensions: JSON.stringify(nextStartDimensions),
       target_scoreboard_tab: subTab,
       annualPassiveEarned: 0,
       annualPassiveSpent: 0,

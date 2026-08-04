@@ -306,6 +306,7 @@ export interface GameAction {
   marketName?: string;
   variation?: number;
   heatHit?: number;
+  mentalHit?: number;
 }
 
 export interface Artist extends RosterCharacter {

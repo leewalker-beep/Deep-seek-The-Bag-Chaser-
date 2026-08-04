@@ -2296,7 +2296,7 @@ function App() {
               year_start_aura: pl.aura,
               year_start_tier: pl.currentTier,
               year_start_reputation: (pl.narrativeFlags?.publicReputation as string) || 'The Hustler',
-              year_start_dimensions: nextStartDimensions,
+              year_start_dimensions: JSON.stringify(nextStartDimensions),
               annualPassiveEarned: 0,
               annualPassiveSpent: 0,
             };
