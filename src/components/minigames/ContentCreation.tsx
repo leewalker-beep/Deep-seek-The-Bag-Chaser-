@@ -121,7 +121,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
 
   // Difficulty scaling
   const timePerTopic = useMemo(() => {
-    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
+    if (typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test') {
       return 999;
     }
     return Math.max(0.8, (2.5 - (level * 0.2)) * timerFactor);
