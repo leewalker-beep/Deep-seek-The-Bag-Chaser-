@@ -106,7 +106,7 @@ describe('Final Audit: Store-Level Verification', () => {
 
     // Set enough stats for upgrade
     useGameStore.setState(s => ({
-      pl: { ...s.pl, bag: 100000, clout: 200, aura: 200, currentTier: 'MUD', events: [] }
+      pl: { ...s.pl, bag: 100000, clout: 200, aura: 50, currentTier: 'MUD', events: [] }
     }));
 
     // Upgrade r_labor to House Flip (l2a). Base cost 5000.

@@ -1381,6 +1381,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         colorClass: 'text-red-400 font-medium',
         tier: state.pl.currentTier
       });
+
+      // High Clout Public Backlash for failure
+      if (state.pl.clout >= 1000) {
+        finalAuraYield = Math.max(0, finalAuraYield - 10);
+        result.heatHit += 10;
+        result.tickerMessages.push({
+          text: `📰 HIGH PROFILE FAIL: National media mocks your failed venture (-10 Aura, +10 Heat).`,
+          colorClass: 'text-red-400 font-bold',
+          tier: state.pl.currentTier
+        });
+      }
     }
 
     const hustleResultPl = enforceStatCaps({
@@ -1866,6 +1877,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     // Apply Flex Asset Bonuses
     applyFlexBonuses(result, calculateFlexBonuses(state.pl));
+
+    // Apply Investor Confidence 10% discount for high Aura (aura >= 100)
+    if (state.pl.aura >= 100) {
+      result.cost = Math.floor(result.cost * 0.90);
+    }
 
     if (state.pl.bag < result.cost) return false;
 
@@ -2873,8 +2889,20 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     // Apply immediate consequences
     if (cons.bag) nextPl.bag += cons.bag;
-    if (cons.clout) nextPl.clout += cons.clout;
-    if (cons.aura) nextPl.aura += cons.aura;
+    if (cons.clout) {
+      let cloutChange = cons.clout;
+      if (cloutChange < 0 && state.pl.clout >= 1000) {
+        cloutChange = Math.floor(cloutChange * 1.3);
+      }
+      nextPl.clout += cloutChange;
+    }
+    if (cons.aura) {
+      let auraChange = cons.aura;
+      if (auraChange < 0 && state.pl.aura >= 100) {
+        auraChange = Math.floor(auraChange * 1.5);
+      }
+      nextPl.aura += auraChange;
+    }
     if (cons.heat) nextPl.heat += cons.heat;
     if (cons.mentalHealth) nextPl.mentalHealth += cons.mentalHealth;
 

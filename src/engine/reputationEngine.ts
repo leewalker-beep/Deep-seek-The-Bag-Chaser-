@@ -814,6 +814,16 @@ export function applyReputationLossScale(clout: number, aura: number, reputation
     auraMult *= 0.7;
   }
 
+  // Public Scrutiny: High Clout players attract online backlash (1.3x Clout losses)
+  if (pl && pl.clout >= 1000) {
+    cloutMult *= 1.3;
+  }
+
+  // Expectations Penalty: High Aura players breaking trust face 1.5x Aura losses
+  if (pl && pl.aura >= 100) {
+    auraMult *= 1.5;
+  }
+
   return {
     clout: Math.floor(clout * cloutMult),
     aura: Math.floor(aura * auraMult)
@@ -908,6 +918,12 @@ export function evaluateReputationTick(pl: PlayerStats): { newPl: PlayerStats; n
 
   const currentRep = (newPl.narrativeFlags.publicReputation as string) || "The Hustler";
   newPl.narrativeFlags.publicReputation = currentRep;
+
+  // Public Memory: Rebuilt after Scandal
+  const hasScandalHistory = (newPl.scandalCount || 0) > 0 || (newPl.arrestCount || 0) > 0;
+  if (hasScandalHistory && newPl.clout >= 1000 && newPl.aura >= 100) {
+    newPl.narrativeFlags.rebuilt_after_scandal = true;
+  }
 
   // Calculate scores
   const scores = calculateReputationScores(newPl);

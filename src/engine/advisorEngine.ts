@@ -557,6 +557,20 @@ export function generateStrategicAdvice(
     });
   }
 
+  // Respected Leadership Expectations (High Aura)
+  if (pl.aura >= 100) {
+    insights.push({
+      id: 'aura_social_pressure',
+      category: 'Aura',
+      priority: 'Important',
+      title: 'Respected Leadership Expectations',
+      whatIsHappening: 'Supporters and partners expect unmatched leadership and high-integrity decisions.',
+      whyItHappened: 'Your reputation as a trusted, respected leader has peaked.',
+      recommendation: 'Beware: breaking public trust or executing unethical decisions now damages your Aura 1.5x more significantly. Protect your workforce and honor partnerships.',
+      confidence: 100
+    });
+  }
+
   // 10. CLOUT ANALYSIS
   if (pl.clout > 800) {
     insights.push({
@@ -579,6 +593,20 @@ export function generateStrategicAdvice(
       whyItHappened: 'Failing to execute high-ticket media campaigns, or neglecting publicity channels.',
       recommendation: 'Run PR Campaigns or SMM Gigs. High Clout is mandatory to unlock advanced tier promotions.',
       confidence: 95,
+    });
+  }
+
+  // Famous Under Scrutiny (High Clout)
+  if (pl.clout >= 1000) {
+    insights.push({
+      id: 'clout_social_pressure',
+      category: 'Clout',
+      priority: 'Important',
+      title: 'Famous Under Scrutiny',
+      whatIsHappening: 'Your extreme public Clout attracts intense national scrutiny and fast-spreading scandals.',
+      whyItHappened: 'You have reached legendary fame and social visibility.',
+      recommendation: 'Be extremely careful: any failed businesses or scandals will trigger 1.3x Clout losses and 1.25x Heat hits. Maintain a highly polished public image.',
+      confidence: 100
     });
   }
 

@@ -76,8 +76,8 @@ describe('open_movie custom casting and strategy tests', () => {
         ...s.pl,
         currentTier: 'OPEN',
         bag: 1000000000,
-        clout: 2000,
-        aura: 2000,
+        clout: 500,
+        aura: 150,
         rolodex: [
           { id: 'cel_1', name: 'Superstar Marcus', avatar: '🏀', relationshipScore: 100, isUnlocked: true }
         ]

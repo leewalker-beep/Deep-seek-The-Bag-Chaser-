@@ -13,7 +13,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
 
     // Give enough money
     useGameStore.setState((state) => ({
-      pl: { ...state.pl, bag: 10000000, currentTier: 'MUD', clout: 1000, aura: 1000 }
+      pl: { ...state.pl, bag: 10000000, currentTier: 'MUD', clout: 500, aura: 50 }
     }));
 
     // Purchase 20 Rent Portfolios
@@ -36,7 +36,7 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
 
     const { executeHustle } = useGameStore.getState();
     useGameStore.setState((state) => ({
-      pl: { ...state.pl, bag: 1000000, currentTier: 'OPEN', clout: 1000, aura: 1000 }
+      pl: { ...state.pl, bag: 1000000, currentTier: 'OPEN', clout: 500, aura: 50 }
     }));
 
     const result = executeHustle('meme', 1, true); // forceSuccess=true
@@ -65,8 +65,8 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         ...state.pl,
         bag: 1000000,
         currentTier: 'OPEN',
-        clout: 1000,
-        aura: 1000,
+        clout: 500,
+        aura: 50,
         flexAssets: {},
         legacyPoints: 0,
         masteredHustles: [],
@@ -88,8 +88,8 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         ...state.pl,
         bag: 1000000,
         currentTier: 'OPEN',
-        clout: 1000,
-        aura: 1000,
+        clout: 500,
+        aura: 50,
         flexAssets: {
             'penthouse': 1 // Penthouse has 10% allGainsBonus
         },
@@ -113,8 +113,8 @@ describe('Phase 2: Economy-Breaking Bugs Verification', () => {
         ...state.pl,
         bag: 1000000,
         currentTier: 'OPEN',
-        clout: 1000,
-        aura: 1000,
+        clout: 500,
+        aura: 50,
         flexAssets: {
             'tech_conglomerate': 10, // boosts other flex assets by 1+10*0.1 = 2.0x
             'penthouse': 10 // (10 * 10%) * 2.0 = 200% bonus

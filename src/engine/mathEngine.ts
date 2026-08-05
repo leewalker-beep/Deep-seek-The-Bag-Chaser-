@@ -363,6 +363,11 @@ export function calculateHustleStatsAdditive(
   effectiveResult.mentalHit = Math.floor(effectiveResult.mentalHit * finalMentalMult);
   effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * finalHeatMult);
 
+  // Public Scrutiny: High Clout players attract fast-spreading scandals (1.25x Heat hits)
+  if (player.clout >= 1000 && effectiveResult.heatHit > 0) {
+    effectiveResult.heatHit = Math.floor(effectiveResult.heatHit * 1.25);
+  }
+
   // --- Enduring Background Modifiers ---
   let bgYieldBonus = 0;
   if (player.chosenBackgroundCategory === 'dropout') {
@@ -454,11 +459,17 @@ export function calculateHustleStatsAdditive(
     effectiveResult.cost = Math.floor(effectiveResult.cost * 0.85);
   }
 
+  // --- High Clout Sponsorship Bonus ---
+  let cloutSponsorshipBonus = 0;
+  if (player.clout >= 1000) {
+    cloutSponsorshipBonus = Math.min(0.25, (player.clout / 2000) * 0.25);
+  }
+
   // --- Centralized Cash Yield Linear Multiplier ---
   const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
   const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
 
-  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus + repYieldBonus;
+  const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus + repYieldBonus + cloutSponsorshipBonus;
 
   // Globally limit the total cash yield multiplier to prevent extreme scaling/exploit (capped at 10.0x max multiplier)
   const cappedTotalMultiplier = Math.min(10.0, totalMultiplier);
