@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata, Founder, RegionalExecutive, PlayerStats } from '../../types/game';
+import type { GameState, GameAction, Tier, GameEventType, Challenge, GameEventMetadata, TickerMessage, SpecialEventMetadata, Founder, RegionalExecutive, PlayerStats, GameEvent, CharacterStatus, RecordLabelArtist } from '../../types/game';
 
 const FOUNDER_FIRST_NAMES = ["Alex", "Jordan", "Taylor", "Casey", "Morgan", "Sam", "Jamie", "Robin", "Drew", "Skyler"];
 const FOUNDER_LAST_NAMES = ["Chen", "Smith", "Altman", "Musk", "Jobs", "Wozniak", "Thiel", "Horowitz", "Andreessen", "Page"];
@@ -26,6 +26,7 @@ import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
 import { HUSTLE_BADGES } from '../../config/badges';
 import { enforceStatCaps } from '../../engine/statEngine';
 import { advanceMonth, checkDeathConditions, processEntertainmentTimelineTick } from '../../engine/advancementEngine';
+import type { AdvancementResult } from '../../engine/advancementEngine';
 import { DEATH_MESSAGES } from '../../config/deathMessages';
 import { checkAndGenerateChoiceModal } from '../../engine/legacyStoryEvents';
 
@@ -71,7 +72,7 @@ export interface HustleSlice {
   resolveInteractiveStoryEvent: (choiceIndex: number) => void;
   logAction: (action: Omit<GameAction, 'id' | 'timestamp'>) => void;
   logEvent: (type: GameEventType, metadata?: GameEventMetadata) => void;
-  registerAdvice: (insights: any[]) => void;
+  registerAdvice: (insights: { id: string }[]) => void;
   triggerSetback: () => void;
   checkMilestones: () => void;
   resetGame: (
@@ -88,7 +89,7 @@ export interface HustleSlice {
       recordedBioKeys: string[];
       hustlePlays: Record<string, number>;
       totalHustlesCompleted: number;
-      actionLog: any[];
+      actionLog: GameAction[];
     }
   ) => void;
 }
@@ -271,7 +272,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
   },
 
   logEvent: (type, metadata = {} as GameEventMetadata) => {
-    let newEvent: any = null;
+    let newEvent: GameEvent | null = null;
 
     set((state) => {
       newEvent = {
@@ -290,7 +291,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       };
 
       const isJailSetback = state.pl.inJail && !state.pl.inJail; // Will be handled on direct property transition, or if metadata says arrest
-      const isSetback = type === 'SCANDAL_TRIGGERED' || (type === 'SPECIAL_EVENT' && (metadata as any)?.type === 'RIVAL_SABOTAGE') || isJailSetback;
+      const isSetback = type === 'SCANDAL_TRIGGERED' || (type === 'SPECIAL_EVENT' && (metadata as SpecialEventMetadata)?.type === 'RIVAL_SABOTAGE') || isJailSetback;
 
       const updatedPl = enforceStatCaps({
         ...state.pl,
@@ -938,7 +939,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const isRealEstateBuy = ['l2a', 'l2b', 'l3a'].includes(branchId) && hustleId === 'r_labor';
 
     let finalNextPl = nextPl;
-    const sideEvents: { type: GameEventType, metadata: any }[] = [];
+    const sideEvents: { type: GameEventType, metadata: GameEventMetadata }[] = [];
 
     if (isVendingBuy) {
       sideEvents.push({ type: 'BUSINESS_PURCHASED', metadata: { assetId: 'vending', cost: result.cost } });
@@ -994,7 +995,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const isTimelineTick = branchId === 'vending' || hustleId === 'r_vending' || (branchId === 'l2b' && hustleId === 'r_labor') || (branchId === 'l1' && hustleId === 'r_labor');
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
-    let advancementResult: any = null;
+    let advancementResult: AdvancementResult | null = null;
 
     if (isTimelineTick) {
       advancementResult = advanceMonth(
@@ -1444,7 +1445,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         month: runningPl.month
       });
     }
-    const sideEvents: { type: GameEventType, metadata: any }[] = [];
+    const sideEvents: { type: GameEventType, metadata: GameEventMetadata }[] = [];
 
     if (result.tickerMessages?.some(m => m.text.includes('DATA BREACH'))) {
       sideEvents.push({ type: 'SCANDAL_TRIGGERED', metadata: { type: 'DATA_BREACH' } });
@@ -1979,7 +1980,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
     let finalCurrentMarket = state.currentMarket;
     let tickNews: (string | TickerMessage)[] = [];
-    let advancementResult: any = null;
+    let advancementResult: AdvancementResult | null = null;
 
     let finalPh = state.ph;
     let finalDeathBadge = state.deathBadge;
@@ -2784,7 +2785,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     // Set Rival status to 'ally' and clear bid
     const updatedRivals = state.pl.rivals.map(r =>
-      r.id === rivalId ? { ...r, status: 'ally' as any, currentBid: 0 } : r
+      r.id === rivalId ? { ...r, status: 'ally' as CharacterStatus, currentBid: 0 } : r
     );
 
     // Generate roster profile
@@ -3192,15 +3193,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 });
 
 // 2. REWRITE Concert Completion to evaluate only the chosen artist lineup:
-export const completeConcertPerformanceWithLineup = (draftPl: any, score: number, gigLevel: number, performingArtistIds: string[], newsFeed: string[]) => {
+export const completeConcertPerformanceWithLineup = (draftPl: PlayerStats, score: number, gigLevel: number, performingArtistIds: string[], newsFeed: string[]) => {
   if (!draftPl.artists || performingArtistIds.length === 0) return;
 
   // Filter out the exact artists selected by the player for this gig
-  const lineup = draftPl.artists.filter((a: any) => performingArtistIds.includes(a.id));
+  const lineup = draftPl.artists.filter((a: RecordLabelArtist) => performingArtistIds.includes(a.id));
   if (lineup.length === 0) return;
 
   // Calculate dynamic line-up multiplier based on collective star power/hype
-  const collectiveLineupHype = lineup.reduce((acc: number, curr: any) => acc + (curr.hypeFactor || 1.0), 0);
+  const collectiveLineupHype = lineup.reduce((acc: number, curr: RecordLabelArtist) => acc + (curr.hypeFactor || 1.0), 0);
 
   // Ticket payout scales directly based on who you put on stage
   const ticketSalesPayoff = Math.floor(score * gigLevel * 30 * (collectiveLineupHype / lineup.length));
@@ -3209,7 +3210,7 @@ export const completeConcertPerformanceWithLineup = (draftPl: any, score: number
   // Hype bumps are awarded explicitly to the artists who performed the physical labor of the show
   const individualHypeBoost = parseFloat((score * 0.02 * gigLevel).toFixed(3));
 
-  draftPl.artists = draftPl.artists.map((artist: any) => {
+  draftPl.artists = draftPl.artists.map((artist: RecordLabelArtist) => {
     if (performingArtistIds.includes(artist.id)) {
       const oldHype = artist.hypeFactor || 1.0;
       const newHype = Math.min(5.0, oldHype + individualHypeBoost);
@@ -3222,7 +3223,7 @@ export const completeConcertPerformanceWithLineup = (draftPl: any, score: number
     return artist;
   });
 
-  const lineupNames = lineup.map((a: any) => a.name).join(', ');
+  const lineupNames = lineup.map((a: RecordLabelArtist) => a.name).join(', ');
   const bioUpdate = Bio.recordArtistBooking(draftPl, lineupNames, gigLevel);
   if (bioUpdate) {
     draftPl.biography = [...(draftPl.biography || []), bioUpdate.entry];

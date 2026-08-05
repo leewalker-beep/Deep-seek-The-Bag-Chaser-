@@ -1,4 +1,4 @@
-import type { PlayerStats, MarketType, Tier } from '../types/game';
+import type { PlayerStats, MarketType, Tier, RecordLabelArtist, Founder, RegionalExecutive, RolodexCelebrity } from '../types/game';
 import { FLEX_ASSETS } from '../config/flexAssets';
 import { compileAnnualReview } from '../utils/annualReviewCompiler';
 import { MARKET_CONFIGS } from '../config/marketConfig';
@@ -1110,7 +1110,7 @@ export function advanceMonth(
     const monthlyEvent = triggerMonthlyNarrativeEvent(newPl);
     if (monthlyEvent) {
       const isSpecialEvent = !monthlyEvent.id.startsWith('evt_generic_market_');
-      const isTestEnv = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
+      const isTestEnv = typeof globalThis !== 'undefined' && (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'test';
       const shouldTriggerGeneric = !isTestEnv && Math.random() < 0.05; // 5% chance in real gameplay
 
       if (isSpecialEvent || shouldTriggerGeneric) {
@@ -1259,7 +1259,7 @@ export function advanceMonth(
   // Check for death conditions
   let shouldDie = false;
   let deathCause: string | null = null;
-  let fatalStat: any = undefined;
+  let fatalStat: 'clout' | 'aura' | 'mental' | 'bag' | 'heat' | undefined = undefined;
   let fatalStatValue: number | undefined = undefined;
 
   const deathResult = checkDeathConditions(newPl);
@@ -1448,7 +1448,7 @@ export function advanceMonth(
   };
 }
 
-export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[]) => {
+export const processEntertainmentTimelineTick = (draftPl: PlayerStats, newsFeed: string[]) => {
   const isJailed = draftPl.inJail === true || draftPl.isIncarcerated === true;
   let positiveYields = 0;
   let negativeDrains = 0;
@@ -1459,7 +1459,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   const auraProtectionFactor = draftPl.aura >= 100 ? 0.5 : 1.0;
 
-  draftPl.artists = draftPl.artists.map((artist: any) => {
+  draftPl.artists = draftPl.artists.map((artist: RecordLabelArtist) => {
     negativeDrains += artist.monthlyRetainer; // Retainers must be honored to prevent legal abandonment
 
     if (!isJailed) {
@@ -1490,8 +1490,8 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   // 1. Founders Backed (Venture Capital Portfolio) Proactive Events
   if (!draftPl.foundersBacked) draftPl.foundersBacked = [];
-  const keptFounders: any[] = [];
-  draftPl.foundersBacked.forEach((founder: any) => {
+  const keptFounders: Founder[] = [];
+  draftPl.foundersBacked.forEach((founder: Founder) => {
     let currentFounder = { ...founder };
     let collapsed = false;
 
@@ -1548,8 +1548,8 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
   if (!draftPl.conglomerateCEOs) draftPl.conglomerateCEOs = {};
   if (!draftPl.conglomerateCandidates) draftPl.conglomerateCandidates = [];
 
-  const updatedCEOs: Record<string, any> = {};
-  Object.entries(draftPl.conglomerateCEOs).forEach(([divisionId, exec]: [string, any]) => {
+  const updatedCEOs: Record<string, RegionalExecutive> = {};
+  Object.entries(draftPl.conglomerateCEOs).forEach(([divisionId, exec]: [string, RegionalExecutive]) => {
     let updatedExec = { ...exec };
     // 5% chance of headhunting threat
     if (Math.random() < 0.05 * auraProtectionFactor) {
@@ -1566,7 +1566,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
   draftPl.conglomerateCEOs = updatedCEOs;
 
   // Candidate pool headhunting threats (5% chance per candidate)
-  draftPl.conglomerateCandidates = draftPl.conglomerateCandidates.map((exec: any) => {
+  draftPl.conglomerateCandidates = draftPl.conglomerateCandidates.map((exec: RegionalExecutive) => {
     if (Math.random() < 0.05 * auraProtectionFactor) {
       newsFeed.unshift(`🦹 HEADHUNTING THREAT: Competitors are whispering in candidate ${exec.name}'s ear!`);
     }
@@ -1575,8 +1575,8 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   // 3. Rolodex Celebrities Proactive Events
   if (!draftPl.rolodex) draftPl.rolodex = [];
-  const keptRolodex: any[] = [];
-  draftPl.rolodex.forEach((celebrity: any) => {
+  const keptRolodex: RolodexCelebrity[] = [];
+  draftPl.rolodex.forEach((celebrity: RolodexCelebrity) => {
     let currentCelebrity = { ...celebrity };
     let lapsed = false;
 
