@@ -12,8 +12,8 @@ describe('System Interconnectivity Engine Audit', () => {
     mockPlayer = enforceStatCaps({
       runId: 'test-run',
       bag: 1000000,
-      clout: 1000,
-      aura: 1000,
+      clout: 500,
+      aura: 50,
       mentalHealth: 100, // Perfect health
       heat: 0,
       month: 1,

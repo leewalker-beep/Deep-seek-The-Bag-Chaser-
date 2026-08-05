@@ -6216,6 +6216,347 @@ export const UNIVERSITY_ARC = [
   }
 ] as NarrativeEvent[];
 
+export const SOCIAL_PRESSURE_EVENTS = [
+  {
+    id: 'social_pressure_employee_help',
+    title: 'A Crisis of Faith',
+    pacingCategory: 'MAJOR' as const,
+    description: 'Your employees approach you in distress. Their beloved neighborhood community center is being forced to shut down due to rising municipal costs and landlord pressures. Since you are highly visible and wealthy, they look to you to protect their home neighborhood.',
+    trigger: {
+      tier: ['STARTUP' as const, 'CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 800 }
+    },
+    choices: [
+      {
+        id: 'sp_employee_help_fund',
+        label: 'Fund the Center Restoration',
+        description: 'Spend $100,000 to acquire the building and fund its operations, proving you protect your workforce.',
+        consequences: {
+          bag: -100000,
+          aura: 150,
+          clout: 50,
+          biographyEntry: '“The leader who protected local communities.”'
+        },
+        setFlags: { protected_local_communities: true },
+        logMessage: '🛡️ CRISIS SOLVED: You spent $100,000 to restore the center. Your employees are fiercely loyal.'
+      },
+      {
+        id: 'sp_employee_help_decline',
+        label: 'Advise Self-Reliance',
+        description: 'Decline to intervene. Advise them to bootstrap, but face deep disappointment.',
+        consequences: {
+          clout: 20,
+          aura: -100,
+          biographyEntry: '“The entrepreneur who prioritized corporate margins over worker communities.”'
+        },
+        logMessage: '❌ COLD DEFIANCE: You declined to help. Your employees are disappointed and feel abandoned.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_community_clinic',
+    title: 'The Grassroots Request',
+    pacingCategory: 'MAJOR' as const,
+    description: 'A delegation of local grassroots leaders approaches you. Knowing you are a respected leader, they ask you to fund a neighborhood healthcare clinic. If you have been a greedy landlord, they are highly skeptical of your intentions.',
+    trigger: {
+      tier: ['STARTUP' as const, 'CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'aura' as const, value: 80 }
+    },
+    choices: [
+      {
+        id: 'sp_community_clinic_fund',
+        label: 'Build the Healthcare Clinic',
+        description: 'Spend $200,000 to build and lease a local medical clinic for neighborhood families.',
+        consequences: {
+          bag: -200000,
+          aura: 250,
+          biographyEntry: '“The philanthropist who built local health clinics.”'
+        },
+        setFlags: { built_local_clinics: true },
+        logMessage: '🏥 CLINIC OPENED: Your $200,000 clinic grant earns surging public gratitude and adoration.'
+      },
+      {
+        id: 'sp_community_clinic_decline',
+        label: 'Politely Decline',
+        description: 'Explain that healthcare is a municipal duty, drawing community skepticism.',
+        consequences: {
+          aura: -150,
+          biographyEntry: '“The billionaire who ignored community healthcare requests.”'
+        },
+        logMessage: '❌ DEFEATED TRUST: You declined to fund the clinic. Public trust takes a heavy hit.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_charity_gala',
+    title: 'The Gala Spotlight',
+    pacingCategory: 'MAJOR' as const,
+    description: 'A premier global foundation invites you to be the guest of honor and host their annual charity Gala. As a highly famous figure, you are expected to make a substantial matching donation to lead the room.',
+    trigger: {
+      tier: ['CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 1000 }
+    },
+    choices: [
+      {
+        id: 'sp_charity_gala_fund',
+        label: 'Lead the Giving',
+        description: 'Donate $300,000 to secure a legendary social halo and align with high-society benefactors.',
+        consequences: {
+          bag: -300000,
+          clout: 300,
+          aura: 150,
+          biographyEntry: '“The global benefactor who bankrolled major charity galas.”'
+        },
+        setFlags: { charity_gala_leader: true, just_donated_charity: true },
+        logMessage: '🕊️ GALA HALO: Your $300,000 matching donation makes national headlines, securing a massive social halo.'
+      },
+      {
+        id: 'sp_charity_gala_decline',
+        label: 'Decline and Keep a Low Profile',
+        description: 'Politely decline the invite. Critics label you as a stingy hoarder of wealth.',
+        consequences: {
+          clout: -100,
+          aura: -50
+        },
+        logMessage: '❌ STINGY LABELS: You skipped the Gala. Gossip tabloids criticize your lack of philanthropy.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_gov_cooperation',
+    title: "The State's Hand",
+    pacingCategory: 'MAJOR' as const,
+    description: 'The National Trade Commissioner formally requests you to serve on a state-directed regulatory panel. Serving will show great civic leadership, but will restrict your corporate flexibility and margin execution.',
+    trigger: {
+      tier: ['CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 1200 }
+    },
+    choices: [
+      {
+        id: 'sp_gov_coop_accept',
+        label: 'Cooperate and Serve on Panel',
+        description: 'Accept the appointment. Your businesses face minor regulatory restrictions next 3 months.',
+        consequences: {
+          clout: 300,
+          aura: 150,
+          biographyEntry: '“The trade representative who cooperated with federal boards.”'
+        },
+        setFlags: { gov_cooperated: true },
+        createConsequences: [
+          {
+            id: 'cons_gov_panel_restriction',
+            source: 'regulatory_trade_panel_modifier',
+            triggerCondition: 'Regulatory Trade Panel Cooperation',
+            delay: 1,
+            severity: 'moderate' as const,
+            expiry: 3,
+            affectedSystems: ['businesses'],
+            status: 'pending' as const,
+            description: 'Your cooperative compliance panel reduces business margins by 10% but earns public trust.',
+            effectModifier: { yieldCashMult: 0.90 },
+            newsTemplates: [
+              'Bystanders praise your transparent collaboration with federal trade compliance panels.',
+              'Quarterly balance sheets show minor margin contractions due to patriotic panel audits.'
+            ]
+          }
+        ],
+        logMessage: '🏛️ PATRIOTIC DUTY: You joined the panel! Clout and public respect surge, though margins contract slightly.'
+      },
+      {
+        id: 'sp_gov_coop_decline',
+        label: 'Decline the Appointment',
+        description: 'Reject federal trade intervention. Draw direct regulatory scrutiny (+40 Heat).',
+        consequences: {
+          clout: 100,
+          aura: -100,
+          heat: 40,
+          biographyEntry: '“The defiant operator who rejected state trade intervention.”'
+        },
+        logMessage: '⚠️ REGULATORY FRICTION: You rejected the request! Federal investigators launch retaliatory audits.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_media_interview',
+    title: 'The Hot Seat',
+    pacingCategory: 'MAJOR' as const,
+    description: 'A major news anchor invites you to a live, prime-time national interview. Your answers will shape how millions perceive your rise.',
+    trigger: {
+      tier: ['STARTUP' as const, 'CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 1000 }
+    },
+    choices: [
+      {
+        id: 'sp_media_int_community',
+        label: 'Advocate Grassroots Support',
+        description: 'Credit your success to public trust and community roots, building immense Aura.',
+        consequences: {
+          clout: 100,
+          aura: 200,
+          heat: -10,
+          biographyEntry: '“The polished leader who advocated for grassroots community empowerment.”'
+        },
+        logMessage: '🌟 INSPIRATIONAL RISE: Your focus on community trust makes you a national hero.'
+      },
+      {
+        id: 'sp_media_int_hustle',
+        label: 'Preach Cold Hustle Ideology',
+        description: 'Declare that poverty is a motivational deficit and margins are absolute. Earn Clout but draw backlash.',
+        consequences: {
+          clout: 400,
+          aura: -300,
+          heat: 25,
+          biographyEntry: '“The controversial tycoon who declared that poverty is a motivational deficit.”'
+        },
+        setFlags: { trigger_scandal_immediately: true },
+        logMessage: '🔥 VOLATILE DRAMA: Your controversial answers spark online cancel campaigns and high backlash.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_rival_attack',
+    title: 'Coordinated Smear Blitz',
+    pacingCategory: 'MAJOR' as const,
+    description: 'A powerful, desperate rival funds a massive coordinated online smear campaign, flooding social media with doctored books and ethical accusations against your operations.',
+    trigger: {
+      tier: ['STARTUP' as const, 'CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 1000 }
+    },
+    choices: [
+      {
+        id: 'sp_rival_atk_audit',
+        label: 'Fund an Independent Transparency Audit',
+        description: 'Spend $150,000 to hire top accountants, disproving all accusations completely.',
+        consequences: {
+          bag: -150000,
+          clout: 100,
+          aura: 150,
+          heat: -20,
+          biographyEntry: '“The clean operator who disproved rival allegations via full audits.”'
+        },
+        logMessage: '🛡️ TRANSPARENCY WIN: You proved your innocence! Rivals face humiliation and public backlash.'
+      },
+      {
+        id: 'sp_rival_atk_slander',
+        label: 'Retaliate with Coordinated Slander',
+        description: 'Sling mud back. Launch an aggressive countersmear campaign on their own private affairs.',
+        consequences: {
+          clout: 200,
+          aura: -150,
+          heat: 30,
+          biographyEntry: '“The aggressive corporate warrior who traded public insults with rivals.”'
+        },
+        logMessage: '🔥 DIRTY WARFARE: You traded slanders. The media feasts on the corporate drama.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_investor_audit',
+    title: "The Board's Demand",
+    pacingCategory: 'MAJOR' as const,
+    description: 'Following high-profile social media scrutiny, your core institutional investors demand a full, third-party bookkeeping and ESG compliance audit of your entire enterprise.',
+    trigger: {
+      tier: ['CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'clout' as const, value: 1200 }
+    },
+    choices: [
+      {
+        id: 'sp_investor_audit_accept',
+        label: 'Grant Full Auditing Access',
+        description: 'Spend $50,000 on auditor fees and open the books completely, proving pristine compliance.',
+        consequences: {
+          bag: -50000,
+          clout: 100,
+          aura: 150,
+          heat: -30,
+          biographyEntry: '“The transparent executive who maintained pristine financial standards.”'
+        },
+        logMessage: '📊 BOARD COMPLIANCE: The audit confirms spotless compliance, solidifying investor confidence.'
+      },
+      {
+        id: 'sp_investor_audit_block',
+        label: 'Block the Auditing Request',
+        description: 'Refuse to open the books. Protect your secrecy, but trigger intense suspicion and Heat (+50).',
+        consequences: {
+          clout: 200,
+          aura: -200,
+          heat: 50,
+          biographyEntry: '“The embattled tycoon who blocked corporate compliance audits.”'
+        },
+        logMessage: '🚨 AUDIT BLOCKED: Your resistance triggers board panic and compliance audits from federal regulators.'
+      }
+    ]
+  },
+  {
+    id: 'social_pressure_water_crisis',
+    title: 'A Community in Crisis',
+    pacingCategory: 'MAJOR' as const,
+    description: 'A major municipal water utility failure has hit your home district. Thousands of families are without clean water. As a respected leader, the community expects you to take action.',
+    trigger: {
+      tier: ['STARTUP' as const, 'CORPORATE' as const, 'ELITE' as const, 'MOGUL' as const, 'PRESIDENT' as const, 'OPEN' as const],
+      probability: 0.15,
+      once: true
+    },
+    requirement: {
+      stat: { type: 'aura' as const, value: 150 }
+    },
+    choices: [
+      {
+        id: 'sp_water_crisis_fund',
+        label: 'Fund Private Water Tankers',
+        description: 'Spend $150,000 to deploy a private tanker grid, saving neighborhood families.',
+        consequences: {
+          bag: -150000,
+          clout: 100,
+          aura: 300,
+          biographyEntry: '“The emergency leader who financed private water relief grids.”'
+        },
+        setFlags: { water_relief_leader: true },
+        logMessage: '💧 HERO OF THE CRISIS: You saved the neighborhood! A lasting legacy is forever sealed.'
+      },
+      {
+        id: 'sp_water_crisis_decline',
+        label: 'Stay Out of Municipal Issues',
+        description: 'Decline to intervene. Critics and supporters accuse you of turning your back during a crisis.',
+        consequences: {
+          clout: -100,
+          aura: -250,
+          biographyEntry: '“The private industrialist who turned their back during a water crisis.”'
+        },
+        logMessage: '❌ SHATTERED EXPECTATIONS: You turned your back. Your name is written in anger across the city.'
+      }
+    ]
+  }
+] as NarrativeEvent[];
+
 export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...BASE_EVENTS,
   ...UNIVERSITY_ARC,
@@ -6270,5 +6611,6 @@ export const NARRATIVE_EVENTS: NarrativeEvent[] = [
   ...PEACE_ARC,
   ...MONUMENT_ARC,
   ...CABINET_ARC,
-  ...SATIRICAL_NARRATIVE_EXPANSIONS
+  ...SATIRICAL_NARRATIVE_EXPANSIONS,
+  ...SOCIAL_PRESSURE_EVENTS
 ];

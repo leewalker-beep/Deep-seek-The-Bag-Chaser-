@@ -153,10 +153,15 @@ export function advanceMonth(
   // 1. Inactivity decay ("Being Forgotten")
   newPl.monthsSinceLastHustle = (newPl.monthsSinceLastHustle || 0) + 1;
   if (newPl.monthsSinceLastHustle >= 12) {
-    const forgottenLoss = applyReputationLossScale(Math.max(5, Math.floor(newPl.clout * 0.01)), 0, reputation, newPl);
+    let baseLoss = Math.max(5, Math.floor(newPl.clout * 0.01));
+    const isSpotlightActive = newPl.clout >= 1000;
+    if (isSpotlightActive) {
+      baseLoss *= 2; // Double decay under intense spotlight pressure
+    }
+    const forgottenLoss = applyReputationLossScale(baseLoss, 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - forgottenLoss.clout);
     news.push({
-      text: `📰 BEING FORGOTTEN: Long period without active ventures decays your clout (-${forgottenLoss.clout} Clout).`,
+      text: `📰 BEING FORGOTTEN: Long period without active ventures decays your clout (-${forgottenLoss.clout} Clout).${isSpotlightActive ? ' Public pressure to maintain the spotlight is intense!' : ''}`,
       colorClass: 'text-yellow-500 font-medium'
     });
   }
@@ -1452,6 +1457,8 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
   if (!draftPl.scoutedTalentPool) draftPl.scoutedTalentPool = [];
   if (!draftPl.rolodex) draftPl.rolodex = [];
 
+  const auraProtectionFactor = draftPl.aura >= 100 ? 0.5 : 1.0;
+
   draftPl.artists = draftPl.artists.map((artist: any) => {
     negativeDrains += artist.monthlyRetainer; // Retainers must be honored to prevent legal abandonment
 
@@ -1473,7 +1480,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     }
 
     // Evaluate random poaching ambushes from competitor labels
-    if (updatedClock < 24 && !artist.isTargetedByRival && Math.random() < 0.08) {
+    if (updatedClock < 24 && !artist.isTargetedByRival && Math.random() < 0.08 * auraProtectionFactor) {
       artist.isTargetedByRival = true;
       newsFeed.unshift(`🦹 INDUSTRIAL THREAT: Chen MegaRecords is offering a backdoor buyout deal to ${artist.name}!`);
     }
@@ -1489,21 +1496,21 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     let collapsed = false;
 
     // 5% chance of pivot/crisis (burn rate spike)
-    if (Math.random() < 0.05) {
+    if (Math.random() < 0.05 * auraProtectionFactor) {
       const updatedStats = {
         ...currentFounder.stats,
         burnDiscipline: Math.max(10, (currentFounder.stats?.burnDiscipline || 50) - 10)
       };
       currentFounder.stats = updatedStats;
       newsFeed.unshift(`🚨 PORTFOLIO CRISIS: ${currentFounder.companyName} managed by ${currentFounder.name} hit a critical burn rate spike! Burn discipline degraded.`);
-    } else if (Math.random() < 0.05) {
+    } else if (Math.random() < 0.05 * auraProtectionFactor) {
       // 5% chance of a competitor poaching threat
       newsFeed.unshift(`🦹 POACHING THREAT: Rival venture funds are attempting to poach ${currentFounder.name} from ${currentFounder.companyName}!`);
     }
 
     // Collapse check: If burnDiscipline has hit the absolute rock-bottom (10), there is a 20% chance of sudden collapse.
     // Also, there is a tiny baseline chance (1%) of random company collapse for any startup.
-    if ((currentFounder.stats?.burnDiscipline <= 10 && Math.random() < 0.20) || (Math.random() < 0.01)) {
+    if ((currentFounder.stats?.burnDiscipline <= 10 && Math.random() < 0.20 * auraProtectionFactor) || (Math.random() < 0.01 * auraProtectionFactor)) {
       collapsed = true;
     }
 
@@ -1545,12 +1552,12 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
   Object.entries(draftPl.conglomerateCEOs).forEach(([divisionId, exec]: [string, any]) => {
     let updatedExec = { ...exec };
     // 5% chance of headhunting threat
-    if (Math.random() < 0.05) {
+    if (Math.random() < 0.05 * auraProtectionFactor) {
       updatedExec.loyalty = Math.max(10, (updatedExec.loyalty || 50) - 15);
       newsFeed.unshift(`🦹 HEADHUNTING THREAT: A competitor is trying to poach division CEO ${exec.name}! Loyalty decreased.`);
     }
     // riskTolerance scaled scandal check (up to 10% chance)
-    else if (Math.random() < (exec.riskTolerance / 100) * 0.10) {
+    else if (Math.random() < (exec.riskTolerance / 100) * 0.10 * auraProtectionFactor) {
       draftPl.heat = Math.min(100, (draftPl.heat || 0) + 15);
       newsFeed.unshift(`🚨 EXECUTIVE SCANDAL: Division CEO ${exec.name}'s risky decisions triggered a public backlash! +15 Heat.`);
     }
@@ -1560,7 +1567,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
   // Candidate pool headhunting threats (5% chance per candidate)
   draftPl.conglomerateCandidates = draftPl.conglomerateCandidates.map((exec: any) => {
-    if (Math.random() < 0.05) {
+    if (Math.random() < 0.05 * auraProtectionFactor) {
       newsFeed.unshift(`🦹 HEADHUNTING THREAT: Competitors are whispering in candidate ${exec.name}'s ear!`);
     }
     return exec;
@@ -1574,7 +1581,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
     let lapsed = false;
 
     // 8% chance of tabloid event (positive or negative)
-    if (Math.random() < 0.08) {
+    if (Math.random() < 0.08 * auraProtectionFactor) {
       const isPositive = Math.random() < 0.5;
       if (isPositive) {
         const relationshipScore = Math.min(100, (currentCelebrity.relationshipScore || 50) + 10);
@@ -1589,7 +1596,7 @@ export const processEntertainmentTimelineTick = (draftPl: any, newsFeed: string[
 
     // Relationship ending / lapse check: if score drops below 20, it lapses and goes cold.
     // Also, 1% baseline monthly chance for any celebrity relationship to go cold/lapse.
-    if ((currentCelebrity.relationshipScore < 20) || (Math.random() < 0.01)) {
+    if ((currentCelebrity.relationshipScore < 20) || (Math.random() < 0.01 * auraProtectionFactor)) {
       lapsed = true;
     }
 

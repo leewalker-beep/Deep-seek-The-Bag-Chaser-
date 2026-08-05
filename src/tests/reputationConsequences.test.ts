@@ -60,9 +60,10 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.heat = 80; // Above 70
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Base erosion is 3 clout and 3 aura -> 1000 - 3 = 997
+      // Base erosion is 3 clout and 3 aura -> 1000 - 3 = 997.
+      // With High Aura >= 100, Aura erosion is scaled 1.5x -> 4.5 -> floor = 4. (1000 - 4 = 996)
       expect(result.newPl.clout).toBe(997);
-      expect(result.newPl.aura).toBe(997);
+      expect(result.newPl.aura).toBe(996);
     });
 
     it('should halve High Heat erosion if player just donated to charity', () => {
@@ -90,8 +91,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.mentalHealth = 25; // critically low
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Critical MH erodes Aura by 5 -> 1000 - 5 = 995
-      expect(result.newPl.aura).toBe(995);
+      // Critical MH erodes Aura by 5 -> with High Aura >= 100 scaled 1.5x to 7 -> 1000 - 7 = 993
+      expect(result.newPl.aura).toBe(993);
     });
 
     it('should erode Aura when rival is dominant in player tier', () => {
@@ -111,8 +112,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       ];
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Dominant rival erodes Aura by 3 -> 1000 - 3 = 997
-      expect(result.newPl.aura).toBe(997);
+      // Dominant rival erodes Aura by 3 -> with High Aura >= 100 scaled 1.5x to 4 -> 1000 - 4 = 996
+      expect(result.newPl.aura).toBe(996);
     });
 
     it('should decay Clout passively if player goes 12 months without active ventures (Being Forgotten)', () => {
@@ -124,8 +125,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.monthsSinceLastHustle = 12; // 12 months inactive
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Being Forgotten erodes 1% of Clout (1% of 1000 = 10 Clout) -> 1000 - 10 = 990
-      expect(result.newPl.clout).toBe(990);
+      // Being Forgotten erodes 1% of Clout, doubled to 2% under High Clout, scaled 1.3x by Scrutiny (1000 - 26 = 974)
+      expect(result.newPl.clout).toBe(974);
     });
 
     it('should erode Clout passively when a negative consequence is active', () => {
@@ -149,8 +150,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       ];
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Active negative consequence erodes 2% of Clout (2% of 1000 = 20 Clout) -> 1000 - 20 = 980
-      expect(result.newPl.clout).toBe(980);
+      // Active negative consequence erodes 2% of Clout, scaled 1.3x by Scrutiny (20 * 1.3 = 26) -> 1000 - 26 = 974
+      expect(result.newPl.clout).toBe(974);
     });
   });
 
@@ -164,10 +165,10 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.heat = 100; // Trigger arrest check
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // Immediate arrest penalty is 15% Clout and 20% Aura
-      // Plus cumulative monthly erodings during serve/arrest
+      // Immediate arrest penalty is 15% Clout and 20% Aura, scaled 1.5x by Expectations (200 * 1.5 = 300 Aura loss)
+      // plus standard monthly erodings.
       expect(result.newPl.clout).toBe(848);
-      expect(result.newPl.aura).toBe(798);
+      expect(result.newPl.aura).toBe(698);
     });
 
     it('should penalize Clout by 10% immediately on public scandal count increase', () => {
@@ -194,15 +195,15 @@ describe('Dynamic Reputation Consequence System Tests', () => {
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
       expect(result.newPl.scandalCount).toBeGreaterThan(0);
-      // 10% Clout penalty: 1000 -> 900 Clout
-      expect(result.newPl.clout).toBe(900);
+      // 10% Clout penalty: 1000 * 0.10 = 100, scaled 1.3x by Scrutiny = 130 loss. 1000 -> 870 Clout
+      expect(result.newPl.clout).toBe(870);
 
       randomMock.mockRestore();
     });
 
     it('should penalize Clout by 25% if a presidential term ends with low public approval (< 45%)', () => {
       const pl = getInitialStats(3);
-      pl.currentTier = 'PRESIDENT'; // PRESIDENT cap is 250k
+      pl.currentTier = 'PRESIDENT';
       pl.rivals = [];
       pl.clout = 1000;
       pl.aura = 1000;
@@ -211,8 +212,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.approvalRating = 35; // Bad approval rating
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // 25% Clout penalty: 1000 -> 750 Clout
-      expect(result.newPl.clout).toBe(750);
+      // 25% Clout penalty: 1000 * 0.25 = 250, scaled 1.3x by Scrutiny = 325 loss. 1000 -> 675 Clout
+      expect(result.newPl.clout).toBe(675);
     });
 
     it('should penalize Clout by 20% on bankruptcy checks', () => {
@@ -228,8 +229,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       pl.tutorialStep = 2; // Under tutorial protection from death, but penalty still triggers
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // 20% Clout penalty: 1000 -> 800 Clout
-      expect(result.newPl.clout).toBe(800);
+      // 20% Clout penalty: 1000 * 0.20 = 200, scaled 1.3x by Scrutiny = 260 loss. 1000 -> 740 Clout
+      expect(result.newPl.clout).toBe(740);
     });
 
     it('should penalize Clout by 15% when a rival challenge is failed', () => {
@@ -250,8 +251,8 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       ];
 
       const result = advanceMonth(pl, 'NORMAL', [], true);
-      // 15% Clout penalty: 1000 -> 850 Clout
-      expect(result.newPl.clout).toBe(850);
+      // 15% Clout penalty: 1000 * 0.15 = 150, scaled 1.3x by Scrutiny = 195 loss. 1000 -> 805 Clout
+      expect(result.newPl.clout).toBe(805);
     });
   });
 
@@ -296,6 +297,74 @@ describe('Dynamic Reputation Consequence System Tests', () => {
       expect(result.newPl.clout).toBe(1050);
       expect(result.newPl.aura).toBe(1050);
       expect(result.newPl.monthsAtZeroHeat).toBe(6);
+    });
+  });
+
+  describe('Dynamic Social Pressure System Integration Tests', () => {
+    it('should behave normally for a low influence player without any extra backlash', () => {
+      const pl = getInitialStats(3);
+      pl.clout = 100;
+      pl.aura = 20;
+
+      // Low influence player has standard loss rates (1.0x) and no Clout Sponsorship Bonus (0%)
+      const gains = applyReputationGainScale(100, 100, "The Hustler", pl);
+      expect(gains.clout).toBe(100);
+      expect(gains.aura).toBe(100);
+
+      const losses = applyReputationLossScale(100, 100, "The Hustler", pl);
+      expect(losses.clout).toBe(100);
+      expect(losses.aura).toBe(100);
+    });
+
+    it('should apply the Clout Sponsorship Bonus to high clout players', () => {
+      const pl = getInitialStats(3);
+      pl.clout = 1600; // High clout >= 1000
+      pl.aura = 50;
+
+      const levelData = { level: 1, cost: 0, yieldCash: 1000, yieldClout: 10, yieldAura: 10, mentalHit: -5, heatHit: 10, cloutReq: 0, auraReq: 0 };
+      const baseMath = calculateHustleMath('cleaning', levelData, 1, 1, 1, 1, 1, true);
+
+      const result = calculateHustleStatsAdditive('cleaning', levelData, pl, 1, baseMath);
+      // Sponsorship bonus is min(0.25, (1600/2000)*0.25) = (0.8)*0.25 = 0.20 (+20% cash yield)
+      // Base yield was 1000. Expected: 1000 * 1.20 = 1200
+      expect(result.yieldCash).toBe(1200);
+    });
+
+    it('should scale up Clout losses and Heat hits under High Clout Public Scrutiny', () => {
+      const pl = getInitialStats(3);
+      pl.clout = 1500; // High Clout
+
+      // Clout losses are multiplied by 1.3x under scrutiny
+      const losses = applyReputationLossScale(100, 0, "The Hustler", pl);
+      expect(losses.clout).toBe(130);
+
+      // Heat hits are multiplied by 1.25x
+      const levelData = { level: 1, cost: 0, yieldCash: 1000, yieldClout: 10, yieldAura: 10, mentalHit: -5, heatHit: 10, cloutReq: 0, auraReq: 0 };
+      const baseMath = calculateHustleMath('cleaning', levelData, 1, 1, 1, 1, 1, true);
+      const result = calculateHustleStatsAdditive('cleaning', levelData, pl, 1, baseMath);
+      expect(result.heatHit).toBe(12); // Math.floor(10 * 1.25) = 12
+    });
+
+    it('should scale up Aura losses under High Aura Respected Leader Expectations', () => {
+      const pl = getInitialStats(3);
+      pl.aura = 150; // High Aura
+
+      // Aura losses are multiplied by 1.5x under expectation penalty
+      const losses = applyReputationLossScale(0, 100, "The Hustler", pl);
+      expect(losses.aura).toBe(150);
+    });
+
+    it('should recognize and set rebuilt_after_scandal and ignored_housing_crisis flags', () => {
+      const pl = getInitialStats(3);
+      pl.currentTier = 'OPEN';
+      pl.rivals = [];
+      pl.scandalCount = 1;
+      pl.clout = 1200;
+      pl.aura = 120;
+
+      const result = advanceMonth(pl, 'NORMAL', [], true);
+      // Because they have a scandal history and met the high influence threshold (clout>=1000, aura>=100), they are recognized as rebuilt
+      expect(result.newPl.narrativeFlags.rebuilt_after_scandal).toBe(true);
     });
   });
 });

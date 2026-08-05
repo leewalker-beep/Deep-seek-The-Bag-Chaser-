@@ -27,7 +27,7 @@ describe('Upgrade Bug Regression', () => {
         ...state.pl,
         bag: 10000,
         clout: 100,
-        aura: 100,
+        aura: 50,
       }
     }));
 
@@ -63,7 +63,7 @@ describe('Upgrade Bug Regression', () => {
         ...state.pl,
         bag: 10000,
         clout: 100,
-        aura: 100,
+        aura: 50,
         hustleLevels: { 'r_delivery': 1 },
         hustleBranchIds: { 'r_delivery': 'l1' }
       }
@@ -101,12 +101,13 @@ describe('Upgrade Bug Regression', () => {
     upgradeHustle('global_franchise'); // Upgrade to l2
 
     const finalPl = useGameStore.getState().pl;
-    expect(finalPl.bag).toBe(initialBag - 3000000);
+    // With High Aura >= 100, Investor Confidence discount of 10% applies: cost of 3,000,000 -> 2,700,000
+    expect(finalPl.bag).toBe(initialBag - 2700000);
     expect(finalPl.hustleLevels['global_franchise']).toBe(2);
 
     // Check actionLog
     const action = finalPl.actionLog[0];
-    expect(action.netCash).toBe(-3000000);
+    expect(action.netCash).toBe(-2700000);
     expect(action.yieldCash).toBe(0);
   });
 
@@ -119,7 +120,7 @@ describe('Upgrade Bug Regression', () => {
         ...state.pl,
         bag: 20000,
         clout: 100,
-        aura: 100,
+        aura: 50,
         hustleBranchIds: { 'r_labor': 'l2b' }
       }
     }));

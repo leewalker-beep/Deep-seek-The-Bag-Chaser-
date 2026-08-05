@@ -282,6 +282,8 @@ export function tickConsequences(pl: PlayerStats, news: any[]): PlayerStats {
             : 'text-red-500 font-bold animate-pulse'
         });
         if (copy.source === 'housing_affordability_crisis') {
+          if (!updatedPl.narrativeFlags) updatedPl.narrativeFlags = {};
+          updatedPl.narrativeFlags.ignored_housing_crisis = true;
           // Trigger housing protest world feed story
           const reactionResult = processWorldReaction(updatedPl, 'HOUSING_PROTEST', {});
           Object.assign(updatedPl, reactionResult.updatedPl);
