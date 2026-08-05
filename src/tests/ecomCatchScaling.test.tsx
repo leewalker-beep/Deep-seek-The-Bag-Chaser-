@@ -4,12 +4,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EcomCatch } from '../components/minigames/EcomCatch';
 
 describe('EcomCatch Redesigned Progression and Scaling', () => {
+  const originalRandom = Math.random;
+
   beforeEach(() => {
+    Math.random = originalRandom;
+    vi.restoreAllMocks();
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     cleanup();
+    Math.random = originalRandom;
     vi.restoreAllMocks();
   });
 
@@ -173,7 +178,7 @@ describe('EcomCatch Redesigned Progression and Scaling', () => {
     // Distractor catch miss:
     // Spawn a distractor item (e.g. AirPots if it is not on the checklist)
     // To ensure it's a distractor, let's find a product not on checklist.
-    const checklistProductNames = Array.from(container.querySelectorAll('.mt-2 .flex.gap-2 span')).map(el => el.textContent?.toUpperCase());
+    const checklistProductNames = Array.from(container.querySelectorAll('.tracking-tight')).map(el => el.textContent?.toUpperCase());
     const distractorProduct = TIERED_PRODUCTS.find(p => !checklistProductNames.includes(p.name.toUpperCase()) && p.name.toUpperCase() !== targetProduct!.name.toUpperCase());
     expect(distractorProduct).toBeTruthy();
 

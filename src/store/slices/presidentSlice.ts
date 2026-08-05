@@ -44,7 +44,15 @@ export interface PresidentSlice {
   updatePresidentialStat: (stat: string, value: number) => void;
   updateDemographicApproval: (demographic: string, value: number) => void;
   startPresidentialActivity: (activityId: string) => void;
-  resolvePresidentialActivity: (activityId: string, choiceId: string, multiplier: number) => any;
+  resolvePresidentialActivity: (
+    activityId: string,
+    choiceId: string,
+    multiplier: number
+  ) => {
+    impacts: Record<string, number>;
+    diaryEntry: string;
+    finalMultiplier: number;
+  } | null;
 }
 
 export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlice> = (set, get) => ({
@@ -1258,7 +1266,10 @@ export const createPresidentSlice: StateCreator<GameState, [], [], PresidentSlic
         if (stat === 'approval') newPl.approvalRating += impact;
         else if (stat === 'foreignRelations') newPl.foreignRelations = (newPl.foreignRelations || 0) + impact;
         else if (stat === 'federalBudget') newPl.federalBudget += impact;
-        else (newPl as any)[stat] += impact;
+        else {
+          // Dynamic numeric stat updates on PlayerStats object
+          ((newPl as unknown) as Record<string, number>)[stat] += impact;
+        }
       }
     });
 
