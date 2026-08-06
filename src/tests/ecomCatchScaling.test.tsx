@@ -179,7 +179,8 @@ describe('EcomCatch Redesigned Progression and Scaling', () => {
     // Spawn a distractor item (e.g. AirPots if it is not on the checklist)
     // To ensure it's a distractor, let's find a product not on checklist.
     const checklistProductNames = Array.from(container.querySelectorAll('.tracking-tight')).map(el => el.textContent?.toUpperCase());
-    const distractorProduct = TIERED_PRODUCTS.find(p => !checklistProductNames.includes(p.name.toUpperCase()) && p.name.toUpperCase() !== targetProduct!.name.toUpperCase());
+    // Under level 3, only the first 12 products are available. Find a distractor product within those 12 available products.
+    const distractorProduct = TIERED_PRODUCTS.slice(0, 12).find(p => !checklistProductNames.includes(p.name.toUpperCase()) && p.name.toUpperCase() !== targetProduct!.name.toUpperCase());
     expect(distractorProduct).toBeTruthy();
 
     vi.restoreAllMocks();
@@ -187,8 +188,8 @@ describe('EcomCatch Redesigned Progression and Scaling', () => {
     vi.spyOn(Math, 'random').mockImplementation(() => {
       randomCalls3++;
       if (randomCalls3 === 1) return 0.9; // bypass skew spawn
-      const index = TIERED_PRODUCTS.findIndex(p => p.name === distractorProduct!.name);
-      return index / TIERED_PRODUCTS.length;
+      const index = TIERED_PRODUCTS.slice(0, 12).findIndex(p => p.name === distractorProduct!.name);
+      return index / 12; // divide by available subset size (12) instead of the entire list size (16)
     });
 
     act(() => {

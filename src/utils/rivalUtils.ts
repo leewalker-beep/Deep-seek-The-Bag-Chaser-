@@ -1,4 +1,5 @@
 import type { Rival } from '../types/game';
+import { WORLD_FEED_CONTENT } from './worldFeedLoader';
 
 export interface RivalRosterProfile {
   execution: number;
@@ -80,69 +81,70 @@ export function getCharacterCallbackLine(player: any, characterId: string | unde
   if (!characterId) return null;
 
   const flags = player.narrativeFlags || {};
+  const d = WORLD_FEED_CONTENT?.callbackTemplates || {};
 
   // Character-specific historical memory overrides
   if (characterId === 'char_cassie') {
     const isInvolved = player.completedNarrativeEvents?.some((e: string) => e.includes('char_cassie_intel')) || flags['cassie_buy_shares'] || flags['cassie_take_control'];
     if (isInvolved) {
-      return "History: Cassie remembers the thrift shop exchanges and shipping merger details you traded with her.";
+      return d.char_cassie || "History: Cassie remembers the thrift shop exchanges and shipping merger details you traded with her.";
     }
   }
 
   if (characterId === 'char_marcus' || characterId === 'char_marcus_v2') {
     if (flags['cut_ties_marcus']) {
-      return "History: Tensions linger after you cut ties with Marcus to protect your public persona.";
+      return d.char_marcus_cut || "History: Tensions linger after you cut ties with Marcus to protect your public persona.";
     }
     const isAlly = player.npcs?.some((n: any) => n.id === 'char_marcus' && n.disposition > 60) || flags['marcus_help'];
     if (isAlly) {
-      return "History: Marcus Miller, your childhood confidant from the mud blocks. He still remembers when your biggest worry was paying rent.";
+      return d.char_marcus_ally || "History: Marcus Miller, your childhood confidant from the mud blocks. He still remembers when your biggest worry was paying rent.";
     }
   }
 
   if (characterId === 'char_pops') {
     if (flags['pops_give_back'] || flags['pops_fund_hub'] || flags['pops_reflect_roots']) {
-      return "History: Pops Jenkins remembers your promise to keep your feet on the dirt and your generosity to the old block.";
+      return d.char_pops_generosity || "History: Pops Jenkins remembers your promise to keep your feet on the dirt and your generosity to the old block.";
     }
     if (flags['pops_intimidate']) {
-      return "History: Pops still looks at you with weary disappointment after you used raw intimidation on the neighborhood anchor.";
+      return d.char_pops_disappointment || "History: Pops still looks at you with weary disappointment after you used raw intimidation on the neighborhood anchor.";
     }
   }
 
   if (characterId === 'char_slick') {
     if (flags['slick_consignment_accept'] || flags['slick_heist'] || flags['slick_accept']) {
-      return "History: Terrence 'Slick' Reed remembers the high-stakes consignments and heist schemes you shared.";
+      return d.char_slick || "History: Terrence 'Slick' Reed remembers the high-stakes consignments and heist schemes you shared.";
     }
   }
 
   if (characterId === 'char_rosa') {
     if (flags['rosa_concede'] || flags['rosa_fund_campaign'] || flags['rosa_help']) {
-      return "History: Mama Rosa Mendez remembers your support for the neighborhood workers and clinic fundraiser.";
+      return d.char_rosa_generosity || "History: Mama Rosa Mendez remembers your support for the neighborhood workers and clinic fundraiser.";
     }
     if (flags['rosa_break']) {
-      return "History: Rosa looks at you coldly, remembering how you prioritized corporate margins over neighborhood lives.";
+      return d.char_rosa_disappointment || "History: Rosa looks at you coldly, remembering how you prioritized corporate margins over neighborhood lives.";
     }
   }
 
   if (characterId === 'char_sofia') {
     if (flags['sofia_lead'] || flags['sofia_un_speech'] || flags['sofia_nobel']) {
-      return "History: Sofia Ramirez remembers your key funding during her Mayor and UN speech campaigns.";
+      return d.char_sofia || "History: Sofia Ramirez remembers your key funding during her Mayor and UN speech campaigns.";
     }
   }
 
   if (characterId === 'char_victor' || characterId === 'char_victor_v2') {
     if (player.crushedRivals?.includes('char_victor') || player.crushedRivals?.includes('char_victor_v2')) {
-      return "History: Chairman Kane remembers when you seized his corporate sectors. He wants to erase your name from history.";
+      return d.char_victor_crushed || "History: Chairman Kane remembers when you seized his corporate sectors. He wants to erase your name from history.";
     }
   }
 
   // 1. crushedRivals
   if (player.crushedRivals?.includes(characterId)) {
-    return `History: You crushed them as a rival, but they respect/fear your authority now.`;
+    return d.fallback_crushed || `History: You crushed them as a rival, but they respect/fear your authority now.`;
   }
 
   // 2. completedNarrativeEvents
   if (player.completedNarrativeEvents?.some((e: string) => e.includes(characterId))) {
-    return `History: You met during a prior key turning point in your journey.`;
+    return d.fallback_key_point || `History: You met during a prior key turning point in your journey.`;
   }
 
   // 3. rel_ flag
@@ -150,9 +152,9 @@ export function getCharacterCallbackLine(player: any, characterId: string | unde
   if (relFlag) {
     const relVal = Number(relFlag);
     if (relVal > 60) {
-      return `History: They remember your past generosity and support.`;
+      return d.fallback_generosity || `History: They remember your past generosity and support.`;
     } else if (relVal < 40) {
-      return `History: Past tensions still linger under the surface.`;
+      return d.fallback_tensions || `History: Past tensions still linger under the surface.`;
     }
   }
 
@@ -160,9 +162,9 @@ export function getCharacterCallbackLine(player: any, characterId: string | unde
   const matchingNpc = player.npcs?.find((n: any) => n.id === characterId);
   if (matchingNpc) {
     if (matchingNpc.disposition > 60) {
-      return `History: A close contact who remembers your loyalty.`;
+      return d.fallback_loyalty || `History: A close contact who remembers your loyalty.`;
     } else if (matchingNpc.disposition < 40) {
-      return `History: Tense past history. Watch your back.`;
+      return d.fallback_tense || `History: Tense past history. Watch your back.`;
     }
   }
 

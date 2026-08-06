@@ -200,5 +200,173 @@
     "amb_property_empire": "📰 Property Monopoly: Districts consolidated by {PLAYER} report flawless management and standard 99% tenant retention.",
     "amb_silicon_sovereign": "📰 Cyber-Sovereignty: Big data algorithms pioneered by {PLAYER} are now integrated directly into national financial hubs.",
     "amb_leave_better_society": "📰 Philanthropic Halo: Crowds in local districts continue to praise the universal humanitarian aid funded by {PLAYER}."
+  },
+  "callbackTemplates": {
+    "char_cassie": "History: Cassie remembers the thrift shop exchanges and shipping merger details you traded with her.",
+    "char_marcus_cut": "History: Tensions linger after you cut ties with Marcus to protect your public persona.",
+    "char_marcus_ally": "History: Marcus Miller, your childhood confidant from the mud blocks. He still remembers when your biggest worry was paying rent.",
+    "char_pops_generosity": "History: Pops Jenkins remembers your promise to keep your feet on the dirt and your generosity to the old block.",
+    "char_pops_disappointment": "History: Pops still looks at you with weary disappointment after you used raw intimidation on the neighborhood anchor.",
+    "char_slick": "History: Terrence 'Slick' Reed remembers the high-stakes consignments and heist schemes you shared.",
+    "char_rosa_generosity": "History: Mama Rosa Mendez remembers your support for the neighborhood workers and clinic fundraiser.",
+    "char_rosa_disappointment": "History: Rosa looks at you coldly, remembering how you prioritized corporate margins over neighborhood lives.",
+    "char_sofia": "History: Sofia Ramirez remembers your key funding during her Mayor and UN speech campaigns.",
+    "char_victor_crushed": "History: Chairman Kane remembers when you seized his corporate sectors. He wants to erase your name from history.",
+    "fallback_crushed": "History: You crushed them as a rival, but they respect/fear your authority now.",
+    "fallback_key_point": "History: You met during a prior key turning point in your journey.",
+    "fallback_generosity": "History: They remember your past generosity and support.",
+    "fallback_tensions": "History: Past tensions still linger under the surface.",
+    "fallback_loyalty": "History: A close contact who remembers your loyalty.",
+    "fallback_tense": "History: Tense past history. Watch your back."
+  },
+  "liveWorldEventTemplates": {
+    "ELECTION_VICTORY": {
+      "headline": "HISTORIC LANDSLIDE: PRESIDENT {PLAYER_UPPER} ELECTED!",
+      "body": "The ballots are certified and the nation has spoken. {PLAYER} has achieved a legendary victory to become the President of the United States. A brand new term begins.",
+      "source": "Capitol Press",
+      "effect": "+200 Clout | +200 Aura"
+    },
+    "BANKRUPTCY_local": {
+      "headline": "LOCAL COLLAPSE: ENTERPRISE DECLARES INSOLVENCY!",
+      "body": "A sudden downslide hits the block. {PLAYER}'s business has declared complete bankruptcy, leaving behind heavy debts and shocked neighbors.",
+      "source": "The Neighborhood Bulletin"
+    },
+    "BANKRUPTCY_regional": {
+      "headline": "INSOLVENCY SHOCK: {PLAYER_UPPER}'S OPERATIONS COLLAPSE!",
+      "body": "Regional business sectors are reeling as rising star {PLAYER} files for sudden bankruptcy under heavy debt. Creditors have begun liquidating local assets.",
+      "source": "Metropolitan Herald"
+    },
+    "BANKRUPTCY_standard": {
+      "headline": "METEORIC DOWNFALL: {PLAYER_UPPER}'S EMPIRE FILES BANKRUPTCY!",
+      "body": "The global market is stunned. Tycoon {PLAYER}'s empire has declared Chapter 11 bankruptcy. Standard economic frameworks fail as all assets undergo massive liquidation.",
+      "source": "Wall Street Ledger"
+    },
+    "FIRST_BILLION": {
+      "headline": "THE TEN-FIGURE CLUB: {PLAYER_UPPER} REACHES $1,000,000,000!",
+      "body": "Unbelievable financial history! {PLAYER} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid cash. They are officially a global financial sovereign!",
+      "source": "Global Financial Digest",
+      "effect": "+100 Clout | +100 Aura"
+    },
+    "FIRST_ARREST_local": {
+      "headline": "LOCAL ENTREPRENEUR ESCORTED IN HANDCUFFS!",
+      "body": "Siren lights flashing! Neighbors were shocked to see local figure {PLAYER} arrested and put in a police car on charges of {CHARGE}.",
+      "source": "Local Police Gazette"
+    },
+    "FIRST_ARREST_regional": {
+      "headline": "REGIONAL DISRUPTOR {PLAYER_UPPER} ARRESTED!",
+      "body": "The rising entrepreneur {PLAYER} is in custody following a raid by regional investigators. Charged with {CHARGE}, their operations face indefinite suspension.",
+      "source": "Metropolitan Police Watch"
+    },
+    "FIRST_ARREST_standard": {
+      "headline": "GLOBAL TYCOON {PLAYER_UPPER} ARRESTED!",
+      "body": "Breaking: Iconic business leader {PLAYER} has been arrested under federal charges of {CHARGE}. Global stock indices fluctuate as the mogul is held in custody.",
+      "source": "Capitol Broadcaster"
+    },
+    "PRESIDENTIAL_SCANDAL": {
+      "headline": "OVAL OFFICE SCANDAL: CLASSIFIED DATA LEAKED!",
+      "body": "A massive data breach and internal leaks from President {PLAYER}'s close administration have triggered intense bipartisan controversy. Hearings are demanded immediately.",
+      "source": "Capitol Hill Reporter"
+    },
+    "PROMOTION_STREET": {
+      "headline": "MAKING IT OFF THE BLOCK: {PLAYER_UPPER} ASCENDS!",
+      "body": "Pure local inspiration! Neighbors are cheering as {PLAYER} leaves the mud behind, advancing into Street level operations. Our block is proud!",
+      "source": "The Daily Bulletin"
+    },
+    "PROMOTION_STARTUP": {
+      "headline": "REGIONAL LAUNCH: {PLAYER_UPPER} ENTERS STARTUP SCENE!",
+      "body": "Tech blogs and investors are buzzing as regional pioneer {PLAYER} scales operations to Startup level. Early ventures are securing high capital injections.",
+      "source": "Valley Tech Gazette"
+    },
+    "PROMOTION_CORPORATE": {
+      "headline": "BOARDROOM SHAKEUP: {PLAYER_UPPER} GOES CORPORATE!",
+      "body": "A meteoric rise! Business leader {PLAYER} is scaling regional operations, entering the Corporate tier to manage multi-million dollar corporate mergers.",
+      "source": "Metro Business Review"
+    },
+    "PROMOTION_ELITE": {
+      "headline": "HIGH SOCIETY WELCOMES RISING ELITE: {PLAYER_UPPER}!",
+      "body": "Absolute high-society glamour. Tycoon {PLAYER} enters the Elite tier, earning invitations to high-net-worth clubs and exclusive corporate gatherings.",
+      "source": "The Elite Syndicate"
+    },
+    "PROMOTION_MOGUL": {
+      "headline": "GLOBAL MONOPOLY: {PLAYER_UPPER} ASCENDS TO MOGUL!",
+      "body": "Undisputed global scale. {PLAYER} has broken into the Mogul class, gaining unparalleled influence over international trade, media, and tech.",
+      "source": "Wall Street Ledger"
+    },
+    "FIRST_MILLION_local": {
+      "headline": "SEVEN-FIGURE CLUB: {PLAYER_UPPER} REACHES $1,000,000!",
+      "body": "From extremely humble roots, self-made entrepreneur {PLAYER} has accumulated over $1,000,000 in liquid cash. Local businesses are stunned by the hustle.",
+      "source": "The Regional Business Journal"
+    },
+    "FIRST_MILLION_standard": {
+      "headline": "CASH SURGE: NEW MULTI-MILLIONAIRE ICON {PLAYER_UPPER}!",
+      "body": "Financial sheets confirm that {PLAYER}'s liquid capital reserves have officially breached the $1,000,000 benchmark. They are cementing their status as an industry tycoon.",
+      "source": "Global Financial Digest"
+    },
+    "ACHIEVEMENT": {
+      "headline": "LEGENDARY RECORD: {PLAYER_UPPER} UNLOCKS \"{ACH_NAME_UPPER}\"!",
+      "body": "The history books are forever written! {PLAYER} has completed the legendary milestone: \"{ACH_NAME}\". Commentators are praising this near-impossible feat.",
+      "source": "Global Achievements Gazette"
+    },
+    "MAJOR_PHILANTHROPY": {
+      "headline": "HUMANITARIAN FEAT: {PLAYER_UPPER} DONATES ${COST_M}M!",
+      "body": "Absolute philanthropy! Tycoon {PLAYER} has pledged a stunning ${COST_VAL} donation to humanitarian aid, earning international praise.",
+      "source": "World Philanthropy Digest"
+    },
+    "HISTORIC_ACQUISITION": {
+      "headline": "MEGA MERGER: {PLAYER_UPPER} ACQUIRES INDUSTRY CONGLOMERATE!",
+      "body": "A historic ${COST_M}M corporate takeover. {PLAYER} has successfully acquired leading sector operations. Markets brace for complete monopoly.",
+      "source": "Wall Street Ledger"
+    },
+    "MARKET_CRASH": {
+      "headline": "MARKET COLLAPSE: POLICIES TRIGGER SEVERE GLOBAL FREEZE!",
+      "body": "Stock indices plunge globally under President {PLAYER}'s controversial monetary directives and runaway inflation. Investors panic as a cold market crackdown spikes.",
+      "source": "Global Financial Tracker"
+    },
+    "RECORD_PROFIT": {
+      "headline": "RECORD SHATTERED: {PLAYER_UPPER} CLEARS ${PROFIT_M}M SINGLE PROFIT!",
+      "body": "Absolute dominance. {PLAYER} records a legendary single-month profit of ${PROFIT_VAL} from their {H_NAME} operations, shattering all corporate limits.",
+      "source": "Wall Street Ledger"
+    },
+    "LUXURY_local": {
+      "headline": "LOCAL FLEX: {PLAYER_UPPER} BUYS NEW {ASSET_UPPER}!",
+      "body": "Local superstar {PLAYER} was seen cruising in their spectacular new {ASSET_NAME} worth ${COST_VAL}. The neighborhood has never seen such a luxury flex!",
+      "source": "The Daily Buzz"
+    },
+    "LUXURY_standard": {
+      "headline": "SUPREME FLEET: {PLAYER_UPPER} ACQUIRES NEW {ASSET_UPPER}!",
+      "body": "Iconic tycoon {PLAYER} was spotted stepping into a magnificent {ASSET_NAME} worth ${COST_VAL}. A peak flex of raw influence and spending power.",
+      "source": "Global Luxury Insider"
+    },
+    "FIRST_BUSINESS_LAUNCH_local": {
+      "headline": "NEW STREET SHOP: {PLAYER_UPPER} OPENS {H_NAME_UPPER}!",
+      "body": "Local entrepreneur {PLAYER} has launched a small {H_NAME} on our block. Neighbors and local leaders are excited to see this home-grown ambition succeed.",
+      "source": "The Neighborhood Gazette"
+    },
+    "FIRST_BUSINESS_LAUNCH_regional": {
+      "headline": "REGIONAL PLAYER: {PLAYER_UPPER} VENTURES INTO {H_NAME_UPPER}!",
+      "body": "Industry blogs report that {PLAYER} is expanding regional operations into the {H_NAME} sector. Analysts describe the model as highly scalable.",
+      "source": "Valley Venture Buzz"
+    },
+    "FIRST_BUSINESS_LAUNCH_standard": {
+      "headline": "MARKET ENTRANCE: {PLAYER_UPPER} LAUNCHES {H_NAME_UPPER} SECTOR!",
+      "body": "Undisputed titan {PLAYER} expands their commercial grasp, launching a major division in the {H_NAME} sector. Competitors brace for rapid consolidation.",
+      "source": "Wall Street Ledger"
+    }
+  },
+  "fallbackFeedTemplates": {
+    "BUSINESS_LAUNCH_local_news": "🚨 LOCAL NEWS: Neighbors excited as {PLAYER} launches a small {H_NAME} nearby.",
+    "BUSINESS_LAUNCH_local_social": "Yo, {PLAYER} is doing big things on the block! Just started a {H_NAME}! Best of luck! 🙌",
+    "BUSINESS_LAUNCH_regional_business": "STRATEGIC EXPANSION: {PLAYER} initiates a promising {H_NAME} venture, pouring ${COST_VAL} in regional assets.",
+    "BUSINESS_LAUNCH_regional_social": "Tech hubs are shaking. {PLAYER} just expanded with a serious {H_NAME} venture. Let's see if it scales! 📈 #regionalgrind",
+    "BUSINESS_LAUNCH_standard_business": "EMPIRE GROWTH: {PLAYER} enters the {H_NAME} sector with a massive multi-million dollar capital injection.",
+    "BUSINESS_LAUNCH_standard_social": "Monopoly vibes! {PLAYER} is expanding their global grip with {H_NAME}! Absolute dominance. 👑 #titan",
+    "BUSINESS_FAILURE_local_social": "Lmao {PLAYER} completely fumbled that {H_NAME} run! Local dreams crushed. 🤡 #loser #fumble",
+    "BUSINESS_FAILURE_local_news": "SHOCK: Small local {H_NAME} shut down. Neighbors speculate on insolvency.",
+    "BUSINESS_FAILURE_standard_business": "LIQUIDATION WARNING: {PLAYER}'s {H_NAME} operation encounters operational friction, shuttering divisions.",
+    "BUSINESS_FAILURE_standard_social": "How the mighty fall. {PLAYER}'s heavily hyped {H_NAME} project went down in absolute flames. Disastrous. 💀📉",
+    "BUSINESS_FAILURE_standard_market": "Investor trust wavers as {PLAYER} reports a complete closure of {H_NAME}. Standard assets devalued.",
+    "PRESIDENCY_INFLATION_politics": "OPPOSITION ROARS: Critics attack President {PLAYER} as inflation surges to {INF_VAL}%!",
+    "PRESIDENCY_INFLATION_opinion": "POLL DROPS: Only 35% of demographic brackets trust the administration's economic management.",
+    "PRESIDENCY_INFLATION_social": "My grocery bill is twice as high and President {PLAYER} is doing nothing! Worst admin ever! 😡🛒"
   }
 }
