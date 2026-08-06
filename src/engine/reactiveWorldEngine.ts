@@ -28,20 +28,46 @@ export function injectPlayerData(template: string, pl: PlayerStats, metadata?: a
   const pName = pl.name || 'The Player';
   const rep = getCurrentReputation(pl);
   const tier = pl.currentTier;
-  const bizName = metadata?.hustleName ||
-                  (pl.lastExecutedHustleId && HUSTLES[pl.lastExecutedHustleId] ? HUSTLES[pl.lastExecutedHustleId].name : 'your enterprise');
+  const hName = metadata?.hustleName ||
+                (pl.lastExecutedHustleId && HUSTLES[pl.lastExecutedHustleId] ? HUSTLES[pl.lastExecutedHustleId].name : 'your enterprise');
   const topRival = pl.rivals && pl.rivals.length > 0 ? pl.rivals[0].name : 'competitors';
   const office = pl.currentTier === 'PRESIDENT' ? 'President of the United States' : 'Executive Leader';
 
+  const cost = metadata?.cost || 0;
+  const costVal = `$${cost.toLocaleString()}`;
+  const costM = (cost / 1000000).toFixed(1);
+
+  const profit = metadata?.profit || 0;
+  const profitVal = `$${profit.toLocaleString()}`;
+  const profitM = (profit / 1000000).toFixed(1);
+
+  const infVal = metadata?.macroValue || 0;
+  const charge = pl.jailCharge || 'regulatory violation';
+  const achName = metadata?.achievementName || 'Supreme Icon';
+  const assetId = metadata?.assetId || 'luxury item';
+
   return template
     .replace(/{PLAYER}/g, pName)
+    .replace(/{PLAYER_UPPER}/g, pName.toUpperCase())
     .replace(/{PLAYER_NAME}/g, pName)
     .replace(/{REPUTATION}/g, rep)
     .replace(/{TIER}/g, tier)
-    .replace(/{BUSINESS}/g, bizName)
-    .replace(/{COMPANY}/g, bizName)
+    .replace(/{BUSINESS}/g, hName)
+    .replace(/{COMPANY}/g, hName)
     .replace(/{RIVAL}/g, topRival)
-    .replace(/{OFFICE}/g, office);
+    .replace(/{OFFICE}/g, office)
+    .replace(/{H_NAME}/g, hName)
+    .replace(/{H_NAME_UPPER}/g, hName.toUpperCase())
+    .replace(/{COST_VAL}/g, costVal)
+    .replace(/{COST_M}/g, costM)
+    .replace(/{PROFIT_VAL}/g, profitVal)
+    .replace(/{PROFIT_M}/g, profitM)
+    .replace(/{INF_VAL}/g, infVal.toFixed(2))
+    .replace(/{CHARGE}/g, charge)
+    .replace(/{ACH_NAME}/g, achName)
+    .replace(/{ACH_NAME_UPPER}/g, achName.toUpperCase())
+    .replace(/{ASSET_NAME}/g, assetId.replace(/_/g, ' '))
+    .replace(/{ASSET_UPPER}/g, assetId.replace(/_/g, ' ').toUpperCase());
 }
 
 /**
@@ -406,52 +432,51 @@ export function processWorldReaction(
     case 'BUSINESS_LAUNCH': {
       // Check if this is the player's very first business ever played
       const totalPlays = Object.values(pl.hustlePlays || {}).reduce((a, b) => a + b, 0);
+      const ft = WORLD_FEED_CONTENT?.fallbackFeedTemplates || {};
       if (totalPlays <= 1) {
-        addMultiOutletReports({
+        const firstLaunchT = WORLD_FEED_CONTENT?.worldReactionTemplates?.FIRST_BUSINESS_LAUNCH || {
           business: `Market analysts note that {PLAYER}, known as "{REPUTATION}", has launched {BUSINESS}, marking a strategic entry into commercial markets.`,
           popCulture: `OMG, {PLAYER} is off the blocks! The local scene is talking about the new {BUSINESS}! 🚀✨ #FirstStep`,
           politics: `Local representatives welcome {PLAYER}'s investment in {BUSINESS}, hoping it boosts municipal commerce.`,
           local: `Exciting day on the block! {PLAYER} has opened {BUSINESS} right down the street. Come support your neighbor!`,
           financial: `{PLAYER} deploys early seed capital to acquire {BUSINESS}, laying down a foundation in {TIER} tier.`
-        });
+        };
+        addMultiOutletReports(firstLaunchT);
         addRivalCommentIfPossible('FirstBusiness');
       } else {
-        const hName = metadata.hustleName || 'New Venture';
-        const cost = metadata.cost || 0;
-
         if (fame === 'local') {
           addFeed(
             'NEWS',
-            `🚨 LOCAL NEWS: Neighbors excited as ${pName} launches a small ${hName} nearby.`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_local_news || `🚨 LOCAL NEWS: Neighbors excited as {PLAYER} launches a small {H_NAME} nearby.`, pl, metadata),
             'The Neighborhood Bulletin'
           );
           addFeed(
             'SOCIAL',
-            `Yo, ${pName} is doing big things on the block! Just started a ${hName}! Best of luck! 🙌`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_local_social || `Yo, {PLAYER} is doing big things on the block! Just started a {H_NAME}! Best of luck! 🙌`, pl, metadata),
             'Chirper',
             { effect: '+5 Clout', author: '@BlockWatcher', avatarId: 'av_f1' }
           );
         } else if (fame === 'regional') {
           addFeed(
             'BUSINESS',
-            `STRATEGIC EXPANSION: ${pName} initiates a promising ${hName} venture, pouring $${cost.toLocaleString()} in regional assets.`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_regional_business || `STRATEGIC EXPANSION: {PLAYER} initiates a promising {H_NAME} venture, pouring {COST_VAL} in regional assets.`, pl, metadata),
             'Metropolitan Herald'
           );
           addFeed(
             'SOCIAL',
-            `Tech hubs are shaking. ${pName} just expanded with a serious ${hName} venture. Let's see if it scales! 📈 #regionalgrind`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_regional_social || `Tech hubs are shaking. {PLAYER} just expanded with a serious {H_NAME} venture. Let's see if it scales! 📈 #regionalgrind`, pl, metadata),
             'Chirper',
             { effect: '+5 Clout', author: '@SilliconValleyInside', avatarId: 'av_m4' }
           );
         } else {
           addFeed(
             'BUSINESS',
-            `EMPIRE GROWTH: ${pName} enters the ${hName} sector with a massive multi-million dollar capital injection.`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_standard_business || `EMPIRE GROWTH: {PLAYER} enters the {H_NAME} sector with a massive multi-million dollar capital injection.`, pl, metadata),
             'Wall Street Ledger'
           );
           addFeed(
             'SOCIAL',
-            `Monopoly vibes! ${pName} is expanding their global grip with ${hName}! Absolute dominance. 👑 #titan`,
+            injectPlayerData(ft.BUSINESS_LAUNCH_standard_social || `Monopoly vibes! {PLAYER} is expanding their global grip with {H_NAME}! Absolute dominance. 👑 #titan`, pl, metadata),
             'Chirper',
             { effect: '+5 Clout', author: '@MarketMoguls', avatarId: 'av_f4' }
           );
@@ -538,35 +563,35 @@ export function processWorldReaction(
     }
 
     case 'BUSINESS_FAILURE': {
-      const hName = metadata.hustleName || 'venture';
+      const ft = WORLD_FEED_CONTENT?.fallbackFeedTemplates || {};
 
       if (fame === 'local') {
         addFeed(
           'SOCIAL',
-          `Lmao ${pName} completely fumbled that ${hName} run! Local dreams crushed. 🤡 #loser #fumble`,
+          injectPlayerData(ft.BUSINESS_FAILURE_local_social || `Lmao {PLAYER} completely fumbled that {H_NAME} run! Local dreams crushed. 🤡 #loser #fumble`, pl, metadata),
           'Chirper',
           { effect: '-5 Aura', author: '@BlockHater', avatarId: 'av_m2' }
         );
         addFeed(
           'NEWS',
-          `SHOCK: Small local ${hName} shut down. Neighbors speculate on insolvency.`,
+          injectPlayerData(ft.BUSINESS_FAILURE_local_news || `SHOCK: Small local {H_NAME} shut down. Neighbors speculate on insolvency.`, pl, metadata),
           'The Neighborhood Bulletin'
         );
       } else {
         addFeed(
           'BUSINESS',
-          `LIQUIDATION WARNING: ${pName}'s ${hName} operation encounters operational friction, shuttering divisions.`,
+          injectPlayerData(ft.BUSINESS_FAILURE_standard_business || `LIQUIDATION WARNING: {PLAYER}'s {H_NAME} operation encounters operational friction, shuttering divisions.`, pl, metadata),
           'Wall Street Ledger'
         );
         addFeed(
           'SOCIAL',
-          `How the mighty fall. ${pName}'s heavily hyped ${hName} project went down in absolute flames. Disastrous. 💀📉`,
+          injectPlayerData(ft.BUSINESS_FAILURE_standard_social || `How the mighty fall. {PLAYER}'s heavily hyped {H_NAME} project went down in absolute flames. Disastrous. 💀📉`, pl, metadata),
           'Chirper',
           { effect: '-15 Clout', author: '@ShortSellerPro', avatarId: 'av_f3' }
         );
         addFeed(
           'MARKET',
-          `Investor trust wavers as ${pName} reports a complete closure of ${hName}. Standard assets devalued.`,
+          injectPlayerData(ft.BUSINESS_FAILURE_standard_market || `Investor trust wavers as {PLAYER} reports a complete closure of {H_NAME}. Standard assets devalued.`, pl, metadata),
           'Financial Digest'
         );
       }
@@ -728,20 +753,20 @@ export function processWorldReaction(
     }
 
     case 'PRESIDENCY_INFLATION': {
-      const infVal = metadata.macroValue || 0;
+      const ft = WORLD_FEED_CONTENT?.fallbackFeedTemplates || {};
       addFeed(
         'POLITICS',
-        `OPPOSITION ROARS: Critics attack President ${pName} as inflation surges to ${infVal.toFixed(2)}%!`,
+        injectPlayerData(ft.PRESIDENCY_INFLATION_politics || `OPPOSITION ROARS: Critics attack President {PLAYER} as inflation surges to {INF_VAL}%!`, pl, metadata),
         'Capitol Press'
       );
       addFeed(
         'OPINION',
-        `POLL DROPS: Only 35% of demographic brackets trust the administration's economic management.`,
+        injectPlayerData(ft.PRESIDENCY_INFLATION_opinion || `POLL DROPS: Only 35% of demographic brackets trust the administration's economic management.`, pl, metadata),
         'Public Polls'
       );
       addFeed(
         'SOCIAL',
-        `My grocery bill is twice as high and President ${pName} is doing nothing! Worst admin ever! 😡🛒`,
+        injectPlayerData(ft.PRESIDENCY_INFLATION_social || `My grocery bill is twice as high and President {PLAYER} is doing nothing! Worst admin ever! 😡🛒`, pl, metadata),
         'Chirper',
         { effect: '-5 Approval Rating', author: '@FrustratedVoter', avatarId: 'av_f3' }
       );
@@ -821,101 +846,153 @@ export function processWorldReaction(
   const candidates: LiveEventCandidate[] = [];
   const completed = updatedPl.completedLiveEvents || [];
 
+  const getLiveTemplate = (key: string, defaultT: { headline: string; body: string; source: string; effect?: string }) => {
+    const list = WORLD_FEED_CONTENT?.liveWorldEventTemplates || {};
+    return list[key] || defaultT;
+  };
+
   // 1. Election Victory
   if (actionType === 'ELECTION_VICTORY' && !completed.includes('ELECTION_VICTORY')) {
+    const t = getLiveTemplate('ELECTION_VICTORY', {
+      headline: `HISTORIC LANDSLIDE: PRESIDENT {PLAYER_UPPER} ELECTED!`,
+      body: `The ballots are certified and the nation has spoken. {PLAYER} has achieved a legendary victory to become the President of the United States. A brand new term begins.`,
+      source: 'Capitol Press',
+      effect: '+200 Clout | +200 Aura'
+    });
     candidates.push({
       id: 'ELECTION_VICTORY',
       type: 'GOVERNMENT_BULLETIN',
       priority: 10,
       title: '🏛️ GOVERNMENT BULLETIN',
-      headline: `HISTORIC LANDSLIDE: PRESIDENT ${pName.toUpperCase()} ELECTED!`,
-      body: `The ballots are certified and the nation has spoken. ${pName} has achieved a legendary victory to become the President of the United States. A brand new term begins.`,
-      source: 'Capitol Press',
-      effect: '+200 Clout | +200 Aura'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 2. Bankruptcy
   if (actionType === 'BANKRUPTCY' && !completed.includes('BANKRUPTCY')) {
     if (fame === 'local') {
+      const t = getLiveTemplate('BANKRUPTCY_local', {
+        headline: 'LOCAL COLLAPSE: ENTERPRISE DECLARES INSOLVENCY!',
+        body: `A sudden downslide hits the block. {PLAYER}'s business has declared complete bankruptcy, leaving behind heavy debts and shocked neighbors.`,
+        source: 'The Neighborhood Bulletin'
+      });
       candidates.push({
         id: 'BANKRUPTCY',
         type: 'BREAKING_NEWS',
         priority: 9,
         title: '📰 BREAKING NEWS',
-        headline: 'LOCAL COLLAPSE: ENTERPRISE DECLARES INSOLVENCY!',
-        body: `A sudden downslide hits the block. ${pName}'s business has declared complete bankruptcy, leaving behind heavy debts and shocked neighbors.`,
-        source: 'The Neighborhood Bulletin'
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     } else if (fame === 'regional') {
-      candidates.push({
-        id: 'BANKRUPTCY',
-        type: 'MARKET_FLASH',
-        priority: 9,
-        title: '📈 MARKET FLASH',
-        headline: `INSOLVENCY SHOCK: ${pName.toUpperCase()}'S OPERATIONS COLLAPSE!`,
-        body: `Regional business sectors are reeling as rising star ${pName} files for sudden bankruptcy under heavy debt. Creditors have begun liquidating local assets.`,
+      const t = getLiveTemplate('BANKRUPTCY_regional', {
+        headline: `INSOLVENCY SHOCK: {PLAYER_UPPER}'S OPERATIONS COLLAPSE!`,
+        body: `Regional business sectors are reeling as rising star {PLAYER} files for sudden bankruptcy under heavy debt. Creditors have begun liquidating local assets.`,
         source: 'Metropolitan Herald'
       });
-    } else {
       candidates.push({
         id: 'BANKRUPTCY',
         type: 'MARKET_FLASH',
         priority: 9,
         title: '📈 MARKET FLASH',
-        headline: `METEORIC DOWNFALL: ${pName.toUpperCase()}'S EMPIRE FILES BANKRUPTCY!`,
-        body: `The global market is stunned. Tycoon ${pName}'s empire has declared Chapter 11 bankruptcy. Standard economic frameworks fail as all assets undergo massive liquidation.`,
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
+      });
+    } else {
+      const t = getLiveTemplate('BANKRUPTCY_standard', {
+        headline: `METEORIC DOWNFALL: {PLAYER_UPPER}'S EMPIRE FILES BANKRUPTCY!`,
+        body: `The global market is stunned. Tycoon {PLAYER}'s empire has declared Chapter 11 bankruptcy. Standard economic frameworks fail as all assets undergo massive liquidation.`,
         source: 'Wall Street Ledger'
+      });
+      candidates.push({
+        id: 'BANKRUPTCY',
+        type: 'MARKET_FLASH',
+        priority: 9,
+        title: '📈 MARKET FLASH',
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     }
   }
 
   // First Billion
   if (updatedPl.bag >= 1000000000 && !completed.includes('FIRST_BILLION')) {
+    const t = getLiveTemplate('FIRST_BILLION', {
+      headline: `THE TEN-FIGURE CLUB: {PLAYER_UPPER} REACHES $1,000,000,000!`,
+      body: `Unbelievable financial history! {PLAYER} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid cash. They are officially a global financial sovereign!`,
+      source: 'Global Financial Digest',
+      effect: '+100 Clout | +100 Aura'
+    });
     candidates.push({
       id: 'FIRST_BILLION',
       type: 'MARKET_FLASH',
       priority: 9,
       title: '📈 MARKET FLASH',
-      headline: `THE TEN-FIGURE CLUB: ${pName.toUpperCase()} REACHES $1,000,000,000!`,
-      body: `Unbelievable financial history! ${pName} has breached the ten-figure mark, accumulating over $1,000,000,000 in liquid cash. They are officially a global financial sovereign!`,
-      source: 'Global Financial Digest',
-      effect: '+100 Clout | +100 Aura'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 3. First Arrest
   if (actionType === 'ARREST' && !completed.includes('FIRST_ARREST')) {
-    const charge = updatedPl.jailCharge || 'regulatory violation';
     if (fame === 'local') {
-      candidates.push({
-        id: 'FIRST_ARREST',
-        type: 'POLICE_ALERT',
-        priority: 8,
-        title: '🚔 POLICE ALERT',
+      const t = getLiveTemplate('FIRST_ARREST_local', {
         headline: 'LOCAL ENTREPRENEUR ESCORTED IN HANDCUFFS!',
-        body: `Siren lights flashing! Neighbors were shocked to see local figure ${pName} arrested and put in a police car on charges of ${charge}.`,
+        body: `Siren lights flashing! Neighbors were shocked to see local figure {PLAYER} arrested and put in a police car on charges of {CHARGE}.`,
         source: 'Local Police Gazette'
       });
-    } else if (fame === 'regional') {
       candidates.push({
         id: 'FIRST_ARREST',
         type: 'POLICE_ALERT',
         priority: 8,
         title: '🚔 POLICE ALERT',
-        headline: `REGIONAL DISRUPTOR ${pName.toUpperCase()} ARRESTED!`,
-        body: `The rising entrepreneur ${pName} is in custody following a raid by regional investigators. Charged with ${charge}, their operations face indefinite suspension.`,
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
+      });
+    } else if (fame === 'regional') {
+      const t = getLiveTemplate('FIRST_ARREST_regional', {
+        headline: `REGIONAL DISRUPTOR {PLAYER_UPPER} ARRESTED!`,
+        body: `The rising entrepreneur {PLAYER} is in custody following a raid by regional investigators. Charged with {CHARGE}, their operations face indefinite suspension.`,
         source: 'Metropolitan Police Watch'
       });
+      candidates.push({
+        id: 'FIRST_ARREST',
+        type: 'POLICE_ALERT',
+        priority: 8,
+        title: '🚔 POLICE ALERT',
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
+      });
     } else {
+      const t = getLiveTemplate('FIRST_ARREST_standard', {
+        headline: `GLOBAL TYCOON {PLAYER_UPPER} LOCKED UP!`,
+        body: `Breaking: Iconic business leader {PLAYER} has been arrested under federal charges of {CHARGE}. Global stock indices fluctuate as the mogul is held in custody.`,
+        source: 'Capitol Broadcaster'
+      });
       candidates.push({
         id: 'FIRST_ARREST',
         type: 'BREAKING_NEWS',
         priority: 8,
         title: '📰 BREAKING NEWS',
-        headline: `GLOBAL TYCOON ${pName.toUpperCase()} LOCKED UP!`,
-        body: `Breaking: Iconic business leader ${pName} has been arrested under federal charges of ${charge}. Global stock indices fluctuate as the mogul is held in custody.`,
-        source: 'Capitol Broadcaster'
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     }
   }
@@ -923,14 +1000,20 @@ export function processWorldReaction(
   // 4. Presidential Scandal
   const inPresidency = updatedPl.currentTier === 'PRESIDENT';
   if (inPresidency && (actionType === 'SCANDAL_TRIGGERED' || (metadata as any)?.type === 'DATA_BREACH') && !completed.includes('PRESIDENTIAL_SCANDAL')) {
+    const t = getLiveTemplate('PRESIDENTIAL_SCANDAL', {
+      headline: `OVAL OFFICE SCANDAL: CLASSIFIED DATA LEAKED!`,
+      body: `A massive data breach and internal leaks from President {PLAYER}'s close administration have triggered intense bipartisan controversy. Hearings are demanded immediately.`,
+      source: 'Capitol Hill Reporter'
+    });
     candidates.push({
       id: 'PRESIDENTIAL_SCANDAL',
       type: 'GOVERNMENT_BULLETIN',
       priority: 8,
       title: '🏛️ GOVERNMENT BULLETIN',
-      headline: `OVAL OFFICE SCANDAL: CLASSIFIED DATA LEAKED!`,
-      body: `A massive data breach and internal leaks from President ${pName}'s close administration have triggered intense bipartisan controversy. Hearings are demanded immediately.`,
-      source: 'Capitol Hill Reporter'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
@@ -939,54 +1022,84 @@ export function processWorldReaction(
     const toTier = updatedPl.currentTier;
     if (!completed.includes(`PROMOTION_${toTier}`)) {
       if (toTier === 'STREET') {
+        const t = getLiveTemplate('PROMOTION_STREET', {
+          headline: `MAKING IT OFF THE BLOCK: {PLAYER_UPPER} ASCENDS!`,
+          body: `Pure local inspiration! Neighbors are cheering as {PLAYER} leaves the mud behind, advancing into Street level operations. Our block is proud!`,
+          source: 'The Daily Bulletin'
+        });
         candidates.push({
           id: `PROMOTION_${toTier}`,
           type: 'COMMUNITY_SPOTLIGHT',
           priority: 9,
           title: '❤️ COMMUNITY SPOTLIGHT',
-          headline: `MAKING IT OFF THE BLOCK: ${pName.toUpperCase()} ASCENDS!`,
-          body: `Pure local inspiration! Neighbors are cheering as ${pName} leaves the mud behind, advancing into Street level operations. Our block is proud!`,
-          source: 'The Daily Bulletin'
+          headline: injectPlayerData(t.headline, pl, metadata),
+          body: injectPlayerData(t.body, pl, metadata),
+          source: t.source,
+          effect: t.effect
         });
       } else if (toTier === 'STARTUP') {
+        const t = getLiveTemplate('PROMOTION_STARTUP', {
+          headline: `REGIONAL LAUNCH: {PLAYER_UPPER} ENTERS STARTUP SCENE!`,
+          body: `Tech blogs and investors are buzzing as regional pioneer {PLAYER} scales operations to Startup level. Early ventures are securing high capital injections.`,
+          source: 'Valley Tech Gazette'
+        });
         candidates.push({
           id: `PROMOTION_${toTier}`,
           type: 'BREAKING_NEWS',
           priority: 9,
           title: '📰 BREAKING NEWS',
-          headline: `REGIONAL LAUNCH: ${pName.toUpperCase()} ENTERS STARTUP SCENE!`,
-          body: `Tech blogs and investors are buzzing as regional pioneer ${pName} scales operations to Startup level. Early ventures are securing high capital injections.`,
-          source: 'Valley Tech Gazette'
+          headline: injectPlayerData(t.headline, pl, metadata),
+          body: injectPlayerData(t.body, pl, metadata),
+          source: t.source,
+          effect: t.effect
         });
       } else if (toTier === 'CORPORATE') {
+        const t = getLiveTemplate('PROMOTION_CORPORATE', {
+          headline: `BOARDROOM SHAKEUP: {PLAYER_UPPER} GOES CORPORATE!`,
+          body: `A meteoric rise! Business leader {PLAYER} is scaling regional operations, entering the Corporate tier to manage multi-million dollar corporate mergers.`,
+          source: 'Metro Business Review'
+        });
         candidates.push({
           id: `PROMOTION_${toTier}`,
           type: 'MARKET_FLASH',
           priority: 9,
           title: '📈 MARKET FLASH',
-          headline: `BOARDROOM SHAKEUP: ${pName.toUpperCase()} GOES CORPORATE!`,
-          body: `A meteoric rise! Business leader ${pName} is scaling regional operations, entering the Corporate tier to manage multi-million dollar corporate mergers.`,
-          source: 'Metro Business Review'
+          headline: injectPlayerData(t.headline, pl, metadata),
+          body: injectPlayerData(t.body, pl, metadata),
+          source: t.source,
+          effect: t.effect
         });
       } else if (toTier === 'ELITE') {
+        const t = getLiveTemplate('PROMOTION_ELITE', {
+          headline: `HIGH SOCIETY WELCOMES RISING ELITE: {PLAYER_UPPER}!`,
+          body: `Absolute high-society glamour. Tycoon {PLAYER} enters the Elite tier, earning invitations to high-net-worth clubs and exclusive corporate gatherings.`,
+          source: 'The Elite Syndicate'
+        });
         candidates.push({
           id: `PROMOTION_${toTier}`,
           type: 'CELEBRITY_WATCH',
           priority: 9,
           title: '⭐ CELEBRITY WATCH',
-          headline: `HIGH SOCIETY WELCOMES RISING ELITE: ${pName.toUpperCase()}!`,
-          body: `Absolute high-society glamour. Tycoon ${pName} enters the Elite tier, earning invitations to high-net-worth clubs and exclusive corporate gatherings.`,
-          source: 'The Elite Syndicate'
+          headline: injectPlayerData(t.headline, pl, metadata),
+          body: injectPlayerData(t.body, pl, metadata),
+          source: t.source,
+          effect: t.effect
         });
       } else if (toTier === 'MOGUL') {
+        const t = getLiveTemplate('PROMOTION_MOGUL', {
+          headline: `GLOBAL MONOPOLY: {PLAYER_UPPER} ASCENDS TO MOGUL!`,
+          body: `Undisputed global scale. {PLAYER} has broken into the Mogul class, gaining unparalleled influence over international trade, media, and tech.`,
+          source: 'Wall Street Ledger'
+        });
         candidates.push({
           id: `PROMOTION_${toTier}`,
           type: 'BREAKING_NEWS',
           priority: 9,
           title: '📰 BREAKING NEWS',
-          headline: `GLOBAL MONOPOLY: ${pName.toUpperCase()} ASCENDS TO MOGUL!`,
-          body: `Undisputed global scale. ${pName} has broken into the Mogul class, gaining unparalleled influence over international trade, media, and tech.`,
-          source: 'Wall Street Ledger'
+          headline: injectPlayerData(t.headline, pl, metadata),
+          body: injectPlayerData(t.body, pl, metadata),
+          source: t.source,
+          effect: t.effect
         });
       }
     }
@@ -995,162 +1108,226 @@ export function processWorldReaction(
   // 6. First Million
   if (updatedPl.bag >= 1000000 && !completed.includes('FIRST_MILLION')) {
     if (fame === 'local' || fame === 'regional') {
-      candidates.push({
-        id: 'FIRST_MILLION',
-        type: 'MARKET_FLASH',
-        priority: 7,
-        title: '📈 MARKET FLASH',
-        headline: `SEVEN-FIGURE CLUB: ${pName.toUpperCase()} REACHES $1,000,000!`,
-        body: `From extremely humble roots, self-made entrepreneur ${pName} has accumulated over $1,000,000 in liquid cash. Local businesses are stunned by the hustle.`,
+      const t = getLiveTemplate('FIRST_MILLION_local', {
+        headline: `SEVEN-FIGURE CLUB: {PLAYER_UPPER} REACHES $1,000,000!`,
+        body: `From extremely humble roots, self-made entrepreneur {PLAYER} has accumulated over $1,000,000 in liquid cash. Local businesses are stunned by the hustle.`,
         source: 'The Regional Business Journal'
       });
-    } else {
       candidates.push({
         id: 'FIRST_MILLION',
         type: 'MARKET_FLASH',
         priority: 7,
         title: '📈 MARKET FLASH',
-        headline: `CASH SURGE: NEW MULTI-MILLIONAIRE ICON ${pName.toUpperCase()}!`,
-        body: `Financial sheets confirm that ${pName}'s liquid capital reserves have officially breached the $1,000,000 benchmark. They are cementing their status as an industry tycoon.`,
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
+      });
+    } else {
+      const t = getLiveTemplate('FIRST_MILLION_standard', {
+        headline: `CASH SURGE: NEW MULTI-MILLIONAIRE ICON {PLAYER_UPPER}!`,
+        body: `Financial sheets confirm that {PLAYER}'s liquid capital reserves have officially breached the $1,000,000 benchmark. They are cementing their status as an industry tycoon.`,
         source: 'Global Financial Digest'
+      });
+      candidates.push({
+        id: 'FIRST_MILLION',
+        type: 'MARKET_FLASH',
+        priority: 7,
+        title: '📈 MARKET FLASH',
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     }
   }
 
   // 7. Legendary Achievement
   if (actionType === 'LEGENDARY_ACHIEVEMENT' && !completed.includes(`ACHIEVEMENT_${(metadata as any)?.achievementName}`)) {
-    const achName = (metadata as any)?.achievementName || 'Supreme Icon';
+    const t = getLiveTemplate('ACHIEVEMENT', {
+      headline: `LEGENDARY RECORD: {PLAYER_UPPER} UNLOCKS "{ACH_NAME_UPPER}"!`,
+      body: `The history books are forever written! {PLAYER} has completed the legendary milestone: "{ACH_NAME}". Commentators are praising this near-impossible feat.`,
+      source: 'Global Achievements Gazette'
+    });
     candidates.push({
-      id: `ACHIEVEMENT_${achName}`,
+      id: `ACHIEVEMENT_${metadata?.achievementName || 'Supreme_Icon'}`,
       type: 'CELEBRITY_WATCH',
       priority: 6,
       title: '⭐ CELEBRITY WATCH',
-      headline: `LEGENDARY RECORD: ${pName.toUpperCase()} UNLOCKS "${achName.toUpperCase()}"!`,
-      body: `The history books are forever written! ${pName} has completed the legendary milestone: "${achName}". Commentators are praising this near-impossible feat.`,
-      source: 'Global Achievements Gazette'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 8. Major Philanthropy
   if (actionType === 'PHILANTHROPY' && (metadata as any)?.cost >= 5000000 && !completed.includes('MAJOR_PHILANTHROPY')) {
-    const cost = (metadata as any)?.cost || 5000000;
+    const t = getLiveTemplate('MAJOR_PHILANTHROPY', {
+      headline: `HUMANITARIAN FEAT: {PLAYER_UPPER} DONATES {COST_M}M!`,
+      body: `Absolute philanthropy! Tycoon {PLAYER} has pledged a stunning {COST_VAL} donation to humanitarian aid, earning international praise.`,
+      source: 'World Philanthropy Digest'
+    });
     candidates.push({
       id: 'MAJOR_PHILANTHROPY',
       type: 'COMMUNITY_SPOTLIGHT',
       priority: 5,
       title: '❤️ COMMUNITY SPOTLIGHT',
-      headline: `HUMANITARIAN FEAT: ${pName.toUpperCase()} DONATES $${(cost / 1000000).toFixed(1)}M!`,
-      body: `Absolute philanthropy! Tycoon ${pName} has pledged a stunning $${cost.toLocaleString()} donation to humanitarian aid, earning international praise.`,
-      source: 'World Philanthropy Digest'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 9. Historic Business Acquisition
   const isAcquisitionHustle = (metadata as any)?.hustleName === 'Private Equity' || (metadata as any)?.hustleName === 'Venture Capital';
   if ((actionType === 'HUGE_PROFIT' || actionType === 'BUSINESS_LAUNCH') && isAcquisitionHustle && (metadata as any)?.cost >= 30000000 && !completed.includes('HISTORIC_ACQUISITION')) {
-    const cost = (metadata as any)?.cost || 30000000;
+    const t = getLiveTemplate('HISTORIC_ACQUISITION', {
+      headline: `MEGA MERGER: {PLAYER_UPPER} ACQUIRES INDUSTRY CONGLOMERATE!`,
+      body: `A historic {COST_M}M corporate takeover. {PLAYER} has successfully acquired leading sector operations. Markets brace for complete monopoly.`,
+      source: 'Wall Street Ledger'
+    });
     candidates.push({
       id: 'HISTORIC_ACQUISITION',
       type: 'MARKET_FLASH',
       priority: 5,
       title: '📈 MARKET FLASH',
-      headline: `MEGA MERGER: ${pName.toUpperCase()} ACQUIRES INDUSTRY CONGLOMERATE!`,
-      body: `A historic $${(cost / 1000000).toFixed(0)}M corporate takeover. ${pName} has successfully acquired leading sector operations. Markets brace for complete monopoly.`,
-      source: 'Wall Street Ledger'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 10. Market Crash
   if (actionType === 'PRESIDENCY_INFLATION' && (metadata as any)?.macroValue >= 8 && !completed.includes('MARKET_CRASH')) {
+    const t = getLiveTemplate('MARKET_CRASH', {
+      headline: `MARKET COLLAPSE: POLICIES TRIGGER SEVERE GLOBAL FREEZE!`,
+      body: `Stock indices plunge globally under President {PLAYER}'s controversial monetary directives and runaway inflation. Investors panic as a cold market crackdown spikes.`,
+      source: 'Global Financial Tracker'
+    });
     candidates.push({
       id: 'MARKET_CRASH',
       type: 'MARKET_FLASH',
       priority: 5,
       title: '📈 MARKET FLASH',
-      headline: `MARKET COLLAPSE: POLICIES TRIGGER SEVERE GLOBAL FREEZE!`,
-      body: `Stock indices plunge globally under President ${pName}'s controversial monetary directives and runaway inflation. Investors panic as a cold market crackdown spikes.`,
-      source: 'Global Financial Tracker'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 11. Record Profits
   if (actionType === 'HUGE_PROFIT' && (metadata as any)?.profit >= 10000000 && !completed.includes('RECORD_PROFIT')) {
-    const profit = (metadata as any)?.profit || 10000000;
-    const hName = (metadata as any)?.hustleName || 'operations';
+    const t = getLiveTemplate('RECORD_PROFIT', {
+      headline: `RECORD SHATTERED: {PLAYER_UPPER} CLEARS {PROFIT_M}M SINGLE PROFIT!`,
+      body: `Absolute dominance. {PLAYER} records a legendary single-month profit of {PROFIT_VAL} from their {H_NAME} operations, shattering all corporate limits.`,
+      source: 'Wall Street Ledger'
+    });
     candidates.push({
       id: 'RECORD_PROFIT',
       type: 'MARKET_FLASH',
       priority: 4,
       title: '📈 MARKET FLASH',
-      headline: `RECORD SHATTERED: ${pName.toUpperCase()} CLEARS $${(profit / 1000000).toFixed(1)}M SINGLE PROFIT!`,
-      body: `Absolute dominance. ${pName} records a legendary single-month profit of $${profit.toLocaleString()} from their ${hName} operations, shattering all corporate limits.`,
-      source: 'Wall Street Ledger'
+      headline: injectPlayerData(t.headline, pl, metadata),
+      body: injectPlayerData(t.body, pl, metadata),
+      source: t.source,
+      effect: t.effect
     });
   }
 
   // 12. Luxury Purchase
   if (actionType === 'LUXURY_PURCHASE' && (metadata as any)?.cost >= 1000000 && !completed.includes(`LUXURY_${(metadata as any)?.assetId}`)) {
     const assetId = (metadata as any)?.assetId || 'luxury item';
-    const cost = (metadata as any)?.cost || 1000000;
     if (fame === 'local' || fame === 'regional') {
-      candidates.push({
-        id: `LUXURY_${assetId}`,
-        type: 'CELEBRITY_WATCH',
-        priority: 3,
-        title: '⭐ CELEBRITY WATCH',
-        headline: `LOCAL FLEX: ${pName.toUpperCase()} BUYS NEW ${assetId.replace(/_/g, ' ').toUpperCase()}!`,
-        body: `Local superstar ${pName} was seen cruising in their spectacular new ${assetId.replace(/_/g, ' ')} worth $${cost.toLocaleString()}. The neighborhood has never seen such a luxury flex!`,
+      const t = getLiveTemplate('LUXURY_local', {
+        headline: `LOCAL FLEX: {PLAYER_UPPER} BUYS NEW {ASSET_UPPER}!`,
+        body: `Local superstar {PLAYER} was seen cruising in their spectacular new {ASSET_NAME} worth {COST_VAL}. The neighborhood has never seen such a luxury flex!`,
         source: 'The Daily Buzz'
       });
-    } else {
       candidates.push({
         id: `LUXURY_${assetId}`,
         type: 'CELEBRITY_WATCH',
         priority: 3,
         title: '⭐ CELEBRITY WATCH',
-        headline: `SUPREME FLEET: ${pName.toUpperCase()} ACQUIRES NEW ${assetId.replace(/_/g, ' ').toUpperCase()}!`,
-        body: `Iconic tycoon ${pName} was spotted stepping into a magnificent ${assetId.replace(/_/g, ' ')} worth $${cost.toLocaleString()}. A peak flex of raw influence and spending power.`,
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
+      });
+    } else {
+      const t = getLiveTemplate('LUXURY_standard', {
+        headline: `SUPREME FLEET: {PLAYER_UPPER} ACQUIRES NEW {ASSET_UPPER}!`,
+        body: `Iconic tycoon {PLAYER} was spotted stepping into a magnificent {ASSET_NAME} worth {COST_VAL}. A peak flex of raw influence and spending power.`,
         source: 'Global Luxury Insider'
+      });
+      candidates.push({
+        id: `LUXURY_${assetId}`,
+        type: 'CELEBRITY_WATCH',
+        priority: 3,
+        title: '⭐ CELEBRITY WATCH',
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     }
   }
 
   // 13. First Successful Business Launch
   if (actionType === 'BUSINESS_LAUNCH' && !completed.includes('FIRST_BUSINESS_LAUNCH')) {
-    const hName = (metadata as any)?.hustleName || 'Venture';
     if (fame === 'local') {
+      const t = getLiveTemplate('FIRST_BUSINESS_LAUNCH_local', {
+        headline: `NEW STREET SHOP: {PLAYER_UPPER} OPENS {H_NAME_UPPER}!`,
+        body: `Local entrepreneur {PLAYER} has launched a small {H_NAME} on our block. Neighbors and local leaders are excited to see this home-grown ambition succeed.`,
+        source: 'The Neighborhood Gazette'
+      });
       candidates.push({
         id: 'FIRST_BUSINESS_LAUNCH',
         type: 'COMMUNITY_SPOTLIGHT',
         priority: 2,
         title: '❤️ COMMUNITY SPOTLIGHT',
-        headline: `NEW STREET SHOP: ${pName.toUpperCase()} OPENS ${hName.toUpperCase()}!`,
-        body: `Local entrepreneur ${pName} has launched a small ${hName} on our block. Neighbors and local leaders are excited to see this home-grown ambition succeed.`,
-        source: 'The Neighborhood Gazette'
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     } else if (fame === 'regional') {
+      const t = getLiveTemplate('FIRST_BUSINESS_LAUNCH_regional', {
+        headline: `REGIONAL PLAYER: {PLAYER_UPPER} VENTURES INTO {H_NAME_UPPER}!`,
+        body: `Industry blogs report that {PLAYER} is expanding regional operations into the {H_NAME} sector. Analysts describe the model as highly scalable.`,
+        source: 'Valley Venture Buzz'
+      });
       candidates.push({
         id: 'FIRST_BUSINESS_LAUNCH',
         type: 'SOCIAL_TRENDING',
         priority: 2,
         title: '📱 SOCIAL TRENDING',
-        headline: `REGIONAL PLAYER: ${pName.toUpperCase()} VENTURES INTO ${hName.toUpperCase()}!`,
-        body: `Industry blogs report that ${pName} is expanding regional operations into the ${hName} sector. Analysts describe the model as highly scalable.`,
-        source: 'Valley Venture Buzz'
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     } else {
+      const t = getLiveTemplate('FIRST_BUSINESS_LAUNCH_standard', {
+        headline: `MARKET ENTRANCE: {PLAYER_UPPER} LAUNCHES {H_NAME_UPPER} SECTOR!`,
+        body: `Undisputed titan {PLAYER} expands their commercial grasp, launching a major division in the {H_NAME} sector. Competitors brace for rapid consolidation.`,
+        source: 'Wall Street Ledger'
+      });
       candidates.push({
         id: 'FIRST_BUSINESS_LAUNCH',
         type: 'BREAKING_NEWS',
         priority: 2,
         title: '📰 BREAKING NEWS',
-        headline: `MARKET ENTRANCE: ${pName.toUpperCase()} LAUNCHES ${hName.toUpperCase()} SECTOR!`,
-        body: `Undisputed titan ${pName} expands their commercial grasp, launching a major division in the ${hName} sector. Competitors brace for rapid consolidation.`,
-        source: 'Wall Street Ledger'
+        headline: injectPlayerData(t.headline, pl, metadata),
+        body: injectPlayerData(t.body, pl, metadata),
+        source: t.source,
+        effect: t.effect
       });
     }
   }
-
   if (candidates.length > 0) {
     candidates.sort((a, b) => b.priority - a.priority);
     const chosen = candidates[0];
