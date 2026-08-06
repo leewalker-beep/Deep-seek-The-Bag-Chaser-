@@ -1,0 +1,2332 @@
+[
+  {
+    "id": "crossroad_recession_toll",
+    "title": "The Recession's Toll",
+    "pacingCategory": "MAJOR",
+    "description": "A severe economic slump hits. Your VP of Finance presents a stark choice: Lay off 30% of your workforce to preserve profitability and safeguard investor confidence, OR absorb the losses yourself, protecting your employees but risking a major cash-flow drain.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.35,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "crossroad_employees_protect",
+        "label": "Protect All Employees",
+        "description": "Absorb the payroll costs. Earn deep workforce trust but lose a massive chunk of liquid capital.",
+        "consequences": {
+          "bag": -150000,
+          "aura": 300,
+          "mentalHealth": 15,
+          "biographyEntry": "“The Sacrifice: In the depth of a harsh economic recession, chose to protect employee livelihood at massive personal expense.”"
+        },
+        "setFlags": {
+          "crossroad_protected_employees": true
+        },
+        "logMessage": "🛡️ THE SACRIFICE: You chose to protect your workforce, absorbing $150,000 in costs. Your employees vow complete loyalty."
+      },
+      {
+        "id": "crossroad_employees_layoff",
+        "label": "Execute Layoffs",
+        "description": "Terminate 30% of your staff immediately. Protect corporate margins and secure investor satisfaction, but face public backlash.",
+        "consequences": {
+          "bag": 100000,
+          "aura": -200,
+          "clout": 150,
+          "biographyEntry": "“The Layoffs: Handled the recession with cold financial efficiency, executing widespread layoffs to protect corporate margins.”"
+        },
+        "setFlags": {
+          "crossroad_laid_off_employees": true
+        },
+        "logMessage": "📉 THE LAYOFFS: You terminated 30% of your staff, saving $100,000 but drawing fierce public criticism."
+      }
+    ]
+  },
+  {
+    "id": "crossroad_partners_redemption",
+    "title": "The Partner's Redemption",
+    "pacingCategory": "MAJOR",
+    "description": "Your original business partner, who made a critical error that cost you thousands in the early days, has hit rock bottom. Their new venture is collapsing, and they are begging you for a $100,000 bailout to save their family from ruin. You can rescue them, establishing a bond of loyalty, or use their weakness to acquire their remaining IP for pennies, destroying what remains of your friendship.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.25,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "crossroad_partner_rescue",
+        "label": "Provide the Lifeline",
+        "description": "Bail them out. Save their family and cement an unbreakable bond of loyalty, but absorb a heavy financial hit.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 250,
+          "mentalHealth": 15,
+          "biographyEntry": "“The Sacrifice: Chose to rescue a failing partner from ruin, proving that loyalty and friendship are worth more than any balance sheet.”"
+        },
+        "setFlags": {
+          "crossroad_rescued_partner": true
+        },
+        "logMessage": "🤝 THE REDEMPTION: You wired $100,000 to save your partner. They vow complete, lifelong loyalty."
+      },
+      {
+        "id": "crossroad_partner_exploit",
+        "label": "Ruthlessly Liquidate Them",
+        "description": "Decline the bailout and launch a hostile bid to seize their valuable IP for pennies, completing their ruin but maximizing your profit.",
+        "consequences": {
+          "bag": 150000,
+          "clout": 200,
+          "aura": -250,
+          "heat": 15,
+          "mentalHealth": -10,
+          "biographyEntry": "“The Betrayal: Capitalized on a former partner's collapse, ruthlessly seizing their intellectual property for pennies and ending the friendship forever.”"
+        },
+        "setFlags": {
+          "crossroad_betrayed_partner": true
+        },
+        "logMessage": "🔪 THE BETRAYAL: You bought out your partner's IP for pennies. Their venture collapsed, completely ending your friendship."
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_property_vs_expansion",
+    "title": "Crossroads of Scale",
+    "pacingCategory": "MAJOR",
+    "description": "Your logistics manager presents a crossroads: Expand your warehouse (boosting active cash yield multipliers but adding $1,200/month in upkeep) OR acquire a local residential duplex (yielding stable monthly passive cash flow but freezing upgrade paths).",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "upgrade_warehouse",
+        "label": "Expand Warehouse",
+        "description": "Upgrade the active infrastructure. Costs $1,200/month in operating upkeeps but increases professional clout.",
+        "consequences": {
+          "clout": 50,
+          "passiveCash": -1200
+        },
+        "setFlags": {
+          "opp_cost_warehouse_expanded": true
+        }
+      },
+      {
+        "id": "acquire_duplex",
+        "label": "Acquire Residential Duplex",
+        "description": "Invest $25,000 to purchase a high-yield residential asset bringing in $1,800/month in passive income.",
+        "consequences": {
+          "bag": -25000,
+          "passiveCash": 1800
+        },
+        "setFlags": {
+          "opp_cost_duplex_acquired": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_machinery_vs_expertise",
+    "title": "The Efficiency Tax",
+    "pacingCategory": "MAJOR",
+    "description": "Your production line requires optimization. You can either purchase automated heavy machinery (reducing active mental health costs by adding automated routines but adding $2,000/month in equipment servicing) OR enroll in executive management education (massive clout/aura boost, costing $30,000 up front with zero ongoing costs).",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "automate_production",
+        "label": "Automate Machinery",
+        "description": "Spend $2,000/month on equipment financing to permanently safeguard operational mental health (+30 Mental Health).",
+        "consequences": {
+          "passiveCash": -2000,
+          "mentalHealth": 30
+        },
+        "setFlags": {
+          "opp_cost_automated_machinery": true
+        }
+      },
+      {
+        "id": "executive_education",
+        "label": "Enroll in Executive Education",
+        "description": "Invest $30,000 in personal expertise, securing elite pedigree credentials (+200 Clout, +100 Aura).",
+        "consequences": {
+          "bag": -30000,
+          "clout": 200,
+          "aura": 100
+        },
+        "setFlags": {
+          "opp_cost_education_completed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_scale_vs_savings",
+    "title": "The Leverage Squeeze",
+    "pacingCategory": "MAJOR",
+    "description": "To scale your current operations, you must choose between hiring a high-priced general manager (deducting $2,000/month in salary, but yielding $4,500/month in automatic passive income) OR maintaining liquid cash savings to cushion future recessions.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "hire_manager",
+        "label": "Hire Dedicated Manager",
+        "description": "Hire the manager. Net yield of +$2,500/month in passive income (+40 Clout).",
+        "consequences": {
+          "passiveCash": 2500,
+          "clout": 40
+        },
+        "setFlags": {
+          "opp_cost_manager_hired": true
+        }
+      },
+      {
+        "id": "retain_savings",
+        "label": "Retain Cash Reserves",
+        "description": "Avoid permanent overhead commitments. Hold liquid reserves (+15 Mental Health, +30 Aura).",
+        "consequences": {
+          "aura": 30,
+          "mentalHealth": 15
+        },
+        "setFlags": {
+          "opp_cost_savings_retained": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_rest_vs_push",
+    "title": "Vigor vs. Velocity",
+    "pacingCategory": "MAJOR",
+    "description": "Your workers are exhausted and your margins are tight. You can either fund a high-quality team retreat (costing $15,000, restoring 40 Mental Health but pausing development) OR enforce double-shifts to maximize active income (generating immediate cash but triggering employee friction and +20 Heat).",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "fund_retreat",
+        "label": "Fund Team Retreat",
+        "description": "Invest $15,000 in your team's mental health, restoring 40 Mental Health.",
+        "consequences": {
+          "bag": -15000,
+          "mentalHealth": 40
+        },
+        "setFlags": {
+          "opp_cost_retreat_funded": true
+        }
+      },
+      {
+        "id": "enforce_shifts",
+        "label": "Enforce Double Shifts",
+        "description": "Push workers to the limit. Earns $20,000 immediately but adds +20 Heat due to worker protests.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 20,
+          "mentalHealth": -30
+        },
+        "setFlags": {
+          "opp_cost_shifts_enforced": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_marketing_vs_debt",
+    "title": "Brand vs. Solvency",
+    "pacingCategory": "MAJOR",
+    "description": "Your public profile is slipping while your operating liabilities grow. You can either invest heavily in a brand PR campaign (+1,000 clout, costing $50,000) OR pay down your running obligations immediately to bolster cash reserves.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "marketing_pr_blitz",
+        "label": "Invest in PR Blitz",
+        "description": "Spend $50,000 to launch a premier PR campaign, securing high public standing (+1,000 Clout, +200 Aura).",
+        "consequences": {
+          "bag": -50000,
+          "clout": 1000,
+          "aura": 200
+        },
+        "setFlags": {
+          "opp_cost_pr_blitz_active": true
+        }
+      },
+      {
+        "id": "pay_down_liabilities",
+        "label": "Pay Down Liabilities",
+        "description": "Use $15,000 of cash to retire outstanding obligations, reclaiming $1,500/month in passive cash flow.",
+        "consequences": {
+          "bag": -15000,
+          "passiveCash": 1500
+        },
+        "setFlags": {
+          "pay_down_liabilities_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_coo_vs_bootstrap",
+    "title": "The Personnel Gamble",
+    "pacingCategory": "MAJOR",
+    "description": "Your operations are scaling rapidly, but managing the daily grind is taking a heavy toll on your mental stamina. An elite Chief Operating Officer (COO) offers their services. You can hire them to permanently streamline your operations, or keep bootstrapping to maintain a lean overhead.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "hire_coo_active",
+        "label": "Hire Elite COO",
+        "description": "Hire the COO. Costs $4,000/month in overhead, but simplifies your workload (+30 Clout, +10 Aura).",
+        "consequences": {
+          "passiveCash": -4000,
+          "clout": 30,
+          "aura": 10
+        },
+        "setFlags": {
+          "opp_cost_coo_hired": true
+        }
+      },
+      {
+        "id": "stay_bootstrapping",
+        "label": "Stay Bootstrapping",
+        "description": "Manage the details yourself. Save $4,000/month in fixed costs but absorb heavy immediate fatigue (-10 Mental Health, +15 Aura).",
+        "consequences": {
+          "mentalHealth": -10,
+          "aura": 15
+        },
+        "setFlags": {
+          "opp_cost_bootstrap_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_buyout_vs_real_estate",
+    "title": "Distressed Competitor Buyout",
+    "pacingCategory": "MAJOR",
+    "description": "A local competitor is liquidating their fleet and assets for exactly $50,000. Purchasing it immediately will permanently boost your active cash yields (+25% active yields). However, doing so will wipe out your current liquid reserves, forcing you to pass on a high-yield passive residential duplex opportunity.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "buy_competitor_assets",
+        "label": "Buy Out Competitor",
+        "description": "Invest $50,000 of cash to acquire their assets, expanding active execution yields (+100 Clout).",
+        "consequences": {
+          "bag": -50000,
+          "clout": 100
+        },
+        "setFlags": {
+          "opp_cost_competitor_bought": true
+        }
+      },
+      {
+        "id": "pass_and_save_cash",
+        "label": "Pass and Save Cash",
+        "description": "Maintain liquid capital to secure high-yield passive real estate later (+15 Mental Health, +30 Aura).",
+        "consequences": {
+          "aura": 30,
+          "mentalHealth": 15
+        },
+        "setFlags": {
+          "opp_cost_real_estate_reserved": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_leverage_vs_organic",
+    "title": "Leverage Crossroads",
+    "pacingCategory": "MAJOR",
+    "description": "To capture a rapid market surge, you can either take out an emergency Business Loan to scale your infrastructure overnight, accepting heavy future debt obligations and scrutiny, OR grow organically at a slower, safer pace.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "take_leverage_debt",
+        "label": "Take High-Leverage Debt",
+        "description": "Borrow $40,000 immediately to scale up operations, but face future investor scrutiny (+50 Clout).",
+        "consequences": {
+          "bag": 40000,
+          "clout": 50
+        },
+        "setFlags": {
+          "opp_cost_high_leverage_active": true
+        },
+        "createConsequences": [
+          {
+            "id": "cons_leverage_sq_1",
+            "source": "leverage_squeeze_consequence",
+            "triggerCondition": "Heavy Debt-Fueled Leverage",
+            "delay": 1,
+            "severity": "moderate",
+            "expiry": 6,
+            "affectedSystems": [
+              "politics",
+              "aura",
+              "clout"
+            ],
+            "status": "pending",
+            "description": "Your aggressive debt-funded expansion has raised concerns about your long-term solvency among investors and public commentators.",
+            "effectModifier": {
+              "cloutGainMult": 0.85,
+              "auraGainMult": 0.85
+            },
+            "newsTemplates": [
+              "Financial analysts warn that your heavy debt obligations are crowding out productive reinvestment.",
+              "Bystanders observe a growing list of creditors following your public outings."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "grow_organically_safe",
+        "label": "Grow Organically",
+        "description": "Grow slow, safe, and debt-free (+20 Mental Health, +20 Aura).",
+        "consequences": {
+          "mentalHealth": 20,
+          "aura": 20
+        },
+        "setFlags": {
+          "opp_cost_organic_growth_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "mining_labor_dispute",
+    "title": "The Ghost of the Mines",
+    "pacingCategory": "MAJOR",
+    "description": "A investigative journalist has uncovered old records of labor violations at your family's legacy mines. They are offering you a \"private screening\" of the evidence before it goes live.",
+    "trigger": {
+      "background": [
+        "bn_mining"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "settle_dispute",
+        "label": "The Right Thing",
+        "description": "Fund a massive reparations package for the old mining families and issue a public apology.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 150,
+          "clout": 50
+        }
+      },
+      {
+        "id": "bury_evidence",
+        "label": "Bury the Story",
+        "description": "Use your growing influence to purchase the media outlet and make the reporter \"disappear\" from the industry.",
+        "consequences": {
+          "bag": -25000,
+          "clout": 100,
+          "aura": -150,
+          "heat": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "tech_black_project",
+    "title": "Project Obsidian",
+    "pacingCategory": "MAJOR",
+    "description": "An encrypted message arrives from an unknown sender. They want you to design a \"backdoor\" into a regional banking network. The pay is astronomical, but the risks are absolute.",
+    "trigger": {
+      "background": [
+        "dr_tech"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.12,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "accept_obsidian",
+        "label": "Accept the Contract",
+        "description": "Code the backdoor. Take the money. Hope nobody finds the digital fingerprints.",
+        "consequences": {
+          "bag": 500000,
+          "heat": 60,
+          "aura": -50
+        }
+      },
+      {
+        "id": "report_obsidian",
+        "label": "Report & Secure",
+        "description": "Alert the authorities and help them patch the vulnerability. It's good for the resume.",
+        "consequences": {
+          "clout": 80,
+          "aura": 40,
+          "bag": 10000
+        }
+      }
+    ]
+  },
+  {
+    "id": "shadow_blackmail",
+    "title": "Leverage Opportunity",
+    "pacingCategory": "MAJOR",
+    "description": "Your informants have caught a local politician in a compromising position. As \"The Shadow\", you can leverage this for power or for silence.",
+    "trigger": {
+      "specialization": [
+        "shadow"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "leverage_power",
+        "label": "Political Favor",
+        "description": "Trade the evidence for a reduction in regulatory scrutiny on your businesses.",
+        "consequences": {
+          "heat": -30,
+          "aura": -20,
+          "clout": 40
+        }
+      },
+      {
+        "id": "leverage_cash",
+        "label": "Cold Cash",
+        "description": "Simple extortion. $50,000 for the original drive.",
+        "consequences": {
+          "bag": 50000,
+          "aura": -10,
+          "heat": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "investor_chain_1",
+    "arcId": "arc_investor",
+    "title": "A Risky Proposal",
+    "pacingCategory": "MAJOR",
+    "description": "A shadowy venture capitalist, \"The Architect\", offers you a massive injection of capital. \"No questions asked,\" they say. \"But I'll come for a favor later.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "accept_architect",
+        "label": "Accept the Investment",
+        "description": "Take the $250,000. You'll deal with the consequences later.",
+        "consequences": {
+          "bag": 250000,
+          "clout": 50
+        },
+        "setFlags": {
+          "architect_investment": true,
+          "architect_debt": true
+        }
+      },
+      {
+        "id": "decline_architect",
+        "label": "Decline Politely",
+        "description": "There's no such thing as free money.",
+        "consequences": {
+          "aura": 20
+        },
+        "setFlags": {
+          "architect_investment": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "origin_dr_rival",
+    "title": "The Academic Rival",
+    "pacingCategory": "MAJOR",
+    "description": "One of your former professors is publicly critiquing your business model in the media, calling it \"unstructured\" and \"destined for collapse.\"",
+    "trigger": {
+      "category": [
+        "dropout"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "debate_dr",
+        "label": "Public Debate",
+        "description": "Crush them with real-world results in a televised interview.",
+        "consequences": {
+          "clout": 100,
+          "aura": 50
+        }
+      },
+      {
+        "id": "ignore_dr",
+        "label": "Ignore the Noise",
+        "description": "The numbers speak for themselves. You have more important things to do.",
+        "consequences": {
+          "mentalHealth": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "spec_influencer_viral",
+    "title": "The Viral Crisis",
+    "pacingCategory": "MAJOR",
+    "description": "A video of you has gone viral, but it's being taken out of context. Your brand is at a tipping point.",
+    "trigger": {
+      "specialization": [
+        "influencer"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "apologize_viral",
+        "label": "The Tears Video",
+        "description": "Issue a sincere (or well-acted) apology. Protect the Aura.",
+        "consequences": {
+          "aura": 100,
+          "clout": -50
+        }
+      },
+      {
+        "id": "lean_in_viral",
+        "label": "Lean into the Chaos",
+        "description": "Any publicity is good publicity. Double down and watch the numbers climb.",
+        "consequences": {
+          "clout": 200,
+          "aura": -100,
+          "heat": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_2",
+    "characterId": "char_marcus",
+    "arcId": "arc_marcus",
+    "pacingCategory": "CHARACTER",
+    "title": "Marcus's Opportunity",
+    "description": "Marcus reaches out again. He's found a lead on some \"high-end electronics\" that fell off a truck. He wants you to provide the storage space.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "status_marcus": "ally"
+      }
+    },
+    "choices": [
+      {
+        "id": "marcus_storage",
+        "label": "Provide Storage",
+        "description": "Use your warehouse. A little risk for a lot of reward.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 30,
+          "aura": -50
+        },
+        "setFlags": {
+          "rel_marcus": 70,
+          "trust_marcus": 120,
+          "marcus_2_done": true
+        }
+      },
+      {
+        "id": "marcus_decline_crime",
+        "label": "Refuse Crime",
+        "description": "You're going legit. You can't risk the heat.",
+        "consequences": {
+          "aura": 30,
+          "heat": -10
+        },
+        "setFlags": {
+          "rel_marcus": 40,
+          "trust_marcus": 80,
+          "marcus_2_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_1",
+    "characterId": "char_ashley",
+    "pacingCategory": "CHARACTER",
+    "title": "The Journalist's Inquiry",
+    "description": "Ashley Weaver from the Metro Gazette is writing a piece on the \"rising stars\" of the city. She wants an exclusive interview.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ashley_interview_clean",
+        "label": "The Clean Story",
+        "description": "Tell her about your humble beginnings and your drive for success.",
+        "consequences": {
+          "clout": 40,
+          "aura": 30
+        },
+        "setFlags": {
+          "rel_ashley": 30,
+          "trust_ashley": 50
+        }
+      },
+      {
+        "id": "ashley_interview_raw",
+        "label": "The Raw Truth",
+        "description": "Give her the gritty details. It's risky, but it'll be a bestseller.",
+        "consequences": {
+          "clout": 100,
+          "heat": 20,
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_ashley": 50,
+          "trust_ashley": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cole_1",
+    "characterId": "char_cole",
+    "pacingCategory": "CHARACTER",
+    "title": "Cole's Warning",
+    "description": "Detective Silas Cole pays you a visit. \"I've seen guys like you come and go,\" he says. \"Keep your nose clean, or I'll be the one who shuts you down.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 40
+      }
+    },
+    "choices": [
+      {
+        "id": "cole_cooperate",
+        "label": "Offer Information",
+        "description": "Give him a tip about a minor rival. Show him you're on the \"right\" side.",
+        "consequences": {
+          "heat": -30,
+          "aura": -40,
+          "clout": 30
+        },
+        "setFlags": {
+          "rel_cole": 20,
+          "trust_cole": 40
+        }
+      },
+      {
+        "id": "cole_defiant",
+        "label": "Be Defiant",
+        "description": "You have nothing to say to the police.",
+        "consequences": {
+          "heat": 10,
+          "clout": 50
+        },
+        "setFlags": {
+          "rel_cole": -30,
+          "trust_cole": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_chen_1",
+    "characterId": "char_chen",
+    "pacingCategory": "CHARACTER",
+    "title": "Chen's Entrance",
+    "description": "Lawrence Chen has noticed your growth. \"You have potential,\" he says, leaning back in his leather chair. \"But potential is just another word for someone who hasn't made it yet. I can provide 500k, but I want a seat on your board.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "chen_accept_sk",
+        "label": "Accept Chen (Origins)",
+        "description": "Acknowledge your street roots and take the deal.",
+        "requirement": {
+          "background": [
+            "sk_scrap",
+            "sk_delivery"
+          ]
+        },
+        "consequences": {
+          "bag": 500000,
+          "clout": 120,
+          "aura": -10,
+          "biographyEntry": "Lawrence Chen took a chance on a kid from the Mud, seeing the raw hunger beneath the suit."
+        },
+        "setFlags": {
+          "rel_chen": 60,
+          "trust_chen": 40,
+          "chen_on_board": true
+        }
+      },
+      {
+        "id": "chen_accept",
+        "label": "Accept Chen",
+        "description": "Take the money and the expertise.",
+        "consequences": {
+          "bag": 500000,
+          "clout": 100,
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_chen": 50,
+          "trust_chen": 30,
+          "chen_on_board": true
+        }
+      },
+      {
+        "id": "chen_decline",
+        "label": "Maintain Autonomy",
+        "description": "You don't need his help or his control.",
+        "consequences": {
+          "aura": 50,
+          "clout": 20
+        },
+        "setFlags": {
+          "rel_chen": 10,
+          "trust_chen": 10,
+          "chen_on_board": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_1",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "A Sister's Concern",
+    "description": "Your sister Maya visits. She's worried that your success is coming at too high a cost. \"The neighborhood is changing,\" she says. \"And not for the better. We need a community center, not more luxury condos.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "maya_fund_center",
+        "label": "Fund the Center",
+        "description": "Commit 100k to the community project.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 200,
+          "clout": 50
+        },
+        "setFlags": {
+          "rel_maya": 100,
+          "trust_maya": 100,
+          "community_hero": true
+        }
+      },
+      {
+        "id": "maya_ignore",
+        "label": "Focus on Business",
+        "description": "Explain that the business comes first. You can help later.",
+        "consequences": {
+          "aura": -50,
+          "clout": 30,
+          "biographyEntry": "Prioritized business growth over family-led community projects, straining relations with Maya."
+        },
+        "setFlags": {
+          "rel_maya": 20,
+          "trust_maya": 40,
+          "community_hero": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_2",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "Zoning Wars",
+    "description": "Maya's community center project is being blocked by a local development firm, \"Chadwick Holdings\". They want to build a luxury high-rise on that lot. They've offered you a \"finder's fee\" to convince Maya to drop the project.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "community_hero": true
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_defend_center",
+        "label": "Defend the Center",
+        "description": "Use your influence and legal resources to block Chadwick's permit.",
+        "consequences": {
+          "bag": -50000,
+          "aura": 100,
+          "clout": 50,
+          "biographyEntry": "Successfully defended the community center against Chadwick Holdings' predatory development plans."
+        },
+        "setFlags": {
+          "rel_maya": 120,
+          "chadwick_hostile": true
+        }
+      },
+      {
+        "id": "maya_betray_center",
+        "label": "Accept the Fee",
+        "description": "Take the money. Maya will understand... eventually.",
+        "consequences": {
+          "bag": 200000,
+          "aura": -200,
+          "clout": 100,
+          "biographyEntry": "Betrayed Maya's trust by accepting a payoff to sabotage the community center project."
+        },
+        "setFlags": {
+          "rel_maya": 0,
+          "trust_maya": 0,
+          "community_hero": false,
+          "chadwick_ally": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ghost_1",
+    "characterId": "char_ghost",
+    "pacingCategory": "CHARACTER",
+    "title": "The Digital Handshake",
+    "description": "A message appears on your screen: \"I see what you're doing. I can make your digital footprint disappear, for a price. Or I can make it very, very loud.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.12,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ghost_hire",
+        "label": "Hire Ghost",
+        "description": "Pay for digital security and anonymity.",
+        "consequences": {
+          "bag": -50000,
+          "heat": -50,
+          "clout": 20
+        },
+        "setFlags": {
+          "rel_ghost": 40,
+          "trust_ghost": 70,
+          "ghost_hired": true
+        }
+      },
+      {
+        "id": "ghost_report",
+        "label": "Try to Trace",
+        "description": "Alert your security team to find the source. You don't negotiate with hackers.",
+        "consequences": {
+          "clout": 50,
+          "heat": 20,
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_ghost": -50,
+          "trust_ghost": 0,
+          "ghost_hostile": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_cop_warning",
+    "characterId": "char_miller_cop",
+    "arcId": "arc_miller",
+    "pacingCategory": "CHARACTER",
+    "title": "Officer Miller's Patrol",
+    "description": "Officer Frank Miller pulls his cruiser alongside you. \"I'm seeing your name in places it shouldn't be,\" he says quietly. \"The higher-ups are starting to notice your activities. Clean it up, or I won't be able to look the other way much longer.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "miller_clean_up",
+        "label": "Lay Low",
+        "description": "Reduce your more visible operations for a while.",
+        "consequences": {
+          "heat": -20,
+          "clout": -10
+        },
+        "setFlags": {
+          "rel_miller": 40
+        }
+      },
+      {
+        "id": "miller_ignore",
+        "label": "Stay the Course",
+        "description": "It's just business. Miller is just one cop.",
+        "consequences": {
+          "heat": 10
+        },
+        "setFlags": {
+          "rel_miller": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_promo",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "pacingCategory": "CHARACTER",
+    "title": "The J-Dog Experience",
+    "description": "J-Dog cornered you with a pair of headphones. \"Yo, you gotta hear this new track! It's fire! I just need a little push to get it on the local radio. A few thousand for some... 'promotion'... and we both go viral. What you think?\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.12,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "jdog_invest",
+        "label": "Invest in J-Dog",
+        "description": "Give him $3,000 for \"marketing\".",
+        "consequences": {
+          "bag": -3000,
+          "clout": 20
+        },
+        "setFlags": {
+          "jdog_promo_active": true
+        }
+      },
+      {
+        "id": "jdog_decline",
+        "label": "Pass on the Track",
+        "description": "You've heard enough.",
+        "consequences": {
+          "mentalHealth": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_clark_intro",
+    "characterId": "char_clark",
+    "arcId": "arc_clark",
+    "pacingCategory": "CHARACTER",
+    "title": "Legal Scrutiny",
+    "description": "Alistair Clark, \"The Closer\", has sent a formal inquiry regarding your recent business acquisitions. He represents a group of \"concerned competitors\" and is hinting at a massive antitrust lawsuit unless you \"realign\" your interests.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "clark_retain",
+        "label": "Retain Clark",
+        "description": "Pay him a massive retainer to switch sides and represent you instead.",
+        "consequences": {
+          "bag": -100000,
+          "clout": 50,
+          "heat": -20,
+          "biographyEntry": "Turned a legal threat into a powerful asset by retaining Alistair \"The Closer\" Clark."
+        },
+        "setFlags": {
+          "rel_clark": 70,
+          "clark_ally": true
+        }
+      },
+      {
+        "id": "clark_fight",
+        "label": "Fight the Lawsuit",
+        "description": "Your own legal team says they can beat him, but it will be expensive.",
+        "consequences": {
+          "bag": -50000,
+          "clout": 20,
+          "aura": -10
+        },
+        "setFlags": {
+          "rel_clark": -50,
+          "clark_rival": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_summers_collab",
+    "characterId": "char_summers",
+    "arcId": "arc_summers",
+    "pacingCategory": "CHARACTER",
+    "title": "The Viral VC",
+    "description": "Brooke Summers has noticed your growth and wants to feature your latest venture on her stream. \"Your brand is so 'now',\" she says. \"Let's do a collab. I invest, you get the clout, and we both win.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "summers_accept",
+        "label": "Partner with Summers",
+        "description": "Accept the investment and the public exposure.",
+        "consequences": {
+          "bag": 200000,
+          "clout": 150,
+          "aura": 50
+        },
+        "setFlags": {
+          "rel_summers": 80,
+          "summers_partner": true
+        }
+      },
+      {
+        "id": "summers_decline",
+        "label": "Stay Independent",
+        "description": "You don't want your business model dictated by social media trends.",
+        "consequences": {
+          "clout": 20
+        },
+        "setFlags": {
+          "rel_summers": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cassie_intel",
+    "characterId": "char_cassie",
+    "arcId": "arc_cassie",
+    "pacingCategory": "CHARACTER",
+    "title": "Cassie's Information Exchange",
+    "description": "Cassie Thorne reaches out. \"I've heard some interesting rumors about your newest competitor,\" she says, leaning over the counter. \"For a small fee, I can tell you exactly where they're vulnerable.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "cassie_buy",
+        "label": "Buy the Intel",
+        "description": "Pay $10,000 for the information.",
+        "consequences": {
+          "bag": -10000,
+          "clout": 50
+        },
+        "setFlags": {
+          "rel_cassie": 40
+        }
+      },
+      {
+        "id": "cassie_ignore",
+        "label": "Don't Need It",
+        "description": "You prefer to do your own research.",
+        "consequences": {
+          "aura": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ray_security",
+    "characterId": "char_ray",
+    "arcId": "arc_ray",
+    "pacingCategory": "CHARACTER",
+    "title": "Sarge's Solution",
+    "description": "Raymond \"Sarge\" Strode offers to upgrade your physical security. \"Your current setup is amateur hour,\" he grunts. \"One professional team could wipe you out in five minutes. Let me handle it. I need 20k for equipment and training.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ray_hire",
+        "label": "Hire Sarge",
+        "description": "Upgrade your security protocols.",
+        "consequences": {
+          "bag": -20000,
+          "heat": -30,
+          "clout": 30
+        },
+        "setFlags": {
+          "rel_ray": 60,
+          "sarge_security_active": true
+        }
+      },
+      {
+        "id": "ray_refuse",
+        "label": "Stay Low-Tech",
+        "description": "You've been fine so far.",
+        "consequences": {
+          "bag": 5000
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lexi_mural",
+    "characterId": "char_lexi",
+    "arcId": "arc_lexi",
+    "pacingCategory": "CHARACTER",
+    "title": "The Muralist's Mark",
+    "description": "Lexi Chen wants to paint a massive mural on the side of your main building. \"It will tell the story of the block,\" she says. \"But I need you to promise you won't let the city paint over it.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "lexi_permit",
+        "label": "Authorize the Mural",
+        "description": "Give Lexi the space and the protection.",
+        "consequences": {
+          "aura": 100,
+          "clout": 40
+        },
+        "setFlags": {
+          "rel_lexi": 70,
+          "lexi_mural_active": true
+        }
+      },
+      {
+        "id": "lexi_refuse",
+        "label": "No Murals",
+        "description": "You need to maintain a professional corporate image.",
+        "consequences": {
+          "clout": 20,
+          "aura": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "university_admission_offer",
+    "title": "Ivy League Admission",
+    "pacingCategory": "MAJOR",
+    "description": "A prestigious Ivy League university has accepted your application for an executive business program. Enrolling will amplify your public prestige and long-term strategic clout.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "accept_university_offer",
+        "label": "Accept and Enroll (-$20,000, +80 Clout)",
+        "description": "Pay the tuition fees to secure your enrollment.",
+        "consequences": {
+          "bag": -20000,
+          "clout": 80
+        },
+        "setFlags": {
+          "university_accepted": true,
+          "just_accepted_university": true
+        },
+        "logMessage": "🎓 ENROLLED: You paid $20,000 for executive business enrollment. Banners congratulate your new academic prestige."
+      },
+      {
+        "id": "reject_university_offer",
+        "label": "Decline Offer (+10 Aura)",
+        "description": "Real-world experience is the best teacher anyway.",
+        "consequences": {
+          "aura": 10
+        },
+        "logMessage": "🚫 DECLINED: You turned down the executive program. Your followers praise your self-made authenticity."
+      }
+    ]
+  },
+  {
+    "id": "char_pops_1_the_reunion",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "title": "The Reunion",
+    "description": "Arthur 'Pops' Jenkins is waiting for you in the old community garden. \"I knew you'd come back to the block,\" he says. \"The question is, are you here to take, or to give back?\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "pops_give_back",
+        "label": "Invest in the Garden",
+        "description": "Donate $10k to save the community garden.",
+        "consequences": {
+          "bag": -10000,
+          "aura": 100
+        },
+        "setFlags": {
+          "pops_mentor": true,
+          "rel_pops": 100
+        }
+      },
+      {
+        "id": "pops_take",
+        "label": "Eyes on the Prize",
+        "description": "Tell Pops you're here to build a legacy, not grow tomatoes.",
+        "consequences": {
+          "clout": 50,
+          "aura": -20
+        },
+        "setFlags": {
+          "pops_mentor": false,
+          "rel_pops": 40
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_pops_2_threat",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "title": "The Developers",
+    "description": "\"Remember when you invested in this dirt?\" Pops says, gesturing to the thriving garden. \"Well, the suits noticed too. Corporate developers want the land. They offered me a payout to leave, but this land is our history.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "pops_mentor": true
+      }
+    },
+    "choices": [
+      {
+        "id": "pops_legal_aid",
+        "label": "Hire Legal Defense",
+        "description": "Spend $50k on the best lawyers to block the development.",
+        "consequences": {
+          "bag": -50000,
+          "aura": 200,
+          "clout": 50
+        },
+        "setFlags": {
+          "pops_garden_status": "protected"
+        }
+      },
+      {
+        "id": "pops_intimidate",
+        "label": "Street Justice",
+        "description": "Use your clout to 'persuade' the developers to look elsewhere.",
+        "consequences": {
+          "clout": 100,
+          "heat": 30,
+          "aura": -50
+        },
+        "setFlags": {
+          "pops_garden_status": "street_protected"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_twitch_1_data_leak",
+    "characterId": "char_twitch",
+    "arcId": "arc_twitch",
+    "title": "The Twitch Signal",
+    "description": "Twitch slides a drive across the counter. \"Found a hole in the city's traffic grid.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "twitch_sync_grid",
+        "label": "Sync the Grid",
+        "description": "Pay $5k for the exploit.",
+        "consequences": {
+          "bag": -5000,
+          "passiveCash": 200,
+          "heat": 10
+        },
+        "setFlags": {
+          "twitch_partner": true,
+          "rel_twitch": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_twitch_2_surveillance",
+    "characterId": "char_twitch",
+    "arcId": "arc_twitch",
+    "title": "Eye in the Sky",
+    "description": "Twitch has tapped into the regional surveillance network.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "twitch_partner": true
+      }
+    },
+    "choices": [
+      {
+        "id": "twitch_buy_eye",
+        "label": "Buy the System",
+        "description": "Install the early-warning system.",
+        "consequences": {
+          "bag": -50000,
+          "heat": -50
+        },
+        "setFlags": {
+          "twitch_eye_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_1_consignment",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "title": "Slick's Side Hustle",
+    "description": "Slick Reed has a shipment of 'liberated' tech parts.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "slick_consignment_accept",
+        "label": "Accept Consignment",
+        "description": "Move the hot goods.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 25
+        },
+        "setFlags": {
+          "slick_partner": true,
+          "rel_slick": 70
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_2_warehouse",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "title": "Slick's Secret Warehouse",
+    "description": "Slick found a federal seized-property warehouse.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "slick_partner": true
+      }
+    },
+    "choices": [
+      {
+        "id": "slick_heist",
+        "label": "Authorize the Heist",
+        "description": "Hit the warehouse.",
+        "consequences": {
+          "bag": 250000,
+          "heat": 40
+        },
+        "setFlags": {
+          "slick_heist_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosa_1_strike",
+    "characterId": "char_rosa",
+    "arcId": "arc_rosa",
+    "title": "The Union Call",
+    "description": "Rosa is organizing your warehouse workers.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "rosa_concede",
+        "label": "Concede to Demands",
+        "description": "Improve conditions.",
+        "consequences": {
+          "passiveCash": -2000,
+          "aura": 200
+        },
+        "setFlags": {
+          "rosa_union_active": true,
+          "rel_rosa": 100
+        }
+      },
+      {
+        "id": "rosa_break",
+        "label": "Break the Union",
+        "description": "Hire private security.",
+        "consequences": {
+          "bag": -10000,
+          "aura": -300,
+          "clout": 100,
+          "heat": 20
+        },
+        "setFlags": {
+          "rosa_union_broken": true,
+          "rel_rosa": -200
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_1_payoff",
+    "characterId": "char_miller",
+    "arcId": "arc_miller",
+    "title": "The Blue Toll",
+    "description": "Officer Miller pulls you over.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "miller_pay",
+        "label": "Pay the Toll",
+        "description": "Monthly protection money.",
+        "consequences": {
+          "passiveCash": -2000,
+          "heat": -10
+        },
+        "setFlags": {
+          "miller_paid": true,
+          "rel_miller": 60
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_2_promotion",
+    "characterId": "char_miller",
+    "arcId": "arc_miller",
+    "title": "Lieutenant Miller",
+    "description": "Miller got promoted.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "miller_paid": true
+      }
+    },
+    "choices": [
+      {
+        "id": "miller_pay_more",
+        "label": "Upgrade Protection",
+        "description": "Increase the monthly payment.",
+        "consequences": {
+          "passiveCash": -10000,
+          "heat": -30,
+          "clout": 50
+        },
+        "setFlags": {
+          "miller_status": "high_level_protection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_1_studio",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "title": "The Next Sound",
+    "description": "J-Dog wants to build a studio.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "jdog_fund",
+        "label": "Fund the Studio",
+        "description": "Build the creative space.",
+        "consequences": {
+          "bag": -20000,
+          "aura": 100,
+          "clout": 50
+        },
+        "setFlags": {
+          "jdog_studio_active": true,
+          "rel_jdog": 90
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_2_label",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "title": "Mud Records",
+    "description": "J-Dog wants to start a real label.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "jdog_studio_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "jdog_start_label",
+        "label": "Launch the Label",
+        "description": "Establish Mud Records.",
+        "consequences": {
+          "bag": -200000,
+          "clout": 200,
+          "aura": 200
+        },
+        "setFlags": {
+          "jdog_label_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cassie_1_network",
+    "characterId": "char_cassie",
+    "arcId": "arc_cassie",
+    "title": "The High Table",
+    "description": "Cassie can introduce you to the regional moguls.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "cassie_buy_invite",
+        "label": "Buy the Invite",
+        "description": "Enter the elite social circle.",
+        "consequences": {
+          "bag": -50000,
+          "clout": 150
+        },
+        "setFlags": {
+          "cassie_intro": true,
+          "rel_cassie": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ray_1_defense",
+    "characterId": "char_ray",
+    "arcId": "arc_ray",
+    "title": "Tactical Edge",
+    "description": "Ray offers a private security detail.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ray_hire_detail",
+        "label": "Hire Ray's Team",
+        "description": "Personal security for $5k/month.",
+        "consequences": {
+          "passiveCash": -5000,
+          "heat": -40,
+          "clout": 50
+        },
+        "setFlags": {
+          "ray_security_active": true,
+          "rel_ray": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lexi_1_mural",
+    "characterId": "char_lexi",
+    "arcId": "arc_lexi",
+    "title": "Colors of the Block",
+    "description": "Lexi wants to paint your main office.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "lexi_paint",
+        "label": "Let Her Paint",
+        "description": "Commission the mural for $5k.",
+        "consequences": {
+          "bag": -5000,
+          "aura": 150
+        },
+        "setFlags": {
+          "lexi_mural_done": true,
+          "rel_lexi": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dante_1_fixer",
+    "characterId": "char_dante",
+    "arcId": "arc_dante_legal",
+    "title": "The Fixer's Fee",
+    "description": "Dante can make legal 'misunderstandings' go away.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "dante_fix",
+        "label": "Clean the Record",
+        "description": "Pay $30k to drop the heat.",
+        "consequences": {
+          "bag": -30000,
+          "heat": -50
+        },
+        "setFlags": {
+          "dante_hired": true,
+          "rel_dante": 70
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_big_g_1_territory",
+    "characterId": "char_big_g",
+    "arcId": "arc_big_g_turf",
+    "title": "Territory Tax",
+    "description": "Big G wants a cut of your local distribution. \"Everyone pays the tax, one way or another.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "big_g_pay",
+        "label": "Pay the Tax",
+        "description": "$1k/month for peace.",
+        "consequences": {
+          "passiveCash": -1000,
+          "heat": -10
+        },
+        "setFlags": {
+          "big_g_paid": true,
+          "rel_big_g": 50
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_big_g_2_truce",
+    "characterId": "char_big_g",
+    "arcId": "arc_big_g_turf",
+    "title": "The Neighborhood Truce",
+    "description": "Big G's crew is at war. \"It's bad for business. Use your influence to call a sit-down.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "big_g_paid": true
+      }
+    },
+    "choices": [
+      {
+        "id": "big_g_mediate",
+        "label": "Mediate the Peace",
+        "description": "Host the sit-down at your headquarters.",
+        "consequences": {
+          "clout": 200,
+          "aura": 300,
+          "heat": 10
+        },
+        "setFlags": {
+          "big_g_peace_broker": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_tessa_1_audit",
+    "characterId": "char_tessa",
+    "arcId": "arc_tessa",
+    "title": "The IRS Audit",
+    "description": "Tessa is assigned to your latest tax filing. \"Some of these numbers don't quite add up.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "tessa_bribe",
+        "label": "Offer a 'Consultancy' Role",
+        "description": "Pay $25k to settle the audit.",
+        "consequences": {
+          "bag": -25000,
+          "heat": -20
+        },
+        "setFlags": {
+          "tessa_consultant": true,
+          "rel_tessa": 70
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_clark_1_exclusive",
+    "characterId": "char_clark",
+    "arcId": "arc_clark",
+    "title": "The Front Page",
+    "description": "Clark wants an exclusive on your rise. \"Tell me the real story, and I'll make you a legend.\"",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "clark_tell_all",
+        "label": "Tell the Truth",
+        "description": "A candid interview about the early days.",
+        "consequences": {
+          "aura": 200,
+          "clout": 100
+        },
+        "setFlags": {
+          "clark_story": "truth",
+          "rel_clark": 90
+        }
+      }
+    ]
+  },
+  {
+    "id": "digi_sync_1_the_offer",
+    "title": "The Silicon Underground",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_digital_syndicate",
+    "description": "Elite hackers offer to 'optimize' your competitor's servers.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "digi_sync_hire",
+        "label": "Hire the Collective",
+        "description": "Pay $50k for sabotage.",
+        "consequences": {
+          "bag": -50000,
+          "clout": 100,
+          "heat": 20
+        },
+        "setFlags": {
+          "digi_sync_active": true,
+          "rel_digi": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "soul_equity_collateral",
+    "title": "THE SOUL-EQUITY PROTOCOL",
+    "description": "Your Series-B lead investor, Lawrence Chen, notes your burn rate is slightly sub-optimal. He offers a $500,000 cash injection, but demands you collateralize your childhood memories and right to unstructured REM sleep via an experimental smart-contract lien.",
+    "trigger": {
+      "tier": [
+        "STARTUP"
+      ],
+      "probability": 0.25
+    },
+    "choices": [
+      {
+        "id": "monetize_psyche",
+        "label": "Sign the Lien (Sleep is for Non-Producers)",
+        "consequences": {
+          "bag": 500000,
+          "mentalHealth": -35,
+          "clout": 50
+        },
+        "setFlags": {
+          "liquidated_childhood": true
+        },
+        "logMessage": "❌ You monetized your early memories. You can no longer recall the layout of your childhood bedroom, but your automated Runway is extended by 6 months."
+      },
+      {
+        "id": "protect_psyche",
+        "label": "Decline (Keep your sentimentality)",
+        "consequences": {
+          "aura": 20,
+          "mentalHealth": 10,
+          "bag": -25000
+        },
+        "logMessage": "🛡️ You kept your memories. Lawrence Chen looks visibly disgusted by your lack of capital discipline and charges you a $25k \"sentimentality fine.\""
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_employee_help",
+    "title": "A Crisis of Faith",
+    "pacingCategory": "MAJOR",
+    "description": "Your employees approach you in distress. Their beloved neighborhood community center is being forced to shut down due to rising municipal costs and landlord pressures. Since you are highly visible and wealthy, they look to you to protect their home neighborhood.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 800
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_employee_help_fund",
+        "label": "Fund the Center Restoration",
+        "description": "Spend $100,000 to acquire the building and fund its operations, proving you protect your workforce.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 150,
+          "clout": 50,
+          "biographyEntry": "“The leader who protected local communities.”"
+        },
+        "setFlags": {
+          "protected_local_communities": true
+        },
+        "logMessage": "🛡️ CRISIS SOLVED: You spent $100,000 to restore the center. Your employees are fiercely loyal."
+      },
+      {
+        "id": "sp_employee_help_decline",
+        "label": "Advise Self-Reliance",
+        "description": "Decline to intervene. Advise them to bootstrap, but face deep disappointment.",
+        "consequences": {
+          "clout": 20,
+          "aura": -100,
+          "biographyEntry": "“The entrepreneur who prioritized corporate margins over worker communities.”"
+        },
+        "logMessage": "❌ COLD DEFIANCE: You declined to help. Your employees are disappointed and feel abandoned."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_community_clinic",
+    "title": "The Grassroots Request",
+    "pacingCategory": "MAJOR",
+    "description": "A delegation of local grassroots leaders approaches you. Knowing you are a respected leader, they ask you to fund a neighborhood healthcare clinic. If you have been a greedy landlord, they are highly skeptical of your intentions.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "aura",
+        "value": 80
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_community_clinic_fund",
+        "label": "Build the Healthcare Clinic",
+        "description": "Spend $200,000 to build and lease a local medical clinic for neighborhood families.",
+        "consequences": {
+          "bag": -200000,
+          "aura": 250,
+          "biographyEntry": "“The philanthropist who built local health clinics.”"
+        },
+        "setFlags": {
+          "built_local_clinics": true
+        },
+        "logMessage": "🏥 CLINIC OPENED: Your $200,000 clinic grant earns surging public gratitude and adoration."
+      },
+      {
+        "id": "sp_community_clinic_decline",
+        "label": "Politely Decline",
+        "description": "Explain that healthcare is a municipal duty, drawing community skepticism.",
+        "consequences": {
+          "aura": -150,
+          "biographyEntry": "“The billionaire who ignored community healthcare requests.”"
+        },
+        "logMessage": "❌ DEFEATED TRUST: You declined to fund the clinic. Public trust takes a heavy hit."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_media_interview",
+    "title": "The Hot Seat",
+    "pacingCategory": "MAJOR",
+    "description": "A major news anchor invites you to a live, prime-time national interview. Your answers will shape how millions perceive your rise.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1000
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_media_int_community",
+        "label": "Advocate Grassroots Support",
+        "description": "Credit your success to public trust and community roots, building immense Aura.",
+        "consequences": {
+          "clout": 100,
+          "aura": 200,
+          "heat": -10,
+          "biographyEntry": "“The polished leader who advocated for grassroots community empowerment.”"
+        },
+        "logMessage": "🌟 INSPIRATIONAL RISE: Your focus on community trust makes you a national hero."
+      },
+      {
+        "id": "sp_media_int_hustle",
+        "label": "Preach Cold Hustle Ideology",
+        "description": "Declare that poverty is a motivational deficit and margins are absolute. Earn Clout but draw backlash.",
+        "consequences": {
+          "clout": 400,
+          "aura": -300,
+          "heat": 25,
+          "biographyEntry": "“The controversial tycoon who declared that poverty is a motivational deficit.”"
+        },
+        "setFlags": {
+          "trigger_scandal_immediately": true
+        },
+        "logMessage": "🔥 VOLATILE DRAMA: Your controversial answers spark online cancel campaigns and high backlash."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_rival_attack",
+    "title": "Coordinated Smear Blitz",
+    "pacingCategory": "MAJOR",
+    "description": "A powerful, desperate rival funds a massive coordinated online smear campaign, flooding social media with doctored books and ethical accusations against your operations.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1000
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_rival_atk_audit",
+        "label": "Fund an Independent Transparency Audit",
+        "description": "Spend $150,000 to hire top accountants, disproving all accusations completely.",
+        "consequences": {
+          "bag": -150000,
+          "clout": 100,
+          "aura": 150,
+          "heat": -20,
+          "biographyEntry": "“The clean operator who disproved rival allegations via full audits.”"
+        },
+        "logMessage": "🛡️ TRANSPARENCY WIN: You proved your innocence! Rivals face humiliation and public backlash."
+      },
+      {
+        "id": "sp_rival_atk_slander",
+        "label": "Retaliate with Coordinated Slander",
+        "description": "Sling mud back. Launch an aggressive countersmear campaign on their own private affairs.",
+        "consequences": {
+          "clout": 200,
+          "aura": -150,
+          "heat": 30,
+          "biographyEntry": "“The aggressive corporate warrior who traded public insults with rivals.”"
+        },
+        "logMessage": "🔥 DIRTY WARFARE: You traded slanders. The media feasts on the corporate drama."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_water_crisis",
+    "title": "A Community in Crisis",
+    "pacingCategory": "MAJOR",
+    "description": "A major municipal water utility failure has hit your home district. Thousands of families are without clean water. As a respected leader, the community expects you to take action.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "aura",
+        "value": 150
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_water_crisis_fund",
+        "label": "Fund Private Water Tankers",
+        "description": "Spend $150,000 to deploy a private tanker grid, saving neighborhood families.",
+        "consequences": {
+          "bag": -150000,
+          "clout": 100,
+          "aura": 300,
+          "biographyEntry": "“The emergency leader who financed private water relief grids.”"
+        },
+        "setFlags": {
+          "water_relief_leader": true
+        },
+        "logMessage": "💧 HERO OF THE CRISIS: You saved the neighborhood! A lasting legacy is forever sealed."
+      },
+      {
+        "id": "sp_water_crisis_decline",
+        "label": "Stay Out of Municipal Issues",
+        "description": "Decline to intervene. Critics and supporters accuse you of turning your back during a crisis.",
+        "consequences": {
+          "clout": -100,
+          "aura": -250,
+          "biographyEntry": "“The private industrialist who turned their back during a water crisis.”"
+        },
+        "logMessage": "❌ SHATTERED EXPECTATIONS: You turned your back. Your name is written in anger across the city."
+      }
+    ]
+  }
+]

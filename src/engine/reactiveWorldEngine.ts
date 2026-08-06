@@ -3,6 +3,7 @@ import * as Bio from './biographyEngine';
 import { recordHistoryEvent, type HistoryEvent } from './historyEngine';
 import { getCurrentReputation } from './reputationEngine';
 import { HUSTLES } from '../config/hustles/base';
+import { WORLD_FEED_CONTENT } from '../utils/worldFeedLoader';
 
 const isTest = typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'test';
 
@@ -57,78 +58,79 @@ function getRivalComment(rival: Rival, _eventType: string, pName: string, _rep: 
   let type = 'criticism';
 
   const isComeback = _eventType.toLowerCase().includes('comeback') || _eventType.toLowerCase().includes('recovery');
+  const d = WORLD_FEED_CONTENT?.rivalCommentTemplates || {};
 
   if (isComeback) {
     if (rel > 40) {
       type = 'support';
-      quote = `"Incredible resilience, ${pName}. Most people would have folded after those hits, but you proved everyone wrong. Respect."`;
+      quote = d.support_comeback || `"Incredible resilience, ${pName}. Most people would have folded after those hits, but you proved everyone wrong. Respect."`;
     } else if (rel < -40) {
       if (aggression > 0.6) {
         type = 'challenge';
-        quote = `"You crawled out of the gutter again, ${pName}? Don't get comfortable. Rebuilding just means you have more assets for me to strip next month."`;
+        quote = d.challenge_comeback || `"You crawled out of the gutter again, ${pName}? Don't get comfortable. Rebuilding just means you have more assets for me to strip next month."`;
       } else {
         type = 'mockery';
-        quote = `"Enjoy your little 'phoenix rise' media narrative, ${pName}. You defaulted once, you'll default again when the leverage squeeze hits."`;
+        quote = d.mockery_comeback || `"Enjoy your little 'phoenix rise' media narrative, ${pName}. You defaulted once, you'll default again when the leverage squeeze hits."`;
       }
     } else {
       type = 'respect';
-      quote = `"Admittedly, your survival metrics are statistically anomalous. Rebuilding an entire empire from near-ruin takes a rare grit."`;
+      quote = d.respect_comeback || `"Admittedly, your survival metrics are statistically anomalous. Rebuilding an entire empire from near-ruin takes a rare grit."`;
     }
-    return { quote, type };
-  }
-
-  if (rel > 50) {
+  } else if (rel > 50) {
     // Highly Supportive Allies
     if (ethics > 0.6) {
       type = 'support';
-      quote = `"Incredible milestone, ${pName}! It's genuinely inspiring to watch your rise. Let's keep building a stronger ecosystem together."`;
+      quote = d.support_ethics || `"Incredible milestone, ${pName}! It's genuinely inspiring to watch your rise. Let's keep building a stronger ecosystem together."`;
     } else {
       type = 'congratulations';
-      quote = `"Brilliant play, ${pName}! Our networks should align on this. Proposing a joint sector expansion soon!"`;
+      quote = d.collab_joint || `"Brilliant play, ${pName}! Our networks should align on this. Proposing a joint sector expansion soon!"`;
     }
   } else if (rel > 15) {
     // Moderately Friendly Acquaintances
     if (intelligence > 0.6) {
       type = 'congratulations';
-      quote = `"Admirable progress, ${pName}. Your strategic allocation of capital is textbook perfect."`;
+      quote = d.progress_intel || `"Admirable progress, ${pName}. Your strategic allocation of capital is textbook perfect."`;
     } else {
       type = 'support';
-      quote = `"Congrats! You're really off the blocks now. Keep pushing!"`;
+      quote = d.support_friendly || `"Congrats! You're really off the blocks now. Keep pushing!"`;
     }
   } else if (rel < -50) {
     // Very Hostile / Nemeses
     if (aggression > 0.6) {
       type = 'challenge';
-      quote = `"You think you're untouchable, ${pName}? This is overhyped nonsense. I am preparing a direct counter-campaign to squeeze your margins!"`;
+      quote = d.hostile_challenge || `"You think you're untouchable, ${pName}? This is overhyped nonsense. I am preparing a direct counter-campaign to squeeze your margins!"`;
     } else if (ethics < 0.4) {
       type = 'mockery';
-      quote = `"All this praise for ${pName} is a joke. Your whole empire is built on matchstick leverage, and I can't wait to watch it burn."`;
+      quote = d.hostile_mockery || `"All this praise for ${pName} is a joke. Your whole empire is built on matchstick leverage, and I can't wait to watch it burn."`;
     } else {
       type = 'warning';
-      quote = `"You've captured the spotlight, ${pName}, but your regulatory compliance is absolute garbage. Enjoy the peak while it lasts."`;
+      quote = d.hostile_warning || `"You've captured the spotlight, ${pName}, but your regulatory compliance is absolute garbage. Enjoy the peak while it lasts."`;
     }
   } else if (rel < -15) {
     // Sarcastic Rivals
     if (aggression > 0.6) {
       type = 'warning';
-      quote = `"A nice little surge, ${pName}. But remember, a highly visible position is extremely vulnerable to targeted audits."`;
+      quote = d.sarcastic_warning || `"A nice little surge, ${pName}. But remember, a highly visible position is extremely vulnerable to targeted audits."`;
     } else {
       type = 'jealousy';
-      quote = `"Must be nice having standard capital buffers to fund these moves. Try surviving a real contraction."`;
+      quote = d.sarcastic_jealousy || `"Must be nice having standard capital buffers to fund these moves. Try surviving a real contraction."`;
     }
   } else {
     // Neutral Competitors (Reluctant respect or predictions)
     if (intelligence > 0.6) {
       type = 'respect';
-      quote = `"I've audited your latest moves. Reluctantly, I must admit your operational efficiency is mathematically admirable."`;
+      quote = d.neutral_respect || `"I've audited your latest moves. Reluctantly, I must admit your operational efficiency is mathematically admirable."`;
     } else if (aggression > 0.6) {
       type = 'challenge';
-      quote = `"Enjoy the spotlight for now, ${pName}. The market is still wide open, and we're coming for your market share next quarter."`;
+      quote = d.neutral_challenge || `"Enjoy the spotlight for now, ${pName}. The market is still wide open, and we're coming for your market share next quarter."`;
     } else {
       type = 'prediction';
-      quote = `"My projections suggest this milestone will trigger municipal regulatory friction soon. Let's see if the portfolio can absorb it."`;
+      quote = d.neutral_prediction || `"My projections suggest this milestone will trigger municipal regulatory friction soon. Let's see if the portfolio can absorb it."`;
     }
   }
+
+  // Inject {PLAYER} placeholders
+  quote = quote.replace(/{PLAYER}/g, pName);
 
   return { quote, type };
 }
@@ -325,16 +327,75 @@ export function processWorldReaction(
     }
   };
 
+  // Load templates from externalized JSON config dynamically with local fallbacks
+  let templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.[actionType];
+
+  if (actionType === 'NARRATIVE_DECISION') {
+    const choice = metadata.choiceText || '';
+    if (pl.narrativeFlags?.crossroad_protected_employees && choice.includes('Protect All')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_EMPLOYEE_PROTECTION;
+    } else if (pl.narrativeFlags?.crossroad_laid_off_employees && choice.includes('Layoff')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_EMPLOYEE_LAYOFFS;
+    } else if (pl.narrativeFlags?.crossroad_sold_company && choice.includes('Sell the')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_COMPANY_BUYOUT_SELL;
+    } else if (pl.narrativeFlags?.crossroad_declined_buyout && choice.includes('Decline')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_COMPANY_BUYOUT_DECLINE;
+    } else if (pl.narrativeFlags?.crossroad_rescued_partner && choice.includes('Provide the')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_PARTNER_RESCUE;
+    } else if (pl.narrativeFlags?.crossroad_betrayed_partner && choice.includes('Liquidate')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_PARTNER_BETRAYAL;
+    } else if (pl.narrativeFlags?.crossroad_exposed_corruption && choice.includes('Expose the')) {
+      templatesToUse = WORLD_FEED_CONTENT?.worldReactionTemplates?.NARRATIVE_DECISION_EXPOSE_CORRUPTION;
+    }
+  }
+
+  if (templatesToUse) {
+    const formattedTemplates = { ...templatesToUse };
+    // Inject any custom metadata formatting
+    if (actionType === 'HUGE_PROFIT') {
+      const profit = metadata.profit || 0;
+      const profitVal = `$${profit.toLocaleString()}`;
+      const profitValMillions = `$${(profit / 1000000).toFixed(1)}M`;
+      formattedTemplates.business = formattedTemplates.business?.replace(/{PROFIT_VAL}/g, profitVal);
+      formattedTemplates.popCulture = formattedTemplates.popCulture?.replace(/{PROFIT_VAL_MILLIONS}/g, profitValMillions);
+      formattedTemplates.local = formattedTemplates.local?.replace(/{PROFIT_VAL}/g, profitVal);
+    } else if (actionType === 'MAJOR_LOSS') {
+      const loss = metadata.profit ? Math.abs(metadata.profit) : 0;
+      const lossVal = `$${loss.toLocaleString()}`;
+      formattedTemplates.business = formattedTemplates.business?.replace(/{LOSS_VAL}/g, lossVal);
+      formattedTemplates.popCulture = formattedTemplates.popCulture?.replace(/{LOSS_VAL}/g, lossVal);
+      formattedTemplates.financial = formattedTemplates.financial?.replace(/{LOSS_VAL}/g, lossVal);
+    } else if (actionType === 'LUXURY_PURCHASE') {
+      const assetName = metadata.assetId || 'luxury item';
+      const cost = metadata.cost || 0;
+      const costVal = `$${cost.toLocaleString()}`;
+      formattedTemplates.business = formattedTemplates.business?.replace(/{ASSET_NAME}/g, assetName.replace('_', ' ')).replace(/{COST_VAL}/g, costVal);
+      formattedTemplates.popCulture = formattedTemplates.popCulture?.replace(/{ASSET_NAME}/g, assetName.replace('_', ' '));
+      formattedTemplates.local = formattedTemplates.local?.replace(/{ASSET_NAME}/g, assetName.replace('_', ' '));
+      formattedTemplates.financial = formattedTemplates.financial?.replace(/{COST_VAL}/g, costVal);
+    } else if (actionType === 'PHILANTHROPY') {
+      const donation = metadata.cost || 0;
+      const donationVal = `$${donation.toLocaleString()}`;
+      formattedTemplates.business = formattedTemplates.business?.replace(/{DONATION_VAL}/g, donationVal);
+      formattedTemplates.popCulture = formattedTemplates.popCulture?.replace(/{DONATION_VAL}/g, donationVal);
+      formattedTemplates.local = formattedTemplates.local?.replace(/{DONATION_VAL}/g, donationVal);
+      formattedTemplates.financial = formattedTemplates.financial?.replace(/{DONATION_VAL}/g, donationVal);
+    } else if (actionType === 'TIER_PROMOTION') {
+      const fromTier = metadata.tier || 'Previous';
+      const toTier = pl.currentTier;
+      formattedTemplates.business = formattedTemplates.business?.replace(/{FROM_TIER}/g, fromTier).replace(/{TO_TIER}/g, toTier);
+      formattedTemplates.popCulture = formattedTemplates.popCulture?.replace(/{TO_TIER}/g, toTier);
+      formattedTemplates.politics = formattedTemplates.politics?.replace(/{TO_TIER}/g, toTier);
+      formattedTemplates.local = formattedTemplates.local?.replace(/{TO_TIER}/g, toTier);
+      formattedTemplates.financial = formattedTemplates.financial?.replace(/{TO_TIER}/g, toTier);
+    }
+
+    addMultiOutletReports(formattedTemplates);
+  }
+
   // Main Event Routing Switch (Part 1 - World Feed Improvements)
   switch (actionType) {
     case 'FIRST_BUSINESS_LAUNCH': {
-      addMultiOutletReports({
-        business: `Market analysts note that {PLAYER}, known as "{REPUTATION}", has launched {BUSINESS}, marking a strategic entry into commercial markets.`,
-        popCulture: `OMG, {PLAYER} is off the blocks! The local scene is talking about the new {BUSINESS}! 🚀✨ #FirstStep`,
-        politics: `Local representatives welcome {PLAYER}'s investment in {BUSINESS}, hoping it boosts municipal commerce.`,
-        local: `Exciting day on the block! {PLAYER} has opened {BUSINESS} right down the street. Come support your neighbor!`,
-        financial: `{PLAYER} deploys early seed capital to acquire {BUSINESS}, laying down a foundation in {TIER} tier.`
-      });
       addRivalCommentIfPossible('FirstBusiness');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 10);
@@ -405,13 +466,6 @@ export function processWorldReaction(
     }
 
     case 'FIRST_EMPLOYEE': {
-      addMultiOutletReports({
-        business: `Scalable growth begins: {PLAYER}'s {BUSINESS} makes its first official staff hire, signaling transition to professional management.`,
-        popCulture: `We're expanding! {PLAYER} is officially a boss of bosses, hiring the very first employee for {BUSINESS}! 👔💼`,
-        politics: `Employment metrics rise as {PLAYER} creates job openings for local workforce inside {BUSINESS}.`,
-        local: `{PLAYER}'s {BUSINESS} is hiring! Local resident secures first official role under the growing street brand.`,
-        financial: `{BUSINESS} payroll expands: {PLAYER} converts manual labor sweat equity into leveraged operational overhead.`
-      });
       addRivalCommentIfPossible('FirstEmployee');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 15);
@@ -420,13 +474,6 @@ export function processWorldReaction(
     }
 
     case 'FIRST_PASSIVE_INCOME': {
-      addMultiOutletReports({
-        business: `{PLAYER} establishes their first fully automated passive stream, generating cash flows independent of active labor.`,
-        popCulture: `{PLAYER} is literally making money in their sleep right now! 🛌💸 Zero active hours, pure leverage. #Goals`,
-        politics: `Critics debate wealth inequality as {PLAYER} joins the class of passive asset earners.`,
-        local: `From grinding all day to passive returns: neighbor {PLAYER} is showing us all how to work smarter.`,
-        financial: `Capital yield report: {PLAYER}'s passive investments begin paying off, building a recurring interest foundation.`
-      });
       addRivalCommentIfPossible('FirstPassiveIncome');
       if (!isTest) {
         updatedPl.aura = Math.min(10000, updatedPl.aura + 15);
@@ -435,25 +482,11 @@ export function processWorldReaction(
     }
 
     case 'PRISON_RELEASE': {
-      addMultiOutletReports({
-        business: `{PLAYER} is released from federal custody, returning to direct active management of their corporate holdings.`,
-        popCulture: `{PLAYER} is back on the streets! 🔓🚔 Mugshot era is over, the grind resumes immediately. #Free`,
-        politics: `Debate sparks over criminal justice as convicted executive {PLAYER} resumes their corporate climb.`,
-        local: `{PLAYER} has served their time and returned home. Neighbors hope for a clean, reformed chapter.`,
-        financial: `Markets stabilize as {PLAYER} is released, ending uncertainty surrounding their corporate leadership.`
-      });
       addRivalCommentIfPossible('PrisonRelease');
       break;
     }
 
     case 'RIVAL_DEFEAT': {
-      addMultiOutletReports({
-        business: `Sector monopoly secured: {PLAYER} completely outmaneuvers {RIVAL}, crushing their market capitalization.`,
-        popCulture: `{PLAYER} absolutely cooked {RIVAL}! 💀🔥 Complete knockout in the business arena. Who's next? #Victory`,
-        politics: `Anti-competitive concerns rise as {PLAYER} eliminates {RIVAL} from active sector competition.`,
-        local: `{PLAYER} dominates the district after a heated showdown with rival {RIVAL}.`,
-        financial: `{RIVAL} files for emergency asset protection after {PLAYER}'s hostile plays trigger a 60% liquidation.`
-      });
       addRivalCommentIfPossible('RivalDefeat');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 50);
@@ -463,13 +496,6 @@ export function processWorldReaction(
     }
 
     case 'RIVAL_PARTNERSHIP': {
-      addMultiOutletReports({
-        business: `Strategic joint venture: former competitors {PLAYER} and {RIVAL} announce a mutual capital partnership.`,
-        popCulture: `Plot twist! Former enemies {PLAYER} and {RIVAL} are now besties? Massive business collab dropped! 🤝👀`,
-        politics: `Industry regulators scrutinize the consolidation as {PLAYER} and {RIVAL} align their lobbying PACs.`,
-        local: `{PLAYER} and {RIVAL} shake hands on a new neighborhood trade agreement, stabilizing local commerce.`,
-        financial: `{PLAYER} deploys seed capital into {RIVAL}'s holdings, securing a joint 1.2x sector yield multiplier.`
-      });
       addRivalCommentIfPossible('RivalPartnership');
       if (!isTest) {
         updatedPl.aura = Math.min(10000, updatedPl.aura + 25);
@@ -478,25 +504,11 @@ export function processWorldReaction(
     }
 
     case 'MONOPOLY_INVESTIGATION': {
-      addMultiOutletReports({
-        business: `Federal Antitrust Division launches formal monopoly investigation into {PLAYER}'s market cartel.`,
-        popCulture: `Is {PLAYER} getting canceled by the government? Busted for having too many businesses! ⚖️📉 #Antitrust`,
-        politics: `Bipartisan senators demand regulatory break-up of President {PLAYER}'s private business monopolies.`,
-        local: `Federal investigators set up monitors in local shops owned by tycoon {PLAYER}.`,
-        financial: `Risk analysis: monopoly investigation triggers a heavy settlement fee, draining {PLAYER}'s cash reserves.`
-      });
       addRivalCommentIfPossible('MonopolyInvestigation');
       break;
     }
 
     case 'HOUSING_PROTEST': {
-      addMultiOutletReports({
-        business: `Tenant strikes and housing affordability protests target {PLAYER}'s real estate holdings, threatening rent yields.`,
-        popCulture: `Protesters are literally camping outside {PLAYER}'s luxury properties! Rent is too high! 🏘️🪧 #HousingCrisis`,
-        politics: `Local council demands strict rent control caps in response to widespread protests against {PLAYER}.`,
-        local: `Tenants in {PLAYER}'s buildings organize a neighborhood-wide rent strike demanding fair leasing terms.`,
-        financial: `Real estate risk: housing protests and regulatory pressure dock {PLAYER}'s passive rental yields by 30%.`
-      });
       addRivalCommentIfPossible('HousingProtest');
       break;
     }
@@ -568,14 +580,6 @@ export function processWorldReaction(
       const profit = metadata.profit || 0;
       const hName = metadata.hustleName || 'operations';
 
-      addMultiOutletReports({
-        business: `Strategic plays in ${hName} yield a colossal $${profit.toLocaleString()} single-month cash flow for {PLAYER}.`,
-        popCulture: `Absolutely astronomical! {PLAYER} just cleared $${(profit / 1000000).toFixed(1)}M profit from ${hName}! Standard cheat code. 🚀🐐 #wealth`,
-        politics: `Bipartisan financial debates surround the massive margin profits recorded by {PLAYER}.`,
-        local: ` neighbors are in disbelief as local icon {PLAYER} clears $${profit.toLocaleString()} from ${hName}.`,
-        financial: `Profit yields surge: {PLAYER}'s ${hName} operations capture peak industry multipliers during this cycle.`
-      });
-
       addRivalCommentIfPossible('HugeProfit');
 
       if (!isTest) {
@@ -607,14 +611,6 @@ export function processWorldReaction(
     }
 
     case 'MAJOR_LOSS': {
-      const loss = metadata.profit ? Math.abs(metadata.profit) : 0;
-      addMultiOutletReports({
-        business: `Liquidity drain: {PLAYER} absorbs a heavy operational loss, dropping $${loss.toLocaleString()} in liquid reserves.`,
-        popCulture: `Yikes, {PLAYER} just lost $${loss.toLocaleString()} on that last run. High stakes represent high risk! 📉💀`,
-        politics: `Policy debates spark as {PLAYER}'s financial setback affects local sector confidence.`,
-        local: `Neighbor {PLAYER} absorbs a tough financial hit, but the local block remains confident in a swift recovery.`,
-        financial: `Asset contraction: {PLAYER}'s portfolio buffers a $${loss.toLocaleString()} capital deficit due to margin pressures.`
-      });
       addRivalCommentIfPossible('MajorLoss');
       if (!isTest) {
         updatedPl.clout = Math.max(0, updatedPl.clout - 20);
@@ -624,15 +620,6 @@ export function processWorldReaction(
     }
 
     case 'LUXURY_PURCHASE': {
-      const assetName = metadata.assetId || 'luxury item';
-      const cost = metadata.cost || 0;
-      addMultiOutletReports({
-        business: `Capital conversion: {PLAYER}'s purchase of the ${assetName.replace('_', ' ')} for $${cost.toLocaleString()} shows raw market leverage.`,
-        popCulture: `HEAVY FLEX! {PLAYER} just copped a brand new ${assetName.replace('_', ' ')}! The drip is real. 💎👑 #luxury`,
-        politics: `Public figures debate executive compensation caps following {PLAYER}'s flashy purchase.`,
-        local: `{PLAYER} spotted showing off their shiny new ${assetName.replace('_', ' ')} around the neighborhood.`,
-        financial: `Asset acquisition: {PLAYER} redeems cash flow into premium flexible storage capital worth $${cost.toLocaleString()}.`
-      });
       addRivalCommentIfPossible('LuxuryPurchase');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 10);
@@ -644,13 +631,6 @@ export function processWorldReaction(
 
     case 'PHILANTHROPY': {
       const donation = metadata.cost || 0;
-      addMultiOutletReports({
-        business: `{PLAYER}'s major $${donation.toLocaleString()} charitable pledge establishes significant brand goodwill values.`,
-        popCulture: `Charitable halo! {PLAYER} donates $${donation.toLocaleString()} to humanitarian relief. Absolute class act. ❤️🕊️`,
-        politics: `Senator groups praise President {PLAYER}'s philanthropy, solidifying bipartisan goodwill consensus.`,
-        local: `Generous donor: {PLAYER} funds local community welfare and infrastructure with a $${donation.toLocaleString()} grant.`,
-        financial: `Capital relocation: {PLAYER} relocates $${donation.toLocaleString()} to charitable foundations, optimizing tax audits.`
-      });
       addRivalCommentIfPossible('Philanthropy');
       if (!isTest) {
         updatedPl.aura = Math.min(10000, updatedPl.aura + 50);
@@ -680,13 +660,6 @@ export function processWorldReaction(
     }
 
     case 'ARREST': {
-      addMultiOutletReports({
-        business: `Compliance shock: regulatory watchdogs place {PLAYER}'s assets under severe scrutiny following active arrest.`,
-        popCulture: `CRIMINAL CLOWN! {PLAYER} got locked up! 🚔🚨 Look at that mugshot! Total chaos! #Mugshot`,
-        politics: `Debate sparks over corporate ethics and elite compliance following {PLAYER}'s high-profile arrest.`,
-        local: `Neighborhood stunned as police escort local icon {PLAYER} in handcuffs following federal raid.`,
-        financial: `Asset preservation: standard markets freeze trade contracts on {PLAYER}'s operations during custody.`
-      });
       addRivalCommentIfPossible('Arrest');
       if (!isTest) {
         updatedPl.clout = Math.max(0, updatedPl.clout - 50);
@@ -696,27 +669,11 @@ export function processWorldReaction(
     }
 
     case 'BANKRUPTCY': {
-      addMultiOutletReports({
-        business: `Enterprise collapse: liquidators begin systemic dissolution of {PLAYER}'s corporate empire.`,
-        popCulture: `Bro, {PLAYER} actually went broke?! Liquidated life?! Oh my goodness, the downfall is legendary. 💀😭`,
-        politics: `Bipartisan leaders debate systemic bankruptcy loopholes after {PLAYER}'s sudden default.`,
-        local: `Bankruptcy shock: local neighborhood businesses grieve the collapse of neighbor {PLAYER}'s brand.`,
-        financial: `Chapter 11 filing: {PLAYER}'s assets undergo total liquidation to settle outstanding margins.`
-      });
       addRivalCommentIfPossible('Bankruptcy');
       break;
     }
 
     case 'TIER_PROMOTION': {
-      const fromTier = metadata.tier || 'Previous';
-      const toTier = updatedPl.currentTier;
-      addMultiOutletReports({
-        business: `{PLAYER} scales beyond regional bounds, transitioning successfully from ${fromTier} to the prestigious ${toTier} ranks.`,
-        popCulture: `No way! {PLAYER} made it to ${toTier} tier! The growth is honestly unreal. Absolute legend. 👑🔥`,
-        politics: `Congressional analysts monitor the rising lobbyist influence of newly crowned ${toTier} tycoon {PLAYER}.`,
-        local: `Meteoric rise: local neighborhood kid {PLAYER} breaks through all barriers to reach ${toTier}! We are inspired!`,
-        financial: `Investment upgrade: {PLAYER} unlocks advanced high-net-worth leverage opportunities in the ${toTier} tier.`
-      });
       addRivalCommentIfPossible('TierPromotion');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 50);
@@ -730,83 +687,27 @@ export function processWorldReaction(
 
       // Let's check for specific crossroads choice results!
       if (pl.narrativeFlags?.crossroad_protected_employees && (choice === 'Protect All Employees' || choice.includes('Protect All'))) {
-        addMultiOutletReports({
-          business: `In a stunning sacrifice of short-term profit, {PLAYER} chooses to absorb all payroll costs during the recession, protecting their entire workforce.`,
-          popCulture: `{PLAYER} is a hero! Absorb payroll and keep families safe during the recession. Absolute gold standard of a leader! 🛡️💼 #TheSacrifice #Hero`,
-          politics: `The Senate labor committee commends {PLAYER}'s employee protection policy as a model for corporate welfare.`,
-          local: `Local workers celebrate outside the warehouse as {PLAYER} vows to fund all employee salaries out of pocket!`,
-          financial: `Investor backlash: {PLAYER} absorbs -$150,000 in liquid capital to fund unprofitable operations, depressing quarterly ROI.`
-        });
         addFeed('OPINION', `POLL SURGES: Grassroots voter approval rises by +12% following {PLAYER}'s worker protection vow.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('EmployeeProtection');
       } else if (pl.narrativeFlags?.crossroad_laid_off_employees && (choice === 'Execute Layoffs' || choice.includes('Layoff'))) {
-        addMultiOutletReports({
-          business: `{PLAYER} executes a 30% reduction in force to streamline operations and secure investor margins against the recession.`,
-          popCulture: `Absolutely devastating. {PLAYER} just fired 30% of their staff with zero warning. Total corporate greed. 📉💔 #Layoffs #Greed`,
-          politics: `Labor unions condemn {PLAYER}'s mass layoffs, demanding federal investigations into severance compliance.`,
-          local: `Heartbroken workers gather outside {PLAYER}'s warehouse after receiving automated termination notices.`,
-          financial: `Solvency secured: {PLAYER} cushions their balance sheet, saving over $100,000 in immediate labor costs.`
-        });
         addFeed('OPINION', `POLL DROPS: Worker favorability ratings slide by -15% following mass layoffs at {PLAYER}'s operations.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('EmployeeLayoffs');
       } else if (pl.narrativeFlags?.crossroad_sold_company && (choice === 'Sell the Business' || choice.includes('Sell the'))) {
-        addMultiOutletReports({
-          business: `THE EXIT: {PLAYER} sells their entire core enterprise to a global conglomerate, ceding absolute voting control.`,
-          popCulture: `Absolute shocker! {PLAYER} just cashed out for $3,000,000, completely abandoning the brand! 💸🚪 #TheExit #GenerationalWealth`,
-          politics: `Regulators monitor antitrust filings as global conglomerate swallows {PLAYER}'s independent holdings.`,
-          local: `Local business owners speculate if {PLAYER}'s departure marks the death of community-led trade.`,
-          financial: `Cash reserves surging: {PLAYER} transitions from active corporate execution to purely liquid holding status.`
-        });
         addFeed('OPINION', `POLL SLIDES: Supporters express disappointment at {PLAYER}'s exit, calling it a sell-out of the block's values.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('CompanyBuyoutSell');
       } else if (pl.narrativeFlags?.crossroad_declined_buyout && (choice === 'Decline and Fight' || choice.includes('Decline'))) {
-        addMultiOutletReports({
-          business: `THE STAND: {PLAYER} defiantly rejects a multi-million dollar buyout, declaring war against global competitors.`,
-          popCulture: `{PLAYER} just told a global conglomerate to take their money and walk! Pure boss move! 🛡️😤 #Independence #DeclineAndFight`,
-          politics: `Lobbyist groups brace for an all-out trade war as independent operator {PLAYER} refuses takeover.`,
-          local: `Crowds applaud {PLAYER}'s decision to keep local operations independent, preserving neighborhood jobs.`,
-          financial: `Solvency warning: Conglomerate vows to fund direct predatory competitors to squeeze {PLAYER}'s margins.`
-        });
         addFeed('OPINION', `POLL SURGES: Public respect for {PLAYER} reaches record highs as an authentic self-made champion.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('CompanyBuyoutDecline');
       } else if (pl.narrativeFlags?.crossroad_rescued_partner && (choice === 'Provide the Lifeline' || choice.includes('Provide the'))) {
-        addMultiOutletReports({
-          business: `CREDIT INJECTION: {PLAYER} funds an emergency $100,000 bailout for a failing partner's collapsing venture.`,
-          popCulture: `Fierce loyalty! {PLAYER} just saved their original business partner from absolute ruin. Real friendship over profit! ❤️🥺 #TheSacrifice #Loyalty`,
-          politics: `Trade commissioners praise the private restructuring, avoiding severe regional job losses.`,
-          local: `The partner's family issues a heartfelt thank you to {PLAYER} for saving their home from foreclosure.`,
-          financial: `Operational drain: {PLAYER} absorbs a -$100,000 deficit to rescue a low-performing partner, depressing ROI.`
-        });
         addFeed('OPINION', `POLL SURGES: Public approval rises as {PLAYER} is hailed as a high-integrity, compassionate leader.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('PartnerRescue');
       } else if (pl.narrativeFlags?.crossroad_betrayed_partner && (choice === 'Ruthlessly Liquidate Them' || choice.includes('Liquidate'))) {
-        addMultiOutletReports({
-          business: `THE LIQUIDATION: {PLAYER} declines partner's bailout, instead launching a hostile bid to seize their remaining IP.`,
-          popCulture: `Absolutely brutal! {PLAYER} left their original partner to rot and bought their life's work for pennies! 🔪📉 #TheBetrayal #Cold`,
-          politics: `Antitrust regulators review the predatory acquisition of distressed intellectual assets.`,
-          local: `The partner's family is evicted as their company collapses, while {PLAYER} moves into their offices.`,
-          financial: `Asset surge: {PLAYER} captures valuable IP, scaling business execution efficiency by +$150,000.`
-        });
         addFeed('OPINION', `POLL DROPS: Critics blast {PLAYER}'s ruthless treatment of a longtime friend, branding them a greedy corporate villain.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('PartnerBetrayal');
       } else if (pl.narrativeFlags?.crossroad_exposed_corruption && (choice === 'Expose the Corruption' || choice.includes('Expose the'))) {
-        addMultiOutletReports({
-          business: `THE WHISTLEBLOWER: {PLAYER} leaks systemic tax evasion files, implicating key political and corporate elites.`,
-          popCulture: `HOLY COUPLING! {PLAYER} just dropped the files on the entire corrupt elite! Absolute superhero energy! 📁🦸 #TheReinvention #Whistleblower`,
-          politics: `Impeachment and regulatory hearings begin as Capitol Hill reels from {PLAYER}'s massive disclosures.`,
-          local: `Grassroots groups gather to support {PLAYER}, chanting their name as a champion of public truth.`,
-          financial: `High-heat surge: {PLAYER} faces massive physical heat (+40) and regulatory retaliation as old allies pull backing.`
-        });
         addFeed('OPINION', `POLL SURGES: Grassroots public trust in {PLAYER} reaches an all-time high of 92% approval.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('ExposeCorruption');
       } else if (pl.narrativeFlags?.crossroad_accepted_compromise && (choice === 'Accept the Compromise' || choice.includes('Accept the'))) {
-        addMultiOutletReports({
-          business: `THE COMPROMISE: {PLAYER} signs a confidential 'hush agreement' with political leaders, securing immense backing.`,
-          popCulture: `Hmm, {PLAYER} is playing golf with the very politicians under investigation. Smells like collusion? 🤫🏌️ #TheCompromise #InThePocket`,
-          politics: `Capitol Hill leaders secure a bipartisan consensus to fund {PLAYER}'s federal administrative programs.`,
-          local: `Neighborhood activists question why the promised corruption investigation was suddenly dropped.`,
-          financial: `Monopoly passive: {PLAYER} locks in a lucrative confidential monthly payout of +$15,000 passive cash.`
-        });
         addFeed('OPINION', `POLL SLIDES: Reform watchdogs accuse {PLAYER} of systemic collusion, depressing public trust.`, 'Public Opinion Poll');
         addRivalCommentIfPossible('AcceptCompromise');
       } else {
@@ -851,14 +752,6 @@ export function processWorldReaction(
     }
 
     case 'PRESIDENCY_ORDER': {
-      const orderName = metadata.hustleName || 'Policy Directive';
-      addMultiOutletReports({
-        business: `Regulatory frameworks shift after President {PLAYER} implements major policy changes regarding ${orderName}.`,
-        popCulture: `President {PLAYER} just signed a massive executive order! The internet is dividing over the new law! 🇺🇸🏛️`,
-        politics: `Congress responds to President {PLAYER}'s newest directive on ${orderName}, debating bipartisan compliance.`,
-        local: `How President {PLAYER}'s latest executive order affects our local community and housing prices.`,
-        financial: `Corporate yield multipliers fluctuate following President {PLAYER}'s sweeping legislative shifts.`
-      });
       addRivalCommentIfPossible('MajorLegislation');
       if (!isTest) {
         updatedPl.approvalRating = Math.min(100, updatedPl.approvalRating + 3);
@@ -867,13 +760,6 @@ export function processWorldReaction(
     }
 
     case 'ELECTION_VICTORY': {
-      addMultiOutletReports({
-        business: `Market indices soar as pro-business President {PLAYER} wins the national general election in a historic landslide.`,
-        popCulture: `PRESIDENT {PLAYER} IS SWORN IN! 🇺🇸🎉 An incredible journey from the block to the Oval Office! #President`,
-        politics: `Bipartisan consensus: President {PLAYER} outlines ambitious executive reform slates for their incoming term.`,
-        local: `From the streets to the Oval Office: neighbor {PLAYER} is officially President of the United States!`,
-        financial: `Macroeconomic projection: President {PLAYER}'s term begins, shifting national interest rates and sector yields.`
-      });
       addRivalCommentIfPossible('ElectionVictory');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 200);
@@ -883,14 +769,6 @@ export function processWorldReaction(
     }
 
     case 'LEGENDARY_ACHIEVEMENT': {
-      const achName = metadata.achievementName || 'Supreme Legend';
-      addMultiOutletReports({
-        business: `Monopoly milestone: {PLAYER} breaks industry records to complete the historic achievement "${achName}".`,
-        popCulture: `🐐 REAL PEAK PERFORMANCE! {PLAYER} just unlocked the "${achName}" achievement! Absolutely legendary! #Achievement`,
-        politics: `Congressional committees acknowledge {PLAYER}'s unparalleled operational benchmark "${achName}".`,
-        local: `Our local inspiration {PLAYER} has achieved greatness, completing the legendary benchmark "${achName}"!`,
-        financial: `Yield multiplier bonus: the record-breaking "${achName}" milestone cements {PLAYER}'s long-term asset values.`
-      });
       addRivalCommentIfPossible('LegendaryAchievement');
       if (!isTest) {
         updatedPl.clout = Math.min(10000, updatedPl.clout + 100);
@@ -900,61 +778,26 @@ export function processWorldReaction(
     }
 
     case 'COMEBACK_BANKRUPTCY_MILLIONAIRE': {
-      addMultiOutletReports({
-        business: `From Bankruptcy to Millionaire: {PLAYER} stages an extraordinary phoenix recovery, clearing over $5,000,000 in holdings.`,
-        popCulture: `Absolutely insane! {PLAYER} went from literally $0 to over $5,000,000! Rebuilding the entire empire from scratch! 📈👑 #Phoenix`,
-        politics: `Local commerce councils commend {PLAYER}'s persistence, praising their contribution to municipal wealth structures.`,
-        local: `Our neighbor {PLAYER} is officially back! Rebuilt their entire business empire to over $5M after almost losing it all.`,
-        financial: `Asset valuation: {PLAYER} successfully re-allocates core capital, transforming bankruptcy debt into an optimized $5M+ portfolio.`
-      });
       addRivalCommentIfPossible('Comeback');
       break;
     }
 
     case 'COMEBACK_BANKRUPTCY_BILLIONAIRE': {
-      addMultiOutletReports({
-        business: `Sovereign wealth: {PLAYER} achieves the near-impossible "Bankruptcy to Billionaire" phoenix comeback!`,
-        popCulture: `THE Phoenix rise! {PLAYER} is officially a certified billionaire after starting with literally $0! Absolute sovereign! 💸🐐 #FromBankruptcyToBillionaire`,
-        politics: `Bipartisan financial select committees review {PLAYER}'s decadal recovery as a textbook case of entrepreneurial resilience.`,
-        local: `Unbelievable: city landmark is unveiled celebrating tycoon {PLAYER}'s climb from bankruptcy all the way to Billionaire!`,
-        financial: `Chapter 11 resolved: {PLAYER} records absolute capital supremacy, securing $1B+ reserves from a previous insolvency.`
-      });
       addRivalCommentIfPossible('Comeback');
       break;
     }
 
     case 'COMEBACK_PRISON_RELEASE': {
-      addMultiOutletReports({
-        business: `Reclaiming direct command: {PLAYER} engineers an outstanding post-prison comeback, securing over $500,000 in active margins.`,
-        popCulture: `The comeback nobody expected! {PLAYER} is out of prison and already cleared $500k cash! Rebuilding his empire! 🔓🚀 #FreshStart`,
-        politics: `Debates surrounding incarceration reform are fueled by {PLAYER}'s rapid corporate comeback.`,
-        local: `{PLAYER} is proving that a setback is just a setup for a comeback, recovering $500,000 for local development.`,
-        financial: `Operational restart: {PLAYER}'s post-release business divisions report a surge in investor confidence, raising $500k liquidity.`
-      });
       addRivalCommentIfPossible('Comeback');
       break;
     }
 
     case 'COMEBACK_BURNOUT': {
-      addMultiOutletReports({
-        business: `Mental focus restored: {PLAYER} successfully recovers from severe operational burnout to resume direct active command.`,
-        popCulture: `Health is wealth! {PLAYER} is back after a massive self-care hiatus, stronger and sharper than ever! 🧠🌿 #MentalHealth`,
-        politics: `Critics praise President {PLAYER}'s focus on psychological wellness, establishing new benchmarks for executive self-care.`,
-        local: `Neighbor {PLAYER} is fully rested and back in action! Best of luck on this clean, healthy new chapter.`,
-        financial: `Resilient return: {PLAYER}'s decision-making and operational stamina are fully restored, securing +15 Aura.`
-      });
       addRivalCommentIfPossible('Comeback');
       break;
     }
 
     case 'COMEBACK_DEBT_SQUEEZE': {
-      addMultiOutletReports({
-        business: `Debt cleared: {PLAYER} successfully tames leverage ratios, retiring all high-interest business liabilities.`,
-        popCulture: `Debt-free is the ultimate flex! {PLAYER} just paid off their massive credit liabilities! Full financial freedom! 💸🎉 #CleanSlate`,
-        politics: `Lobbyist watchdogs praise {PLAYER}'s financial solvency, restoring complete public confidence.`,
-        local: `Neighbor {PLAYER} is completely debt-free after successfully retiring their credit accounts! Outstanding news.`,
-        financial: `Solvency optimization: {PLAYER} retires outstanding principals, clearing creditor freezes and unlocking +15 Clout.`
-      });
       addRivalCommentIfPossible('Comeback');
       break;
     }

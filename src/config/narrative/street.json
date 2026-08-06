@@ -1,0 +1,966 @@
+[
+  {
+    "id": "opp_cost_property_vs_expansion",
+    "title": "Crossroads of Scale",
+    "pacingCategory": "MAJOR",
+    "description": "Your logistics manager presents a crossroads: Expand your warehouse (boosting active cash yield multipliers but adding $1,200/month in upkeep) OR acquire a local residential duplex (yielding stable monthly passive cash flow but freezing upgrade paths).",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "upgrade_warehouse",
+        "label": "Expand Warehouse",
+        "description": "Upgrade the active infrastructure. Costs $1,200/month in operating upkeeps but increases professional clout.",
+        "consequences": {
+          "clout": 50,
+          "passiveCash": -1200
+        },
+        "setFlags": {
+          "opp_cost_warehouse_expanded": true
+        }
+      },
+      {
+        "id": "acquire_duplex",
+        "label": "Acquire Residential Duplex",
+        "description": "Invest $25,000 to purchase a high-yield residential asset bringing in $1,800/month in passive income.",
+        "consequences": {
+          "bag": -25000,
+          "passiveCash": 1800
+        },
+        "setFlags": {
+          "opp_cost_duplex_acquired": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_rest_vs_push",
+    "title": "Vigor vs. Velocity",
+    "pacingCategory": "MAJOR",
+    "description": "Your workers are exhausted and your margins are tight. You can either fund a high-quality team retreat (costing $15,000, restoring 40 Mental Health but pausing development) OR enforce double-shifts to maximize active income (generating immediate cash but triggering employee friction and +20 Heat).",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "fund_retreat",
+        "label": "Fund Team Retreat",
+        "description": "Invest $15,000 in your team's mental health, restoring 40 Mental Health.",
+        "consequences": {
+          "bag": -15000,
+          "mentalHealth": 40
+        },
+        "setFlags": {
+          "opp_cost_retreat_funded": true
+        }
+      },
+      {
+        "id": "enforce_shifts",
+        "label": "Enforce Double Shifts",
+        "description": "Push workers to the limit. Earns $20,000 immediately but adds +20 Heat due to worker protests.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 20,
+          "mentalHealth": -30
+        },
+        "setFlags": {
+          "opp_cost_shifts_enforced": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "scavenger_prototype",
+    "title": "The Prototype",
+    "pacingCategory": "MAJOR",
+    "description": "While scouting the industrial waste zones, you found a discarded prototype for a high-end neural processor. It's labeled \"Property of Global Dynamics\". It still works.",
+    "trigger": {
+      "background": [
+        "sk_scrap"
+      ],
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sell_prototype",
+        "label": "Sell to the Underground",
+        "description": "Trade it to a black-market dealer for immediate liquid capital.",
+        "consequences": {
+          "bag": 15000,
+          "clout": 10,
+          "heat": 15
+        }
+      },
+      {
+        "id": "leak_prototype",
+        "label": "Reverse Engineer & Leak",
+        "description": "Strip the hardware, learn its secrets, and leak the blueprints to damage the corporation's stock.",
+        "consequences": {
+          "clout": 50,
+          "aura": 25,
+          "passiveCash": 500
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_1",
+    "characterId": "char_marcus",
+    "arcId": "arc_marcus",
+    "pacingCategory": "CHARACTER",
+    "title": "A Favor for a Friend",
+    "description": "Marcus \"Mook\" Miller cornered you near your old block. \"Listen, I got into some trouble with the wrong people,\" he says, looking around nervously. \"I need 5k to clear my name. You're doing well, right?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "marcus_help",
+        "label": "Help Marcus",
+        "description": "Give him the money. He's your brother.",
+        "consequences": {
+          "bag": -5000,
+          "aura": 50
+        },
+        "setFlags": {
+          "rel_marcus": 50,
+          "trust_marcus": 100,
+          "status_marcus": "ally"
+        }
+      },
+      {
+        "id": "marcus_refuse",
+        "label": "Refuse Him",
+        "description": "You can't afford to be a charity. He needs to learn his own lessons.",
+        "consequences": {
+          "clout": 20,
+          "aura": -30
+        },
+        "setFlags": {
+          "rel_marcus": -20,
+          "trust_marcus": 0,
+          "status_marcus": "alive"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_2",
+    "characterId": "char_marcus",
+    "arcId": "arc_marcus",
+    "pacingCategory": "CHARACTER",
+    "title": "Marcus's Opportunity",
+    "description": "Marcus reaches out again. He's found a lead on some \"high-end electronics\" that fell off a truck. He wants you to provide the storage space.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "status_marcus": "ally"
+      }
+    },
+    "choices": [
+      {
+        "id": "marcus_storage",
+        "label": "Provide Storage",
+        "description": "Use your warehouse. A little risk for a lot of reward.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 30,
+          "aura": -50
+        },
+        "setFlags": {
+          "rel_marcus": 70,
+          "trust_marcus": 120,
+          "marcus_2_done": true
+        }
+      },
+      {
+        "id": "marcus_decline_crime",
+        "label": "Refuse Crime",
+        "description": "You're going legit. You can't risk the heat.",
+        "consequences": {
+          "aura": 30,
+          "heat": -10
+        },
+        "setFlags": {
+          "rel_marcus": 40,
+          "trust_marcus": 80,
+          "marcus_2_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_1",
+    "characterId": "char_ashley",
+    "pacingCategory": "CHARACTER",
+    "title": "The Journalist's Inquiry",
+    "description": "Ashley Weaver from the Metro Gazette is writing a piece on the \"rising stars\" of the city. She wants an exclusive interview.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ashley_interview_clean",
+        "label": "The Clean Story",
+        "description": "Tell her about your humble beginnings and your drive for success.",
+        "consequences": {
+          "clout": 40,
+          "aura": 30
+        },
+        "setFlags": {
+          "rel_ashley": 30,
+          "trust_ashley": 50
+        }
+      },
+      {
+        "id": "ashley_interview_raw",
+        "label": "The Raw Truth",
+        "description": "Give her the gritty details. It's risky, but it'll be a bestseller.",
+        "consequences": {
+          "clout": 100,
+          "heat": 20,
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_ashley": 50,
+          "trust_ashley": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cole_1",
+    "characterId": "char_cole",
+    "pacingCategory": "CHARACTER",
+    "title": "Cole's Warning",
+    "description": "Detective Silas Cole pays you a visit. \"I've seen guys like you come and go,\" he says. \"Keep your nose clean, or I'll be the one who shuts you down.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 40
+      }
+    },
+    "choices": [
+      {
+        "id": "cole_cooperate",
+        "label": "Offer Information",
+        "description": "Give him a tip about a minor rival. Show him you're on the \"right\" side.",
+        "consequences": {
+          "heat": -30,
+          "aura": -40,
+          "clout": 30
+        },
+        "setFlags": {
+          "rel_cole": 20,
+          "trust_cole": 40
+        }
+      },
+      {
+        "id": "cole_defiant",
+        "label": "Be Defiant",
+        "description": "You have nothing to say to the police.",
+        "consequences": {
+          "heat": 10,
+          "clout": 50
+        },
+        "setFlags": {
+          "rel_cole": -30,
+          "trust_cole": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_2",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "Zoning Wars",
+    "description": "Maya's community center project is being blocked by a local development firm, \"Chadwick Holdings\". They want to build a luxury high-rise on that lot. They've offered you a \"finder's fee\" to convince Maya to drop the project.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "community_hero": true
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_defend_center",
+        "label": "Defend the Center",
+        "description": "Use your influence and legal resources to block Chadwick's permit.",
+        "consequences": {
+          "bag": -50000,
+          "aura": 100,
+          "clout": 50,
+          "biographyEntry": "Successfully defended the community center against Chadwick Holdings' predatory development plans."
+        },
+        "setFlags": {
+          "rel_maya": 120,
+          "chadwick_hostile": true
+        }
+      },
+      {
+        "id": "maya_betray_center",
+        "label": "Accept the Fee",
+        "description": "Take the money. Maya will understand... eventually.",
+        "consequences": {
+          "bag": 200000,
+          "aura": -200,
+          "clout": 100,
+          "biographyEntry": "Betrayed Maya's trust by accepting a payoff to sabotage the community center project."
+        },
+        "setFlags": {
+          "rel_maya": 0,
+          "trust_maya": 0,
+          "community_hero": false,
+          "chadwick_ally": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_pops_garden",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "pacingCategory": "CHARACTER",
+    "title": "Pops' Wisdom",
+    "description": "Arthur \"Pops\" Jenkins calls you over to the community garden. \"You're moving fast, kid,\" he says, handing you a fresh tomato. \"But remember, a plant that grows too fast without deep roots will fall in the first storm. What are you building for the future?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "pops_learn",
+        "label": "Listen to Pops",
+        "description": "Spend the afternoon learning about the neighborhood's history and the importance of community.",
+        "consequences": {
+          "aura": 40,
+          "mentalHealth": 10,
+          "biographyEntry": "Learned the true history of the blocks from Arthur \"Pops\" Jenkins."
+        },
+        "setFlags": {
+          "rel_pops": 50,
+          "pops_mentor": true
+        }
+      },
+      {
+        "id": "pops_dismiss",
+        "label": "Too Busy",
+        "description": "Politely decline. You have deals to close.",
+        "consequences": {
+          "clout": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_tip",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "pacingCategory": "CHARACTER",
+    "title": "Slick's \"Sure Thing\"",
+    "description": "Slick Reed leans against a lamp post as you pass. \"Hey, hey! Just the person I wanted to see. I got a tip on a shipment of... let's call them 'premium electronics'... arriving at the docks tonight. No security. Five large and we split the take. You in?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "slick_accept",
+        "label": "Take the Tip",
+        "description": "Invest $5,000 in Slick's scheme.",
+        "consequences": {
+          "bag": -5000
+        },
+        "setFlags": {
+          "slick_deal_active": true
+        }
+      },
+      {
+        "id": "slick_refuse",
+        "label": "Ignore Him",
+        "description": "Slick's \"sure things\" usually lead to handcuffs.",
+        "consequences": {
+          "heat": -5
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosa_request",
+    "characterId": "char_rosa",
+    "arcId": "arc_rosa",
+    "pacingCategory": "CHARACTER",
+    "title": "Mama Rosa's Kitchen",
+    "description": "Rosa Mendez finds you on the block. \"The city is cutting funding for the youth program again,\" she says, her eyes flashing. \"We need 2k for supplies, or these kids will be out on the street with nothing to do. You can help, right?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "rosa_help",
+        "label": "Donate to Youth",
+        "description": "Give Rosa the money for the kids.",
+        "consequences": {
+          "bag": -2000,
+          "aura": 60,
+          "biographyEntry": "Became a local hero by funding Mama Rosa's youth program."
+        },
+        "setFlags": {
+          "rel_rosa": 60,
+          "neighborhood_hero": true
+        }
+      },
+      {
+        "id": "rosa_refuse",
+        "label": "Can't Help Today",
+        "description": "Explain that money is tight. Rosa doesn't look happy.",
+        "consequences": {
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_rosa": -10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_cop_warning",
+    "characterId": "char_miller_cop",
+    "arcId": "arc_miller",
+    "pacingCategory": "CHARACTER",
+    "title": "Officer Miller's Patrol",
+    "description": "Officer Frank Miller pulls his cruiser alongside you. \"I'm seeing your name in places it shouldn't be,\" he says quietly. \"The higher-ups are starting to notice your activities. Clean it up, or I won't be able to look the other way much longer.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "miller_clean_up",
+        "label": "Lay Low",
+        "description": "Reduce your more visible operations for a while.",
+        "consequences": {
+          "heat": -20,
+          "clout": -10
+        },
+        "setFlags": {
+          "rel_miller": 40
+        }
+      },
+      {
+        "id": "miller_ignore",
+        "label": "Stay the Course",
+        "description": "It's just business. Miller is just one cop.",
+        "consequences": {
+          "heat": 10
+        },
+        "setFlags": {
+          "rel_miller": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_promo",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "pacingCategory": "CHARACTER",
+    "title": "The J-Dog Experience",
+    "description": "J-Dog cornered you with a pair of headphones. \"Yo, you gotta hear this new track! It's fire! I just need a little push to get it on the local radio. A few thousand for some... 'promotion'... and we both go viral. What you think?\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.12,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "jdog_invest",
+        "label": "Invest in J-Dog",
+        "description": "Give him $3,000 for \"marketing\".",
+        "consequences": {
+          "bag": -3000,
+          "clout": 20
+        },
+        "setFlags": {
+          "jdog_promo_active": true
+        }
+      },
+      {
+        "id": "jdog_decline",
+        "label": "Pass on the Track",
+        "description": "You've heard enough.",
+        "consequences": {
+          "mentalHealth": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_vinnie_collection",
+    "characterId": "char_vinnie",
+    "arcId": "arc_vinnie",
+    "pacingCategory": "CHARACTER",
+    "title": "Vinnie's Visit",
+    "description": "Vincent \"Vinnie\" Moretti finds you. \"My boss says your recent... activities... are cutting into our business,\" he says, sounding almost apologetic. \"He wants a 10% 'neighborhood tax' on your next haul. Just to keep things friendly.\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "vinnie_pay",
+        "label": "Pay the Tax",
+        "description": "Better to keep Vinnie friendly.",
+        "consequences": {
+          "bag": -1000,
+          "aura": -10
+        },
+        "setFlags": {
+          "rel_vinnie": 30
+        }
+      },
+      {
+        "id": "vinnie_refuse",
+        "label": "Refuse to Pay",
+        "description": "You don't pay taxes to thugs. Vinnie looks disappointed.",
+        "consequences": {
+          "clout": 30,
+          "heat": 5
+        },
+        "setFlags": {
+          "rel_vinnie": -40
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_beatrice_clinic",
+    "characterId": "char_beatrice",
+    "arcId": "arc_beatrice",
+    "pacingCategory": "CHARACTER",
+    "title": "Clinic Crisis",
+    "description": "Beatrice Vance meets you outside the clinic. \"We're out of basic antibiotics,\" she says, her voice trembling with exhaustion. \"The distributor won't ship until we pay the back-bill. It's 5k. Please.\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "beatrice_fund",
+        "label": "Fund the Clinic",
+        "description": "Pay the clinic's debt. Save lives.",
+        "consequences": {
+          "bag": -5000,
+          "aura": 150
+        },
+        "setFlags": {
+          "rel_beatrice": 80,
+          "clinic_savior": true
+        }
+      },
+      {
+        "id": "beatrice_refuse",
+        "label": "Can't Help",
+        "description": "It's not your responsibility. Beatrice just nods and walks away.",
+        "consequences": {
+          "aura": -50
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ray_security",
+    "characterId": "char_ray",
+    "arcId": "arc_ray",
+    "pacingCategory": "CHARACTER",
+    "title": "Sarge's Solution",
+    "description": "Raymond \"Sarge\" Strode offers to upgrade your physical security. \"Your current setup is amateur hour,\" he grunts. \"One professional team could wipe you out in five minutes. Let me handle it. I need 20k for equipment and training.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ray_hire",
+        "label": "Hire Sarge",
+        "description": "Upgrade your security protocols.",
+        "consequences": {
+          "bag": -20000,
+          "heat": -30,
+          "clout": 30
+        },
+        "setFlags": {
+          "rel_ray": 60,
+          "sarge_security_active": true
+        }
+      },
+      {
+        "id": "ray_refuse",
+        "label": "Stay Low-Tech",
+        "description": "You've been fine so far.",
+        "consequences": {
+          "bag": 5000
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lexi_mural",
+    "characterId": "char_lexi",
+    "arcId": "arc_lexi",
+    "pacingCategory": "CHARACTER",
+    "title": "The Muralist's Mark",
+    "description": "Lexi Chen wants to paint a massive mural on the side of your main building. \"It will tell the story of the block,\" she says. \"But I need you to promise you won't let the city paint over it.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "lexi_permit",
+        "label": "Authorize the Mural",
+        "description": "Give Lexi the space and the protection.",
+        "consequences": {
+          "aura": 100,
+          "clout": 40
+        },
+        "setFlags": {
+          "rel_lexi": 70,
+          "lexi_mural_active": true
+        }
+      },
+      {
+        "id": "lexi_refuse",
+        "label": "No Murals",
+        "description": "You need to maintain a professional corporate image.",
+        "consequences": {
+          "clout": 20,
+          "aura": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "university_admission_offer",
+    "title": "Ivy League Admission",
+    "pacingCategory": "MAJOR",
+    "description": "A prestigious Ivy League university has accepted your application for an executive business program. Enrolling will amplify your public prestige and long-term strategic clout.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP",
+        "CORPORATE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "accept_university_offer",
+        "label": "Accept and Enroll (-$20,000, +80 Clout)",
+        "description": "Pay the tuition fees to secure your enrollment.",
+        "consequences": {
+          "bag": -20000,
+          "clout": 80
+        },
+        "setFlags": {
+          "university_accepted": true,
+          "just_accepted_university": true
+        },
+        "logMessage": "🎓 ENROLLED: You paid $20,000 for executive business enrollment. Banners congratulate your new academic prestige."
+      },
+      {
+        "id": "reject_university_offer",
+        "label": "Decline Offer (+10 Aura)",
+        "description": "Real-world experience is the best teacher anyway.",
+        "consequences": {
+          "aura": 10
+        },
+        "logMessage": "🚫 DECLINED: You turned down the executive program. Your followers praise your self-made authenticity."
+      }
+    ]
+  },
+  {
+    "id": "char_pops_1_the_reunion",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "title": "The Reunion",
+    "description": "Arthur 'Pops' Jenkins is waiting for you in the old community garden. \"I knew you'd come back to the block,\" he says. \"The question is, are you here to take, or to give back?\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "pops_give_back",
+        "label": "Invest in the Garden",
+        "description": "Donate $10k to save the community garden.",
+        "consequences": {
+          "bag": -10000,
+          "aura": 100
+        },
+        "setFlags": {
+          "pops_mentor": true,
+          "rel_pops": 100
+        }
+      },
+      {
+        "id": "pops_take",
+        "label": "Eyes on the Prize",
+        "description": "Tell Pops you're here to build a legacy, not grow tomatoes.",
+        "consequences": {
+          "clout": 50,
+          "aura": -20
+        },
+        "setFlags": {
+          "pops_mentor": false,
+          "rel_pops": 40
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_twitch_1_data_leak",
+    "characterId": "char_twitch",
+    "arcId": "arc_twitch",
+    "title": "The Twitch Signal",
+    "description": "Twitch slides a drive across the counter. \"Found a hole in the city's traffic grid.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "twitch_sync_grid",
+        "label": "Sync the Grid",
+        "description": "Pay $5k for the exploit.",
+        "consequences": {
+          "bag": -5000,
+          "passiveCash": 200,
+          "heat": 10
+        },
+        "setFlags": {
+          "twitch_partner": true,
+          "rel_twitch": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_1_consignment",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "title": "Slick's Side Hustle",
+    "description": "Slick Reed has a shipment of 'liberated' tech parts.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "slick_consignment_accept",
+        "label": "Accept Consignment",
+        "description": "Move the hot goods.",
+        "consequences": {
+          "bag": 20000,
+          "heat": 25
+        },
+        "setFlags": {
+          "slick_partner": true,
+          "rel_slick": 70
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_1_payoff",
+    "characterId": "char_miller",
+    "arcId": "arc_miller",
+    "title": "The Blue Toll",
+    "description": "Officer Miller pulls you over.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "miller_pay",
+        "label": "Pay the Toll",
+        "description": "Monthly protection money.",
+        "consequences": {
+          "passiveCash": -2000,
+          "heat": -10
+        },
+        "setFlags": {
+          "miller_paid": true,
+          "rel_miller": 60
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_1_studio",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "title": "The Next Sound",
+    "description": "J-Dog wants to build a studio.",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "jdog_fund",
+        "label": "Fund the Studio",
+        "description": "Build the creative space.",
+        "consequences": {
+          "bag": -20000,
+          "aura": 100,
+          "clout": 50
+        },
+        "setFlags": {
+          "jdog_studio_active": true,
+          "rel_jdog": 90
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_big_g_1_territory",
+    "characterId": "char_big_g",
+    "arcId": "arc_big_g_turf",
+    "title": "Territory Tax",
+    "description": "Big G wants a cut of your local distribution. \"Everyone pays the tax, one way or another.\"",
+    "trigger": {
+      "tier": [
+        "STREET",
+        "STARTUP"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "big_g_pay",
+        "label": "Pay the Tax",
+        "description": "$1k/month for peace.",
+        "consequences": {
+          "passiveCash": -1000,
+          "heat": -10
+        },
+        "setFlags": {
+          "big_g_paid": true,
+          "rel_big_g": 50
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,327 @@
+[
+  {
+    "id": "scavenger_prototype",
+    "title": "The Prototype",
+    "pacingCategory": "MAJOR",
+    "description": "While scouting the industrial waste zones, you found a discarded prototype for a high-end neural processor. It's labeled \"Property of Global Dynamics\". It still works.",
+    "trigger": {
+      "background": [
+        "sk_scrap"
+      ],
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sell_prototype",
+        "label": "Sell to the Underground",
+        "description": "Trade it to a black-market dealer for immediate liquid capital.",
+        "consequences": {
+          "bag": 15000,
+          "clout": 10,
+          "heat": 15
+        }
+      },
+      {
+        "id": "leak_prototype",
+        "label": "Reverse Engineer & Leak",
+        "description": "Strip the hardware, learn its secrets, and leak the blueprints to damage the corporation's stock.",
+        "consequences": {
+          "clout": 50,
+          "aura": 25,
+          "passiveCash": 500
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_1",
+    "characterId": "char_marcus",
+    "arcId": "arc_marcus",
+    "pacingCategory": "CHARACTER",
+    "title": "A Favor for a Friend",
+    "description": "Marcus \"Mook\" Miller cornered you near your old block. \"Listen, I got into some trouble with the wrong people,\" he says, looking around nervously. \"I need 5k to clear my name. You're doing well, right?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "marcus_help",
+        "label": "Help Marcus",
+        "description": "Give him the money. He's your brother.",
+        "consequences": {
+          "bag": -5000,
+          "aura": 50
+        },
+        "setFlags": {
+          "rel_marcus": 50,
+          "trust_marcus": 100,
+          "status_marcus": "ally"
+        }
+      },
+      {
+        "id": "marcus_refuse",
+        "label": "Refuse Him",
+        "description": "You can't afford to be a charity. He needs to learn his own lessons.",
+        "consequences": {
+          "clout": 20,
+          "aura": -30
+        },
+        "setFlags": {
+          "rel_marcus": -20,
+          "trust_marcus": 0,
+          "status_marcus": "alive"
+        }
+      }
+    ]
+  },
+  {
+    "id": "heat_crackdown",
+    "title": "The Investigation",
+    "pacingCategory": "MAJOR",
+    "description": "The heat is getting too high. Federal agents have been spotted outside your main office. You need to act before they serve a warrant.",
+    "trigger": {
+      "minMonth": 12,
+      "probability": 0.2,
+      "once": false
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 80
+      }
+    },
+    "choices": [
+      {
+        "id": "bribe_agents",
+        "label": "The \"Donation\"",
+        "description": "Make a significant contribution to the Law Enforcement Benevolent Fund.",
+        "consequences": {
+          "bag": -50000,
+          "heat": -40,
+          "aura": -10
+        }
+      },
+      {
+        "id": "shred_files",
+        "label": "Burn the Evidence",
+        "description": "Destroy everything. Clean slate, but your operations will take a hit.",
+        "consequences": {
+          "heat": -60,
+          "clout": -30,
+          "mentalHealth": -20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_pops_garden",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "pacingCategory": "CHARACTER",
+    "title": "Pops' Wisdom",
+    "description": "Arthur \"Pops\" Jenkins calls you over to the community garden. \"You're moving fast, kid,\" he says, handing you a fresh tomato. \"But remember, a plant that grows too fast without deep roots will fall in the first storm. What are you building for the future?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "pops_learn",
+        "label": "Listen to Pops",
+        "description": "Spend the afternoon learning about the neighborhood's history and the importance of community.",
+        "consequences": {
+          "aura": 40,
+          "mentalHealth": 10,
+          "biographyEntry": "Learned the true history of the blocks from Arthur \"Pops\" Jenkins."
+        },
+        "setFlags": {
+          "rel_pops": 50,
+          "pops_mentor": true
+        }
+      },
+      {
+        "id": "pops_dismiss",
+        "label": "Too Busy",
+        "description": "Politely decline. You have deals to close.",
+        "consequences": {
+          "clout": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_tip",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "pacingCategory": "CHARACTER",
+    "title": "Slick's \"Sure Thing\"",
+    "description": "Slick Reed leans against a lamp post as you pass. \"Hey, hey! Just the person I wanted to see. I got a tip on a shipment of... let's call them 'premium electronics'... arriving at the docks tonight. No security. Five large and we split the take. You in?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "slick_accept",
+        "label": "Take the Tip",
+        "description": "Invest $5,000 in Slick's scheme.",
+        "consequences": {
+          "bag": -5000
+        },
+        "setFlags": {
+          "slick_deal_active": true
+        }
+      },
+      {
+        "id": "slick_refuse",
+        "label": "Ignore Him",
+        "description": "Slick's \"sure things\" usually lead to handcuffs.",
+        "consequences": {
+          "heat": -5
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosa_request",
+    "characterId": "char_rosa",
+    "arcId": "arc_rosa",
+    "pacingCategory": "CHARACTER",
+    "title": "Mama Rosa's Kitchen",
+    "description": "Rosa Mendez finds you on the block. \"The city is cutting funding for the youth program again,\" she says, her eyes flashing. \"We need 2k for supplies, or these kids will be out on the street with nothing to do. You can help, right?\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "rosa_help",
+        "label": "Donate to Youth",
+        "description": "Give Rosa the money for the kids.",
+        "consequences": {
+          "bag": -2000,
+          "aura": 60,
+          "biographyEntry": "Became a local hero by funding Mama Rosa's youth program."
+        },
+        "setFlags": {
+          "rel_rosa": 60,
+          "neighborhood_hero": true
+        }
+      },
+      {
+        "id": "rosa_refuse",
+        "label": "Can't Help Today",
+        "description": "Explain that money is tight. Rosa doesn't look happy.",
+        "consequences": {
+          "aura": -20
+        },
+        "setFlags": {
+          "rel_rosa": -10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_vinnie_collection",
+    "characterId": "char_vinnie",
+    "arcId": "arc_vinnie",
+    "pacingCategory": "CHARACTER",
+    "title": "Vinnie's Visit",
+    "description": "Vincent \"Vinnie\" Moretti finds you. \"My boss says your recent... activities... are cutting into our business,\" he says, sounding almost apologetic. \"He wants a 10% 'neighborhood tax' on your next haul. Just to keep things friendly.\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "vinnie_pay",
+        "label": "Pay the Tax",
+        "description": "Better to keep Vinnie friendly.",
+        "consequences": {
+          "bag": -1000,
+          "aura": -10
+        },
+        "setFlags": {
+          "rel_vinnie": 30
+        }
+      },
+      {
+        "id": "vinnie_refuse",
+        "label": "Refuse to Pay",
+        "description": "You don't pay taxes to thugs. Vinnie looks disappointed.",
+        "consequences": {
+          "clout": 30,
+          "heat": 5
+        },
+        "setFlags": {
+          "rel_vinnie": -40
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_beatrice_clinic",
+    "characterId": "char_beatrice",
+    "arcId": "arc_beatrice",
+    "pacingCategory": "CHARACTER",
+    "title": "Clinic Crisis",
+    "description": "Beatrice Vance meets you outside the clinic. \"We're out of basic antibiotics,\" she says, her voice trembling with exhaustion. \"The distributor won't ship until we pay the back-bill. It's 5k. Please.\"",
+    "trigger": {
+      "tier": [
+        "MUD",
+        "STREET"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "beatrice_fund",
+        "label": "Fund the Clinic",
+        "description": "Pay the clinic's debt. Save lives.",
+        "consequences": {
+          "bag": -5000,
+          "aura": 150
+        },
+        "setFlags": {
+          "rel_beatrice": 80,
+          "clinic_savior": true
+        }
+      },
+      {
+        "id": "beatrice_refuse",
+        "label": "Can't Help",
+        "description": "It's not your responsibility. Beatrice just nods and walks away.",
+        "consequences": {
+          "aura": -50
+        }
+      }
+    ]
+  }
+]

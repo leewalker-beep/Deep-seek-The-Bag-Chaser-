@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { MindfulRecover } from '../minigames/MindfulRecover';
-import { DreamWeaver } from '../minigames/DreamWeaver';
-import { PerfectBrew } from '../minigames/PerfectBrew';
-import { ThoughtClouds } from '../minigames/ThoughtClouds';
+import React, { useState, lazy, Suspense } from 'react';
 import { useGameStore } from '../../store/gameStore';
+
+const MindfulRecover = lazy(() => import('../minigames/MindfulRecover').then(m => ({ default: m.MindfulRecover })));
+const DreamWeaver = lazy(() => import('../minigames/DreamWeaver').then(m => ({ default: m.DreamWeaver })));
+const PerfectBrew = lazy(() => import('../minigames/PerfectBrew').then(m => ({ default: m.PerfectBrew })));
+const ThoughtClouds = lazy(() => import('../minigames/ThoughtClouds').then(m => ({ default: m.ThoughtClouds })));
 
 interface RestPanelProps {
   baseRecovery?: number;
@@ -114,10 +115,17 @@ export const RestPanel: React.FC<RestPanelProps> = ({ baseRecovery = 15, onClose
         </>
       )}
 
-      {activeMode === 'BREATHE' && <MindfulRecover onComplete={(win) => processResolution(win ? 1.5 : 1.0, 'l2')} />}
-      {activeMode === 'BREW' && <PerfectBrew onComplete={(win) => processResolution(win ? 1.5 : 1.0, 'l2')} />}
-      {activeMode === 'WEAVE' && <DreamWeaver onComplete={(win) => processResolution(win ? 2.0 : 1.0, 'l3')} />}
-      {activeMode === 'CLOUDS' && <ThoughtClouds onComplete={(win) => processResolution(win ? 2.0 : 1.0, 'l3')} />}
+      <Suspense fallback={
+        <div className="p-4 text-center text-xs text-zinc-500 font-mono">
+          <div className="w-4 h-4 border-2 border-zinc-700 border-t-emerald-500 rounded-full animate-spin mx-auto mb-2" />
+          CALIBRATING RECOVERY INTERFACE...
+        </div>
+      }>
+        {activeMode === 'BREATHE' && <MindfulRecover onComplete={(win) => processResolution(win ? 1.5 : 1.0, 'l2')} />}
+        {activeMode === 'BREW' && <PerfectBrew onComplete={(win) => processResolution(win ? 1.5 : 1.0, 'l2')} />}
+        {activeMode === 'WEAVE' && <DreamWeaver onComplete={(win) => processResolution(win ? 2.0 : 1.0, 'l3')} />}
+        {activeMode === 'CLOUDS' && <ThoughtClouds onComplete={(win) => processResolution(win ? 2.0 : 1.0, 'l3')} />}
+      </Suspense>
     </div>
   );
 };

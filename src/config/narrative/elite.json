@@ -1,0 +1,5511 @@
+[
+  {
+    "id": "crossroad_recession_toll",
+    "title": "The Recession's Toll",
+    "pacingCategory": "MAJOR",
+    "description": "A severe economic slump hits. Your VP of Finance presents a stark choice: Lay off 30% of your workforce to preserve profitability and safeguard investor confidence, OR absorb the losses yourself, protecting your employees but risking a major cash-flow drain.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.35,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "crossroad_employees_protect",
+        "label": "Protect All Employees",
+        "description": "Absorb the payroll costs. Earn deep workforce trust but lose a massive chunk of liquid capital.",
+        "consequences": {
+          "bag": -150000,
+          "aura": 300,
+          "mentalHealth": 15,
+          "biographyEntry": "“The Sacrifice: In the depth of a harsh economic recession, chose to protect employee livelihood at massive personal expense.”"
+        },
+        "setFlags": {
+          "crossroad_protected_employees": true
+        },
+        "logMessage": "🛡️ THE SACRIFICE: You chose to protect your workforce, absorbing $150,000 in costs. Your employees vow complete loyalty."
+      },
+      {
+        "id": "crossroad_employees_layoff",
+        "label": "Execute Layoffs",
+        "description": "Terminate 30% of your staff immediately. Protect corporate margins and secure investor satisfaction, but face public backlash.",
+        "consequences": {
+          "bag": 100000,
+          "aura": -200,
+          "clout": 150,
+          "biographyEntry": "“The Layoffs: Handled the recession with cold financial efficiency, executing widespread layoffs to protect corporate margins.”"
+        },
+        "setFlags": {
+          "crossroad_laid_off_employees": true
+        },
+        "logMessage": "📉 THE LAYOFFS: You terminated 30% of your staff, saving $100,000 but drawing fierce public criticism."
+      }
+    ]
+  },
+  {
+    "id": "crossroad_titans_exit",
+    "title": "The Titan's Exit",
+    "pacingCategory": "MAJOR",
+    "description": "A massive global conglomerate offers to acquire 100% of your core business for $3,000,000. It is an astronomical exit that would make you instantly wealthy, but you would cede all voting power and corporate autonomy. Alternatively, you can decline the offer, retaining your absolute independence but facing their wrath as they vow to fund a relentless competitor to crush you.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.25,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "bag",
+        "value": 500000
+      }
+    },
+    "choices": [
+      {
+        "id": "crossroad_company_sell",
+        "label": "Sell the Business",
+        "description": "Cash out now. Secure generational wealth but cede control of your life's work.",
+        "consequences": {
+          "bag": 3000000,
+          "clout": -400,
+          "aura": -200,
+          "mentalHealth": 20,
+          "biographyEntry": "“The Choice That Defined the Empire: Decided to sell the core enterprise to a global conglomerate, securing astronomical wealth but ceding personal control of their life's work.”"
+        },
+        "setFlags": {
+          "crossroad_sold_company": true
+        },
+        "logMessage": "💵 THE EXIT: You cashed out for $3,000,000, surrendering your active multipliers and ceding the brand control."
+      },
+      {
+        "id": "crossroad_company_fight",
+        "label": "Decline and Fight",
+        "description": "Refuse the buyout. Maintain your corporate identity and independence, but accept intense market competition.",
+        "consequences": {
+          "clout": 300,
+          "aura": 150,
+          "heat": 30,
+          "mentalHealth": -15,
+          "biographyEntry": "“The Stand: Boldly rejected a multi-million dollar buyout offer, choosing independence over easy wealth and preparing for an all-out corporate war.”"
+        },
+        "setFlags": {
+          "crossroad_declined_buyout": true
+        },
+        "logMessage": "🛡️ THE STAND: You rejected the buyout! Conglomerate agents vow to fund competitors to aggressively squeeze your margins."
+      }
+    ]
+  },
+  {
+    "id": "crossroad_whistleblowers_gambit",
+    "title": "The Whistleblower's Gambit",
+    "pacingCategory": "MAJOR",
+    "description": "You uncover undeniable proof of systemic corruption and tax evasion involving the city's key political figures and your closest corporate allies. Exposing the files to the press will trigger a massive political storm, winning public adoration, but it will permanently alienate the corporate elite and spike your physical heat. Alternatively, you can accept their 'hush agreement'—a lucrative compromise that grants you massive political backing but locks in your complicity.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "PRESIDENT"
+      ],
+      "probability": 0.25,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "crossroad_corruption_expose",
+        "label": "Expose the Corruption",
+        "description": "Leak the files. Win the public's trust and clear your name, but alienate the political elite and face heavy blowback.",
+        "consequences": {
+          "clout": -150,
+          "aura": 400,
+          "heat": 40,
+          "mentalHealth": 20,
+          "biographyEntry": "“The Reinvention: Exposed systemic corruption at the highest levels, choosing truth and public trust over elite compliance.”"
+        },
+        "setFlags": {
+          "crossroad_exposed_corruption": true
+        },
+        "logMessage": "📁 THE REINVENTION: You leaked the corruption files! The public hails you as a champion, but federal heat spikes (+40) as elites retaliate."
+      },
+      {
+        "id": "crossroad_corruption_compromise",
+        "label": "Accept the Compromise",
+        "description": "Sign the hush agreement. Gain massive political backing and a passive monthly payout, but carry the weight of complicity.",
+        "consequences": {
+          "clout": 400,
+          "aura": -300,
+          "passiveCash": 15000,
+          "mentalHealth": -15,
+          "biographyEntry": "“The Compromise: Accepted a lucrative compromise with the political elite, securing immense systemic backing at the cost of personal integrity.”"
+        },
+        "setFlags": {
+          "crossroad_accepted_compromise": true
+        },
+        "logMessage": "🤫 THE COMPROMISE: You signed the hush agreement, locking in a +$15,000 monthly payout but carrying heavy moral weight."
+      }
+    ]
+  },
+  {
+    "id": "opp_cost_marketing_vs_debt",
+    "title": "Brand vs. Solvency",
+    "pacingCategory": "MAJOR",
+    "description": "Your public profile is slipping while your operating liabilities grow. You can either invest heavily in a brand PR campaign (+1,000 clout, costing $50,000) OR pay down your running obligations immediately to bolster cash reserves.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "marketing_pr_blitz",
+        "label": "Invest in PR Blitz",
+        "description": "Spend $50,000 to launch a premier PR campaign, securing high public standing (+1,000 Clout, +200 Aura).",
+        "consequences": {
+          "bag": -50000,
+          "clout": 1000,
+          "aura": 200
+        },
+        "setFlags": {
+          "opp_cost_pr_blitz_active": true
+        }
+      },
+      {
+        "id": "pay_down_liabilities",
+        "label": "Pay Down Liabilities",
+        "description": "Use $15,000 of cash to retire outstanding obligations, reclaiming $1,500/month in passive cash flow.",
+        "consequences": {
+          "bag": -15000,
+          "passiveCash": 1500
+        },
+        "setFlags": {
+          "pay_down_liabilities_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "tech_black_project",
+    "title": "Project Obsidian",
+    "pacingCategory": "MAJOR",
+    "description": "An encrypted message arrives from an unknown sender. They want you to design a \"backdoor\" into a regional banking network. The pay is astronomical, but the risks are absolute.",
+    "trigger": {
+      "background": [
+        "dr_tech"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.12,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "accept_obsidian",
+        "label": "Accept the Contract",
+        "description": "Code the backdoor. Take the money. Hope nobody finds the digital fingerprints.",
+        "consequences": {
+          "bag": 500000,
+          "heat": 60,
+          "aura": -50
+        }
+      },
+      {
+        "id": "report_obsidian",
+        "label": "Report & Secure",
+        "description": "Alert the authorities and help them patch the vulnerability. It's good for the resume.",
+        "consequences": {
+          "clout": 80,
+          "aura": 40,
+          "bag": 10000
+        }
+      }
+    ]
+  },
+  {
+    "id": "shadow_blackmail",
+    "title": "Leverage Opportunity",
+    "pacingCategory": "MAJOR",
+    "description": "Your informants have caught a local politician in a compromising position. As \"The Shadow\", you can leverage this for power or for silence.",
+    "trigger": {
+      "specialization": [
+        "shadow"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "leverage_power",
+        "label": "Political Favor",
+        "description": "Trade the evidence for a reduction in regulatory scrutiny on your businesses.",
+        "consequences": {
+          "heat": -30,
+          "aura": -20,
+          "clout": 40
+        }
+      },
+      {
+        "id": "leverage_cash",
+        "label": "Cold Cash",
+        "description": "Simple extortion. $50,000 for the original drive.",
+        "consequences": {
+          "bag": 50000,
+          "aura": -10,
+          "heat": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "investor_chain_2",
+    "arcId": "arc_investor",
+    "title": "The Architect Returns",
+    "pacingCategory": "MAJOR",
+    "description": "The favor has been called in. \"The Architect\" wants you to use your influence to push through a controversial zoning law that favors their holdings.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "architect_debt": true
+      }
+    },
+    "choices": [
+      {
+        "id": "obey_architect",
+        "label": "Push the Law",
+        "description": "Your reputation takes a hit, but the debt is settled.",
+        "consequences": {
+          "aura": -150,
+          "clout": 100,
+          "heat": 40
+        },
+        "setFlags": {
+          "architect_debt": false,
+          "architect_loyalist": true
+        }
+      },
+      {
+        "id": "refuse_architect",
+        "label": "Refuse the Demand",
+        "description": "You won't be a corporate puppet. Expect retaliation.",
+        "consequences": {
+          "aura": 100,
+          "clout": -50
+        },
+        "setFlags": {
+          "architect_debt": true,
+          "architect_hostile": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "investor_chain_3",
+    "arcId": "arc_investor",
+    "title": "Architect's Retribution",
+    "pacingCategory": "MAJOR",
+    "description": "\"The Architect\" is liquidating their positions in your companies, attempting a hostile takeover to strip your assets.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.25,
+      "once": true,
+      "flagReqs": {
+        "architect_hostile": true,
+        "architect_debt": true
+      }
+    },
+    "choices": [
+      {
+        "id": "fight_takeover",
+        "label": "Fight the Takeover",
+        "description": "Burn through your reserves to buy back your shares and secure your control.",
+        "consequences": {
+          "bag": -1000000,
+          "clout": 200,
+          "aura": 50
+        },
+        "setFlags": {
+          "architect_hostile": false,
+          "architect_debt": false,
+          "architect_defeated": true
+        }
+      },
+      {
+        "id": "surrender_control",
+        "label": "Cede Control",
+        "description": "Let them have what they want. You'll start over elsewhere, but the sting of defeat is heavy.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": -500,
+          "aura": -200,
+          "mentalHealth": -40,
+          "biographyEntry": "Lost a massive corporate war against the shadowy Investor known as The Architect."
+        },
+        "setFlags": {
+          "architect_hostile": false,
+          "architect_debt": false,
+          "architect_victorious": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "investor_chain_4",
+    "title": "Kane's Intervention",
+    "pacingCategory": "MAJOR",
+    "description": "Victor Kane reaches out. \"I see you're having trouble with the Architect,\" he says. \"I have no love for them. I can provide the leverage to bury them once and for all, but I want your loyalty in the coming trade wars.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.25,
+      "once": true,
+      "flagReqs": {
+        "architect_hostile": true,
+        "architect_debt": true
+      }
+    },
+    "choices": [
+      {
+        "id": "kane_alliance",
+        "label": "Align with Kane",
+        "description": "Accept his help. The Architect will fall, but you'll be in Kane's debt.",
+        "consequences": {
+          "clout": 150,
+          "aura": -50,
+          "biographyEntry": "Formed a strategic alliance with Victor Kane to dismantle The Architect's network."
+        },
+        "setFlags": {
+          "kane_ally": true,
+          "architect_hostile": false,
+          "architect_debt": false,
+          "architect_defeated": true
+        }
+      },
+      {
+        "id": "kane_refuse_alliance",
+        "label": "Reject Kane",
+        "description": "You won't trade one master for another. You'll fight the Architect on your own terms.",
+        "consequences": {
+          "aura": 100,
+          "clout": 50,
+          "biographyEntry": "Defiantly rejected Victor Kane's offer of a predatory alliance."
+        },
+        "setFlags": {
+          "kane_hostile_arc": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "investor_chain_5",
+    "title": "Hostile Negotiations",
+    "pacingCategory": "MAJOR",
+    "description": "The market is reeling from your recent moves. Victor Kane is aggressively moving against your holdings, attempting to force you into a merger.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "kane_hostile_arc": true
+      }
+    },
+    "choices": [
+      {
+        "id": "fight_kane",
+        "label": "Counter-Offensive",
+        "description": "Launch a aggressive media campaign and legal battle to block Kane's moves.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": 300,
+          "aura": 100,
+          "biographyEntry": "Successfully defended the empire against a hostile takeover attempt by Victor Kane."
+        },
+        "setFlags": {
+          "kane_defeated": true,
+          "kane_hostile_arc": false
+        }
+      },
+      {
+        "id": "merge_kane",
+        "label": "Strategic Merger",
+        "description": "Merge your operations with Kane's. You lose autonomy, but the combined power is undeniable.",
+        "consequences": {
+          "bag": 10000000,
+          "clout": 500,
+          "aura": -200,
+          "biographyEntry": "Merged the business empire with Victor Kane's conglomerate, becoming a global powerhouse at the cost of independence."
+        },
+        "setFlags": {
+          "kane_merged": true,
+          "kane_hostile_arc": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_1",
+    "arcId": "arc_syndicate",
+    "title": "The Whispering Hand",
+    "pacingCategory": "MAJOR",
+    "description": "You've been approached by a representative of \"The Whispering Hand\", a global syndicate that operates in the gaps between laws. They want to use your logistics network for \"special cargo.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.12,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "join_syndicate",
+        "label": "Partner Up",
+        "description": "The profits are too high to ignore. Just don't ask what's in the boxes.",
+        "consequences": {
+          "bag": 100000,
+          "heat": 30,
+          "aura": -50
+        },
+        "setFlags": {
+          "syndicate_member": true
+        }
+      },
+      {
+        "id": "report_syndicate",
+        "label": "Tip off the Feds",
+        "description": "Play it clean. The authorities will appreciate the lead.",
+        "consequences": {
+          "clout": 60,
+          "aura": 40
+        },
+        "setFlags": {
+          "syndicate_enemy": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_2",
+    "arcId": "arc_syndicate",
+    "title": "Syndicate Escalation",
+    "pacingCategory": "MAJOR",
+    "description": "The Whispering Hand is being squeezed by a federal crackdown. \"The logistics you provided for the 'special cargo' were perfect,\" your contact says. \"Now we need something bigger. We need you to wash a massive amount of capital through your ventures immediately. The feds are watching every other door.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "syndicate_member": true
+      }
+    },
+    "choices": [
+      {
+        "id": "launder_syndicate",
+        "label": "Wash the Money",
+        "description": "It's dangerous, but the syndicate pays a 20% commission.",
+        "consequences": {
+          "bag": 1000000,
+          "heat": 70,
+          "aura": -100
+        },
+        "setFlags": {
+          "syndicate_deep": true
+        }
+      },
+      {
+        "id": "cut_ties",
+        "label": "Cut Ties",
+        "description": "It's getting too hot. Shut down the operation and go dark.",
+        "consequences": {
+          "bag": -200000,
+          "clout": -100,
+          "heat": -20,
+          "biographyEntry": "Severed ties with the Whispering Hand syndicate after the risks became too great."
+        },
+        "setFlags": {
+          "syndicate_member": false,
+          "syndicate_threatened": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_3",
+    "arcId": "arc_syndicate",
+    "title": "Cole's Pursuit",
+    "pacingCategory": "MAJOR",
+    "description": "Detective Silas Cole corners you in a parking garage. \"I've been watching those 'special shipments' through your warehouses,\" he says, lighting a cigarette. \"The Whispering Hand is a sinking ship. You can go down with them, or you can tell me everything I want to know about their logistics. Your choice.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "syndicate_member": true
+      }
+    },
+    "choices": [
+      {
+        "id": "syndicate_informant",
+        "label": "Become Informant",
+        "description": "Feed Cole information on the syndicate's movements in exchange for immunity.",
+        "consequences": {
+          "heat": -50,
+          "aura": -100,
+          "clout": 50,
+          "biographyEntry": "Began working as a confidential informant for Detective Silas Cole against the Whispering Hand."
+        },
+        "setFlags": {
+          "syndicate_informant": true,
+          "rel_cole": 50
+        }
+      },
+      {
+        "id": "syndicate_loyal",
+        "label": "Remain Loyal",
+        "description": "Tell Cole nothing. You don't talk to the feds.",
+        "consequences": {
+          "heat": 30,
+          "clout": 100,
+          "biographyEntry": "Chose loyalty to the syndicate over cooperation with Detective Cole's investigation."
+        },
+        "setFlags": {
+          "syndicate_loyalist": true,
+          "rel_cole": -50
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_4",
+    "title": "The High-Stakes Heist",
+    "pacingCategory": "MAJOR",
+    "description": "The Whispering Hand is planning a massive heist of a federal reserve transport. They need you to provide the specialized logistics and \"clean\" the take.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.25,
+      "once": true,
+      "flagReqs": {
+        "syndicate_member": true,
+        "syndicate_loyalist": true
+      }
+    },
+    "choices": [
+      {
+        "id": "syndicate_heist_join",
+        "label": "Join the Heist",
+        "description": "Commit your full resources. This is the big one.",
+        "consequences": {
+          "bag": 5000000,
+          "heat": 80,
+          "aura": -300,
+          "biographyEntry": "Masterminded the logistics for the Whispering Hand's legendary federal reserve heist."
+        },
+        "setFlags": {
+          "syndicate_heist_success": true
+        }
+      },
+      {
+        "id": "syndicate_heist_refuse",
+        "label": "Refuse Participation",
+        "description": "This is too big, even for the syndicate. You're out.",
+        "consequences": {
+          "clout": -200,
+          "aura": 50,
+          "biographyEntry": "Refused to participate in a high-stakes heist, narrowly avoiding a massive federal crackdown."
+        },
+        "setFlags": {
+          "syndicate_member": false,
+          "syndicate_retired": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_5",
+    "title": "Internal Affairs",
+    "pacingCategory": "MAJOR",
+    "description": "The syndicate is being torn apart by internal paranoia. They suspect a mole. As a high-ranking member, you are tasked with \"handling\" the suspicion.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "syndicate_member": true
+      }
+    },
+    "choices": [
+      {
+        "id": "syndicate_mole_frame",
+        "label": "Frame a Rival",
+        "description": "Point the finger at a business rival to clear your own name.",
+        "consequences": {
+          "clout": 100,
+          "aura": -100,
+          "heat": 10,
+          "biographyEntry": "Ruthlessly framed a rival to protect their position within the Whispering Hand."
+        },
+        "setFlags": {
+          "syndicate_cleared": true
+        }
+      },
+      {
+        "id": "syndicate_mole_ghost",
+        "label": "Ghost Protocol",
+        "description": "Use your technical expertise to scrub all records and disappear from the syndicate's tracking.",
+        "requirement": {
+          "specialization": [
+            "shadow"
+          ]
+        },
+        "consequences": {
+          "heat": -40,
+          "clout": -50,
+          "biographyEntry": "Used elite technical skills to ghost the syndicate and erase all traces of their involvement."
+        },
+        "setFlags": {
+          "syndicate_member": false,
+          "syndicate_ghosted": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "syndicate_chain_6",
+    "title": "Judgment Day",
+    "pacingCategory": "MAJOR",
+    "description": "The final showdown. The feds are moving in for a total sweep. Do you stand with the syndicate, or do you make your final move for freedom?",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.3,
+      "once": true,
+      "flagReqs": {
+        "syndicate_member": true
+      }
+    },
+    "choices": [
+      {
+        "id": "syndicate_kingpin",
+        "label": "Take Control",
+        "description": "Eliminate the current leadership and take over the remains of the syndicate as the new Kingpin.",
+        "consequences": {
+          "bag": 20000000,
+          "clout": 1000,
+          "aura": -500,
+          "heat": 100,
+          "biographyEntry": "Seized control of the Whispering Hand, becoming the city's undisputed criminal Kingpin."
+        },
+        "setFlags": {
+          "crime_arc_complete": "kingpin"
+        }
+      },
+      {
+        "id": "syndicate_states_witness",
+        "label": "States Witness",
+        "description": "Turn over the entire syndicate leadership to Detective Cole. Trade your life of crime for a new identity.",
+        "consequences": {
+          "bag": -10000000,
+          "clout": -500,
+          "aura": 500,
+          "heat": -100,
+          "biographyEntry": "Dismantled the Whispering Hand as a star witness, choosing a life of redemption over power."
+        },
+        "setFlags": {
+          "crime_arc_complete": "witness",
+          "rel_cole": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "origin_sk_debt",
+    "title": "Old Neighborhood Debt",
+    "pacingCategory": "MAJOR",
+    "description": "A figure from your past has surfaced. They claim you owe them for \"protection\" back in the day. Now that you're rich, they want a payout.",
+    "trigger": {
+      "category": [
+        "street_kid"
+      ],
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "pay_off_sk",
+        "label": "Pay for Silence",
+        "description": "Give them $50,000 to go away forever.",
+        "consequences": {
+          "bag": -50000,
+          "aura": -10
+        }
+      },
+      {
+        "id": "show_strength_sk",
+        "label": "Show them the Door",
+        "description": "You're not that kid anymore. Remind them who you've become.",
+        "consequences": {
+          "clout": 50,
+          "aura": 20,
+          "heat": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "origin_dr_rival",
+    "title": "The Academic Rival",
+    "pacingCategory": "MAJOR",
+    "description": "One of your former professors is publicly critiquing your business model in the media, calling it \"unstructured\" and \"destined for collapse.\"",
+    "trigger": {
+      "category": [
+        "dropout"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "debate_dr",
+        "label": "Public Debate",
+        "description": "Crush them with real-world results in a televised interview.",
+        "consequences": {
+          "clout": 100,
+          "aura": 50
+        }
+      },
+      {
+        "id": "ignore_dr",
+        "label": "Ignore the Noise",
+        "description": "The numbers speak for themselves. You have more important things to do.",
+        "consequences": {
+          "mentalHealth": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "origin_bn_audit",
+    "title": "The Legacy Audit",
+    "pacingCategory": "MAJOR",
+    "description": "Internal auditors have found \"discrepancies\" in the trust fund that launched your career. Regulatory scrutiny is imminent.",
+    "trigger": {
+      "category": [
+        "benefactor"
+      ],
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "clean_audit",
+        "label": "Full Disclosure",
+        "description": "Pay the fines and open the books. Transparency is the best policy.",
+        "consequences": {
+          "bag": -500000,
+          "aura": 100,
+          "heat": -30
+        }
+      },
+      {
+        "id": "hide_audit",
+        "label": "Mask the Trail",
+        "description": "Hire the best creative accountants money can buy to bury the discrepancies.",
+        "consequences": {
+          "bag": -100000,
+          "clout": 50,
+          "aura": -50,
+          "heat": 50
+        }
+      }
+    ]
+  },
+  {
+    "id": "spec_influencer_viral",
+    "title": "The Viral Crisis",
+    "pacingCategory": "MAJOR",
+    "description": "A video of you has gone viral, but it's being taken out of context. Your brand is at a tipping point.",
+    "trigger": {
+      "specialization": [
+        "influencer"
+      ],
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "apologize_viral",
+        "label": "The Tears Video",
+        "description": "Issue a sincere (or well-acted) apology. Protect the Aura.",
+        "consequences": {
+          "aura": 100,
+          "clout": -50
+        }
+      },
+      {
+        "id": "lean_in_viral",
+        "label": "Lean into the Chaos",
+        "description": "Any publicity is good publicity. Double down and watch the numbers climb.",
+        "consequences": {
+          "clout": 200,
+          "aura": -100,
+          "heat": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "spec_shadow_heist",
+    "title": "The Invisible Heist",
+    "pacingCategory": "MAJOR",
+    "description": "Your connections in the underworld have planned a high-stakes digital heist. As \"The Shadow\", they want you to provide the encryption keys for the target's vault.",
+    "trigger": {
+      "specialization": [
+        "shadow"
+      ],
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "provide_keys",
+        "label": "Provide the Keys",
+        "description": "Take a cut of the score. Your involvement remains hidden.",
+        "consequences": {
+          "bag": 750000,
+          "heat": 15,
+          "aura": -50
+        }
+      },
+      {
+        "id": "refuse_heist",
+        "label": "Refuse Involvement",
+        "description": "Too risky, even for you. Some scores aren't worth the exposure.",
+        "consequences": {
+          "aura": 50,
+          "heat": -10
+        }
+      }
+    ]
+  },
+  {
+    "id": "spec_inst_merger",
+    "title": "The Strategic Merger",
+    "pacingCategory": "MAJOR",
+    "description": "A mid-sized competitor is struggling. As an \"Institutionalist\", you can absorb them to solidify your market share.",
+    "trigger": {
+      "specialization": [
+        "institutional"
+      ],
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "choices": [
+      {
+        "id": "acquire_merger",
+        "label": "Hostile Acquisition",
+        "description": "Strip the assets and fire the management. Pure efficiency.",
+        "consequences": {
+          "bag": -250000,
+          "passiveCash": 5000,
+          "clout": 50,
+          "aura": -30
+        }
+      },
+      {
+        "id": "partner_merger",
+        "label": "Collaborative Merger",
+        "description": "Keep the team and build a stronger foundation together.",
+        "consequences": {
+          "bag": -400000,
+          "passiveCash": 4000,
+          "aura": 100,
+          "clout": 30
+        }
+      }
+    ]
+  },
+  {
+    "id": "rival_memory_grudge",
+    "title": "Rivalry Escalation",
+    "pacingCategory": "RIVAL",
+    "description": "One of your rivals is taking your success personally. They've started a smear campaign to tarnish your reputation.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": false
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "counter_rival",
+        "label": "Counter-Smear",
+        "description": "Fight fire with fire. Leak their own dirty secrets.",
+        "consequences": {
+          "clout": 50,
+          "aura": -50,
+          "heat": 20
+        }
+      },
+      {
+        "id": "buy_rival_out",
+        "label": "The Golden Handshake",
+        "description": "Offer them a \"consulting\" role to keep their mouth shut.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 20,
+          "heat": -10
+        }
+      }
+    ]
+  },
+  {
+    "id": "rival_crushed_tribute",
+    "title": "A Fallen Giant",
+    "pacingCategory": "RIVAL",
+    "description": "A rival you recently crushed is offering to sell you their remaining secrets for a chance to retire in peace.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "buy_secrets",
+        "label": "Buy the Intel",
+        "description": "Their data could give you a massive edge.",
+        "consequences": {
+          "bag": -500000,
+          "clout": 200,
+          "aura": 50,
+          "passiveCash": 10000
+        }
+      },
+      {
+        "id": "refuse_tribute",
+        "label": "Let them Rot",
+        "description": "You don't need anything from a loser.",
+        "consequences": {
+          "aura": -20,
+          "clout": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_2",
+    "characterId": "char_ashley",
+    "pacingCategory": "CHARACTER",
+    "title": "The Leak",
+    "description": "Ashley has found some dirt on Victor Kane, but her editor is blocking the story. She needs an anonymous source to \"verify\" the documents.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "rel_ashley": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "ashley_leak_verify",
+        "label": "Verify the Docs",
+        "description": "Confirm the details. It's time Kane took a hit.",
+        "consequences": {
+          "clout": 100,
+          "aura": 50,
+          "heat": 15
+        },
+        "setFlags": {
+          "rel_ashley": 80,
+          "trust_ashley": 100,
+          "kane_weakened": true,
+          "ashley_2_done": true
+        }
+      },
+      {
+        "id": "ashley_leak_refuse",
+        "label": "Protect Yourself",
+        "description": "Kane is dangerous. You can't be seen helping the press.",
+        "consequences": {
+          "aura": 20,
+          "clout": -20
+        },
+        "setFlags": {
+          "rel_ashley": 10,
+          "trust_ashley": 30,
+          "ashley_2_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_3",
+    "characterId": "char_ashley",
+    "pacingCategory": "MAJOR",
+    "title": "The Expose",
+    "description": "Ashley Weaver has been watching your rise. Now she's at your door with a recorder. \"Off the record,\" she says. \"How much of this was legal?\"",
+    "trigger": {
+      "tier": [
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "ashley_2_done": true
+      }
+    },
+    "choices": [
+      {
+        "id": "go_on_record",
+        "label": "Give her the interview",
+        "description": "The story runs. The spin is yours. Aura skyrockets but heat follows.",
+        "consequences": {
+          "aura": 100,
+          "heat": 15,
+          "clout": 50
+        },
+        "setFlags": {
+          "ashley_3_done": true
+        }
+      },
+      {
+        "id": "shut_it_down",
+        "label": "Buy the story",
+        "description": "It costs you $500K but the article never runs. Ashley looks at you differently now.",
+        "consequences": {
+          "bag": -500000,
+          "heat": -10,
+          "aura": -30
+        },
+        "setFlags": {
+          "ashley_3_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_4",
+    "characterId": "char_marcus",
+    "arcId": "arc_marcus",
+    "pacingCategory": "MAJOR",
+    "title": "Old Debt",
+    "description": "A courier leaves a handwritten note on your desk. It's from Mook. \"I never liked asking for help, and I'm not asking now,\" it reads. Word on the street is he's in deep with the Southern Cartel. After everything you've been through since the early days, you know he won't survive without a massive bailout.",
+    "trigger": {
+      "tier": [
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "marcus_3_done": true
+      }
+    },
+    "choices": [
+      {
+        "id": "pay_the_debt",
+        "label": "Handle it — no questions",
+        "description": "You wire $2M and don't ask where it goes. Some debts you just pay.",
+        "consequences": {
+          "bag": -2000000,
+          "aura": 80,
+          "mentalHealth": 15
+        },
+        "setFlags": {
+          "marcus_4_done": true
+        }
+      },
+      {
+        "id": "look_away",
+        "label": "You can't get involved",
+        "description": "You tell yourself it's business. The nightmares disagree.",
+        "consequences": {
+          "mentalHealth": -30,
+          "aura": -50
+        },
+        "setFlags": {
+          "marcus_4_done": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_3",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "Community Outreach",
+    "description": "The community center is thriving, but it needs more funding to expand its programs. Maya suggests a high-profile fundraiser.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "community_hero": true
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_fundraiser_viral",
+        "label": "Viral Campaign",
+        "description": "Use your influencer connections to make the fundraiser a global event.",
+        "requirement": {
+          "specialization": [
+            "influencer"
+          ]
+        },
+        "consequences": {
+          "clout": 300,
+          "aura": 200,
+          "biographyEntry": "Leveraged massive digital influence to turn a local community center into a national symbol of hope."
+        },
+        "setFlags": {
+          "maya_center_fame": "global"
+        }
+      },
+      {
+        "id": "maya_fundraiser_personal",
+        "label": "Personal Donation",
+        "description": "Quietly write a check for the full expansion cost.",
+        "consequences": {
+          "bag": -1000000,
+          "aura": 500,
+          "biographyEntry": "Quietly funded the total expansion of Maya's community foundation."
+        },
+        "setFlags": {
+          "maya_center_fame": "local"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_4",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "Legacy Conflict",
+    "description": "Maya visits you in your new office, looking at the city view. \"I remember when we just wanted enough for Mama Rosa's groceries,\" she says quietly. \"Now you own the block, and the people on it. Is this really the legacy you want to leave?\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "rel_maya": 30
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_reform",
+        "label": "Vow Reform",
+        "description": "Commit to more ethical business practices. It will be harder to grow, but your conscience will be cleaner.",
+        "consequences": {
+          "aura": 500,
+          "clout": -200,
+          "biographyEntry": "Pledged to reform the empire's ethics after a soul-searching confrontation with Maya."
+        },
+        "setFlags": {
+          "maya_reformed": true
+        }
+      },
+      {
+        "id": "maya_dismiss",
+        "label": "Dismiss Concerns",
+        "description": "Explain that the world is a hard place, and you did what was necessary.",
+        "consequences": {
+          "clout": 100,
+          "aura": -100,
+          "biographyEntry": "Chose the path of the pragmatist, dismissing family concerns in favor of absolute power."
+        },
+        "setFlags": {
+          "maya_dismissed": true,
+          "rel_maya": 10,
+          "maya_betrayed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_5",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "The Vane Foundation",
+    "description": "Your final decision on the future of the Vane family legacy. Will you use your power to lift others, or to secure your own throne?",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.3,
+      "once": true,
+      "flagReqs": {
+        "rel_maya": 10,
+        "maya_betrayed": false
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_true_hero",
+        "label": "Community Foundation",
+        "description": "Establish a massive, permanent foundation that will serve the city for generations.",
+        "requirement": {
+          "background": [
+            "sk_scrap",
+            "sk_delivery"
+          ]
+        },
+        "consequences": {
+          "bag": -50000000,
+          "aura": 1000,
+          "clout": 500,
+          "biographyEntry": "Honored their Street Kid roots by creating the city's largest humanitarian foundation."
+        },
+        "setFlags": {
+          "family_arc_complete": "hero"
+        }
+      },
+      {
+        "id": "maya_dynasty",
+        "label": "Family Dynasty",
+        "description": "Focus your wealth on securing the future of the Vane bloodline for centuries to come.",
+        "requirement": {
+          "background": [
+            "bn_mining",
+            "bn_tech"
+          ]
+        },
+        "consequences": {
+          "bag": -10000000,
+          "clout": 1000,
+          "aura": -300,
+          "biographyEntry": "Solidified the Vane dynasty, ensuring the family's dominance for generations."
+        },
+        "setFlags": {
+          "family_arc_complete": "dynasty"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_maya_opposition",
+    "characterId": "char_maya",
+    "pacingCategory": "CHARACTER",
+    "title": "The Senator's Wrath",
+    "description": "Senator Maya Vane has launched a public investigation into your conglomerate's labor practices. \"I told you I wouldn't let you destroy this city,\" she tells the cameras, her eyes cold. She isn't your little sister anymore; she's your most dangerous political enemy.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.25,
+      "once": true,
+      "flagReqs": {
+        "maya_betrayed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "maya_bribe_senate",
+        "label": "Lobby the Senate",
+        "description": "Spend $5M to bury the investigation through her colleagues.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": 100,
+          "aura": -500,
+          "heat": 50,
+          "biographyEntry": "Ruthlessly suppressed a Senate investigation led by their own sister."
+        },
+        "setFlags": {
+          "maya_silenced": true
+        }
+      },
+      {
+        "id": "maya_public_concession",
+        "label": "Public Concession",
+        "description": "Accept her terms and reform your labor practices.",
+        "consequences": {
+          "passiveCash": -50000,
+          "aura": 1000,
+          "clout": -200,
+          "biographyEntry": "Was forced into a humiliating public retreat by Senator Maya Vane."
+        },
+        "setFlags": {
+          "maya_victory": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_victor_1",
+    "characterId": "char_victor",
+    "pacingCategory": "RIVAL",
+    "title": "Kane's Ultimatum",
+    "description": "Victor Kane invites you to his penthouse. \"You're becoming a nuisance,\" he says, pouring a drink without looking at you. \"I remember when you were just another body in the Mud. Now you're a distraction. Sell me your core business now for 2M, or I will dismantle everything you've built.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "victor_sell",
+        "label": "Take the Deal",
+        "description": "Cash out while you still can.",
+        "consequences": {
+          "bag": 2000000,
+          "clout": -300,
+          "aura": -100
+        },
+        "setFlags": {
+          "rel_victor": 50,
+          "status_victor": "ally",
+          "kane_merger": true
+        }
+      },
+      {
+        "id": "victor_refuse",
+        "label": "Declare War",
+        "description": "You're not selling. Not to him.",
+        "consequences": {
+          "clout": 100,
+          "aura": 50
+        },
+        "setFlags": {
+          "rel_victor": -100,
+          "status_victor": "rival",
+          "kane_hostile": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sofia_1",
+    "characterId": "char_sofia",
+    "pacingCategory": "CHARACTER",
+    "title": "Political Alliance",
+    "description": "Sofia Ramirez is running for office. She needs a high-profile endorsement and a campaign contribution.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sofia_endorse",
+        "label": "Endorse Sofia",
+        "description": "Publicly support her and donate 500k.",
+        "consequences": {
+          "bag": -500000,
+          "clout": 150,
+          "aura": 50
+        },
+        "setFlags": {
+          "rel_sofia": 80,
+          "trust_sofia": 60,
+          "sofia_ally": true
+        }
+      },
+      {
+        "id": "sofia_ignore",
+        "label": "Stay Neutral",
+        "description": "Politics is a dirty game. Better to stay out of it.",
+        "consequences": {
+          "aura": 20
+        },
+        "setFlags": {
+          "rel_sofia": 10,
+          "trust_sofia": 10,
+          "sofia_ally": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_leo_1",
+    "characterId": "char_leo",
+    "pacingCategory": "CHARACTER",
+    "title": "The Viral Partnership",
+    "description": "Leo Thorne wants to do a collab video. \"Your brand is elite, but it's a bit... stiff,\" he says. \"Let's show the world you know how to live.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "leo_collab",
+        "label": "Do the Collab",
+        "description": "Host a massive party and film the highlights.",
+        "consequences": {
+          "bag": -100000,
+          "clout": 250,
+          "aura": 100,
+          "heat": 20
+        },
+        "setFlags": {
+          "rel_leo": 60,
+          "trust_leo": 40,
+          "leo_collab": true
+        }
+      },
+      {
+        "id": "leo_refuse",
+        "label": "Decline the Offer",
+        "description": "You're a serious business person, not a clown.",
+        "consequences": {
+          "aura": 30,
+          "clout": -50
+        },
+        "setFlags": {
+          "rel_leo": -20,
+          "trust_leo": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sarah_1",
+    "characterId": "char_sarah",
+    "pacingCategory": "CHARACTER",
+    "title": "Union Demands",
+    "description": "Sarah Jenkins and the United Workers Union are threatening a strike unless you improve working conditions and pay across your industries.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sarah_concede",
+        "label": "Meet the Demands",
+        "description": "Increase wages and benefits. It'll hurt your margins, but keep the peace.",
+        "consequences": {
+          "passiveCash": -10000,
+          "aura": 200,
+          "clout": 50
+        },
+        "setFlags": {
+          "rel_sarah": 90,
+          "trust_sarah": 100,
+          "union_ally": true
+        }
+      },
+      {
+        "id": "sarah_fight",
+        "label": "Break the Strike",
+        "description": "Hire replacement workers and use legal maneuvers to stop the union.",
+        "consequences": {
+          "clout": 100,
+          "aura": -200,
+          "heat": 40
+        },
+        "setFlags": {
+          "rel_sarah": -100,
+          "trust_sarah": 0,
+          "union_enemy": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_volkov_1",
+    "characterId": "char_volkov",
+    "pacingCategory": "CHARACTER",
+    "title": "The Foreign Asset",
+    "description": "President Mikhail Volkov offers a \"strategic partnership\" between your conglomerate and his state-owned industries. \"The world is changing,\" he says. \"Isolation is for the weak.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "volkov_partner",
+        "label": "Partner with Volkov",
+        "description": "Access foreign markets and resources.",
+        "consequences": {
+          "bag": 5000000,
+          "clout": 300,
+          "heat": 50,
+          "aura": -100
+        },
+        "setFlags": {
+          "rel_volkov": 70,
+          "trust_volkov": 50,
+          "volkov_partner": true
+        }
+      },
+      {
+        "id": "volkov_refuse",
+        "label": "Keep it National",
+        "description": "Refuse the offer. You won't be a pawn for a foreign power.",
+        "consequences": {
+          "aura": 100,
+          "clout": 100
+        },
+        "setFlags": {
+          "rel_volkov": -30,
+          "trust_volkov": 20,
+          "volkov_partner": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_elena_1",
+    "characterId": "char_elena",
+    "pacingCategory": "CHARACTER",
+    "title": "The Fixer's Proposal",
+    "description": "Elena Vance can make your legal problems \"disappear\" permanently. \"I have connections the public doesn't even know exist,\" she whispers.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 60
+      }
+    },
+    "choices": [
+      {
+        "id": "elena_retain",
+        "label": "Retain Elena",
+        "description": "Pay her a massive retainer for \"discretionary services.\"",
+        "consequences": {
+          "bag": -1000000,
+          "heat": -80,
+          "aura": -50
+        },
+        "setFlags": {
+          "rel_elena": 60,
+          "trust_elena": 80,
+          "elena_retained": true
+        }
+      },
+      {
+        "id": "elena_refuse",
+        "label": "Handle it Yourself",
+        "description": "You don't need her brand of \"fixing.\"",
+        "consequences": {
+          "aura": 30,
+          "clout": 20
+        },
+        "setFlags": {
+          "rel_elena": 0,
+          "trust_elena": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_julian_intro",
+    "characterId": "char_julian",
+    "arcId": "arc_vane",
+    "pacingCategory": "CHARACTER",
+    "title": "The Architect's Vision",
+    "description": "Julian Vane, \"The Architect\", presents a plan for a new \"Elite District\" that would require clearing out parts of your old neighborhood. He wants your backing to secure the necessary zoning changes.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "julian_back",
+        "label": "Support the District",
+        "description": "The profits from the new development would be astronomical.",
+        "consequences": {
+          "bag": 1000000,
+          "clout": 200,
+          "aura": -300
+        },
+        "setFlags": {
+          "rel_julian": 80,
+          "architect_ally": true
+        }
+      },
+      {
+        "id": "julian_oppose",
+        "label": "Oppose Development",
+        "description": "Protect the neighborhood. Julian won't forget this.",
+        "consequences": {
+          "aura": 400,
+          "clout": -100
+        },
+        "setFlags": {
+          "rel_julian": -100,
+          "architect_rival": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_selena_endorse",
+    "characterId": "char_selena",
+    "arcId": "arc_selena_freedom",
+    "pacingCategory": "CHARACTER",
+    "title": "The Pop Star's Plea",
+    "description": "Selena Rosso reaches out. She's launching a global initiative for \"Digital Freedom\" and wants you to be the primary corporate sponsor. \"You have the resources to make this real,\" she tells you.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "selena_sponsor",
+        "label": "Sponsor the Initiative",
+        "description": "Commit $5M to the cause. Your Aura will be legendary.",
+        "consequences": {
+          "bag": -5000000,
+          "aura": 1000,
+          "clout": 300,
+          "biographyEntry": "Partnered with pop star Selena Rosso to launch the Global Digital Freedom initiative."
+        },
+        "setFlags": {
+          "rel_selena": 100,
+          "digital_freedom_hero": true
+        }
+      },
+      {
+        "id": "selena_refuse",
+        "label": "Decline Sponsorship",
+        "description": "It's too expensive and too controversial.",
+        "consequences": {
+          "bag": 1000000,
+          "aura": -50
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_whitaker_brief",
+    "characterId": "char_whitaker",
+    "arcId": "arc_whitaker",
+    "pacingCategory": "PRESIDENCY",
+    "title": "National Security Briefing",
+    "description": "General Silas Whitaker requests a private meeting. \"The situation in the East is deteriorating,\" he says. \"We need your manufacturing base to pivot to defense production immediately. It's a matter of national survival.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "whitaker_defense",
+        "label": "Pivot to Defense",
+        "description": "Convert your factories. The government contracts are lucrative, but the world gets more dangerous.",
+        "consequences": {
+          "bag": 10000000,
+          "clout": 500,
+          "aura": -200
+        },
+        "setFlags": {
+          "rel_whitaker": 80,
+          "military_industrial_complex": true
+        }
+      },
+      {
+        "id": "whitaker_refuse",
+        "label": "Maintain Civilian Focus",
+        "description": "Refuse to become a war profiteer.",
+        "consequences": {
+          "aura": 500,
+          "clout": -200
+        },
+        "setFlags": {
+          "rel_whitaker": -30
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_stone_strategy",
+    "characterId": "char_stone",
+    "arcId": "arc_stone",
+    "pacingCategory": "PRESIDENCY",
+    "title": "The Kingmaker's Plan",
+    "description": "Marcus Stone has a plan to guarantee your election. \"We don't need to win hearts,\" he says, grinning. \"We just need to make them hate the other guy more. I need $50M for a 'saturated media campaign'.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "stone_hire",
+        "label": "Hire Stone",
+        "description": "Launch the smear campaign.",
+        "consequences": {
+          "bag": -50000000,
+          "clout": 1500,
+          "aura": -800
+        },
+        "setFlags": {
+          "rel_stone": 80,
+          "kingmaker_active": true
+        }
+      },
+      {
+        "id": "stone_refuse",
+        "label": "Run a Clean Race",
+        "description": "Stone is too dirty, even for you.",
+        "consequences": {
+          "aura": 500,
+          "clout": 200
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_thornton_narrative",
+    "characterId": "char_thornton",
+    "arcId": "arc_thornton",
+    "pacingCategory": "PRESIDENCY",
+    "title": "Media Monopoly",
+    "description": "William Thornton is offering to make his networks \"extremely favorable\" to your administration. \"I can make you a saint or a sinner,\" he laughs. \"All I want is the repeal of the new media ownership laws.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "thornton_agree",
+        "label": "Repeal the Laws",
+        "description": "Give Thornton what he wants for total narrative control.",
+        "consequences": {
+          "clout": 1000,
+          "aura": 200,
+          "heat": 40
+        },
+        "setFlags": {
+          "rel_thornton": 80,
+          "media_monopoly_active": true
+        }
+      },
+      {
+        "id": "thornton_refuse",
+        "label": "Enforce the Laws",
+        "description": "Thornton's networks will now be your greatest enemy.",
+        "consequences": {
+          "aura": 500,
+          "clout": -500
+        },
+        "setFlags": {
+          "rel_thornton": -100,
+          "media_warfare": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ross_audit",
+    "characterId": "char_ross",
+    "arcId": "arc_ross_audit",
+    "pacingCategory": "PRESIDENCY",
+    "title": "The Hammer Falls",
+    "description": "Diana Ross has arrived at your headquarters with a federal warrant. \"There are... irregularities... in your offshore accounts,\" she says, her voice like ice. \"I can spend the next year digging, or we can reach a settlement now.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "heat",
+        "value": 70
+      }
+    },
+    "choices": [
+      {
+        "id": "ross_settle",
+        "label": "Pay the Settlement",
+        "description": "Pay a massive $100M fine to end the investigation.",
+        "consequences": {
+          "bag": -100000000,
+          "heat": -80,
+          "aura": -200
+        }
+      },
+      {
+        "id": "ross_fight",
+        "label": "Fight the Audit",
+        "description": "Use your political power to slow down the investigation. Extremely risky.",
+        "consequences": {
+          "heat": 30,
+          "clout": 200,
+          "aura": -500
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_singh_space",
+    "characterId": "char_singh",
+    "arcId": "arc_singh",
+    "pacingCategory": "PRESIDENCY",
+    "title": "The Final Frontier",
+    "description": "Anya Singh wants to partner with your administration to establish the first permanent lunar colony. \"History won't remember your trade deals,\" she says. \"It will remember this.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "singh_partner",
+        "label": "Fund the Colony",
+        "description": "Commit $500M to the lunar project.",
+        "consequences": {
+          "bag": -500000000,
+          "aura": 2000,
+          "clout": 1000,
+          "biographyEntry": "Solidified a place in history by funding the first permanent lunar colony with Anya Singh."
+        },
+        "setFlags": {
+          "lunar_colony_active": true,
+          "rel_singh": 100
+        }
+      },
+      {
+        "id": "singh_refuse",
+        "label": "Focus on Earth",
+        "description": "We have enough problems down here.",
+        "consequences": {
+          "bag": 100000000,
+          "aura": -200
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_morozov_threat",
+    "characterId": "char_morozov",
+    "arcId": "arc_morozov",
+    "pacingCategory": "RIVAL",
+    "title": "Oligarch's Gambit",
+    "description": "Ivan Morozov has started aggressively shorting your companies while launching cyberattacks on your infrastructure. \"I watched you break Victor Kane,\" he sends in a simple, encrypted text. \"But Kane was a pet. The world isn't big enough for two real titans.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "kane_defeated": true
+      }
+    },
+    "choices": [
+      {
+        "id": "morozov_counter",
+        "label": "Launch Counter-Offensive",
+        "description": "Use your intelligence assets to seize his foreign holdings.",
+        "consequences": {
+          "bag": -50000000,
+          "clout": 800,
+          "heat": 40
+        },
+        "setFlags": {
+          "morozov_war_active": true,
+          "rel_morozov": -100
+        }
+      },
+      {
+        "id": "morozov_negotiate",
+        "label": "Negotiate a Truce",
+        "description": "Pay him off to leave you alone.",
+        "consequences": {
+          "bag": -200000000,
+          "clout": -500,
+          "aura": -200
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lane_protest",
+    "characterId": "char_lane",
+    "arcId": "arc_lane",
+    "pacingCategory": "PRESIDENCY",
+    "title": "Voice of the People",
+    "description": "Sarah Lane has organized a massive, peaceful protest outside your gates. \"You forgot where you came from!\" she shouts to the crowd. She is demanding an audience to discuss your impact on the working class.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "lane_meet",
+        "label": "Meet with Lane",
+        "description": "Listen to her demands. It will show empathy but might look weak to your donors.",
+        "consequences": {
+          "aura": 800,
+          "clout": -300
+        },
+        "setFlags": {
+          "rel_lane": 80,
+          "lane_ally": true
+        }
+      },
+      {
+        "id": "lane_disperse",
+        "label": "Disperse the Crowd",
+        "description": "Order the security teams to clear the area. Order must be maintained.",
+        "consequences": {
+          "clout": 500,
+          "aura": -1000,
+          "heat": 60
+        },
+        "setFlags": {
+          "rel_lane": -100,
+          "lane_enemy": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_pops_3_expansion",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "title": "Pops' Legacy Hub",
+    "description": "The garden is safe, but Pops isn't done. \"We protected the roots,\" he says, leaning on his shovel. \"Now let's build the branches. I want to turn this place into a youth training center. Teach them how to hustle the right way.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "pops_garden_status": "protected"
+      }
+    },
+    "choices": [
+      {
+        "id": "pops_fund_hub",
+        "label": "Fund the Hub",
+        "description": "Donate $250k for a state-of-the-art center.",
+        "consequences": {
+          "bag": -250000,
+          "aura": 500,
+          "biographyEntry": "Funded Pops' Youth Legacy Hub, changing the future of the district."
+        },
+        "setFlags": {
+          "pops_hub_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_pops_mogul_reflection",
+    "characterId": "char_pops",
+    "arcId": "arc_pops",
+    "title": "The Old Man's Visit",
+    "description": "Pops arrives at your skyscraper, looking out of place in his gardening overalls. He looks at your view of the city. \"I remember when you were just a kid with a bike and a dream, chasing bags in the Mud. You've built a mountain of gold, kid. I just hope you can still see the ground from up here.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "pops_mentor": true
+      }
+    },
+    "choices": [
+      {
+        "id": "pops_reflect_roots",
+        "label": "Remember the Roots",
+        "description": "Spend the evening talking about the old block.",
+        "consequences": {
+          "aura": 100,
+          "mentalHealth": 30,
+          "biographyEntry": "Pops visited the peak of the empire, reminding you that no matter how high you rise, you are still a kid from the blocks."
+        },
+        "setFlags": {
+          "pops_legacy_sealed": true
+        }
+      },
+      {
+        "id": "pops_reflect_power",
+        "label": "The View is Better Here",
+        "description": "Explain that the Mud is the past. Power is the future.",
+        "consequences": {
+          "clout": 100,
+          "aura": -50,
+          "biographyEntry": "Pops left the corporate office with a heavy heart, seeing that the kid he knew had been replaced by a titan."
+        },
+        "setFlags": {
+          "pops_alienated": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_twitch_3_mainframe_exploit",
+    "characterId": "char_twitch",
+    "arcId": "arc_twitch",
+    "title": "The Central Mainframe",
+    "description": "Twitch is shaking. \"I found it. The back-door to the city's financial mainframe.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "twitch_eye_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "twitch_hack_mainframe",
+        "label": "Execute the Siphon",
+        "description": "Start the diversion.",
+        "consequences": {
+          "passiveCash": 50000,
+          "heat": 80,
+          "biographyEntry": "Masterminded a global financial siphon with the hacker known as Twitch."
+        },
+        "setFlags": {
+          "twitch_arc_complete": "hacked"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_slick_3_retirement",
+    "characterId": "char_slick",
+    "arcId": "arc_slick",
+    "title": "Slick's Last Score",
+    "description": "Slick wants to go legitimate.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "slick_heist_done": true
+      }
+    },
+    "choices": [
+      {
+        "id": "slick_go_legit",
+        "label": "Clean the Operation",
+        "description": "Invest $500k to legalize the logistics network.",
+        "consequences": {
+          "bag": -500000,
+          "heat": -100,
+          "passiveCash": 5000,
+          "biographyEntry": "Helped the notorious Slick go legitimate."
+        },
+        "setFlags": {
+          "slick_arc_complete": "legit"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosa_2_political",
+    "characterId": "char_rosa",
+    "arcId": "arc_rosa",
+    "title": "Rosa's Run",
+    "description": "Rosa is running for City Council.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "rosa_union_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "rosa_fund_campaign",
+        "label": "Fund Her Campaign",
+        "description": "Donate $100k.",
+        "consequences": {
+          "bag": -100000,
+          "clout": 200,
+          "aura": 300
+        },
+        "setFlags": {
+          "rosa_campaign_funded": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosa_3_victory",
+    "characterId": "char_rosa",
+    "arcId": "arc_rosa",
+    "title": "The Council Member",
+    "description": "Rosa won her seat.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "rosa_campaign_funded": true
+      }
+    },
+    "choices": [
+      {
+        "id": "rosa_policy_push",
+        "label": "Push Pro-Labor Policy",
+        "description": "Work with her.",
+        "consequences": {
+          "aura": 500,
+          "clout": 300,
+          "biographyEntry": "Partnered with Councilwoman Rosa to enact historic labor reforms."
+        },
+        "setFlags": {
+          "rosa_arc_complete": "reformed"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_miller_3_commissioner",
+    "characterId": "char_miller",
+    "arcId": "arc_miller",
+    "title": "The Commissioner",
+    "description": "Miller is now the Police Commissioner.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "miller_status": "high_level_protection"
+      }
+    },
+    "choices": [
+      {
+        "id": "miller_clean_slate",
+        "label": "Clean the Slate",
+        "description": "Pay the $5M to wipe all heat.",
+        "consequences": {
+          "bag": -5000000,
+          "heat": -1000,
+          "clout": 200,
+          "biographyEntry": "Erased their criminal record with the help of the Police Commissioner."
+        },
+        "setFlags": {
+          "miller_arc_complete": "clean_slate"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_jdog_3_grammy",
+    "characterId": "char_jdog",
+    "arcId": "arc_jdog",
+    "title": "The Global Icon",
+    "description": "J-Dog is nominated for a global music award.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "jdog_label_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "jdog_accept_honor",
+        "label": "Accept the Honor",
+        "description": "Share the spotlight.",
+        "consequences": {
+          "aura": 1000,
+          "clout": 500,
+          "biographyEntry": "Founded Mud Records and mentored a global music icon."
+        },
+        "setFlags": {
+          "jdog_arc_complete": "legendary"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cassie_2_insider",
+    "characterId": "char_cassie",
+    "arcId": "arc_cassie",
+    "title": "The Insider Tip",
+    "description": "At the gala, Cassie whispers about a pending merger.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "cassie_intro": true
+      }
+    },
+    "choices": [
+      {
+        "id": "cassie_buy_shares",
+        "label": "Buy the Shares",
+        "description": "Invest $1M in the shipping merger.",
+        "consequences": {
+          "bag": -1000000,
+          "passiveCash": 25000,
+          "heat": 20
+        },
+        "setFlags": {
+          "cassie_shares_bought": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cassie_3_acquisition",
+    "characterId": "char_cassie",
+    "arcId": "arc_cassie",
+    "title": "The Final Acquisition",
+    "description": "Cassie has secured the majority stake.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "cassie_shares_bought": true
+      }
+    },
+    "choices": [
+      {
+        "id": "cassie_take_control",
+        "label": "Take Full Control",
+        "description": "Secure the logistics monopoly.",
+        "consequences": {
+          "clout": 1000,
+          "passiveCash": 50000,
+          "biographyEntry": "Masterminded the acquisition of the city's shipping lanes."
+        },
+        "setFlags": {
+          "cassie_arc_complete": "monopoly"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ray_2_intelligence",
+    "characterId": "char_ray",
+    "arcId": "arc_ray",
+    "title": "The Sarge's Intel",
+    "description": "Ray has been monitoring rivals.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "ray_security_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "ray_ambush",
+        "label": "Set the Ambush",
+        "description": "Crush Kane's forces.",
+        "consequences": {
+          "bag": -100000,
+          "clout": 300,
+          "heat": 50
+        },
+        "setFlags": {
+          "ray_kane_crushed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ray_3_pmc",
+    "characterId": "char_ray",
+    "arcId": "arc_ray",
+    "title": "The Private Army",
+    "description": "Ray wants to scale into a full PMC.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "ray_kane_crushed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "ray_launch_pmc",
+        "label": "Launch the PMC",
+        "description": "Establish Vane Defense Services.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": 2000,
+          "heat": -100,
+          "biographyEntry": "Built a private military empire with Raymond 'Sarge' Strode."
+        },
+        "setFlags": {
+          "ray_arc_complete": "pmc"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lexi_2_exhibition",
+    "characterId": "char_lexi",
+    "arcId": "arc_lexi",
+    "title": "The Underground Gallery",
+    "description": "Lexi is opening a secret gallery.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "lexi_mural_done": true
+      }
+    },
+    "choices": [
+      {
+        "id": "lexi_fund_gallery",
+        "label": "Fund the Gallery",
+        "description": "Donate $100k to the exhibition.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 400,
+          "heat": 20
+        },
+        "setFlags": {
+          "lexi_gallery_funded": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lexi_3_renaissance",
+    "characterId": "char_lexi",
+    "arcId": "arc_lexi",
+    "title": "The Urban Renaissance",
+    "description": "Lexi wants to lead a city-wide cultural initiative.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "lexi_gallery_funded": true
+      }
+    },
+    "choices": [
+      {
+        "id": "lexi_cultural_lead",
+        "label": "Sponsor the Initiative",
+        "description": "Commit $1M to the cultural program.",
+        "consequences": {
+          "bag": -1000000,
+          "aura": 1500,
+          "clout": 500,
+          "biographyEntry": "Spearheaded a city-wide cultural renaissance alongside the artist Lexi Chen."
+        },
+        "setFlags": {
+          "lexi_arc_complete": "visionary"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dante_2_lobby",
+    "characterId": "char_dante",
+    "arcId": "arc_dante_legal",
+    "title": "The Legislative Fix",
+    "description": "Dante has a plan to change the laws themselves.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "dante_hired": true
+      }
+    },
+    "choices": [
+      {
+        "id": "dante_fund_lobby",
+        "label": "Fund the Lobby",
+        "description": "Commit $1M to legislative influence.",
+        "consequences": {
+          "bag": -1000000,
+          "clout": 500,
+          "aura": -200
+        },
+        "setFlags": {
+          "dante_lobby_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dante_3_justice",
+    "characterId": "char_dante",
+    "arcId": "arc_dante_legal",
+    "title": "The Hand of Justice",
+    "description": "Dante is now a Supreme Court Justice.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "dante_lobby_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "dante_assume_immunity",
+        "label": "Assume Legal Immunity",
+        "description": "Finalize the legal shield.",
+        "consequences": {
+          "clout": 2000,
+          "heat": -1000,
+          "biographyEntry": "Secured absolute legal immunity through Justice Dante."
+        },
+        "setFlags": {
+          "dante_arc_complete": "untouchable"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lila_1_invest",
+    "characterId": "char_lila",
+    "arcId": "arc_lila_vance",
+    "title": "The Elite Opportunity",
+    "description": "Lila Vance invites you to a private equity round. \"Minimal buy-in is $1M. The returns are... exponential.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "lila_invest",
+        "label": "Invest $1M",
+        "description": "Join the inner circle.",
+        "consequences": {
+          "bag": -1000000,
+          "clout": 300
+        },
+        "setFlags": {
+          "lila_investor": true,
+          "rel_lila": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_lila_2_takeover",
+    "characterId": "char_lila",
+    "arcId": "arc_lila_vance",
+    "title": "The Vance Boardroom",
+    "description": "Lila wants you to back her move to oust Julian. \"He's old world. We are the new world.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "lila_investor": true
+      }
+    },
+    "choices": [
+      {
+        "id": "lila_back_coup",
+        "label": "Back Lila",
+        "description": "Commit your voting shares to her coup.",
+        "consequences": {
+          "clout": 1000,
+          "aura": -500
+        },
+        "setFlags": {
+          "lila_arc_complete": "partner"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_big_g_3_retirement",
+    "characterId": "char_big_g",
+    "arcId": "arc_big_g_turf",
+    "title": "The Neighborhood Elder",
+    "description": "Big G wants out. \"I want to run a legitimate security firm. I need a contract.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "big_g_peace_broker": true
+      }
+    },
+    "choices": [
+      {
+        "id": "big_g_hire_security",
+        "label": "Hire G's Firm",
+        "description": "Give them the contract.",
+        "consequences": {
+          "passiveCash": -5000,
+          "heat": -50,
+          "aura": 200,
+          "biographyEntry": "Helped transition Big G's organization into a legitimate security empire."
+        },
+        "setFlags": {
+          "big_g_arc_complete": "legit"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_tessa_2_leak",
+    "characterId": "char_tessa",
+    "arcId": "arc_tessa",
+    "title": "The Panama Papers v2",
+    "description": "Tessa found a web of offshore accounts belonging to Julian Vane. \"I can leak this, but I'll lose my job.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "tessa_consultant": true
+      }
+    },
+    "choices": [
+      {
+        "id": "tessa_fund_leak",
+        "label": "Fund the Leak",
+        "description": "Expose Vane's global tax evasion.",
+        "consequences": {
+          "bag": -500000,
+          "aura": 500,
+          "clout": 200,
+          "heat": 40
+        },
+        "setFlags": {
+          "tessa_vane_exposed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_tessa_3_chief_auditor",
+    "characterId": "char_tessa",
+    "arcId": "arc_tessa",
+    "title": "The Chief Auditor",
+    "description": "Years later, you've helped Tessa get appointed as Chief Auditor. \"Now, we really start cleaning the system.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "tessa_vane_exposed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "tessa_systemic_change",
+        "label": "Enact Financial Reform",
+        "description": "Work with her to close the offshore loopholes.",
+        "consequences": {
+          "aura": 2000,
+          "clout": 1000,
+          "biographyEntry": "Partnered with the National Treasury to implement historic global financial reforms."
+        },
+        "setFlags": {
+          "tessa_arc_complete": "reformer"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_clark_2_investigation",
+    "characterId": "char_clark",
+    "arcId": "arc_clark",
+    "title": "The Vane Connection",
+    "description": "Clark found evidence that Vane is funding the city's gangs. \"If we publish this, it'll start a war.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "clark_story": "truth"
+      }
+    },
+    "choices": [
+      {
+        "id": "clark_publish",
+        "label": "Publish the Truth",
+        "description": "Expose Vane's corruption.",
+        "consequences": {
+          "aura": 500,
+          "heat": 50,
+          "clout": -200
+        },
+        "setFlags": {
+          "clark_vane_exposed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_clark_3_pulitzer",
+    "characterId": "char_clark",
+    "arcId": "arc_clark",
+    "title": "The Pulitzer",
+    "description": "Clark won a major award. \"We changed the city,\" he tells you. \"Thank you for having the courage.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "clark_vane_exposed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "clark_legacy",
+        "label": "Accept the Legacy",
+        "description": "Be remembered as the one who broke the corruption.",
+        "consequences": {
+          "aura": 2000,
+          "clout": 1000,
+          "biographyEntry": "Partnered with investigative journalist Clark Reed to dismantle a multi-generational web of corruption."
+        },
+        "setFlags": {
+          "clark_arc_complete": "hero"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_summers_1_bill",
+    "characterId": "char_summers",
+    "arcId": "arc_summers_politics",
+    "title": "The Zoning Bill",
+    "description": "Summers needs your help to push through a new zoning bill. \"It will favor your industrial expansion.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "summers_support",
+        "label": "Support the Bill",
+        "description": "Use your clout to lobby for the bill.",
+        "consequences": {
+          "clout": 200,
+          "aura": -150
+        },
+        "setFlags": {
+          "summers_bill_passed": true,
+          "rel_summers": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_summers_2_redevelopment",
+    "characterId": "char_summers",
+    "arcId": "arc_summers_politics",
+    "title": "The Waterfront Project",
+    "description": "Summers has a new plan. \"We're redeveloping the waterfront. I can give you exclusive rights for $5M.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "summers_bill_passed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "summers_buy_rights",
+        "label": "Buy the Rights",
+        "description": "Secure the waterfront for $5M.",
+        "consequences": {
+          "bag": -5000000,
+          "passiveCash": 100000,
+          "clout": 500
+        },
+        "setFlags": {
+          "summers_waterfront_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_summers_3_governor",
+    "characterId": "char_summers",
+    "arcId": "arc_summers_politics",
+    "title": "Governor Summers",
+    "description": "Summers is running for Governor. \"I'll make this state your playground if you fund the campaign.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "summers_waterfront_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "summers_fund_campaign",
+        "label": "Fund the Campaign",
+        "description": "Donate $10M to the run.",
+        "consequences": {
+          "bag": -10000000,
+          "clout": 2000,
+          "aura": -1000,
+          "biographyEntry": "Bankrolled the rise of Governor Summers, securing a personal connection to state power."
+        },
+        "setFlags": {
+          "summers_arc_complete": "kingmaker"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_khalid_1_export",
+    "characterId": "char_khalid",
+    "arcId": "arc_khalid_shipping",
+    "title": "The Global Pipeline",
+    "description": "Khalid offers to handle your international exports. \"My fleet reaches every port.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "khalid_partner",
+        "label": "Partner with Khalid",
+        "description": "Expand your reach globally.",
+        "consequences": {
+          "passiveCash": 5000,
+          "bag": -100000
+        },
+        "setFlags": {
+          "khalid_partner": true,
+          "rel_khalid": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_khalid_2_embargo",
+    "characterId": "char_khalid",
+    "arcId": "arc_khalid_shipping",
+    "title": "The Trade Embargo",
+    "description": "The government has placed an embargo. Khalid has a way around it. \"We can keep the supply open.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "khalid_partner": true
+      }
+    },
+    "choices": [
+      {
+        "id": "khalid_smuggle",
+        "label": "Bypass the Embargo",
+        "description": "Pay Khalid $1M to keep the goods flowing.",
+        "consequences": {
+          "bag": -1000000,
+          "heat": 60,
+          "passiveCash": 20000
+        },
+        "setFlags": {
+          "khalid_smuggling_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_khalid_3_monopoly",
+    "characterId": "char_khalid",
+    "arcId": "arc_khalid_shipping",
+    "title": "The Global Logistics King",
+    "description": "Khalid offers to merge his fleet. \"We will control every port from here to Singapore.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "khalid_smuggling_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "khalid_merge",
+        "label": "Form the Global Monopoly",
+        "description": "Commit $20M to the merger.",
+        "consequences": {
+          "bag": -20000000,
+          "passiveCash": 200000,
+          "clout": 3000,
+          "biographyEntry": "Formed a global logistics monopoly with Khalid, controlling trade across six continents."
+        },
+        "setFlags": {
+          "khalid_arc_complete": "king"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_vane_1_summons",
+    "characterId": "char_julian_vane",
+    "title": "The Vane Summit",
+    "description": "Julian Vane wants to meet. \"You're making waves. Let's see if you're a partner or a problem.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.3,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "vane_kiss_ring",
+        "label": "Show Respect",
+        "description": "Acknowledge his dominance.",
+        "consequences": {
+          "clout": 500,
+          "aura": -200
+        },
+        "setFlags": {
+          "vane_ally": true,
+          "rel_vane": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_vane_2_heir_crisis",
+    "characterId": "char_julian_vane",
+    "title": "The Vane Succession",
+    "description": "Julian is dying. He wants you to manage his trust. \"My bloodline must endure. Protect the legacy.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.25,
+      "once": true,
+      "flagReqs": {
+        "vane_ally": true
+      }
+    },
+    "choices": [
+      {
+        "id": "vane_protect_legacy",
+        "label": "Protect the Dynasty",
+        "description": "Ensure the family takes the throne.",
+        "consequences": {
+          "clout": 1000,
+          "aura": 500
+        },
+        "setFlags": {
+          "vane_legacy_protected": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_elara_1_sabotage",
+    "characterId": "char_elara",
+    "arcId": "arc_elara_sabotage",
+    "title": "Digital Warfare",
+    "description": "Elara can take down a competitor's network. \"They won't know what hit them.\"",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "elara_hire",
+        "label": "Hire Elara",
+        "description": "Digital sabotage for $100k.",
+        "consequences": {
+          "bag": -100000,
+          "heat": 40,
+          "clout": 200
+        },
+        "setFlags": {
+          "elara_active": true,
+          "rel_elara": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_elara_2_counter_hack",
+    "characterId": "char_elara",
+    "arcId": "arc_elara_sabotage",
+    "title": "The Digital Counter-Strike",
+    "description": "A rival tech firm is attempting to brick your servers. Elara is ready to trace them back.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "elara_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "elara_grant_access",
+        "label": "Grant Access",
+        "description": "Let Elara defend the system.",
+        "consequences": {
+          "heat": 30,
+          "clout": 500
+        },
+        "setFlags": {
+          "elara_defended": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_elara_3_sentience",
+    "characterId": "char_elara",
+    "arcId": "arc_elara_sabotage",
+    "title": "The Ghost in the Machine",
+    "description": "Elara has created a sentient AI sub-routine. \"It can predict the future of the markets.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "elara_defended": true
+      }
+    },
+    "choices": [
+      {
+        "id": "elara_release_ai",
+        "label": "Release the AI",
+        "description": "Dominate the global economy.",
+        "consequences": {
+          "passiveCash": 500000,
+          "aura": -1000,
+          "biographyEntry": "Released a sentient AI developed by Elara, fundamentally altering global commerce."
+        },
+        "setFlags": {
+          "elara_arc_complete": "transcendent"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_garrett_1_hostile",
+    "characterId": "char_garrett",
+    "arcId": "arc_garrett_takeover",
+    "title": "The Hostile Takeover",
+    "description": "Garrett is launching a bid for a rival firm. \"Join me.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "garrett_join",
+        "label": "Join the Bid",
+        "description": "Commit $2M to the takeover.",
+        "consequences": {
+          "bag": -2000000,
+          "clout": 500
+        },
+        "setFlags": {
+          "garrett_ally": true,
+          "rel_garrett": 90
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_garrett_2_merger",
+    "characterId": "char_garrett",
+    "arcId": "arc_garrett_takeover",
+    "title": "The Grand Merger",
+    "description": "Garrett wants to merge your firms. \"Together, we'll be too big to fail.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "garrett_ally": true
+      }
+    },
+    "choices": [
+      {
+        "id": "garrett_merge_firms",
+        "label": "Merge the Empires",
+        "description": "Form a global conglomerate.",
+        "consequences": {
+          "clout": 2000,
+          "passiveCash": 100000
+        },
+        "setFlags": {
+          "garrett_merged": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosso_1_shipping",
+    "characterId": "char_selena_rosso",
+    "arcId": "arc_rosso_shipping",
+    "title": "The Rosso Route",
+    "description": "Selena offers access to her private shipping lanes. \"Faster, safer, and off the grid.\"",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "rosso_hire",
+        "label": "Secure the Route",
+        "description": "Pay $500k for exclusive access.",
+        "consequences": {
+          "bag": -500000,
+          "heat": -100,
+          "passiveCash": 10000
+        },
+        "setFlags": {
+          "rosso_partner": true,
+          "rel_rosso": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_rosso_2_piracy",
+    "characterId": "char_selena_rosso",
+    "arcId": "arc_rosso_shipping",
+    "title": "The High Seas Crisis",
+    "description": "Selena's ships are being targeted by pirates. \"I need a fleet of drones for $2M.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "rosso_partner": true
+      }
+    },
+    "choices": [
+      {
+        "id": "rosso_fund_drones",
+        "label": "Fund the Defense",
+        "description": "Deploy the drone fleet.",
+        "consequences": {
+          "bag": -2000000,
+          "clout": 500,
+          "heat": 30
+        },
+        "setFlags": {
+          "rosso_defended": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_reed_1_campaign",
+    "characterId": "char_hudson_reed",
+    "arcId": "arc_reed_politics",
+    "title": "The Political Engine",
+    "description": "Hudson needs a major donor for the mayoral race.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "reed_donate",
+        "label": "Donate $250k",
+        "description": "Fund the campaign.",
+        "consequences": {
+          "bag": -250000,
+          "clout": 300
+        },
+        "setFlags": {
+          "reed_ally": true,
+          "rel_reed": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_reed_2_scandal",
+    "characterId": "char_hudson_reed",
+    "arcId": "arc_reed_politics",
+    "title": "The Mayor's Secret",
+    "description": "Mayor Reed is being blackmailed.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "reed_ally": true
+      }
+    },
+    "choices": [
+      {
+        "id": "reed_handle_scandal",
+        "label": "Neutralize the Threat",
+        "description": "Silence the blackmailer.",
+        "consequences": {
+          "bag": -500000,
+          "clout": 300,
+          "aura": -300,
+          "heat": 40
+        },
+        "setFlags": {
+          "reed_scandal_managed": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_reed_3_senator",
+    "characterId": "char_hudson_reed",
+    "arcId": "arc_reed_politics",
+    "title": "Senator Reed",
+    "description": "Reed is heading to the Senate.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "reed_scandal_managed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "reed_senate_backing",
+        "label": "Secure the Senate Seat",
+        "description": "Provide the final push.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": 2000,
+          "biographyEntry": "Orchestrated the rise of Senator Hudson Reed."
+        },
+        "setFlags": {
+          "reed_arc_complete": "senator"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_naomi_1_pr",
+    "characterId": "char_naomi_west",
+    "arcId": "arc_naomi_pr",
+    "title": "The Image Maker",
+    "description": "Naomi wants to rebrand your entire operation.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "naomi_rebrand",
+        "label": "Rebrand",
+        "description": "The full PR package for $100k.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 500,
+          "clout": 200
+        },
+        "setFlags": {
+          "naomi_active": true,
+          "rel_naomi": 90
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_naomi_2_scandal",
+    "characterId": "char_naomi_west",
+    "arcId": "arc_naomi_pr",
+    "title": "Scandal Management",
+    "description": "An old video has leaked.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "naomi_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "naomi_spin_story",
+        "label": "Spin the Story",
+        "description": "Embrace the past.",
+        "consequences": {
+          "aura": 500,
+          "clout": 200
+        },
+        "setFlags": {
+          "naomi_brand_status": "authentic"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_naomi_3_myth",
+    "characterId": "char_naomi_west",
+    "arcId": "arc_naomi_pr",
+    "title": "The Living Myth",
+    "description": "Naomi has succeeded. You are a cultural phenomenon.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "naomi_brand_status": "authentic"
+      }
+    },
+    "choices": [
+      {
+        "id": "naomi_become_icon",
+        "label": "Become the Icon",
+        "description": "Accept the global adulation.",
+        "consequences": {
+          "aura": 5000,
+          "clout": 2000,
+          "biographyEntry": "Worked with Naomi West to become a global cultural icon."
+        },
+        "setFlags": {
+          "naomi_arc_complete": "iconic"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_bennett_1_trust",
+    "characterId": "char_arthur_bennett",
+    "arcId": "arc_bennett_trust",
+    "title": "The Bennett Trust",
+    "description": "Bennett offers to manage your personal wealth.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "bennett_join",
+        "label": "Open a Trust",
+        "description": "Move assets to Bennett Management.",
+        "consequences": {
+          "passiveCash": 20000,
+          "bag": -1000000
+        },
+        "setFlags": {
+          "bennett_managed": true,
+          "rel_bennett": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_bennett_2_foundation",
+    "characterId": "char_arthur_bennett",
+    "arcId": "arc_bennett_trust",
+    "title": "The Bennett Foundation",
+    "description": "Bennett wants to establish a charitable foundation.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "bennett_managed": true
+      }
+    },
+    "choices": [
+      {
+        "id": "bennett_start_foundation",
+        "label": "Establish the Foundation",
+        "description": "Commit $20M to the endowment.",
+        "consequences": {
+          "bag": -20000000,
+          "aura": 5000,
+          "clout": 1000
+        },
+        "setFlags": {
+          "bennett_foundation_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_fiona_1_propaganda",
+    "characterId": "char_fiona_glass",
+    "arcId": "arc_fiona_media",
+    "title": "The Glass Ceiling",
+    "description": "Fiona can run a negative ad campaign against any rival.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "fiona_hire",
+        "label": "Hire Fiona",
+        "description": "Destroy a rival for $200k.",
+        "consequences": {
+          "bag": -200000,
+          "clout": 400,
+          "aura": -200
+        },
+        "setFlags": {
+          "fiona_active": true,
+          "rel_fiona": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_fiona_2_network",
+    "characterId": "char_fiona_glass",
+    "arcId": "arc_fiona_media",
+    "title": "The Glass Network",
+    "description": "Fiona wants to launch a global news network.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "fiona_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "fiona_buy_network",
+        "label": "Buy the Network",
+        "description": "Acquire Global News One.",
+        "consequences": {
+          "bag": -50000000,
+          "clout": 3000,
+          "aura": -1000
+        },
+        "setFlags": {
+          "fiona_network_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sterling_1_legacy",
+    "characterId": "char_sterling_vane",
+    "arcId": "arc_sterling_vane",
+    "title": "The Vane Dynasty",
+    "description": "Sterling is looking for allies who understand the future.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sterling_align",
+        "label": "Align with Sterling",
+        "description": "Back the next generation.",
+        "consequences": {
+          "clout": 1000,
+          "aura": -300
+        },
+        "setFlags": {
+          "sterling_ally": true,
+          "rel_sterling": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ivy_1_quantum",
+    "characterId": "char_ivy_chen",
+    "arcId": "arc_ivy_tech",
+    "title": "The Quantum Leap",
+    "description": "Ivy is developing quantum encryption. She needs a $5M grant.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ivy_grant",
+        "label": "Fund the Research",
+        "description": "Provide the $5M grant.",
+        "consequences": {
+          "bag": -5000000,
+          "clout": 800,
+          "aura": 400
+        },
+        "setFlags": {
+          "ivy_research_active": true,
+          "rel_ivy": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dominic_1_muscle",
+    "characterId": "char_dominic_russo",
+    "arcId": "arc_russo_crime",
+    "title": "The Russo Reach",
+    "description": "Dominic offers the services of the Russo family.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "dominic_partner",
+        "label": "Partner with Russo",
+        "description": "The ultimate protection.",
+        "consequences": {
+          "bag": -200000,
+          "heat": 50,
+          "clout": 500
+        },
+        "setFlags": {
+          "russo_partner": true,
+          "rel_dominic": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dominic_2_war",
+    "characterId": "char_dominic_russo",
+    "arcId": "arc_russo_crime",
+    "title": "The Family War",
+    "description": "Dominic wants a war. He needs $5M for heavy hitters.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "russo_partner": true
+      }
+    },
+    "choices": [
+      {
+        "id": "dominic_fund_war",
+        "label": "Fund the War",
+        "description": "Sponsor the campaign.",
+        "consequences": {
+          "bag": -5000000,
+          "heat": 80,
+          "clout": 1000
+        },
+        "setFlags": {
+          "dominic_war_won": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dominic_3_consigliere",
+    "characterId": "char_dominic_russo",
+    "arcId": "arc_russo_crime",
+    "title": "The Consigliere",
+    "description": "Dominic is now the Boss of Bosses.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "dominic_war_won": true
+      }
+    },
+    "choices": [
+      {
+        "id": "dominic_take_command",
+        "label": "Assume Command",
+        "description": "Become the shadow master.",
+        "consequences": {
+          "clout": 5000,
+          "heat": -100,
+          "biographyEntry": "Unified the city's underworld under the Russo banner."
+        },
+        "setFlags": {
+          "dominic_arc_complete": "godfather"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dubois_1_culture",
+    "characterId": "char_camille_dubois",
+    "arcId": "arc_dubois_culture",
+    "title": "The Dubois Circle",
+    "description": "Camille wants to feature you in her magazine.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "dubois_feature",
+        "label": "Accept the Feature",
+        "description": "Become a global icon.",
+        "consequences": {
+          "aura": 1000,
+          "clout": 500
+        },
+        "setFlags": {
+          "dubois_icon": true,
+          "rel_camille": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_dubois_2_museum",
+    "characterId": "char_camille_dubois",
+    "arcId": "arc_dubois_culture",
+    "title": "The Dubois Museum",
+    "description": "Camille wants to build a museum in your name.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "dubois_icon": true
+      }
+    },
+    "choices": [
+      {
+        "id": "dubois_fund_museum",
+        "label": "Fund the Museum",
+        "description": "Build the landmark.",
+        "consequences": {
+          "bag": -20000000,
+          "aura": 2000,
+          "clout": 1000
+        },
+        "setFlags": {
+          "dubois_museum_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_thorne_1_military",
+    "characterId": "char_xavier_thorne",
+    "arcId": "arc_thorne_military",
+    "title": "The Thorne Defense",
+    "description": "Xavier offers a private military contract.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "thorne_contract",
+        "label": "Sign the Contract",
+        "description": "Commit $10M to defense.",
+        "consequences": {
+          "bag": -10000000,
+          "heat": -200,
+          "clout": 1000
+        },
+        "setFlags": {
+          "thorne_ally": true,
+          "rel_thorne": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_thorne_2_coups",
+    "characterId": "char_xavier_thorne",
+    "arcId": "arc_thorne_military",
+    "title": "The Precision Coup",
+    "description": "Xavier's team has identified a nation in chaos.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "thorne_ally": true
+      }
+    },
+    "choices": [
+      {
+        "id": "thorne_fund_coup",
+        "label": "Authorize the Coup",
+        "description": "Sponsor regime change.",
+        "consequences": {
+          "bag": -50000000,
+          "clout": 5000,
+          "aura": -2000
+        },
+        "setFlags": {
+          "thorne_regime_change": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_olivia_1_network",
+    "characterId": "char_olivia_west",
+    "arcId": "arc_west_comms",
+    "title": "The West Network",
+    "description": "Olivia offers to run your global communications.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "olivia_hire",
+        "label": "Hire Olivia",
+        "description": "Control the narrative.",
+        "consequences": {
+          "bag": -2000000,
+          "clout": 1500
+        },
+        "setFlags": {
+          "olivia_partner": true,
+          "rel_olivia": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_1_expansion",
+    "characterId": "char_marcus",
+    "title": "Marcus' Global Vision",
+    "description": "Marcus wants to take your street hustle global.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "marcus_go_global",
+        "label": "Go Global",
+        "description": "Commit $5M to international expansion.",
+        "consequences": {
+          "bag": -5000000,
+          "passiveCash": 50000,
+          "clout": 1000
+        },
+        "setFlags": {
+          "marcus_global": true,
+          "rel_marcus": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_marcus_2_logistics",
+    "characterId": "char_marcus",
+    "title": "The Global Hub",
+    "description": "Marcus has secured a lease for a massive global logistics hub.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "marcus_global": true
+      }
+    },
+    "choices": [
+      {
+        "id": "marcus_fund_hub",
+        "label": "Fund the Hub",
+        "description": "Spend $20M on the facility.",
+        "consequences": {
+          "bag": -20000000,
+          "passiveCash": 150000
+        },
+        "setFlags": {
+          "marcus_hub_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_1_innovation",
+    "characterId": "char_ashley",
+    "title": "Ashley's AI",
+    "description": "Ashley has developed a market-predicting AI.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ashley_fund_ai",
+        "label": "Fund the AI",
+        "description": "Invest $2M in the tech.",
+        "consequences": {
+          "bag": -2000000,
+          "passiveCash": 100000
+        },
+        "setFlags": {
+          "ashley_ai_active": true,
+          "rel_ashley": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ashley_2_quantum",
+    "characterId": "char_ashley",
+    "title": "Quantum Ashley",
+    "description": "Ashley wants to upgrade the AI with quantum hardware.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "ashley_ai_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "ashley_quantum_upgrade",
+        "label": "Quantum Upgrade",
+        "description": "Spend $50M on quantum servers.",
+        "consequences": {
+          "bag": -50000000,
+          "passiveCash": 1000000
+        },
+        "setFlags": {
+          "ashley_quantum_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cole_1_security",
+    "characterId": "char_cole",
+    "title": "Cole's Elite Guard",
+    "description": "Cole offers an elite personal guard detail.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "cole_hire_guard",
+        "label": "Hire the Guard",
+        "description": "Pay $1M for the best security.",
+        "consequences": {
+          "bag": -1000000,
+          "heat": -150,
+          "clout": 500
+        },
+        "setFlags": {
+          "cole_guard_active": true,
+          "rel_cole": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_cole_2_black_ops",
+    "characterId": "char_cole",
+    "title": "Shadow Operations",
+    "description": "Cole wants to launch a clandestine wing for the firm.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "cole_guard_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "cole_fund_shadow",
+        "label": "Fund Shadow Wing",
+        "description": "Commit $10M to black ops.",
+        "consequences": {
+          "bag": -10000000,
+          "clout": 1000,
+          "heat": 50
+        },
+        "setFlags": {
+          "cole_shadow_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_chen_1_market",
+    "characterId": "char_chen",
+    "title": "Chen's Market Dominance",
+    "description": "Chen wants to monopolize the local retail market.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "chen_monopolize",
+        "label": "Monopolize",
+        "description": "Commit $1M to the effort.",
+        "consequences": {
+          "bag": -1000000,
+          "passiveCash": 20000,
+          "aura": -500
+        },
+        "setFlags": {
+          "chen_monopoly": true,
+          "rel_chen": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_chen_2_franchise",
+    "characterId": "char_chen",
+    "title": "Global Franchising",
+    "description": "Chen wants to take the retail model national.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "chen_monopoly": true
+      }
+    },
+    "choices": [
+      {
+        "id": "chen_go_national",
+        "label": "Go National",
+        "description": "Invest $10M in franchising.",
+        "consequences": {
+          "bag": -10000000,
+          "passiveCash": 100000
+        },
+        "setFlags": {
+          "chen_national_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_chen_3_retail_god",
+    "characterId": "char_chen",
+    "title": "Retail Empire",
+    "description": "Your brand is now in every city in the country.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "chen_national_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "chen_rule_retail",
+        "label": "Absolute Dominance",
+        "description": "Squeeze out all competition.",
+        "consequences": {
+          "clout": 5000,
+          "passiveCash": 250000,
+          "biographyEntry": "Built a national retail empire with Chen."
+        },
+        "setFlags": {
+          "chen_arc_complete": "magnate"
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_chen_summers_summit",
+    "characterId": "char_chen",
+    "title": "The Valuation Clash",
+    "description": "Lawrence Chen and Brooke Summers are having a heated discussion in your waiting room. Chen values your liquid stability, while Summers is pushing for more viral expansion. \"He's a portfolio asset, Brooke, not a streaming star,\" Chen snaps.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "side_with_chen",
+        "label": "Side with Chen",
+        "description": "Prioritize institutional stability over hype.",
+        "consequences": {
+          "passiveCash": 10000,
+          "clout": 200,
+          "aura": -100,
+          "biographyEntry": "Sided with Lawrence Chen in a major strategy dispute, choosing stability over viral growth."
+        },
+        "setFlags": {
+          "strategy_focus": "institutional",
+          "rel_chen": 80,
+          "rel_summers": 20
+        }
+      },
+      {
+        "id": "side_with_summers",
+        "label": "Side with Summers",
+        "description": "Lean into the digital era and public image.",
+        "consequences": {
+          "aura": 500,
+          "clout": 300,
+          "bag": -100000,
+          "biographyEntry": "Chose Brooke Summers' viral-first strategy, betting the empire on public perception."
+        },
+        "setFlags": {
+          "strategy_focus": "viral",
+          "rel_summers": 80,
+          "rel_chen": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sofia_1_charity",
+    "characterId": "char_sofia_ramirez",
+    "arcId": "arc_sofia_ramirez",
+    "title": "The Sofia Foundation",
+    "description": "Sofia wants you to head a global charity.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sofia_lead",
+        "label": "Lead the Foundation",
+        "description": "Commit $10M to global charity.",
+        "consequences": {
+          "bag": -10000000,
+          "aura": 5000,
+          "clout": 1000
+        },
+        "setFlags": {
+          "sofia_charity_active": true,
+          "rel_sofia": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sofia_2_un",
+    "characterId": "char_sofia_ramirez",
+    "arcId": "arc_sofia_ramirez",
+    "title": "The Diplomat",
+    "description": "Sofia has arranged a meeting at the United Nations.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "sofia_charity_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "sofia_un_speech",
+        "label": "Address the UN",
+        "description": "Present your vision for the world.",
+        "consequences": {
+          "aura": 10000,
+          "clout": 2000
+        },
+        "setFlags": {
+          "sofia_un_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ghost_1_darknet",
+    "characterId": "char_ghost",
+    "arcId": "arc_ghost_network",
+    "title": "The Ghost Network",
+    "description": "Ghost offers a proprietary darknet for communications.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ghost_join",
+        "label": "Join the Network",
+        "description": "Pay $500k for access.",
+        "consequences": {
+          "bag": -500000,
+          "heat": -200,
+          "clout": 300
+        },
+        "setFlags": {
+          "ghost_network_active": true,
+          "rel_ghost": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_ghost_2_crypto",
+    "characterId": "char_ghost",
+    "arcId": "arc_ghost_network",
+    "title": "Ghost Currency",
+    "description": "Ghost wants to launch a new, untraceable global currency.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "ghost_network_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "ghost_launch_crypto",
+        "label": "Launch GhostCoin",
+        "description": "Establish the digital black market.",
+        "consequences": {
+          "bag": -5000000,
+          "passiveCash": 50000,
+          "heat": 40
+        },
+        "setFlags": {
+          "ghost_crypto_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_leo_1_luxury",
+    "characterId": "char_leo_thorne",
+    "arcId": "arc_leo_lifestyle",
+    "title": "The Thorne Lifestyle",
+    "description": "Leo wants to design your global headquarters.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "leo_build",
+        "label": "Build the HQ",
+        "description": "Commit $50M to the HQ.",
+        "consequences": {
+          "bag": -50000000,
+          "aura": 2000,
+          "clout": 3000
+        },
+        "setFlags": {
+          "leo_hq_built": true,
+          "rel_leo": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_sarah_1_policy",
+    "characterId": "char_sarah_jenkins",
+    "arcId": "arc_sarah_jenkins",
+    "title": "The Sarah Policy",
+    "description": "Sarah wants to implement a revolutionary social policy.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "sarah_enact",
+        "label": "Enact the Policy",
+        "description": "Spend $20M to fund the program.",
+        "consequences": {
+          "bag": -20000000,
+          "aura": 10000,
+          "clout": 2000
+        },
+        "setFlags": {
+          "sarah_policy_active": true,
+          "rel_sarah": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_volkov_1_resource",
+    "characterId": "char_volkov",
+    "arcId": "arc_volkov_energy",
+    "title": "The Volkov Resource",
+    "description": "Volkov offers control of the regional energy grid.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "volkov_monopoly_partner",
+        "label": "Control the Grid",
+        "description": "Commit $100M to the monopoly.",
+        "consequences": {
+          "bag": -100000000,
+          "passiveCash": 1000000,
+          "clout": 5000
+        },
+        "setFlags": {
+          "volkov_monopoly": true,
+          "rel_volkov": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_stone_1_kingmaker",
+    "characterId": "char_stone",
+    "arcId": "arc_stone_politics",
+    "title": "Marcus Stone: The Kingmaker",
+    "description": "Marcus Stone approaches you. \"I can put you in the Oval Office. But it requires absolute loyalty.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "stone_accept",
+        "label": "Accept the Deal",
+        "description": "Begin the dirty campaign.",
+        "consequences": {
+          "clout": 500,
+          "aura": -500,
+          "heat": 50
+        },
+        "setFlags": {
+          "kingmaker_active": true,
+          "rel_stone": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_stone_2_the_leak",
+    "characterId": "char_stone",
+    "arcId": "arc_stone_politics",
+    "title": "Opposition Research",
+    "description": "Marcus Stone has dirt on your opponent. \"I need 250k to distribute it.\"",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "kingmaker_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "stone_leak_dirt",
+        "label": "Release the Kraken",
+        "description": "Destroy your opponent's reputation.",
+        "consequences": {
+          "clout": 300,
+          "aura": -500,
+          "heat": 30
+        },
+        "setFlags": {
+          "stone_strategy": "dirty",
+          "rel_stone": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_valdez_1_espionage",
+    "characterId": "char_valdez",
+    "arcId": "arc_valdez_intel",
+    "title": "The Corporate Ghost",
+    "description": "Sofia Valdez offers encryption keys to your rival's servers.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "valdez_buy_keys",
+        "label": "Buy the Keys",
+        "description": "Gain absolute knowledge for $500k.",
+        "consequences": {
+          "bag": -500000,
+          "clout": 200,
+          "heat": 15
+        },
+        "setFlags": {
+          "valdez_spy": true,
+          "rel_valdez": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_valdez_2_intel",
+    "characterId": "char_valdez",
+    "arcId": "arc_valdez_intel",
+    "title": "The Deep Dive",
+    "description": "Valdez has found a major vulnerability in the national infrastructure.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "valdez_spy": true
+      }
+    },
+    "choices": [
+      {
+        "id": "valdez_exploit",
+        "label": "Exploit the System",
+        "description": "Redirect funds to your accounts.",
+        "consequences": {
+          "bag": 5000000,
+          "heat": 100,
+          "aura": -500
+        },
+        "setFlags": {
+          "valdez_heist_complete": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_valdez_3_shadow",
+    "characterId": "char_valdez",
+    "arcId": "arc_valdez_intel",
+    "title": "The Shadow Advisor",
+    "description": "Valdez wants to head your new private intelligence arm.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "valdez_heist_complete": true
+      }
+    },
+    "choices": [
+      {
+        "id": "valdez_appoint",
+        "label": "Appoint Valdez",
+        "description": "Control the shadows.",
+        "consequences": {
+          "clout": 5000,
+          "heat": -200,
+          "biographyEntry": "Established a global shadow intelligence network with Sofia Valdez."
+        },
+        "setFlags": {
+          "valdez_arc_complete": "ghost"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dynasty_1_the_heir",
+    "title": "The Unwanted Legacy",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_dynasty_succession",
+    "description": "A man claiming to be your son arrives. He wants a seat at the table.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.1,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "dynasty_embrace",
+        "label": "Acknowledge Him",
+        "description": "Bring him into the fold.",
+        "consequences": {
+          "bag": -1000000,
+          "aura": 500,
+          "clout": 200,
+          "biographyEntry": "Publicly acknowledged a long-lost heir."
+        },
+        "setFlags": {
+          "dynasty_status": "heir_active"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dynasty_2_training",
+    "title": "The Heir's Ascent",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_dynasty_succession",
+    "description": "Your heir is proving capable, but needs a billion-dollar project to lead.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "dynasty_status": "heir_active"
+      }
+    },
+    "choices": [
+      {
+        "id": "dynasty_fund_project",
+        "label": "Fund the Project",
+        "description": "Spend $100M on the heir's venture.",
+        "consequences": {
+          "bag": -100000000,
+          "clout": 5000
+        },
+        "setFlags": {
+          "dynasty_status": "heir_proven"
+        }
+      }
+    ]
+  },
+  {
+    "id": "partner_1_the_betrayal",
+    "title": "Et Tu, Brute?",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_partner_betrayal",
+    "description": "Your business partner has been caught meeting with regulators.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "partner_liquidate",
+        "label": "Liquidate and Exile",
+        "description": "Banish them from the industry.",
+        "consequences": {
+          "bag": 1000000,
+          "clout": 300,
+          "aura": -300,
+          "biographyEntry": "Crushed a partner who attempted betrayal."
+        },
+        "setFlags": {
+          "partner_status": "liquidated"
+        }
+      }
+    ]
+  },
+  {
+    "id": "partner_2_the_replacement",
+    "title": "The New Blood",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_partner_betrayal",
+    "description": "You need a new right hand. An ambitious young shark has approached you.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "partner_status": "liquidated"
+      }
+    },
+    "choices": [
+      {
+        "id": "partner_hire_shark",
+        "label": "Hire the Shark",
+        "description": "Bring on new energy.",
+        "consequences": {
+          "clout": 500,
+          "passiveCash": 25000
+        },
+        "setFlags": {
+          "partner_status": "shark_active"
+        }
+      }
+    ]
+  },
+  {
+    "id": "partner_3_synergy",
+    "title": "The Perfect Synergy",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_partner_betrayal",
+    "description": "Your new partner has tripled the firm's efficiency.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "partner_status": "shark_active"
+      }
+    },
+    "choices": [
+      {
+        "id": "partner_maximize",
+        "label": "Maximize Synergy",
+        "description": "Optimize the empire.",
+        "consequences": {
+          "passiveCash": 100000,
+          "clout": 5000,
+          "biographyEntry": "Achieved perfect operational synergy with a new partner."
+        },
+        "setFlags": {
+          "partner_arc_complete": "perfect"
+        }
+      }
+    ]
+  },
+  {
+    "id": "board_1_the_coup",
+    "title": "The Midnight Coup",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_boardroom_power",
+    "description": "Three board members called an emergency meeting to vote you out.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "board_purge",
+        "label": "The Scorch Policy",
+        "description": "Purge the conspirators.",
+        "consequences": {
+          "clout": 1000,
+          "aura": -500,
+          "biographyEntry": "Survived a boardroom coup by purging the conspirators."
+        },
+        "setFlags": {
+          "board_status": "purged"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ipo_1_the_valuation",
+    "title": "The Trillion-Dollar Question",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_ipo_dominance",
+    "description": "The banks are valuing your global holdings at over a trillion dollars.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.2,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "ipo_go_public",
+        "label": "Go Public",
+        "description": "Launch the world's largest IPO.",
+        "consequences": {
+          "bag": 10000000,
+          "clout": 1000,
+          "aura": 500,
+          "biographyEntry": "Launched the first trillion-dollar IPO."
+        },
+        "setFlags": {
+          "ipo_status": "public"
+        }
+      }
+    ]
+  },
+  {
+    "id": "cartel_1_the_meeting",
+    "title": "The Southern Shadow",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_cartel_shadow",
+    "description": "A powerful Southern cartel meets you in a private hangar.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "choices": [
+      {
+        "id": "cartel_accept_pact",
+        "label": "Accept the Pact",
+        "description": "Partner for resource security.",
+        "consequences": {
+          "bag": 500000,
+          "heat": 60,
+          "aura": -300
+        },
+        "setFlags": {
+          "cartel_member": true,
+          "rel_cartel": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "cartel_2_the_crackdown",
+    "title": "The Federal Heat",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_cartel_shadow",
+    "description": "The DEA is closing in on the cartel's shipments.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "cartel_member": true
+      }
+    },
+    "choices": [
+      {
+        "id": "cartel_betray_them",
+        "label": "Betray the Cartel",
+        "description": "Feed the feds their location.",
+        "consequences": {
+          "heat": -100,
+          "aura": 500,
+          "clout": 200,
+          "biographyEntry": "Dismantled a major international cartel."
+        },
+        "setFlags": {
+          "cartel_arc_complete": "betrayed",
+          "rel_cartel": -500
+        }
+      }
+    ]
+  },
+  {
+    "id": "cartel_3_new_order",
+    "title": "The Power Vacuum",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_cartel_shadow",
+    "description": "With the old cartel gone, you can install your own leadership.",
+    "trigger": {
+      "tier": [
+        "MOGUL",
+        "PRESIDENT"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "cartel_arc_complete": "betrayed"
+      }
+    },
+    "choices": [
+      {
+        "id": "cartel_install_puppet",
+        "label": "Install a Puppet",
+        "description": "Control the supply chain from the shadows.",
+        "consequences": {
+          "passiveCash": 50000,
+          "clout": 1000
+        },
+        "setFlags": {
+          "cartel_controlled": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "digi_sync_2_the_extortion",
+    "title": "The Table Turns",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_digital_syndicate",
+    "description": "The collective is now extorting YOU.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE"
+      ],
+      "probability": 0.2,
+      "once": true,
+      "flagReqs": {
+        "digi_sync_active": true
+      }
+    },
+    "choices": [
+      {
+        "id": "digi_sync_trace_and_destroy",
+        "label": "Trace and Destroy",
+        "description": "Neutralize the ring.",
+        "consequences": {
+          "bag": -500000,
+          "clout": 200,
+          "heat": 40,
+          "biographyEntry": "Neutralized a high-tech extortion ring."
+        },
+        "setFlags": {
+          "digi_sync_arc_complete": "neutralized"
+        }
+      }
+    ]
+  },
+  {
+    "id": "digi_sync_3_cyber_shield",
+    "title": "The Cyber Shield",
+    "pacingCategory": "MAJOR",
+    "arcId": "arc_digital_syndicate",
+    "description": "You've built the world's most robust digital defense system.",
+    "trigger": {
+      "tier": [
+        "ELITE",
+        "MOGUL"
+      ],
+      "probability": 0.15,
+      "once": true,
+      "flagReqs": {
+        "digi_sync_arc_complete": "neutralized"
+      }
+    },
+    "choices": [
+      {
+        "id": "digi_shield_activate",
+        "label": "Activate the Shield",
+        "description": "Make your systems impenetrable.",
+        "consequences": {
+          "heat": -50,
+          "clout": 1000
+        },
+        "setFlags": {
+          "digi_shield_active": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_employee_help",
+    "title": "A Crisis of Faith",
+    "pacingCategory": "MAJOR",
+    "description": "Your employees approach you in distress. Their beloved neighborhood community center is being forced to shut down due to rising municipal costs and landlord pressures. Since you are highly visible and wealthy, they look to you to protect their home neighborhood.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 800
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_employee_help_fund",
+        "label": "Fund the Center Restoration",
+        "description": "Spend $100,000 to acquire the building and fund its operations, proving you protect your workforce.",
+        "consequences": {
+          "bag": -100000,
+          "aura": 150,
+          "clout": 50,
+          "biographyEntry": "“The leader who protected local communities.”"
+        },
+        "setFlags": {
+          "protected_local_communities": true
+        },
+        "logMessage": "🛡️ CRISIS SOLVED: You spent $100,000 to restore the center. Your employees are fiercely loyal."
+      },
+      {
+        "id": "sp_employee_help_decline",
+        "label": "Advise Self-Reliance",
+        "description": "Decline to intervene. Advise them to bootstrap, but face deep disappointment.",
+        "consequences": {
+          "clout": 20,
+          "aura": -100,
+          "biographyEntry": "“The entrepreneur who prioritized corporate margins over worker communities.”"
+        },
+        "logMessage": "❌ COLD DEFIANCE: You declined to help. Your employees are disappointed and feel abandoned."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_community_clinic",
+    "title": "The Grassroots Request",
+    "pacingCategory": "MAJOR",
+    "description": "A delegation of local grassroots leaders approaches you. Knowing you are a respected leader, they ask you to fund a neighborhood healthcare clinic. If you have been a greedy landlord, they are highly skeptical of your intentions.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "aura",
+        "value": 80
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_community_clinic_fund",
+        "label": "Build the Healthcare Clinic",
+        "description": "Spend $200,000 to build and lease a local medical clinic for neighborhood families.",
+        "consequences": {
+          "bag": -200000,
+          "aura": 250,
+          "biographyEntry": "“The philanthropist who built local health clinics.”"
+        },
+        "setFlags": {
+          "built_local_clinics": true
+        },
+        "logMessage": "🏥 CLINIC OPENED: Your $200,000 clinic grant earns surging public gratitude and adoration."
+      },
+      {
+        "id": "sp_community_clinic_decline",
+        "label": "Politely Decline",
+        "description": "Explain that healthcare is a municipal duty, drawing community skepticism.",
+        "consequences": {
+          "aura": -150,
+          "biographyEntry": "“The billionaire who ignored community healthcare requests.”"
+        },
+        "logMessage": "❌ DEFEATED TRUST: You declined to fund the clinic. Public trust takes a heavy hit."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_charity_gala",
+    "title": "The Gala Spotlight",
+    "pacingCategory": "MAJOR",
+    "description": "A premier global foundation invites you to be the guest of honor and host their annual charity Gala. As a highly famous figure, you are expected to make a substantial matching donation to lead the room.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1000
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_charity_gala_fund",
+        "label": "Lead the Giving",
+        "description": "Donate $300,000 to secure a legendary social halo and align with high-society benefactors.",
+        "consequences": {
+          "bag": -300000,
+          "clout": 300,
+          "aura": 150,
+          "biographyEntry": "“The global benefactor who bankrolled major charity galas.”"
+        },
+        "setFlags": {
+          "charity_gala_leader": true,
+          "just_donated_charity": true
+        },
+        "logMessage": "🕊️ GALA HALO: Your $300,000 matching donation makes national headlines, securing a massive social halo."
+      },
+      {
+        "id": "sp_charity_gala_decline",
+        "label": "Decline and Keep a Low Profile",
+        "description": "Politely decline the invite. Critics label you as a stingy hoarder of wealth.",
+        "consequences": {
+          "clout": -100,
+          "aura": -50
+        },
+        "logMessage": "❌ STINGY LABELS: You skipped the Gala. Gossip tabloids criticize your lack of philanthropy."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_gov_cooperation",
+    "title": "The State's Hand",
+    "pacingCategory": "MAJOR",
+    "description": "The National Trade Commissioner formally requests you to serve on a state-directed regulatory panel. Serving will show great civic leadership, but will restrict your corporate flexibility and margin execution.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1200
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_gov_coop_accept",
+        "label": "Cooperate and Serve on Panel",
+        "description": "Accept the appointment. Your businesses face minor regulatory restrictions next 3 months.",
+        "consequences": {
+          "clout": 300,
+          "aura": 150,
+          "biographyEntry": "“The trade representative who cooperated with federal boards.”"
+        },
+        "setFlags": {
+          "gov_cooperated": true
+        },
+        "createConsequences": [
+          {
+            "id": "cons_gov_panel_restriction",
+            "source": "regulatory_trade_panel_modifier",
+            "triggerCondition": "Regulatory Trade Panel Cooperation",
+            "delay": 1,
+            "severity": "moderate",
+            "expiry": 3,
+            "affectedSystems": [
+              "businesses"
+            ],
+            "status": "pending",
+            "description": "Your cooperative compliance panel reduces business margins by 10% but earns public trust.",
+            "effectModifier": {
+              "yieldCashMult": 0.9
+            },
+            "newsTemplates": [
+              "Bystanders praise your transparent collaboration with federal trade compliance panels.",
+              "Quarterly balance sheets show minor margin contractions due to patriotic panel audits."
+            ]
+          }
+        ],
+        "logMessage": "🏛️ PATRIOTIC DUTY: You joined the panel! Clout and public respect surge, though margins contract slightly."
+      },
+      {
+        "id": "sp_gov_coop_decline",
+        "label": "Decline the Appointment",
+        "description": "Reject federal trade intervention. Draw direct regulatory scrutiny (+40 Heat).",
+        "consequences": {
+          "clout": 100,
+          "aura": -100,
+          "heat": 40,
+          "biographyEntry": "“The defiant operator who rejected state trade intervention.”"
+        },
+        "logMessage": "⚠️ REGULATORY FRICTION: You rejected the request! Federal investigators launch retaliatory audits."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_media_interview",
+    "title": "The Hot Seat",
+    "pacingCategory": "MAJOR",
+    "description": "A major news anchor invites you to a live, prime-time national interview. Your answers will shape how millions perceive your rise.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1000
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_media_int_community",
+        "label": "Advocate Grassroots Support",
+        "description": "Credit your success to public trust and community roots, building immense Aura.",
+        "consequences": {
+          "clout": 100,
+          "aura": 200,
+          "heat": -10,
+          "biographyEntry": "“The polished leader who advocated for grassroots community empowerment.”"
+        },
+        "logMessage": "🌟 INSPIRATIONAL RISE: Your focus on community trust makes you a national hero."
+      },
+      {
+        "id": "sp_media_int_hustle",
+        "label": "Preach Cold Hustle Ideology",
+        "description": "Declare that poverty is a motivational deficit and margins are absolute. Earn Clout but draw backlash.",
+        "consequences": {
+          "clout": 400,
+          "aura": -300,
+          "heat": 25,
+          "biographyEntry": "“The controversial tycoon who declared that poverty is a motivational deficit.”"
+        },
+        "setFlags": {
+          "trigger_scandal_immediately": true
+        },
+        "logMessage": "🔥 VOLATILE DRAMA: Your controversial answers spark online cancel campaigns and high backlash."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_rival_attack",
+    "title": "Coordinated Smear Blitz",
+    "pacingCategory": "MAJOR",
+    "description": "A powerful, desperate rival funds a massive coordinated online smear campaign, flooding social media with doctored books and ethical accusations against your operations.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1000
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_rival_atk_audit",
+        "label": "Fund an Independent Transparency Audit",
+        "description": "Spend $150,000 to hire top accountants, disproving all accusations completely.",
+        "consequences": {
+          "bag": -150000,
+          "clout": 100,
+          "aura": 150,
+          "heat": -20,
+          "biographyEntry": "“The clean operator who disproved rival allegations via full audits.”"
+        },
+        "logMessage": "🛡️ TRANSPARENCY WIN: You proved your innocence! Rivals face humiliation and public backlash."
+      },
+      {
+        "id": "sp_rival_atk_slander",
+        "label": "Retaliate with Coordinated Slander",
+        "description": "Sling mud back. Launch an aggressive countersmear campaign on their own private affairs.",
+        "consequences": {
+          "clout": 200,
+          "aura": -150,
+          "heat": 30,
+          "biographyEntry": "“The aggressive corporate warrior who traded public insults with rivals.”"
+        },
+        "logMessage": "🔥 DIRTY WARFARE: You traded slanders. The media feasts on the corporate drama."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_investor_audit",
+    "title": "The Board's Demand",
+    "pacingCategory": "MAJOR",
+    "description": "Following high-profile social media scrutiny, your core institutional investors demand a full, third-party bookkeeping and ESG compliance audit of your entire enterprise.",
+    "trigger": {
+      "tier": [
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "clout",
+        "value": 1200
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_investor_audit_accept",
+        "label": "Grant Full Auditing Access",
+        "description": "Spend $50,000 on auditor fees and open the books completely, proving pristine compliance.",
+        "consequences": {
+          "bag": -50000,
+          "clout": 100,
+          "aura": 150,
+          "heat": -30,
+          "biographyEntry": "“The transparent executive who maintained pristine financial standards.”"
+        },
+        "logMessage": "📊 BOARD COMPLIANCE: The audit confirms spotless compliance, solidifying investor confidence."
+      },
+      {
+        "id": "sp_investor_audit_block",
+        "label": "Block the Auditing Request",
+        "description": "Refuse to open the books. Protect your secrecy, but trigger intense suspicion and Heat (+50).",
+        "consequences": {
+          "clout": 200,
+          "aura": -200,
+          "heat": 50,
+          "biographyEntry": "“The embattled tycoon who blocked corporate compliance audits.”"
+        },
+        "logMessage": "🚨 AUDIT BLOCKED: Your resistance triggers board panic and compliance audits from federal regulators."
+      }
+    ]
+  },
+  {
+    "id": "social_pressure_water_crisis",
+    "title": "A Community in Crisis",
+    "pacingCategory": "MAJOR",
+    "description": "A major municipal water utility failure has hit your home district. Thousands of families are without clean water. As a respected leader, the community expects you to take action.",
+    "trigger": {
+      "tier": [
+        "STARTUP",
+        "CORPORATE",
+        "ELITE",
+        "MOGUL",
+        "PRESIDENT",
+        "OPEN"
+      ],
+      "probability": 0.15,
+      "once": true
+    },
+    "requirement": {
+      "stat": {
+        "type": "aura",
+        "value": 150
+      }
+    },
+    "choices": [
+      {
+        "id": "sp_water_crisis_fund",
+        "label": "Fund Private Water Tankers",
+        "description": "Spend $150,000 to deploy a private tanker grid, saving neighborhood families.",
+        "consequences": {
+          "bag": -150000,
+          "clout": 100,
+          "aura": 300,
+          "biographyEntry": "“The emergency leader who financed private water relief grids.”"
+        },
+        "setFlags": {
+          "water_relief_leader": true
+        },
+        "logMessage": "💧 HERO OF THE CRISIS: You saved the neighborhood! A lasting legacy is forever sealed."
+      },
+      {
+        "id": "sp_water_crisis_decline",
+        "label": "Stay Out of Municipal Issues",
+        "description": "Decline to intervene. Critics and supporters accuse you of turning your back during a crisis.",
+        "consequences": {
+          "clout": -100,
+          "aura": -250,
+          "biographyEntry": "“The private industrialist who turned their back during a water crisis.”"
+        },
+        "logMessage": "❌ SHATTERED EXPECTATIONS: You turned your back. Your name is written in anger across the city."
+      }
+    ]
+  }
+]

@@ -1,7 +1,26 @@
 import type { PlayerStats, TickerMessage, WorldFeedItem, MarketType } from '../types/game';
 import { getIdentityAlignedBillionaireTone } from '../utils/identitySystem';
+import { WORLD_FEED_CONTENT } from '../utils/worldFeedLoader';
 
 const generateId = () => Math.random().toString(36).substring(7);
+
+function getStoryText(key: string, defaultText: string, pl: PlayerStats, replacements: Record<string, string> = {}): string {
+  const templates = WORLD_FEED_CONTENT?.storyTemplates || {};
+  let template = templates[key] || defaultText;
+
+  const pName = pl.name || 'You';
+  const billionaireTone = getIdentityAlignedBillionaireTone(pl);
+
+  template = template
+    .replace(/{PLAYER}/g, pName)
+    .replace(/{BILLIONAIRE_TONE}/g, billionaireTone);
+
+  Object.entries(replacements).forEach(([k, v]) => {
+    template = template.replace(new RegExp(`{${k}}`, 'g'), v);
+  });
+
+  return template;
+}
 
 /**
  * Pure observer module that monitors the simulation state (Businesses, Rivals, Living Economy,
@@ -12,12 +31,11 @@ const generateId = () => Math.random().toString(36).substring(7);
 
 export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   const stories: TickerMessage[] = [];
-  const pName = pl.name || 'You';
 
   // 0. Identity Aligned World Reactions & Billionaire/Millionaire Tone
   if (pl.bag >= 5000000) {
     stories.push({
-      text: `📰 Profile: Capital circles analyze the strategic footprint of ${getIdentityAlignedBillionaireTone(pl)}.`,
+      text: getStoryText('profile_billonair_tone', `📰 Profile: Capital circles analyze the strategic footprint of {BILLIONAIRE_TONE}.`, pl),
       colorClass: 'text-indigo-400 font-bold',
       tier: pl.currentTier,
     });
@@ -33,7 +51,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
 
   if (hasTechFocus) {
     stories.push({
-      text: `📰 ${pName} has quietly become the largest technology investor in the country.`,
+      text: getStoryText('tech_investor', `📰 {PLAYER} has quietly become the largest technology investor in the country.`, pl),
       colorClass: 'text-blue-400 font-bold',
       tier: pl.currentTier,
     });
@@ -42,7 +60,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
     const techRival = pl.rivals?.find(r => r.specialty?.toLowerCase().includes('tech') || r.preferredIndustries?.includes('tech'));
     if (techRival) {
       stories.push({
-        text: `📰 ${techRival.name} has quietly become the largest technology investor in the country.`,
+        text: getStoryText('tech_investor_rival', `📰 {RIVAL} has quietly become the largest technology investor in the country.`, pl, { RIVAL: techRival.name }),
         colorClass: 'text-blue-400',
         tier: pl.currentTier,
       });
@@ -53,7 +71,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   const highProperties = (pl.rentalCount || 0) > 5 || (pl.rentPortfolioCount || 0) > 5;
   if (highProperties || pl.marketCycle?.realEstate === 'boom') {
     stories.push({
-      text: `📰 The housing market is under pressure after years of rapid expansion.`,
+      text: getStoryText('housing_market', `📰 The housing market is under pressure after years of rapid expansion.`, pl),
       colorClass: 'text-orange-400',
       tier: pl.currentTier,
     });
@@ -63,7 +81,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   const isPresident = pl.currentTier === 'PRESIDENT';
   if (isPresident && pl.gdp > 110 && pl.approvalRating < 45) {
     stories.push({
-      text: `📰 Public confidence is falling despite record GDP.`,
+      text: getStoryText('gdp_approval', `📰 Public confidence is falling despite record GDP.`, pl),
       colorClass: 'text-red-400 font-bold',
       tier: pl.currentTier,
     });
@@ -77,7 +95,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
 
   if (hasMediaEmpire && pl.clout > 2500) {
     stories.push({
-      text: `📰 Your media empire has become more influential than several political parties.`,
+      text: getStoryText('media_empire', `📰 Your media empire has become more influential than several political parties.`, pl),
       colorClass: 'text-purple-400 font-extrabold',
       tier: pl.currentTier,
     });
@@ -86,7 +104,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   // 5. Prison Sentence Public Trust
   if (pl.arrestCount && pl.arrestCount > 0 && isPresident) {
     stories.push({
-      text: `📰 Your past prison sentence still affects public trust twenty years later.`,
+      text: getStoryText('prison_trust', `📰 Your past prison sentence still affects public trust twenty years later.`, pl),
       colorClass: 'text-red-500 font-bold',
       tier: pl.currentTier,
     });
@@ -95,7 +113,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   // 6. Extra contextual observers
   if (pl.heat > 85 && pl.clout > 3000) {
     stories.push({
-      text: `📰 Elite circles continue to overlook ${pName}'s escalating criminal heat due to overwhelming clout.`,
+      text: getStoryText('clout_heat', `📰 Elite circles continue to overlook {PLAYER}'s escalating criminal heat due to overwhelming clout.`, pl),
       colorClass: 'text-amber-500 italic',
       tier: pl.currentTier,
     });
@@ -103,7 +121,7 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
 
   if (pl.mentalHealth < 35 && pl.bag > 10000000) {
     stories.push({
-      text: `📰 Trapped in gold: Insiders report ${pName}'s extreme wealth builds up while mental stability hangs by a thread.`,
+      text: getStoryText('low_mh_high_bag', `📰 Trapped in gold: Insiders report {PLAYER}'s extreme wealth builds up while mental stability hangs by a thread.`, pl),
       colorClass: 'text-rose-400',
       tier: pl.currentTier,
     });
@@ -114,21 +132,21 @@ export function generateDynamicStoryNews(pl: PlayerStats): TickerMessage[] {
   completedAmbitions.forEach(amb => {
     if (amb.id === 'property_empire' || amb.id === 'prop_legacy' || amb.id === 'prop_baron') {
       stories.push({
-        text: `📰 Property Monopoly: Districts consolidated by ${pName} report flawless management and standard 99% tenant retention.`,
+        text: getStoryText('amb_property_empire', `📰 Property Monopoly: Districts consolidated by {PLAYER} report flawless management and standard 99% tenant retention.`, pl),
         colorClass: 'text-emerald-400 font-extrabold',
         tier: pl.currentTier,
       });
     }
     if (amb.id === 'silicon_sovereign') {
       stories.push({
-        text: `📰 Cyber-Sovereignty: Big data algorithms pioneered by ${pName} are now integrated directly into national financial hubs.`,
+        text: getStoryText('amb_silicon_sovereign', `📰 Cyber-Sovereignty: Big data algorithms pioneered by {PLAYER} are now integrated directly into national financial hubs.`, pl),
         colorClass: 'text-cyan-400 font-extrabold',
         tier: pl.currentTier,
       });
     }
     if (amb.id === 'leave_better_society') {
       stories.push({
-        text: `📰 Philanthropic Halo: Crowds in local districts continue to praise the universal humanitarian aid funded by ${pName}.`,
+        text: getStoryText('amb_leave_better_society', `📰 Philanthropic Halo: Crowds in local districts continue to praise the universal humanitarian aid funded by {PLAYER}.`, pl),
         colorClass: 'text-emerald-300 font-extrabold',
         tier: pl.currentTier,
       });
