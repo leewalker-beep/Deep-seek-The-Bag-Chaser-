@@ -578,6 +578,7 @@ HUSTLES.virtual_assistant_agency = {
   panelType: 'VA_AGENCY',
   levels: [
     { level: 1, id: 'l1', cost: 50000, yieldCash: 80000, yieldClout: 15, yieldAura: 10, mentalHit: -18, cloutReq: 400, auraReq: 400, passiveYield: 2000 },
+    { level: 2, id: 'l2', cost: 250000, yieldCash: 200000, yieldClout: 40, yieldAura: 30, mentalHit: -22, cloutReq: 1000, auraReq: 1000, passiveYield: 8000 }
   ]
 };
 
@@ -647,8 +648,10 @@ HUSTLES.real_estate_empire = {
   miniGame: 'BoardroomBattle',
   hasPanel: true,
   panelType: 'REAL_ESTATE',
+  startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 80, mentalHit: -30, cloutReq: 1000, auraReq: 1000 },
+    l1: { level: 1, id: 'l1', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 80, mentalHit: -30, cloutReq: 1000, auraReq: 1000, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', cost: 15000000, yieldCash: 0, yieldClout: 250, yieldAura: 200, mentalHit: -35, cloutReq: 2500, auraReq: 2500 }
   }
 };
 
@@ -661,8 +664,10 @@ HUSTLES.venture_capital = {
   miniGame: 'VCPitchRoom',
   hasPanel: true,
   panelType: 'VENTURE_CAPITAL',
+  startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', cost: 1000000, yieldCash: 0, yieldClout: 120, yieldAura: 100, mentalHit: -25, cloutReq: 1200, auraReq: 1200 },
+    l1: { level: 1, id: 'l1', cost: 1000000, yieldCash: 0, yieldClout: 120, yieldAura: 100, mentalHit: -25, cloutReq: 1200, auraReq: 1200, nextBranches: ['l2'] },
+    l2: { level: 2, id: 'l2', cost: 5000000, yieldCash: 0, yieldClout: 300, yieldAura: 250, mentalHit: -30, cloutReq: 3000, auraReq: 3000 }
   }
 };
 
@@ -826,7 +831,8 @@ HUSTLES.president_campaign = {
   hasPanel: true,
   panelType: 'PRESIDENT_CAMPAIGN',
   levels: [
-    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 500, yieldAura: 500, mentalHit: -50, cloutReq: 6000, auraReq: 6000, passiveYield: 0 }
+    { level: 1, cost: 100000000, yieldCash: 0, yieldClout: 500, yieldAura: 500, mentalHit: -50, cloutReq: 6000, auraReq: 6000, passiveYield: 0 },
+    { level: 2, cost: 500000000, yieldCash: 0, yieldClout: 1500, yieldAura: 1500, mentalHit: -60, cloutReq: 15000, auraReq: 15000, passiveYield: 0 }
   ]
 };
 

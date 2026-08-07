@@ -221,6 +221,67 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
           targetPlays = 6;
           targetLevel = 2;
           break;
+
+        // CORPORATE Tier Crown Rebalance
+        case 'real_estate_empire':
+          playsLabel = 'Successful property expansions';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'venture_capital':
+          playsLabel = 'Successful investments';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'data_analytics':
+          playsLabel = 'Successful optimization projects';
+          targetPlays = 8;
+          break;
+        case 'festival':
+          playsLabel = 'Successful events';
+          targetPlays = 8;
+          break;
+        case 'virtual_assistant_agency':
+          playsLabel = 'Major contracts';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'media_empire':
+          playsLabel = 'Successful campaigns';
+          targetPlays = 6;
+          break;
+
+        // ELITE Tier Crown Rebalance
+        case 'privateequity':
+          playsLabel = 'Successful acquisitions';
+          targetPlays = 5;
+          targetLevel = 2;
+          break;
+        case 'luxury_conglomerate':
+          playsLabel = 'Successful launches';
+          targetPlays = 6;
+          break;
+        case 'h_global_conglomerate':
+          playsLabel = 'Successful expansions';
+          targetPlays = 5;
+          targetLevel = 2;
+          break;
+        case 'philanthropy_empire':
+          playsLabel = 'Major charitable initiatives';
+          targetPlays = 8;
+          break;
+
+        // PRESIDENT Tier Crown Rebalance
+        case 'president_campaign':
+          playsLabel = 'Successful policy terms';
+          targetPlays = 4;
+          targetLevel = 2;
+          break;
+        case 'lobbying':
+          playsLabel = 'Successful diplomatic initiatives';
+          targetPlays = 4;
+          break;
+
         default:
           return null;
       }
