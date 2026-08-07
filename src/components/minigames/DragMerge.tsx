@@ -88,10 +88,10 @@ export const DragMerge: React.FC<DragMergeProps> = ({ onComplete, level = 1, tie
   };
 
   return (
-    <div id="merge-container" className="relative w-full h-[500px] bg-slate-950 rounded-3xl border-4 border-slate-900 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+    <div id="merge-container" className="relative w-full flex-1 flex flex-col items-center justify-center bg-transparent">
       <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]" />
 
-      <div className="absolute top-6 text-center z-10 w-full px-6">
+      <div className="absolute top-2 text-center z-10 w-full px-6">
         <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase drop-shadow-lg">LUXURY CONGLOMERATE <span className="text-emerald-500 text-sm">L{level}</span></h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">MERGE ALL BRANDS AT CENTER</p>
       </div>

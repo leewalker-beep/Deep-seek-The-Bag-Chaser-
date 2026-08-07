@@ -89,10 +89,10 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
 
   if (failed) {
     return (
-      <div className="h-[400px] w-full bg-slate-950 border-4 border-red-900 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
-        <div className="text-6xl mb-4">⚠️</div>
-        <h2 className="text-3xl font-black text-red-500 mb-2 tracking-tighter uppercase italic">SYSTEM FAILURE</h2>
-        <p className="text-slate-400 mb-8 font-bold text-xs uppercase tracking-widest">Memory corrupted at round {round}</p>
+      <div className="w-full flex flex-col items-center justify-center p-4 text-center">
+        <div className="text-5xl mb-4">⚠️</div>
+        <h2 className="text-2xl font-black text-red-500 mb-2 tracking-tighter uppercase italic">SYSTEM FAILURE</h2>
+        <p className="text-slate-400 mb-6 font-bold text-xs uppercase tracking-widest">Memory corrupted at round {round}</p>
         <button
           onClick={() => {
             let multiplier = 0.5;
@@ -109,8 +109,8 @@ export const PatternMemory: React.FC<PatternMemoryProps> = ({
   }
 
   return (
-    <div className={`h-[400px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-center p-6 ${
-        isDisplaying ? 'border-blue-500' : feedback ? 'border-emerald-500' : 'border-slate-800'
+    <div className={`w-full transition-colors duration-200 flex flex-col items-center justify-center p-2 ${
+        isDisplaying ? 'bg-blue-950/10' : feedback ? 'bg-emerald-950/10' : 'bg-transparent'
     }`}>
       <div className="mb-8 text-center">
         <h2 className="text-2xl font-black text-blue-400 italic tracking-tighter uppercase">{title} <span className="text-xs text-white">L{level}</span></h2>

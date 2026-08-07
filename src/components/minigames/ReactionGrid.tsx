@@ -86,16 +86,16 @@ export const ReactionGrid: React.FC<ReactionGridProps> = ({ onComplete, level = 
 
   if (!isStarted) {
     return (
-      <div className="h-[450px] w-full bg-slate-950 border-4 border-indigo-900 rounded-3xl flex flex-col items-center justify-center p-8 text-center shadow-2xl">
+      <div className="w-full flex flex-col items-center justify-center p-4 text-center">
         <motion.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
-            className="text-6xl mb-6"
+            className="text-5xl mb-4"
         >
             🎯
         </motion.div>
-        <h2 className="text-3xl font-black text-indigo-400 mb-2 italic tracking-tighter uppercase">HEDGE FUND TRADING <span className="text-white text-xs">L{level}</span></h2>
-        <p className="text-slate-500 mb-10 uppercase text-[10px] font-black tracking-widest leading-relaxed">
+        <h2 className="text-2xl font-black text-indigo-400 mb-2 uppercase italic tracking-tighter">HEDGE FUND TRADING <span className="text-white text-xs">L{level}</span></h2>
+        <p className="text-slate-500 mb-6 uppercase text-[10px] font-black tracking-widest leading-relaxed">
             Rapidly execute trades on active nodes<br/>to dominate the market
         </p>
         <button
@@ -109,10 +109,10 @@ export const ReactionGrid: React.FC<ReactionGridProps> = ({ onComplete, level = 
   }
 
   return (
-    <div className={`h-[450px] w-full transition-colors duration-200 bg-slate-900 border-4 rounded-3xl flex flex-col items-center justify-center p-8 relative shadow-2xl ${
-        feedback === 'hit' ? 'border-emerald-500 bg-emerald-950/20' :
-        feedback === 'miss' ? 'border-red-500 bg-red-950/20' :
-        'border-indigo-900'
+    <div className={`w-full transition-colors duration-200 flex flex-col items-center justify-center p-2 relative ${
+        feedback === 'hit' ? 'bg-emerald-950/20' :
+        feedback === 'miss' ? 'bg-red-950/20' :
+        'bg-transparent'
     }`}>
       <div className="absolute top-6 left-0 right-0 px-8 flex justify-between items-end">
         <div className="text-left flex flex-col">
