@@ -7,6 +7,7 @@ import { ConfirmationModal } from './ui/ConfirmationModal';
 import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { useGameStore } from '../store/gameStore';
+import { MASTERY_REQUIREMENTS } from '../utils/masteryUtils';
 
 const EXECUTE_LABEL: Record<string, string> = {
   MUD: 'GET TO WORK',
@@ -26,6 +27,43 @@ interface HustleCardProps {
   onUpgrade: (branchId?: string) => void;
   currentBranchId?: string;
 }
+
+const PLAY_LABELS: Record<string, string> = {
+  r_labor: 'Jobs completed',
+  r_delivery: 'Runs completed',
+  r_plasma: 'Donations',
+  r_vending: 'Purchases',
+  r_ghost_mode: 'Successful runs',
+  r_scrap: 'Successful salvage runs',
+  street_eats: 'Successful service runs',
+  cleaning: 'Successful jobs',
+  h_sign_spinner: 'Campaigns',
+  r_flyers: 'Campaigns',
+  cc: 'Uploads',
+  pod: 'Episodes recorded',
+  techFlip: 'Profitable flips',
+  sw: 'Product releases',
+  drop: 'Profitable sales cycles',
+  h_talent_agent: 'Successful client deals',
+  saas_mvp: 'Successful product launches',
+  ecom_brand: 'Profitable sales cycles',
+  meme: 'Profitable trading months',
+  audio: 'Successful releases',
+  agency_scale: 'Successful automation deployments',
+  smm: 'Successful launches',
+  real_estate_empire: 'Successful property expansions',
+  venture_capital: 'Successful investments',
+  data_analytics: 'Successful optimization projects',
+  festival: 'Successful events',
+  virtual_assistant_agency: 'Major contracts',
+  media_empire: 'Successful campaigns',
+  privateequity: 'Successful acquisitions',
+  luxury_conglomerate: 'Successful launches',
+  h_global_conglomerate: 'Successful expansions',
+  philanthropy_empire: 'Major charitable initiatives',
+  president_campaign: 'Successful policy terms',
+  lobbying: 'Successful diplomatic initiatives',
+};
 
 export const HustleCard: React.FC<HustleCardProps> = React.memo(({
   hustle,
@@ -108,184 +146,25 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
   const crownProgress = useMemo(() => {
     if (isMastered) return null;
 
-    let playsLabel = 'Plays';
-    let targetPlays = 20;
+    const req = MASTERY_REQUIREMENTS[hustle.id];
+    if (!req) return null;
+
+    const playsLabel = PLAY_LABELS[hustle.id] || 'Plays';
+    const targetPlays = req.minPlays;
     let actualPlays = plays;
-    let targetLevel: number | undefined;
 
-    if (hustle.tier === 'MUD') {
-      switch (hustle.id) {
-        case 'r_labor':
-          playsLabel = 'Jobs completed';
-          targetPlays = 10;
-          targetLevel = 2;
-          break;
-        case 'r_delivery':
-          playsLabel = 'Runs completed';
-          targetPlays = 10;
-          targetLevel = 2;
-          break;
-        case 'r_plasma':
-          playsLabel = 'Donations';
-          targetPlays = 15;
-          break;
-        case 'r_vending':
-          playsLabel = 'Purchases';
-          targetPlays = 20;
-          actualPlays = Math.max(plays, player.vendingCount || 0);
-          break;
-        case 'r_ghost_mode':
-          playsLabel = 'Successful runs';
-          targetPlays = 8;
-          targetLevel = 2;
-          break;
-        case 'r_scrap':
-          playsLabel = 'Successful salvage runs';
-          targetPlays = 10;
-          targetLevel = 2;
-          break;
-        case 'street_eats':
-          playsLabel = 'Successful service runs';
-          targetPlays = 10;
-          targetLevel = 2;
-          break;
-        case 'cleaning':
-          playsLabel = 'Successful jobs';
-          targetPlays = 12;
-          break;
-        case 'h_sign_spinner':
-        case 'r_flyers':
-          playsLabel = 'Campaigns';
-          targetPlays = 15;
-          actualPlays = Math.max(plays, player.hustlePlays?.['r_flyers'] || 0, player.hustlePlays?.['h_sign_spinner'] || 0);
-          break;
-        default:
-          return null;
-      }
-    } else {
-      switch (hustle.id) {
-        case 'cc':
-          playsLabel = 'Uploads';
-          targetPlays = 10;
-          break;
-        case 'pod':
-          playsLabel = 'Episodes recorded';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'techFlip':
-          playsLabel = 'Profitable flips';
-          targetPlays = 8;
-          targetLevel = 2;
-          break;
-        case 'sw':
-          playsLabel = 'Product releases';
-          targetPlays = 8;
-          break;
-        case 'drop':
-          playsLabel = 'Profitable sales cycles';
-          targetPlays = 8;
-          targetLevel = 2;
-          break;
-        case 'h_talent_agent':
-          playsLabel = 'Successful client deals';
-          targetPlays = 8;
-          break;
-
-        // STARTUP Tier Crown Rebalance
-        case 'saas_mvp':
-          playsLabel = 'Successful product launches';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'ecom_brand':
-          playsLabel = 'Profitable sales cycles';
-          targetPlays = 8;
-          targetLevel = 2;
-          break;
-        case 'meme':
-          playsLabel = 'Profitable trading months';
-          targetPlays = 10;
-          break;
-        case 'audio':
-          playsLabel = 'Successful releases';
-          targetPlays = 8;
-          break;
-        case 'agency_scale':
-          playsLabel = 'Successful automation deployments';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'smm':
-          playsLabel = 'Successful launches';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-
-        // CORPORATE Tier Crown Rebalance
-        case 'real_estate_empire':
-          playsLabel = 'Successful property expansions';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'venture_capital':
-          playsLabel = 'Successful investments';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'data_analytics':
-          playsLabel = 'Successful optimization projects';
-          targetPlays = 8;
-          break;
-        case 'festival':
-          playsLabel = 'Successful events';
-          targetPlays = 8;
-          break;
-        case 'virtual_assistant_agency':
-          playsLabel = 'Major contracts';
-          targetPlays = 6;
-          targetLevel = 2;
-          break;
-        case 'media_empire':
-          playsLabel = 'Successful campaigns';
-          targetPlays = 6;
-          break;
-
-        // ELITE Tier Crown Rebalance
-        case 'privateequity':
-          playsLabel = 'Successful acquisitions';
-          targetPlays = 5;
-          targetLevel = 2;
-          break;
-        case 'luxury_conglomerate':
-          playsLabel = 'Successful launches';
-          targetPlays = 6;
-          break;
-        case 'h_global_conglomerate':
-          playsLabel = 'Successful expansions';
-          targetPlays = 5;
-          targetLevel = 2;
-          break;
-        case 'philanthropy_empire':
-          playsLabel = 'Major charitable initiatives';
-          targetPlays = 8;
-          break;
-
-        // PRESIDENT Tier Crown Rebalance
-        case 'president_campaign':
-          playsLabel = 'Successful policy terms';
-          targetPlays = 4;
-          targetLevel = 2;
-          break;
-        case 'lobbying':
-          playsLabel = 'Successful diplomatic initiatives';
-          targetPlays = 4;
-          break;
-
-        default:
-          return null;
-      }
+    if (hustle.id === 'r_vending') {
+      actualPlays = Math.max(plays, player.vendingCount || 0);
     }
+    if (hustle.id === 'h_sign_spinner' || hustle.id === 'r_flyers') {
+      actualPlays = Math.max(
+        plays,
+        player.hustlePlays?.['r_flyers'] || 0,
+        player.hustlePlays?.['h_sign_spinner'] || 0
+      );
+    }
+
+    const targetLevel = req.noLevelReq ? undefined : req.minLevel;
 
     return {
       playsLabel,
