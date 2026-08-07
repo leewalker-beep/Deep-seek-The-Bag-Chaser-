@@ -32,6 +32,24 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   audio: { minPlays: 8, noLevelReq: true },
   agency_scale: { minPlays: 6, minLevel: 2 },
   smm: { minPlays: 6, minLevel: 2 },
+
+  // CORPORATE Tier Rebalance
+  real_estate_empire: { minPlays: 6, minLevel: 2 },
+  venture_capital: { minPlays: 6, minLevel: 2 },
+  data_analytics: { minPlays: 8, noLevelReq: true },
+  festival: { minPlays: 8, noLevelReq: true },
+  virtual_assistant_agency: { minPlays: 6, minLevel: 2 },
+  media_empire: { minPlays: 6, noLevelReq: true },
+
+  // ELITE Tier Rebalance
+  privateequity: { minPlays: 5, minLevel: 2 },
+  luxury_conglomerate: { minPlays: 6, noLevelReq: true },
+  h_global_conglomerate: { minPlays: 5, minLevel: 2 },
+  philanthropy_empire: { minPlays: 8, noLevelReq: true },
+
+  // PRESIDENT Tier Rebalance
+  president_campaign: { minPlays: 4, minLevel: 2 },
+  lobbying: { minPlays: 4, noLevelReq: true },
 };
 
 export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
