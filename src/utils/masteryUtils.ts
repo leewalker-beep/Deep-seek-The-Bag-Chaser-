@@ -1,6 +1,88 @@
 import type { PlayerStats } from '../types/game';
 import { HUSTLES } from '../config/hustles/base';
 
+export interface MasteryRequirement {
+  minPlays: number;
+  minLevel?: number; // minimum level required
+  noLevelReq?: boolean; // explicitly no level requirement
+}
+
+export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
+  r_labor: { minPlays: 10, minLevel: 2 },
+  r_delivery: { minPlays: 10, minLevel: 2 },
+  r_plasma: { minPlays: 15, noLevelReq: true },
+  r_vending: { minPlays: 20, noLevelReq: true }, // Complete 20 purchases, no level requirement
+  r_ghost_mode: { minPlays: 8, minLevel: 2 },
+  r_scrap: { minPlays: 10, minLevel: 2 },
+  street_eats: { minPlays: 10, minLevel: 2 },
+  cleaning: { minPlays: 12, noLevelReq: true },
+  h_sign_spinner: { minPlays: 15, noLevelReq: true },
+  r_flyers: { minPlays: 15, noLevelReq: true }, // mapped for fallback/save compatibility
+};
+
+export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
+  const hustle = HUSTLES[hId];
+  if (!hustle) return false;
+
+  const currentLevel = player.hustleLevels[hId] || 0;
+
+  // A hustle has to be unlocked or played to be mastered.
+  const hasPlayed = player.hustleLevels[hId] !== undefined || player.hustleBranchIds[hId] !== undefined;
+  if (!hasPlayed) return false;
+
+  const plays = player.hustlePlays?.[hId] || 0;
+
+  // Check if we have a custom requirement for this hustle
+  const req = MASTERY_REQUIREMENTS[hId];
+  if (req) {
+    // Vending Machine play count can be either plays or vendingCount
+    let actualPlays = plays;
+    if (hId === 'r_vending') {
+      actualPlays = Math.max(plays, player.vendingCount || 0);
+    }
+    // Human Billboard can be h_sign_spinner or r_flyers
+    if (hId === 'h_sign_spinner') {
+      actualPlays = Math.max(plays, player.hustlePlays?.['r_flyers'] || 0);
+    }
+    if (hId === 'r_flyers') {
+      actualPlays = Math.max(plays, player.hustlePlays?.['h_sign_spinner'] || 0);
+    }
+
+    if (actualPlays < req.minPlays) return false;
+
+    if (req.noLevelReq) return true;
+
+    if (req.minLevel !== undefined) {
+      return currentLevel >= req.minLevel;
+    }
+
+    return false;
+  }
+
+  // Fallback to Universal / Legacy Rule
+  if (plays < 20) return false;
+
+  if (hustle.levels) {
+    return currentLevel >= hustle.levels.length;
+  } else if (hustle.branches) {
+    const nodeId = player.hustleBranchIds[hId] || hustle.startBranchId;
+    if (nodeId) {
+      const node = hustle.branches[nodeId];
+      const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
+
+      const isRepeatableMastery = node?.isRepeatable && (
+        (hId === 'r_vending' && player.vendingCount >= 10) ||
+        (hId === 'street_eats' && node.level >= 5) ||
+        (node.id === 'l2b' && player.rentPortfolioCount >= 10)
+      );
+
+      return !!(isTerminal || isRepeatableMastery);
+    }
+  }
+
+  return false;
+};
+
 /**
  * Returns the total number of mastered hustles.
  * Counts every hustle where hustleLevels[hustleId] has reached the maximum possible level
@@ -14,34 +96,8 @@ export const getMasteryCount = (player: PlayerStats): number => {
   let count = 0;
 
   Object.keys(HUSTLES).forEach(hId => {
-    const hustle = HUSTLES[hId];
-    const currentLevel = player.hustleLevels[hId] || 0;
-    if (currentLevel === 0) return;
-
-    // Universal rule: minimum 20 plays required for mastery
-    const plays = player.hustlePlays?.[hId] || 0;
-    if (plays < 20) return;
-
-    if (hustle.levels) {
-      if (currentLevel >= hustle.levels.length) {
-        count++;
-      }
-    } else if (hustle.branches) {
-      const nodeId = player.hustleBranchIds[hId] || hustle.startBranchId;
-      if (nodeId) {
-        const node = hustle.branches[nodeId];
-        const isTerminal = node && (!node.nextBranches || node.nextBranches.length === 0);
-
-        const isRepeatableMastery = node?.isRepeatable && (
-          (hId === 'r_vending' && player.vendingCount >= 10) ||
-          (hId === 'street_eats' && node.level >= 5) ||
-          (node.id === 'l2b' && player.rentPortfolioCount >= 10)
-        );
-
-        if (isTerminal || isRepeatableMastery) {
-          count++;
-        }
-      }
+    if (isHustleMastered(player, hId)) {
+      count++;
     }
   });
 
