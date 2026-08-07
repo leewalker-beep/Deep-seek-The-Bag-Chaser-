@@ -61,6 +61,16 @@ export const HUSTLE_BADGES: Record<string, Badge> = {
     futureBenefit: '+5% Crisis Response effectiveness in President tier',
     relevantTier: 'PRESIDENT',
   },
+  h_sign_spinner: {
+    id: 'badge_flyers',
+    hustleId: 'h_sign_spinner',
+    name: 'Paper Storm',
+    description: 'Littering? No, I call it aggressive marketing.',
+    icon: '📄',
+    buff: { type: 'clout', value: 1.10 },
+    futureBenefit: '+5% Voter Outreach effectiveness in President tier',
+    relevantTier: 'PRESIDENT',
+  },
   r_flyers: {
     id: 'badge_flyers',
     hustleId: 'r_flyers',

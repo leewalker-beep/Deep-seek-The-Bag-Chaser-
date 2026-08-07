@@ -479,6 +479,7 @@ export const getUnlockedHustles = (difficulty: 1 | 2 | 3, unlockedUpgrades: stri
     'r_ghost_mode',
     'r_scrap',
     'r_flyers',
+    'h_sign_spinner',
     'r_sleep',
     'r_vending',
     'street_eats',
