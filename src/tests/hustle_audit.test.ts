@@ -50,8 +50,8 @@ describe('Hustle Reward Audit', () => {
             ...state.pl,
             currentTier: hustle.tier as any,
             bag: 1000000000000, // $1 Trillion to cover any cost
-            clout: 1000000,
-            aura: 1000000,
+            clout: 0,
+            aura: 0,
             masteredHustles: [], // Clear mastered hustles to avoid badge buffs
           },
           currentMarket: 'NORMAL',
@@ -66,9 +66,9 @@ describe('Hustle Reward Audit', () => {
             useGameStore.setState(s => ({ pl: { ...s.pl, hustleBranchIds: { ...s.pl.hustleBranchIds, [hustleId]: variation.branchId } } }));
         }
 
-        const stateBefore = useGameStore.getState();
-        const currentLevel = stateBefore.pl.hustleLevels[hustleId] || 1;
-        const currentBranchId = stateBefore.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
+        const stateTemp = useGameStore.getState();
+        const currentLevel = stateTemp.pl.hustleLevels[hustleId] || 1;
+        const currentBranchId = stateTemp.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
 
         let cardData: any;
         if (hustle.branches) {
@@ -76,6 +76,19 @@ describe('Hustle Reward Audit', () => {
         } else if (hustle.levels) {
             cardData = hustle.levels.find(l => l.level === currentLevel);
         }
+
+        const initialClout = cardData?.cloutReq ?? 0;
+        const initialAura = cardData?.auraReq ?? 0;
+
+        useGameStore.setState((s) => ({
+          pl: {
+            ...s.pl,
+            clout: initialClout,
+            aura: initialAura
+          }
+        }));
+
+        const stateBefore = useGameStore.getState();
 
         const cardDisplay = {
           cost: cardData?.cost ?? 0,
