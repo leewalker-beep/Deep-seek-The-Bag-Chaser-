@@ -191,6 +191,36 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
           playsLabel = 'Successful client deals';
           targetPlays = 8;
           break;
+
+        // STARTUP Tier Crown Rebalance
+        case 'saas_mvp':
+          playsLabel = 'Successful product launches';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'ecom_brand':
+          playsLabel = 'Profitable sales cycles';
+          targetPlays = 8;
+          targetLevel = 2;
+          break;
+        case 'meme':
+          playsLabel = 'Profitable trading months';
+          targetPlays = 10;
+          break;
+        case 'audio':
+          playsLabel = 'Successful releases';
+          targetPlays = 8;
+          break;
+        case 'agency_scale':
+          playsLabel = 'Successful automation deployments';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'smm':
+          playsLabel = 'Successful launches';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
         default:
           return null;
       }
