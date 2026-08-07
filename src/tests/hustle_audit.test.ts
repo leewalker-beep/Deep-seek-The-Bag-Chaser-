@@ -43,6 +43,20 @@ describe('Hustle Reward Audit', () => {
       for (let i = 0; i < variations.length; i++) {
         const variation = variations[i];
 
+        // Resolve level and branch first to retrieve exact requirements
+        const tempLevel = variation.level || 1;
+        const tempBranchId = variation.branchId || hustle.startBranchId;
+
+        let cardData: any;
+        if (hustle.branches) {
+            cardData = tempBranchId ? hustle.branches[tempBranchId] : undefined;
+        } else if (hustle.levels) {
+            cardData = hustle.levels.find(l => l.level === tempLevel);
+        }
+
+        const cloutReq = cardData?.cloutReq ?? 0;
+        const auraReq = cardData?.auraReq ?? 0;
+
         // Reset state for each variation to ensure consistency
         useGameStore.getState().resetGame('STREET_KID', 3);
         useGameStore.setState((state) => ({
@@ -50,8 +64,8 @@ describe('Hustle Reward Audit', () => {
             ...state.pl,
             currentTier: hustle.tier as any,
             bag: 1000000000000, // $1 Trillion to cover any cost
-            clout: 1000000,
-            aura: 1000000,
+            clout: cloutReq,
+            aura: auraReq,
             masteredHustles: [], // Clear mastered hustles to avoid badge buffs
           },
           currentMarket: 'NORMAL',
@@ -69,13 +83,6 @@ describe('Hustle Reward Audit', () => {
         const stateBefore = useGameStore.getState();
         const currentLevel = stateBefore.pl.hustleLevels[hustleId] || 1;
         const currentBranchId = stateBefore.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
-
-        let cardData: any;
-        if (hustle.branches) {
-            cardData = currentBranchId ? hustle.branches[currentBranchId] : undefined;
-        } else if (hustle.levels) {
-            cardData = hustle.levels.find(l => l.level === currentLevel);
-        }
 
         const cardDisplay = {
           cost: cardData?.cost ?? 0,
