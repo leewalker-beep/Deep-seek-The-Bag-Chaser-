@@ -389,7 +389,7 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   };
 
   const colors = colorMap[accentColor] || colorMap.purple;
-  const [cText, cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
+  const [cText, _cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
 
   return (
     <div className={`w-full transition-colors duration-200 text-center select-none touch-none flex flex-col justify-center items-center relative overflow-hidden ${
