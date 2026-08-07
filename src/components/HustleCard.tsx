@@ -105,61 +105,95 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
 
   const plays = player.hustlePlays?.[hustle.id] || 0;
 
-  const mudProgress = useMemo(() => {
-    if (hustle.tier !== 'MUD' || isMastered) return null;
+  const crownProgress = useMemo(() => {
+    if (isMastered) return null;
 
     let playsLabel = 'Plays';
     let targetPlays = 20;
     let actualPlays = plays;
     let targetLevel: number | undefined;
 
-    switch (hustle.id) {
-      case 'r_labor':
-        playsLabel = 'Jobs completed';
-        targetPlays = 10;
-        targetLevel = 2;
-        break;
-      case 'r_delivery':
-        playsLabel = 'Runs completed';
-        targetPlays = 10;
-        targetLevel = 2;
-        break;
-      case 'r_plasma':
-        playsLabel = 'Donations';
-        targetPlays = 15;
-        break;
-      case 'r_vending':
-        playsLabel = 'Purchases';
-        targetPlays = 20;
-        actualPlays = Math.max(plays, player.vendingCount || 0);
-        break;
-      case 'r_ghost_mode':
-        playsLabel = 'Successful runs';
-        targetPlays = 8;
-        targetLevel = 2;
-        break;
-      case 'r_scrap':
-        playsLabel = 'Successful salvage runs';
-        targetPlays = 10;
-        targetLevel = 2;
-        break;
-      case 'street_eats':
-        playsLabel = 'Successful service runs';
-        targetPlays = 10;
-        targetLevel = 2;
-        break;
-      case 'cleaning':
-        playsLabel = 'Successful jobs';
-        targetPlays = 12;
-        break;
-      case 'h_sign_spinner':
-      case 'r_flyers':
-        playsLabel = 'Campaigns';
-        targetPlays = 15;
-        actualPlays = Math.max(plays, player.hustlePlays?.['r_flyers'] || 0, player.hustlePlays?.['h_sign_spinner'] || 0);
-        break;
-      default:
-        return null;
+    if (hustle.tier === 'MUD') {
+      switch (hustle.id) {
+        case 'r_labor':
+          playsLabel = 'Jobs completed';
+          targetPlays = 10;
+          targetLevel = 2;
+          break;
+        case 'r_delivery':
+          playsLabel = 'Runs completed';
+          targetPlays = 10;
+          targetLevel = 2;
+          break;
+        case 'r_plasma':
+          playsLabel = 'Donations';
+          targetPlays = 15;
+          break;
+        case 'r_vending':
+          playsLabel = 'Purchases';
+          targetPlays = 20;
+          actualPlays = Math.max(plays, player.vendingCount || 0);
+          break;
+        case 'r_ghost_mode':
+          playsLabel = 'Successful runs';
+          targetPlays = 8;
+          targetLevel = 2;
+          break;
+        case 'r_scrap':
+          playsLabel = 'Successful salvage runs';
+          targetPlays = 10;
+          targetLevel = 2;
+          break;
+        case 'street_eats':
+          playsLabel = 'Successful service runs';
+          targetPlays = 10;
+          targetLevel = 2;
+          break;
+        case 'cleaning':
+          playsLabel = 'Successful jobs';
+          targetPlays = 12;
+          break;
+        case 'h_sign_spinner':
+        case 'r_flyers':
+          playsLabel = 'Campaigns';
+          targetPlays = 15;
+          actualPlays = Math.max(plays, player.hustlePlays?.['r_flyers'] || 0, player.hustlePlays?.['h_sign_spinner'] || 0);
+          break;
+        default:
+          return null;
+      }
+    } else {
+      switch (hustle.id) {
+        case 'cc':
+          playsLabel = 'Uploads';
+          targetPlays = 10;
+          break;
+        case 'pod':
+          playsLabel = 'Episodes recorded';
+          targetPlays = 6;
+          targetLevel = 2;
+          break;
+        case 'techFlip':
+          playsLabel = 'Profitable flips';
+          targetPlays = 8;
+          targetLevel = 2;
+          break;
+        case 'sw':
+          playsLabel = 'Product releases';
+          targetPlays = 8;
+          break;
+        case 'drop':
+          playsLabel = 'Profitable sales cycles';
+          targetPlays = 8;
+          targetLevel = 2;
+          break;
+        case 'h_talent_agent':
+          playsLabel = 'Successful client deals';
+          targetPlays = 8;
+          break;
+        default:
+          return null;
+      }
     }
 
     return {
@@ -265,18 +299,18 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
         </div>
       </div>
 
-      {mudProgress && (
+      {crownProgress && (
         <div className="bg-slate-900/60 rounded-xl p-2.5 mb-3 border border-yellow-500/10 flex flex-col gap-1.5 text-xs text-slate-300">
           <div className="flex justify-between items-center">
             <span className="font-semibold text-yellow-500 flex items-center gap-1">
               👑 Crown Progress
             </span>
             <span className="text-[10px] text-slate-400">
-              {mudProgress.playsLabel}: <strong className="text-white font-mono">{mudProgress.actualPlays}</strong> / {mudProgress.targetPlays}
-              {mudProgress.targetLevel !== undefined && (
+              {crownProgress.playsLabel}: <strong className="text-white font-mono">{crownProgress.actualPlays}</strong> / {crownProgress.targetPlays}
+              {crownProgress.targetLevel !== undefined && (
                 <>
                   <span className="mx-1.5">|</span>
-                  Level: <strong className="text-white font-mono">{Math.min(mudProgress.actualLevel, mudProgress.targetLevel)}</strong> / {mudProgress.targetLevel}
+                  Level: <strong className="text-white font-mono">{Math.min(crownProgress.actualLevel, crownProgress.targetLevel)}</strong> / {crownProgress.targetLevel}
                 </>
               )}
             </span>
@@ -287,9 +321,9 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
               className="bg-yellow-500 h-full rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  mudProgress.targetLevel !== undefined
-                    ? Math.min(100, Math.round(((mudProgress.actualPlays / mudProgress.targetPlays) * 0.5 + (Math.min(mudProgress.actualLevel, mudProgress.targetLevel) / mudProgress.targetLevel) * 0.5) * 100))
-                    : Math.min(100, Math.round((mudProgress.actualPlays / mudProgress.targetPlays) * 100))
+                  crownProgress.targetLevel !== undefined
+                    ? Math.min(100, Math.round(((crownProgress.actualPlays / crownProgress.targetPlays) * 0.5 + (Math.min(crownProgress.actualLevel, crownProgress.targetLevel) / crownProgress.targetLevel) * 0.5) * 100))
+                    : Math.min(100, Math.round((crownProgress.actualPlays / crownProgress.targetPlays) * 100))
                 }%`,
               }}
             />
