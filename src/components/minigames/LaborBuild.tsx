@@ -154,12 +154,12 @@ export const LaborBuild: React.FC<LaborBuildProps> = ({
   }, []);
 
   return (
-    <div ref={containerRef} className={`bg-stone-950 p-8 rounded-3xl border-4 border-stone-800 shadow-2xl text-center max-w-sm w-full mx-auto transition-colors duration-100 touch-none select-none ${
+    <div ref={containerRef} className={`w-full mx-auto transition-colors duration-100 touch-none select-none p-2 ${
         feedback === 'perfect' ? 'bg-emerald-950/20' :
         feedback === 'miss' ? 'bg-red-950/10' :
-        feedback === 'tap' ? 'bg-stone-900' : 'bg-stone-950'
+        feedback === 'tap' ? 'bg-zinc-900' : 'bg-transparent'
     }`}>
-      <h2 className="text-2xl font-black text-stone-400 mb-2 uppercase tracking-tighter italic">{title} <span className={`${cText} text-sm`}>L{level}</span></h2>
+      <h2 className="text-xl font-black text-stone-400 mb-2 uppercase tracking-tighter italic">{title} <span className={`${cText} text-sm`}>L{level}</span></h2>
       <div className="flex items-center justify-center gap-2 mb-6">
         <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className={cText}>{icon}</motion.span>
         <p className="text-[10px] text-stone-600 uppercase tracking-widest font-bold">

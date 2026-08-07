@@ -80,10 +80,10 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
 
   if (failed) {
     return (
-      <div className="h-[400px] w-full bg-slate-950 border-4 border-red-900 rounded-3xl flex flex-col items-center justify-center p-8 text-center shadow-2xl">
-        <div className="text-6xl mb-4 animate-pulse">📉</div>
-        <h2 className="text-3xl font-black text-red-500 mb-2 italic tracking-tighter uppercase">MARKET CRASH</h2>
-        <p className="text-slate-400 mb-8 font-bold uppercase tracking-widest text-[10px]">You lost control of the assets</p>
+      <div className="w-full flex flex-col items-center justify-center p-4 text-center">
+        <div className="text-5xl mb-4 animate-pulse">📉</div>
+        <h2 className="text-2xl font-black text-red-500 mb-2 italic tracking-tighter uppercase">MARKET CRASH</h2>
+        <p className="text-slate-400 mb-6 font-bold uppercase tracking-widest text-[10px]">You lost control of the assets</p>
         <button
           onClick={() => onComplete(0.2)}
           className="w-full py-4 bg-red-600 text-white font-black rounded-2xl hover:bg-red-500 transition-all border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
@@ -98,8 +98,8 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
   const statusColor = deviation > 30 ? 'text-red-500' : deviation > 15 ? 'text-yellow-500' : 'text-emerald-500';
 
   return (
-    <div className={`h-[400px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-[2rem] flex flex-col items-center justify-center p-8 overflow-hidden shadow-2xl ${
-        deviation > 30 ? 'border-red-500' : deviation > 15 ? 'border-yellow-500' : 'border-emerald-500'
+    <div className={`w-full transition-colors duration-200 flex flex-col items-center justify-center p-2 overflow-hidden ${
+        deviation > 30 ? 'bg-red-950/10' : deviation > 15 ? 'bg-yellow-950/10' : 'bg-emerald-950/10'
     }`}>
       <div className="mb-10 text-center w-full">
         <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">ASSET BALANCE <span className="text-yellow-500 text-sm">L{level}</span></h2>

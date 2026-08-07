@@ -389,15 +389,15 @@ export const ContentCreation: React.FC<ContentCreationProps> = ({
   };
 
   const colors = colorMap[accentColor] || colorMap.purple;
-  const [cText, cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
+  const [cText, _cBorder, cBar, cStreak, cStreakSub] = colors.split(' ');
 
   return (
-    <div className={`bg-slate-950 p-6 rounded-3xl border-4 transition-colors duration-200 text-center select-none touch-none h-[460px] flex flex-col justify-center items-center relative overflow-hidden ${
-      result === 'correct' ? 'border-emerald-500 bg-emerald-950/20' :
-      result === 'wrong' ? 'border-red-500 bg-red-950/20' :
-      cBorder
+    <div className={`w-full transition-colors duration-200 text-center select-none touch-none flex flex-col justify-center items-center relative overflow-hidden ${
+      result === 'correct' ? 'bg-emerald-950/20' :
+      result === 'wrong' ? 'bg-red-950/20' :
+      'bg-transparent'
     }`}>
-      <div className="absolute top-6 text-center z-20 w-full">
+      <div className="absolute top-2 text-center z-20 w-full">
         <h2 className={`text-2xl font-black ${cText} italic tracking-tighter`}>{title} <span className="text-white text-sm">L{level}</span></h2>
         <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center justify-center gap-2">
           <span>{icon}</span>

@@ -90,10 +90,10 @@ export const DragScale: React.FC<DragScaleProps> = ({ onComplete, level = 1, tie
   };
 
   return (
-    <div className={`transition-colors duration-500 bg-slate-900 p-6 rounded-3xl border-4 text-center select-none h-[450px] flex flex-col items-center relative ${
-        !gameActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800'
+    <div className={`transition-colors duration-500 p-2 text-center select-none flex flex-col items-center relative ${
+        !gameActive ? 'bg-emerald-950/20' : 'bg-transparent'
     }`}>
-      <div className="absolute top-6 text-center w-full z-10">
+      <div className="absolute top-2 text-center w-full z-10">
         <h2 className="text-2xl font-black text-emerald-500 uppercase tracking-widest italic">SAAS MVP <span className="text-white text-sm">L{level}</span></h2>
         <div className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-widest">MATCH CAPACITY TO USER LOAD</div>
       </div>

@@ -122,7 +122,7 @@ export const GhostMode: React.FC<GhostModeProps> = ({
         <div className="mt-4 text-emerald-400 font-mono font-black text-2xl">{scoreLabel}: {score}</div>
       </div>
 
-      <div className="relative w-full h-[400px] bg-slate-950 rounded-3xl border-2 border-purple-900/30 overflow-hidden shadow-[inset_0_0_100px_rgba(88,28,135,0.2)]">
+      <div className="relative w-full flex-1 min-h-[300px] max-h-[400px] bg-slate-950 rounded-3xl border-2 border-purple-900/30 overflow-hidden shadow-[inset_0_0_100px_rgba(88,28,135,0.2)]">
         <AnimatePresence>
           {targets.map(t => (
             <motion.button

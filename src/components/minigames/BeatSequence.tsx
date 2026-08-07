@@ -201,15 +201,15 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
   }
 
   return (
-    <div className={`h-[450px] w-full bg-slate-950 border-4 transition-colors duration-200 rounded-3xl flex flex-col items-center justify-between p-6 relative overflow-hidden ${
-      feedback === 'hit' ? 'border-emerald-500' :
-      feedback === 'miss' ? 'border-red-500' :
-      'border-blue-900/50'
+    <div className={`w-full transition-colors duration-200 flex flex-col items-center justify-between p-2 relative overflow-hidden ${
+      feedback === 'hit' ? 'bg-emerald-950/10' :
+      feedback === 'miss' ? 'bg-red-950/10' :
+      'bg-transparent'
     }`}>
 
       {/* 1. HEADER SECTION (with clean padding-bottom, explicit block separation, and z-10) */}
-      <div className="text-center flex flex-col items-center gap-1 mb-4 relative z-10">
-        <h1 className="text-xl font-black italic tracking-wider text-blue-400">FLOW STATE L{level}</h1>
+      <div className="text-center flex flex-col items-center gap-1 mb-2 relative z-10">
+        <h1 className="text-lg font-black italic tracking-wider text-blue-400">FLOW STATE L{level}</h1>
         <div className="bg-zinc-900/80 px-3 py-1 rounded-full border border-zinc-800/60 text-[11px] font-mono text-slate-300">
           ⚡ TRACK PROFILE: <span className="text-emerald-400 font-bold">{score}</span> / <span className="text-slate-500">{targetScore}</span>
         </div>

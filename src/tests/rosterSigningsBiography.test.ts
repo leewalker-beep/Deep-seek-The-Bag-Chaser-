@@ -221,6 +221,8 @@ describe('Roster-Signing Biography Integrations', () => {
         ...store.pl,
         currentTier: 'ELITE',
         bag: 100000000,
+        clout: 2000,
+        aura: 2000,
         foundersBacked: []
       }
     });

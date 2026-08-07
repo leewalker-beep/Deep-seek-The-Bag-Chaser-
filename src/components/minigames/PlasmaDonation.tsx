@@ -88,7 +88,7 @@ export const PlasmaDonation: React.FC<PlasmaDonationProps> = ({ onComplete, leve
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-slate-950 rounded-3xl border-4 border-red-900/30 shadow-2xl space-y-10 max-w-sm mx-auto overflow-hidden relative">
+    <div className="flex flex-col items-center justify-center p-2 bg-transparent space-y-6 w-full mx-auto overflow-hidden relative">
       <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,red_0%,transparent_70%)]" />
 
       <div className="text-center z-10">

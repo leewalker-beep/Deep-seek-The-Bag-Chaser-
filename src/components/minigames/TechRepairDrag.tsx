@@ -78,10 +78,10 @@ export const TechRepairDrag: React.FC<TechRepairDragProps> = ({ onComplete, leve
   };
 
   return (
-    <div className={`h-[550px] w-full transition-colors duration-300 border-4 rounded-3xl flex flex-col items-center p-6 relative overflow-hidden ${
-        assembled.length === partsToAssemble.length ? 'bg-blue-900/20 border-emerald-500' : 'bg-slate-950 border-blue-900'
+    <div className={`w-full transition-colors duration-300 flex flex-col items-center p-2 relative overflow-hidden ${
+        assembled.length === partsToAssemble.length ? 'bg-blue-900/20' : 'bg-transparent'
     }`}>
-      <div className="text-center mb-8">
+      <div className="text-center mb-4">
         <h2 className="text-3xl font-black text-blue-400 italic tracking-tighter uppercase drop-shadow-lg">TECH REPAIR <span className="text-white text-sm">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
             <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500">🖱️</motion.span>

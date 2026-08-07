@@ -138,10 +138,10 @@ export const TapApprove: React.FC<TapApproveProps> = ({ onComplete, level = 1, t
   };
 
   return (
-    <div className="relative w-full h-[500px] bg-slate-950 rounded-3xl overflow-hidden flex flex-col items-center justify-center border-4 border-slate-900 shadow-2xl">
+    <div className="relative w-full flex-1 flex flex-col items-center justify-center bg-transparent">
       <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
 
-      <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-end z-20">
+      <div className="absolute top-2 left-0 right-0 px-6 flex justify-between items-end z-20">
         <div className="text-left flex flex-col">
             <span className="text-[8px] text-slate-500 font-black uppercase tracking-widest">NETWORK CLOUT</span>
             <span className="text-2xl font-black text-emerald-400 font-mono tabular-nums">{score}</span>

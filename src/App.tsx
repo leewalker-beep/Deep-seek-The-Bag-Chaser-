@@ -10,6 +10,7 @@ import { evaluateIdentityDimensions } from './utils/identitySystem';
 import { calculateNetWorth } from './utils/annualReviewCompiler';
 import { NavTabs } from './components/NavTabs';
 import { HustleCard } from './components/HustleCard';
+import { GameViewport } from './components/ui/GameViewport';
 import { BranchChoice } from './components/BranchChoice';
 import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
@@ -1946,7 +1947,13 @@ function App() {
 
                 return (
                   <Suspense fallback={<MinigameLoader icon={hustle.icon} name={hustle.name} />}>
-                    {renderMinigame()}
+                    <GameViewport
+                      title={hustle.name}
+                      level={hustleLevel}
+                      onExit={() => onComplete(0.5)}
+                    >
+                      {renderMinigame()}
+                    </GameViewport>
                   </Suspense>
                 );
               }
