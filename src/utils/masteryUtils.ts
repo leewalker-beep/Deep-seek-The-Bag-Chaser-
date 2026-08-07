@@ -24,6 +24,14 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   sw: { minPlays: 8, noLevelReq: true },
   drop: { minPlays: 8, minLevel: 2 },
   h_talent_agent: { minPlays: 8, noLevelReq: true },
+
+  // STARTUP Tier Rebalance
+  saas_mvp: { minPlays: 6, minLevel: 2 },
+  ecom_brand: { minPlays: 8, minLevel: 2 },
+  meme: { minPlays: 10, noLevelReq: true },
+  audio: { minPlays: 8, noLevelReq: true },
+  agency_scale: { minPlays: 6, minLevel: 2 },
+  smm: { minPlays: 6, minLevel: 2 },
 };
 
 export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
