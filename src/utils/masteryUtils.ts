@@ -18,6 +18,12 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   cleaning: { minPlays: 12, noLevelReq: true },
   h_sign_spinner: { minPlays: 15, noLevelReq: true },
   r_flyers: { minPlays: 15, noLevelReq: true }, // mapped for fallback/save compatibility
+  cc: { minPlays: 10, noLevelReq: true },
+  pod: { minPlays: 6, minLevel: 2 },
+  techFlip: { minPlays: 8, minLevel: 2 },
+  sw: { minPlays: 8, noLevelReq: true },
+  drop: { minPlays: 8, minLevel: 2 },
+  h_talent_agent: { minPlays: 8, noLevelReq: true },
 };
 
 export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
