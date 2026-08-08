@@ -7,7 +7,8 @@ import { ConfirmationModal } from './ui/ConfirmationModal';
 import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { useGameStore } from '../store/gameStore';
-import { MASTERY_REQUIREMENTS } from '../utils/masteryUtils';
+import { isHustleMastered } from '../utils/masteryUtils';
+import { CrownProgress } from './hustles/CrownProgress';
 
 const EXECUTE_LABEL: Record<string, string> = {
   MUD: 'GET TO WORK',
@@ -27,43 +28,6 @@ interface HustleCardProps {
   onUpgrade: (branchId?: string) => void;
   currentBranchId?: string;
 }
-
-const PLAY_LABELS: Record<string, string> = {
-  r_labor: 'Jobs completed',
-  r_delivery: 'Runs completed',
-  r_plasma: 'Donations',
-  r_vending: 'Purchases',
-  r_ghost_mode: 'Successful runs',
-  r_scrap: 'Successful salvage runs',
-  street_eats: 'Successful service runs',
-  cleaning: 'Successful jobs',
-  h_sign_spinner: 'Campaigns',
-  r_flyers: 'Campaigns',
-  cc: 'Uploads',
-  pod: 'Episodes recorded',
-  techFlip: 'Profitable flips',
-  sw: 'Product releases',
-  drop: 'Profitable sales cycles',
-  h_talent_agent: 'Successful client deals',
-  saas_mvp: 'Successful product launches',
-  ecom_brand: 'Profitable sales cycles',
-  meme: 'Profitable trading months',
-  audio: 'Successful releases',
-  agency_scale: 'Successful automation deployments',
-  smm: 'Successful launches',
-  real_estate_empire: 'Successful property expansions',
-  venture_capital: 'Successful investments',
-  data_analytics: 'Successful optimization projects',
-  festival: 'Successful events',
-  virtual_assistant_agency: 'Major contracts',
-  media_empire: 'Successful campaigns',
-  privateequity: 'Successful acquisitions',
-  luxury_conglomerate: 'Successful launches',
-  h_global_conglomerate: 'Successful expansions',
-  philanthropy_empire: 'Major charitable initiatives',
-  president_campaign: 'Successful policy terms',
-  lobbying: 'Successful diplomatic initiatives',
-};
 
 export const HustleCard: React.FC<HustleCardProps> = React.memo(({
   hustle,
@@ -138,42 +102,8 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
   const isVending = hustle.id === 'r_vending';
 
   const tierClass = `hustle-card-${hustle.tier.toLowerCase()}`;
-  const isMastered = player.masteredHustles?.includes(hustle.id);
+  const isMastered = player.masteredHustles?.includes(hustle.id) || isHustleMastered(player, hustle.id);
   const badge = HUSTLE_BADGES[hustle.id];
-
-  const plays = player.hustlePlays?.[hustle.id] || 0;
-
-  const crownProgress = useMemo(() => {
-    if (isMastered) return null;
-
-    const req = MASTERY_REQUIREMENTS[hustle.id];
-    if (!req) return null;
-
-    const playsLabel = PLAY_LABELS[hustle.id] || 'Plays';
-    const targetPlays = req.minPlays;
-    let actualPlays = plays;
-
-    if (hustle.id === 'r_vending') {
-      actualPlays = Math.max(plays, player.vendingCount || 0);
-    }
-    if (hustle.id === 'h_sign_spinner' || hustle.id === 'r_flyers') {
-      actualPlays = Math.max(
-        plays,
-        player.hustlePlays?.['r_flyers'] || 0,
-        player.hustlePlays?.['h_sign_spinner'] || 0
-      );
-    }
-
-    const targetLevel = req.noLevelReq ? undefined : req.minLevel;
-
-    return {
-      playsLabel,
-      actualPlays,
-      targetPlays,
-      actualLevel: currentLevel,
-      targetLevel,
-    };
-  }, [hustle, player, plays, currentLevel, isMastered]);
 
   const handleAction = (type: 'EXECUTE' | 'UPGRADE' | 'REPEAT', cost: number, branchId?: string) => {
     if (cost > player.bag * 0.1) {
@@ -269,37 +199,7 @@ export const HustleCard: React.FC<HustleCardProps> = React.memo(({
         </div>
       </div>
 
-      {crownProgress && (
-        <div className="bg-slate-900/60 rounded-xl p-2.5 mb-3 border border-yellow-500/10 flex flex-col gap-1.5 text-xs text-slate-300">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-yellow-500 flex items-center gap-1">
-              👑 Crown Progress
-            </span>
-            <span className="text-[10px] text-slate-400">
-              {crownProgress.playsLabel}: <strong className="text-white font-mono">{crownProgress.actualPlays}</strong> / {crownProgress.targetPlays}
-              {crownProgress.targetLevel !== undefined && (
-                <>
-                  <span className="mx-1.5">|</span>
-                  Level: <strong className="text-white font-mono">{Math.min(crownProgress.actualLevel, crownProgress.targetLevel)}</strong> / {crownProgress.targetLevel}
-                </>
-              )}
-            </span>
-          </div>
-          {/* Progress bar */}
-          <div className="w-full bg-slate-950/80 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-yellow-500 h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${
-                  crownProgress.targetLevel !== undefined
-                    ? Math.min(100, Math.round(((crownProgress.actualPlays / crownProgress.targetPlays) * 0.5 + (Math.min(crownProgress.actualLevel, crownProgress.targetLevel) / crownProgress.targetLevel) * 0.5) * 100))
-                    : Math.min(100, Math.round((crownProgress.actualPlays / crownProgress.targetPlays) * 100))
-                }%`,
-              }}
-            />
-          </div>
-        </div>
-      )}
+      <CrownProgress player={player} hustleId={hustle.id} />
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-slate-950/50 rounded-lg p-2 border border-slate-800/50">

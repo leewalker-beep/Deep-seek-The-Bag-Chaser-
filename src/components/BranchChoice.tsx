@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import { useGameStore } from '../store/gameStore';
 import { ConfirmationModal } from './ui/ConfirmationModal';
+import { HUSTLE_BADGES } from '../config/badges';
+import { PROGRESSION_ORDER } from '../config/tiers';
+import { isHustleMastered } from '../utils/masteryUtils';
+import { CrownProgress } from './hustles/CrownProgress';
 
 interface BranchChoiceProps {
   hustle: Hustle;
@@ -17,6 +21,9 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
     branchId?: string;
     cost: number;
   } | null>(null);
+
+  const isMastered = pl.masteredHustles?.includes(hustle.id) || isHustleMastered(pl, hustle.id);
+  const badge = HUSTLE_BADGES[hustle.id];
 
   if (!hustle.branches) return null;
 
@@ -58,7 +65,29 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
 
   // Show branch choices
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 transition-all hover:border-slate-700 relative overflow-hidden">
+      {isMastered && badge && (
+        <div className="absolute top-0 right-0 p-2 bg-emerald-500/20 rounded-bl-xl border-l border-b border-emerald-500/30 group">
+           <span className="text-xl" title={badge.name}>{badge.icon}</span>
+           <div className="absolute top-full right-0 mt-1 w-48 bg-slate-900 border border-slate-700 p-2 rounded-lg text-[10px] hidden group-hover:block z-50 shadow-2xl">
+              <div className="font-bold text-emerald-400">{badge.name}</div>
+              <div className="text-slate-400 italic mb-1">{badge.description}</div>
+              <div className="text-blue-400 font-mono">BUFF: {badge.buff.value}x {badge.buff.type}</div>
+              {badge.futureBenefit && badge.relevantTier && (
+                (() => {
+                  const currentTierIdx = PROGRESSION_ORDER.indexOf(pl.currentTier);
+                  const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);
+                  const isActive = currentTierIdx >= relevantTierIdx;
+                  return isActive ? (
+                    <div className="text-yellow-400 font-bold mt-1 border-t border-slate-700 pt-1">
+                      ACTIVE: {badge.futureBenefit}
+                    </div>
+                  ) : null;
+                })()
+              )}
+           </div>
+        </div>
+      )}
       <ConfirmationModal
         isOpen={!!pendingAction}
         title="Confirm Large Spend"
@@ -84,6 +113,8 @@ export const BranchChoice: React.FC<BranchChoiceProps> = ({ hustle, currentBranc
           </div>
         </div>
       </div>
+
+      <CrownProgress player={pl} hustleId={hustle.id} />
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-slate-950/50 rounded-lg p-2 border border-slate-800/50">
