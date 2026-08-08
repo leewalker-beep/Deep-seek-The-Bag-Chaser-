@@ -52,6 +52,53 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   lobbying: { minPlays: 4, noLevelReq: true },
 };
 
+export const PLAY_LABELS: Record<string, string> = {
+  r_labor: 'Jobs completed',
+  r_delivery: 'Runs completed',
+  r_plasma: 'Donations',
+  r_vending: 'Purchases',
+  r_ghost_mode: 'Successful runs',
+  r_scrap: 'Successful salvage runs',
+  street_eats: 'Successful service runs',
+  cleaning: 'Successful jobs',
+  h_sign_spinner: 'Campaigns',
+  r_flyers: 'Campaigns',
+  cc: 'Uploads',
+  pod: 'Episodes recorded',
+  techFlip: 'Profitable flips',
+  sw: 'Product releases',
+  drop: 'Profitable sales cycles',
+  h_talent_agent: 'Successful client deals',
+  saas_mvp: 'Successful product launches',
+  ecom_brand: 'Profitable sales cycles',
+  meme: 'Profitable trading months',
+  audio: 'Successful releases',
+  agency_scale: 'Successful automation deployments',
+  smm: 'Successful launches',
+  real_estate_empire: 'Successful property expansions',
+  venture_capital: 'Successful investments',
+  data_analytics: 'Successful optimization projects',
+  festival: 'Successful events',
+  virtual_assistant_agency: 'Major contracts',
+  media_empire: 'Successful campaigns',
+  privateequity: 'Successful acquisitions',
+  luxury_conglomerate: 'Successful launches',
+  h_global_conglomerate: 'Successful expansions',
+  philanthropy_empire: 'Major charitable initiatives',
+  president_campaign: 'Successful policy terms',
+  lobbying: 'Successful diplomatic initiatives',
+};
+
+export interface CrownProgressData {
+  playsLabel: string;
+  actualPlays: number;
+  targetPlays: number;
+  actualLevel: number;
+  targetLevel?: number;
+  progressPercent: number;
+  isMastered: boolean;
+}
+
 export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
   const hustle = HUSTLES[hId];
   if (!hustle) return false;
@@ -113,6 +160,52 @@ export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
   }
 
   return false;
+};
+
+export const getCrownProgress = (player: PlayerStats, hId: string): CrownProgressData | null => {
+  const req = MASTERY_REQUIREMENTS[hId];
+  if (!req) return null;
+
+  const isMastered = player.masteredHustles?.includes(hId) || isHustleMastered(player, hId);
+
+  const playsLabel = PLAY_LABELS[hId] || 'Plays';
+  const targetPlays = req.minPlays;
+  const plays = player.hustlePlays?.[hId] || 0;
+  let actualPlays = plays;
+
+  if (hId === 'r_vending') {
+    actualPlays = Math.max(plays, player.vendingCount || 0);
+  }
+  if (hId === 'h_sign_spinner' || hId === 'r_flyers') {
+    actualPlays = Math.max(
+      plays,
+      player.hustlePlays?.['r_flyers'] || 0,
+      player.hustlePlays?.['h_sign_spinner'] || 0
+    );
+  }
+
+  const actualLevel = player.hustleLevels[hId] || 1;
+  const targetLevel = req.noLevelReq ? undefined : req.minLevel;
+
+  let progressPercent = 0;
+  if (targetLevel !== undefined) {
+    const playsRatio = Math.min(1, actualPlays / targetPlays);
+    const levelRatio = Math.min(1, actualLevel / targetLevel);
+    // Average progress of plays and level
+    progressPercent = Math.min(100, Math.round((playsRatio * 0.5 + levelRatio * 0.5) * 100));
+  } else {
+    progressPercent = Math.min(100, Math.round((actualPlays / targetPlays) * 100));
+  }
+
+  return {
+    playsLabel,
+    actualPlays,
+    targetPlays,
+    actualLevel,
+    targetLevel,
+    progressPercent,
+    isMastered,
+  };
 };
 
 /**
