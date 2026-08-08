@@ -2,44 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import { useGameStore } from '../store/gameStore';
 import { ConfirmationModal } from './ui/ConfirmationModal';
-import { MASTERY_REQUIREMENTS } from '../utils/masteryUtils';
-
-const CROWN_PROGRESS_LABELS: Record<string, string> = {
-  r_labor: 'Jobs completed',
-  r_delivery: 'Runs completed',
-  r_plasma: 'Donations',
-  r_vending: 'Purchases',
-  r_ghost_mode: 'Successful runs',
-  r_scrap: 'Successful salvage runs',
-  street_eats: 'Successful service runs',
-  cleaning: 'Successful jobs',
-  h_sign_spinner: 'Campaigns',
-  r_flyers: 'Campaigns',
-  cc: 'Uploads',
-  pod: 'Episodes recorded',
-  techFlip: 'Profitable flips',
-  sw: 'Product releases',
-  drop: 'Profitable sales cycles',
-  ecom_brand: 'Profitable sales cycles',
-  h_talent_agent: 'Successful client deals',
-  saas_mvp: 'Successful product launches',
-  meme: 'Profitable trading months',
-  audio: 'Successful releases',
-  agency_scale: 'Successful automation deployments',
-  smm: 'Successful launches',
-  real_estate_empire: 'Successful property expansions',
-  venture_capital: 'Successful investments',
-  data_analytics: 'Successful optimization projects',
-  festival: 'Successful events',
-  virtual_assistant_agency: 'Major contracts',
-  media_empire: 'Successful campaigns',
-  privateequity: 'Successful acquisitions',
-  luxury_conglomerate: 'Successful launches',
-  h_global_conglomerate: 'Successful expansions',
-  philanthropy_empire: 'Major charitable initiatives',
-  president_campaign: 'Successful policy terms',
-  lobbying: 'Successful diplomatic initiatives',
-};
+import { MASTERY_REQUIREMENTS, CROWN_PROGRESS_LABELS } from '../utils/masteryUtils';
 
 interface BranchChoiceProps {
   hustle: Hustle;
