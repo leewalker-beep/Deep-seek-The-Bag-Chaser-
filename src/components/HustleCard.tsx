@@ -7,7 +7,7 @@ import { ConfirmationModal } from './ui/ConfirmationModal';
 import { getEffectiveHustleStats, calculateHustleMath } from '../engine/mathEngine';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { useGameStore } from '../store/gameStore';
-import { MASTERY_REQUIREMENTS, isHustleMastered } from '../utils/masteryUtils';
+import { isHustleMastered } from '../utils/masteryUtils';
 import { CrownProgress } from './hustles/CrownProgress';
 
 const EXECUTE_LABEL: Record<string, string> = {

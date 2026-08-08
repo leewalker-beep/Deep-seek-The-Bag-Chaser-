@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import type { Hustle, HustleLevel } from '../config/hustles/base';
 import { useGameStore } from '../store/gameStore';
 import { ConfirmationModal } from './ui/ConfirmationModal';
