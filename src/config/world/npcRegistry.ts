@@ -1,3 +1,5 @@
+import { getRandomPortrait } from '../portraitRegistry';
+
 export type NPCRole = 'CREATOR' | 'EXECUTIVE' | 'RIVAL' | 'INTERN';
 
 export interface NPCCharacter {
@@ -5,6 +7,7 @@ export interface NPCCharacter {
   name: string;
   role: NPCRole;
   avatar: string;
+  avatarId?: string;       // Dynamic realistic portrait asset reference
   reputation: number;     // 1-100: Impact scale
   disposition: number;    // -100 to +100: Relationship tracking (Rival vs Ally)
   currentHustleId?: string;
@@ -22,24 +25,37 @@ export const generateGlobalNPC = (role: NPCRole, customName?: string, customAvat
     INTERN: ['Coffee Intern Sam', 'Gopher Gary', 'Assistant Alice']
   };
 
-  const avatarPools: Record<NPCRole, string[]> = {
-    CREATOR: ['🎧', '🎮', '🎤', '🛹', '👾', '🧢', '🎸', '🥷', '🕶️', '🔥', '🕷️', '🦊', '👑', '🌟', '💎', '🚀', '🔮'],
-    EXECUTIVE: ['💼', '👓', '👠', '👔', '👑'],
-    RIVAL: ['🐍', '🤡', '🦊', '👺', '👁️'],
-    INTERN: ['☕', '📝', '🏃‍♂️', '📂']
-  };
-
   const nameList = namesByRole[role];
-  const avatarPool = avatarPools[role];
-
   const finalName = customName || nameList[Math.floor(Math.random() * nameList.length)];
-  const finalAvatar = customAvatar || avatarPool[Math.floor(Math.random() * avatarPool.length)];
+
+  // Draw dynamically from appropriate portrait category pools
+  let assignedPortraitId = '';
+  let fallbackEmoji = '👤';
+
+  if (role === 'CREATOR') {
+    const p = getRandomPortrait('podcast');
+    assignedPortraitId = p.id;
+    fallbackEmoji = '🎙️';
+  } else if (role === 'RIVAL') {
+    const p = getRandomPortrait('elite');
+    assignedPortraitId = p.id;
+    fallbackEmoji = '🐍';
+  } else if (role === 'EXECUTIVE') {
+    const p = getRandomPortrait('corporate');
+    assignedPortraitId = p.id;
+    fallbackEmoji = '💼';
+  } else {
+    // INTERN
+    assignedPortraitId = 'p_podcast_2'; // Gamer Chad acts as a funny intern
+    fallbackEmoji = '☕';
+  }
 
   return {
     id: `npc_${role.toLowerCase()}_${Math.random().toString(36).substr(2, 5)}`,
     name: finalName,
     role: role,
-    avatar: finalAvatar,
+    avatar: customAvatar || fallbackEmoji,
+    avatarId: assignedPortraitId,
     reputation: Math.floor(Math.random() * 40) + 20,
     disposition: role === 'RIVAL' ? -50 : 20
   };

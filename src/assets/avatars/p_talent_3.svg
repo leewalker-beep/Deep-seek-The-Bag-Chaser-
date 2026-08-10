@@ -1,0 +1,72 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad_p_talent_3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#db2777" />
+      <stop offset="100%" stop-color="#500724" />
+    </linearGradient>
+    <clipPath id="circle_clip">
+      <circle cx="100" cy="100" r="96" />
+    </clipPath>
+  </defs>
+
+  <!-- Outer Circle Frame with Circular Crop Grid Accent -->
+  <g clip-path="url(#circle_clip)">
+    <!-- Background Gradient -->
+    <rect x="0" y="0" width="200" height="200" fill="url(#grad_p_talent_3)" />
+    <circle cx="100" cy="100" r="110" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.1" />
+    <circle cx="100" cy="100" r="75" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.05" />
+
+    <!-- Character Elements -->
+
+      <!-- Fade Hair -->
+      <path d="M 60,65 C 60,35 140,35 140,65 C 144,75 142,85 140,90 C 130,92 70,92 60,90 C 58,85 56,75 60,65 Z" fill="#008080" />
+      <path d="M 58,75 L 50,85 L 54,95 L 61,85 Z" fill="#008080" opacity="0.6" />
+      <path d="M 142,75 L 150,85 L 146,95 L 139,85 Z" fill="#008080" opacity="0.6" />
+
+
+    <!-- Neck -->
+    <path d="M 82,120 L 118,120 L 114,155 L 86,155 Z" fill="#8d5524" opacity="0.9" />
+    <path d="M 82,120 L 98,155 L 86,155 Z" fill="#000000" opacity="0.12" />
+
+    <!-- Face Shape -->
+    <ellipse cx="100" cy="90" rx="42" ry="48" fill="#8d5524" />
+
+    <!-- Soft Face Shadow on Left Side (Realistic illumination) -->
+    <path d="M 100,42 C 76.8,42 58,63.5 58,90 C 58,116.5 76.8,138 100,138 Z" fill="#000000" opacity="0.06" />
+
+    <!-- Nose -->
+    <path d="M 100,82 L 97,102 L 103,102 Z" fill="#8d5524" filter="brightness(0.88)" />
+
+    <!-- Eyes (Consistent framing & direction) -->
+    <g fill="#1f2937">
+      <ellipse cx="84" cy="85" rx="5" ry="3.5" />
+      <ellipse cx="116" cy="85" rx="5" ry="3.5" />
+    </g>
+    <!-- Pupils Highlights -->
+    <circle cx="85.5" cy="83.5" r="1.2" fill="#ffffff" />
+    <circle cx="117.5" cy="83.5" r="1.2" fill="#ffffff" />
+
+    <!-- Eyebrows -->
+    <path d="M 75,77 Q 84,72 91,79" fill="none" stroke="#008080" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M 125,77 Q 116,72 109,79" fill="none" stroke="#008080" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Mouth / Smile -->
+    <path d="M 88,112 Q 100,124 112,112" fill="none" stroke="#991b1b" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+
+
+      <!-- Suit -->
+      <path d="M 40,150 L 160,150 L 175,200 L 25,200 Z" fill="#1a0a00" />
+      <!-- White Shirt/Collar -->
+      <path d="M 85,150 L 115,150 L 122,175 L 100,195 L 78,175 Z" fill="#ffffff" />
+      <!-- Tie -->
+      <path d="M 96,165 L 104,165 L 108,200 L 92,200 Z" fill="#990000" />
+      <!-- Lapels -->
+      <path d="M 40,150 L 80,185 L 72,200 L 30,175 Z" fill="#1a0a00" opacity="0.85" stroke="#ffffff20" />
+      <path d="M 160,150 L 120,185 L 128,200 L 170,175 Z" fill="#1a0a00" opacity="0.85" stroke="#ffffff20" />
+
+
+  </g>
+
+  <!-- Circular Border Highlight -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#ffffff" stroke-width="4.5" opacity="0.15" />
+</svg>

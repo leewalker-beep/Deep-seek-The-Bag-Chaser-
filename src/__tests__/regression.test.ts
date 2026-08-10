@@ -87,7 +87,7 @@ describe('Regression Tests', () => {
       expect(localResult.success).toBe(true);
       expect(localResult.artist).toBeDefined();
       if (localResult.artist) {
-        expect(['🎤', '🧢', '🎧', '🎸']).toContain(localResult.artist.avatar);
+        expect(['🎤', '🧢', '🎧', '🎸', 'p_music_1', 'p_music_2', 'p_music_3', 'p_music_4', 'p_music_5', 'p_music_6', 'p_music_7', 'p_music_8', 'p_music_9', 'p_music_10']).toContain(localResult.artist.avatar);
         expect(localResult.artist.status).toBe('IN STUDIO');
       }
 
@@ -96,7 +96,7 @@ describe('Regression Tests', () => {
       expect(regionalResult.success).toBe(true);
       expect(regionalResult.artist).toBeDefined();
       if (regionalResult.artist) {
-        expect(['🥷', '🕶️', '🔥', '🕷️', '🦊']).toContain(regionalResult.artist.avatar);
+        expect(['🥷', '🕶️', '🔥', '🕷️', '🦊', 'p_music_1', 'p_music_2', 'p_music_3', 'p_music_4', 'p_music_5', 'p_music_6', 'p_music_7', 'p_music_8', 'p_music_9', 'p_music_10']).toContain(regionalResult.artist.avatar);
         expect(regionalResult.artist.status).toBe('IN STUDIO');
       }
 
@@ -105,7 +105,7 @@ describe('Regression Tests', () => {
       expect(globalResult.success).toBe(true);
       expect(globalResult.artist).toBeDefined();
       if (globalResult.artist) {
-        expect(['👑', '🌟', '💎', '🚀', '🔮']).toContain(globalResult.artist.avatar);
+        expect(['👑', '🌟', '💎', '🚀', '🔮', 'p_music_1', 'p_music_2', 'p_music_3', 'p_music_4', 'p_music_5', 'p_music_6', 'p_music_7', 'p_music_8', 'p_music_9', 'p_music_10']).toContain(globalResult.artist.avatar);
         expect(globalResult.artist.status).toBe('IN STUDIO');
       }
     } finally {

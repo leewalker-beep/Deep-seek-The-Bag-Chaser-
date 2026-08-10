@@ -771,6 +771,7 @@ export interface PersistentNPC {
   id: string;
   name: string;
   avatar: string;
+  avatarId?: string;
   reputation: number;
   disposition: number;
   currentRole: string;

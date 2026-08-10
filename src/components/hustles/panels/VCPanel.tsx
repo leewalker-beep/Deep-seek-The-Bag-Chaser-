@@ -4,6 +4,7 @@ import type { Hustle } from '../../../config/hustles/base';
 import { RosterSelectList } from '../../ui/RosterSelectList';
 import type { Founder } from '../../../types/game';
 import { getCharacterCallbackLine } from '../../../utils/rivalUtils';
+import Avatar from '../../Avatar';
 
 interface VCPanelProps {
   hustle: Hustle;
@@ -181,7 +182,7 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
         <div className="bg-slate-950 p-4 rounded-xl border border-blue-500/50 space-y-3 font-mono">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-              <span className="text-2xl" data-testid="selected-founder-avatar">{selectedFounder.avatar || '💼'}</span>
+              <Avatar avatarId={selectedFounder.avatarId || selectedFounder.avatar} size={40} className="rounded-xl border border-slate-800" />
               <div>
                 <h4 className="text-sm font-black text-white uppercase" data-testid="selected-founder-name">{selectedFounder.name}</h4>
                 <p className="text-[10px] text-blue-400 font-bold uppercase">{selectedFounder.companyName}</p>
@@ -226,7 +227,7 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
 
           {isFunding ? (
             <div className="flex flex-col items-center gap-2 py-4 animate-pulse bg-slate-900/50 rounded-lg border border-slate-800" data-testid="vc-funding-progress">
-              <div className="text-5xl animate-bounce">{selectedFounder.avatar || '💼'}</div>
+              <Avatar avatarId={selectedFounder.avatarId || selectedFounder.avatar} size={64} className="rounded-full border border-slate-700 mx-auto animate-bounce" />
               <p className="text-xs font-black text-blue-400">DISPATCHING CAPITAL TO {selectedFounder.name.toUpperCase()}...</p>
               <span className="text-[10px] text-slate-500 font-mono">WIRING $5,000,000 FUNDS 💸</span>
             </div>
@@ -278,6 +279,7 @@ export const VCPanel: React.FC<VCPanelProps> = ({ hustle, onExecute }) => {
               return {
                 name: founder.name,
                 avatar: founder.avatar,
+                avatarId: founder.avatarId,
                 subtitle: subtitleText,
                 statLine: (
                   <div className="text-[10px] space-y-1 text-right font-mono">

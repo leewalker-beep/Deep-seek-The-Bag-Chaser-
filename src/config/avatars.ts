@@ -53,7 +53,6 @@ export const getRivalAvatarId = (name: string): string => {
     hash = ((hash << 5) - hash) + name.charCodeAt(i);
     hash |= 0;
   }
-  return PLAYER_AVATARS[
-    Math.abs(hash) % PLAYER_AVATARS.length
-  ].id;
+  const index = (Math.abs(hash) % 10) + 1;
+  return `p_elite_${index}`;
 };

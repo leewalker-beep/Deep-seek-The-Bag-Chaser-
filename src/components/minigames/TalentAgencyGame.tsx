@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ConcentrationMatch } from './ConcentrationMatch';
 import { CHARACTERS } from '../../config/characters';
+import Avatar from '../Avatar';
 
 interface TalentAgencyGameProps {
   onComplete: (result: { success: boolean; multiplier: number; celebrity?: any }) => void;
@@ -9,16 +10,16 @@ interface TalentAgencyGameProps {
 }
 
 const CREATOR_POOL = [
-  { name: "Slam-Dunk Marcus", avatar: "🏀", bio: "High-school basketball captain with a 40-inch vertical." },
-  { name: "Vlog Titan Jenny", avatar: "📹", bio: "Unfiltered suburban makeup & drama YouTuber." },
-  { name: "Skate-King Tony", avatar: "🛹", bio: "Local halfpipe legend with a massive TikTok following." },
-  { name: "Lil Spitfire", avatar: "🎤", bio: "16-year-old rapid-fire freestyle bedroom rapper." },
-  { name: "Gamer-Girl Chloe", avatar: "🎮", bio: "Semi-pro speedrunner who stream-rages with charisma." },
-  { name: "Heavy-Lifter Dan", avatar: "🏋️‍♂️", bio: "17-year-old strongman competitor who eats raw eggs." },
-  { name: "Speed-Demon Sarah", avatar: "🏃‍♀️", bio: "State record-holding track sprinter with huge endorsement buzz." },
-  { name: "Ninja Kai", avatar: "🥋", bio: "Tricking and parkour artist who flips off rooftops." },
-  { name: "Glam-Queen Sasha", avatar: "💄", bio: "Aspiring high-fashion model who does street-style shoots." },
-  { name: "DJ Bass-Drop", avatar: "🎧", bio: "Part-time school DJ producing bass-boosted mashups." },
+  { name: "Slam-Dunk Marcus", avatar: "p_talent_1", bio: "High-school basketball captain with a 40-inch vertical." },
+  { name: "Vlog Titan Jenny", avatar: "p_talent_2", bio: "Unfiltered suburban makeup & drama YouTuber." },
+  { name: "Skate-King Tony", avatar: "p_talent_3", bio: "Local halfpipe legend with a massive TikTok following." },
+  { name: "Lil Spitfire", avatar: "p_talent_4", bio: "16-year-old rapid-fire freestyle bedroom rapper." },
+  { name: "Gamer-Girl Chloe", avatar: "p_talent_5", bio: "Semi-pro speedrunner who stream-rages with charisma." },
+  { name: "Heavy-Lifter Dan", avatar: "p_talent_6", bio: "17-year-old strongman competitor who eats raw eggs." },
+  { name: "Speed-Demon Sarah", avatar: "p_talent_7", bio: "State record-holding track sprinter with huge endorsement buzz." },
+  { name: "Ninja Kai", avatar: "p_talent_8", bio: "Tricking and parkour artist who flips off rooftops." },
+  { name: "Glam-Queen Sasha", avatar: "p_talent_9", bio: "Aspiring high-fashion model who does street-style shoots." },
+  { name: "DJ Bass-Drop", avatar: "p_talent_10", bio: "Part-time school DJ producing bass-boosted mashups." },
 ];
 
 export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
@@ -78,6 +79,7 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
         characterId: matchingChar?.id,
         name: randomCreator.name,
         avatar: randomCreator.avatar,
+        avatarId: randomCreator.avatar,
         relationshipScore: calculatedScore,
         isUnlocked: true,
       };
@@ -109,10 +111,10 @@ export const TalentAgencyGame: React.FC<TalentAgencyGameProps> = ({
             <motion.div
               initial={{ scale: 0.5, rotateY: 180 }}
               animate={{ scale: 1, rotateY: 0 }}
-              className="text-6xl animate-bounce"
+              className="animate-bounce"
               data-testid="signed-talent-avatar"
             >
-              ✨{talent?.avatar || '👑'}✨
+              <Avatar avatarId={talent?.avatarId || talent?.avatar || '👑'} size={80} className="rounded-full border border-slate-700 mx-auto" />
             </motion.div>
             <div className="text-xl font-black text-white italic uppercase tracking-tighter">
               AUDITIONS COMPLETE!
