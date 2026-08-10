@@ -270,7 +270,7 @@ export const PresidentDashboard: React.FC = () => {
                     </div>
                     {appointee ? (
                       <div className="flex gap-3">
-                        <Avatar avatarId={appointee.avatarId || appointee.avatar} size={40} className="rounded-xl border border-slate-700 shrink-0" />
+                        <Avatar avatarId={appointee.avatarId || appointee.avatar || '👔'} size={40} className="rounded-xl border border-slate-700 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold text-white mb-1 truncate">{appointee.name}</div>
                           <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">

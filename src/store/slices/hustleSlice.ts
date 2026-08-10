@@ -15,7 +15,6 @@ const PITCH_IDEAS = [
   "Automated micro-retail storefronts utilizing robotic sorting.",
   "Carbon-negative synthetic building materials from atmospheric CO2."
 ];
-const FOUNDER_AVATARS = ["👓", "🧠", "💻", "🚀", "🕶️", "💼", "🤖", "👔"];
 import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { CHARACTERS } from '../../config/characters';
