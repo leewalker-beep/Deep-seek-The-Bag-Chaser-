@@ -24,6 +24,9 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   sw: { minPlays: 8, noLevelReq: true },
   drop: { minPlays: 8, minLevel: 2 },
   h_talent_agent: { minPlays: 8, noLevelReq: true },
+  vintage: { minPlays: 8, noLevelReq: true },
+  r_pr_campaign: { minPlays: 6, minLevel: 2 },
+  unique_hustle_deli: { minPlays: 8, minLevel: 2 },
 
   // STARTUP Tier Rebalance
   saas_mvp: { minPlays: 6, minLevel: 2 },
@@ -32,6 +35,8 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   audio: { minPlays: 8, noLevelReq: true },
   agency_scale: { minPlays: 6, minLevel: 2 },
   smm: { minPlays: 6, minLevel: 2 },
+  h_review_farm: { minPlays: 8, noLevelReq: true },
+  gig: { minPlays: 8, minLevel: 2 },
 
   // CORPORATE Tier Rebalance
   real_estate_empire: { minPlays: 6, minLevel: 2 },
@@ -40,16 +45,25 @@ export const MASTERY_REQUIREMENTS: Record<string, MasteryRequirement> = {
   festival: { minPlays: 8, noLevelReq: true },
   virtual_assistant_agency: { minPlays: 6, minLevel: 2 },
   media_empire: { minPlays: 6, noLevelReq: true },
+  global_franchise: { minPlays: 6, minLevel: 2 },
+  crypto_mining: { minPlays: 8, noLevelReq: true },
 
   // ELITE Tier Rebalance
   privateequity: { minPlays: 5, minLevel: 2 },
   luxury_conglomerate: { minPlays: 6, noLevelReq: true },
   h_global_conglomerate: { minPlays: 5, minLevel: 2 },
   philanthropy_empire: { minPlays: 8, noLevelReq: true },
+  hedgefund: { minPlays: 5, minLevel: 2 },
+  film_studio: { minPlays: 6, noLevelReq: true },
+  fight_promoter: { minPlays: 6, noLevelReq: true },
+  space_investment: { minPlays: 5, minLevel: 2 },
 
   // PRESIDENT Tier Rebalance
   president_campaign: { minPlays: 4, minLevel: 2 },
   lobbying: { minPlays: 4, noLevelReq: true },
+  data_monopoly: { minPlays: 5, minLevel: 2 },
+  central_bank_play: { minPlays: 4, minLevel: 2 },
+  legacy_fund: { minPlays: 6, noLevelReq: true },
 };
 
 export const PLAY_LABELS: Record<string, string> = {
@@ -69,24 +83,38 @@ export const PLAY_LABELS: Record<string, string> = {
   sw: 'Product releases',
   drop: 'Profitable sales cycles',
   h_talent_agent: 'Successful client deals',
+  vintage: 'Successful restorations',
+  r_pr_campaign: 'Successful campaigns',
+  unique_hustle_deli: 'Successful service runs',
   saas_mvp: 'Successful product launches',
   ecom_brand: 'Profitable sales cycles',
   meme: 'Profitable trading months',
   audio: 'Successful releases',
   agency_scale: 'Successful automation deployments',
   smm: 'Successful launches',
+  h_review_farm: 'Successful review campaigns',
+  gig: 'Successful contracts',
   real_estate_empire: 'Successful property expansions',
   venture_capital: 'Successful investments',
   data_analytics: 'Successful optimization projects',
   festival: 'Successful events',
   virtual_assistant_agency: 'Major contracts',
   media_empire: 'Successful campaigns',
+  global_franchise: 'Successful franchise expansions',
+  crypto_mining: 'Profitable mining months',
   privateequity: 'Successful acquisitions',
   luxury_conglomerate: 'Successful launches',
   h_global_conglomerate: 'Successful expansions',
   philanthropy_empire: 'Major charitable initiatives',
+  hedgefund: 'Profitable investment cycles',
+  film_studio: 'Successful productions',
+  fight_promoter: 'Successful events',
+  space_investment: 'Successful launches',
   president_campaign: 'Successful policy terms',
   lobbying: 'Successful diplomatic initiatives',
+  data_monopoly: 'Successful expansions',
+  central_bank_play: 'Successful monetary operations',
+  legacy_fund: 'Legacy distributions',
 };
 
 export interface CrownProgressData {
