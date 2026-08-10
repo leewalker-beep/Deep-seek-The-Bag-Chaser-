@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Avatar from './Avatar';
 
 export interface AdvisorMentorModalProps {
   title: string;
@@ -35,9 +36,7 @@ export const AdvisorMentorModal: React.FC<AdvisorMentorModalProps> = ({
         <div className="p-6 space-y-5">
           {/* Mentor Profile Avatar & Info */}
           <div className="flex items-center gap-3">
-            <span className="text-4xl bg-slate-950 p-2.5 rounded-2xl border border-slate-800 shadow-inner">
-              🧠
-            </span>
+            <Avatar avatarId="p_advisor" size={56} className="rounded-2xl border border-slate-800 shadow-inner shrink-0" />
             <div>
               <span className="text-[9px] text-emerald-400 font-black uppercase tracking-widest block">
                 Strategic Advisor

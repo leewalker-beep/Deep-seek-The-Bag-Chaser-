@@ -41,11 +41,10 @@ describe('Character Database Expansion', () => {
     expect(characterIdsInEvents.size).toBeGreaterThanOrEqual(25);
   });
 
-  it('should ensure all character portrait IDs are valid player avatars', () => {
-    // This is more of a loose check since I don't want to import PLAYER_AVATARS if not needed,
-    // but I can check the format.
+  it('should ensure all character portrait IDs are valid player avatars or registry portraits', () => {
+    // Check that it's either a legacy player avatar or one of our 60+ new registry portrait IDs
     CHARACTERS.forEach(char => {
-      expect(char.portraitId).toMatch(/^av_[mf][1-4]$/);
+      expect(char.portraitId).toMatch(/^av_[mf][1-4]$|^p_[a-z]+_[0-9]+$/);
     });
   });
 });

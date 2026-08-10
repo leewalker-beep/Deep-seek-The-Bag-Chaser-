@@ -1,6 +1,6 @@
 import React from 'react';
-import { type AvatarDef, PLAYER_AVATARS } from
-  '../config/avatars';
+import { type AvatarDef, PLAYER_AVATARS } from '../config/avatars';
+import { getPortraitDef } from '../config/portraitRegistry';
 
 interface AvatarProps {
   avatarId: string;
@@ -178,9 +178,9 @@ const AvatarSVG: React.FC<{
 const Avatar: React.FC<AvatarProps> = ({
   avatarId, size = 40, className = '', ring
 }) => {
-  const def = PLAYER_AVATARS.find(
-    a => a.id === avatarId
-  ) || PLAYER_AVATARS[0];
+  // Check if it's one of our new 60 portraits
+  const portrait = getPortraitDef(avatarId);
+  const isPlayerAvatar = PLAYER_AVATARS.some(a => a.id === avatarId);
 
   return (
     <div
@@ -194,8 +194,22 @@ const Avatar: React.FC<AvatarProps> = ({
       {/* Background/Placeholder */}
       <div className="absolute inset-0 bg-slate-900 animate-pulse opacity-50" />
 
-      <div className="relative z-10 w-full h-full">
-        <AvatarSVG def={def} size={size} />
+      <div className="relative z-10 w-full h-full flex items-center justify-center">
+        {portrait ? (
+          <img
+            src={portrait.url}
+            alt={portrait.name}
+            className="w-full h-full object-cover rounded-full"
+            loading="lazy"
+          />
+        ) : isPlayerAvatar ? (
+          <AvatarSVG def={PLAYER_AVATARS.find(a => a.id === avatarId)!} size={size} />
+        ) : (
+          // Dynamic fallback for plain emojis/letters or any missing avatars
+          <span className="text-xl leading-none select-none select-all" style={{ fontSize: `${size * 0.5}px` }}>
+            {avatarId || '👤'}
+          </span>
+        )}
       </div>
     </div>
   );

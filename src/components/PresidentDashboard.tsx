@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
+import Avatar from './Avatar';
 import { CABINET_ROLES, EXECUTIVE_ORDERS, generateCandidatePool } from '../engine/presidentEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PresidentialNewsTicker } from './PresidentialNewsTicker';
@@ -268,29 +269,32 @@ export const PresidentDashboard: React.FC = () => {
                       )}
                     </div>
                     {appointee ? (
-                      <div>
-                        <div className="text-sm font-bold text-white mb-1">{appointee.name}</div>
-                        <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">
-                          +{appointee.isTrustedAlly ? appointee.bonus.value * 2 : appointee.bonus.value}% {appointee.bonus.type}
-                          {appointee.isTrustedAlly && ' 🤝'}
-                        </div>
-                        <div className="text-[7px] text-slate-500 uppercase font-black mb-2">
-                          {appointee.previousCareer}
-                          {appointee.politicalAlignment && ` • ${appointee.politicalAlignment}`}
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[7px] font-black uppercase">
-                            <span className="text-slate-500">Loyalty</span>
-                            <span className={appointee.loyalty > 60 ? 'text-emerald-400' : appointee.loyalty > 40 ? 'text-yellow-400' : 'text-red-400 animate-pulse'}>
-                              {appointee.loyalty}%
-                            </span>
+                      <div className="flex gap-3">
+                        <Avatar avatarId={appointee.avatarId || appointee.avatar} size={40} className="rounded-xl border border-slate-700 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold text-white mb-1 truncate">{appointee.name}</div>
+                          <div className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mb-1">
+                            +{appointee.isTrustedAlly ? appointee.bonus.value * 2 : appointee.bonus.value}% {appointee.bonus.type}
+                            {appointee.isTrustedAlly && ' 🤝'}
                           </div>
-                          <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-500 ${appointee.loyalty > 60 ? 'bg-emerald-500' : appointee.loyalty > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                              style={{ width: `${appointee.loyalty}%` }}
-                            />
+                          <div className="text-[7px] text-slate-500 uppercase font-black mb-2 truncate">
+                            {appointee.previousCareer}
+                            {appointee.politicalAlignment && ` • ${appointee.politicalAlignment}`}
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[7px] font-black uppercase">
+                              <span className="text-slate-500">Loyalty</span>
+                              <span className={appointee.loyalty > 60 ? 'text-emerald-400' : appointee.loyalty > 40 ? 'text-yellow-400' : 'text-red-400 animate-pulse'}>
+                                {appointee.loyalty}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-500 ${appointee.loyalty > 60 ? 'bg-emerald-500' : appointee.loyalty > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                style={{ width: `${appointee.loyalty}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>

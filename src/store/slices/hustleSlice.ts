@@ -20,6 +20,7 @@ import { HUSTLES, type HustleLevel } from '../../config/hustles/base';
 import { MARKET_CONFIGS } from '../../config/marketConfig';
 import { CHARACTERS } from '../../config/characters';
 import { getRivalAvatarId } from '../../config/avatars';
+import { getRandomPortrait } from '../../config/portraitRegistry';
 import { getRivalRosterProfile, isRivalEligibleForRecruit } from '../../utils/rivalUtils';
 import { calculateHustleMath, calculateFlexBonuses, applyFlexBonuses } from '../../engine/mathEngine';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
@@ -1285,7 +1286,6 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const companyPrefix = COMPANY_PREFIXES[Math.floor(Math.random() * COMPANY_PREFIXES.length)];
       const companySuffix = COMPANY_SUFFIXES[Math.floor(Math.random() * COMPANY_SUFFIXES.length)];
       const pitchIdea = PITCH_IDEAS[Math.floor(Math.random() * PITCH_IDEAS.length)];
-      const avatar = FOUNDER_AVATARS[Math.floor(Math.random() * FOUNDER_AVATARS.length)];
 
       const founderName = `${firstName} ${lastName}`;
       const companyName = `${companyPrefix}${companySuffix}`;
@@ -1297,11 +1297,17 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         (c.nickname && lowerFounderName.includes(c.nickname.toLowerCase()))
       );
 
+      let avatarId = matchingChar?.portraitId;
+      if (!avatarId) {
+        avatarId = getRandomPortrait('corporate').id;
+      }
+
       const newFounder: Founder = {
         id,
         characterId: matchingChar?.id,
         name: founderName,
-        avatar,
+        avatar: avatarId,
+        avatarId,
         companyName,
         pitchIdea,
         followOnCount: 0,

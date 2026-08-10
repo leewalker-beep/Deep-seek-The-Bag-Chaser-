@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ProgressBar } from '../ui/ProgressBar';
 import { getScalingMultiplier, getTimerFactor } from '../../utils/difficulty';
 import type { Tier } from '../../types/game';
+import Avatar from '../Avatar';
 
 export interface ConcentrationCardItem {
   id: string;
@@ -416,9 +417,13 @@ export const ConcentrationMatch: React.FC<ConcentrationMatchProps> = ({
                     initial={{ scale: 0, rotateY: 180 }}
                     animate={{ scale: 1, rotateY: 0 }}
                     exit={{ scale: 0 }}
-                    className="select-none"
+                    className="select-none flex items-center justify-center w-full h-full"
                   >
-                    {card.image}
+                    {card.image.startsWith('p_') ? (
+                      <Avatar avatarId={card.image} size={48} className="rounded-full border border-slate-700" />
+                    ) : (
+                      card.image
+                    )}
                   </motion.span>
                 ) : (
                   <motion.span

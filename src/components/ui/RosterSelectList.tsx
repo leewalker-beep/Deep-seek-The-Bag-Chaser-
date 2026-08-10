@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RosterCharacter } from '../../types/game';
+import Avatar from '../Avatar';
 
 export interface RosterSelectListProps<T extends RosterCharacter> {
   roster: T[];
@@ -40,15 +41,7 @@ export function RosterSelectList<T extends RosterCharacter>({
           >
             {/* Standard Avatar rendering */}
             <div className="mb-4 text-center">
-              {avatarId ? (
-                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl border border-slate-700">
-                  {avatarId}
-                </div>
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl border border-slate-700">
-                  {avatar || '👑'}
-                </div>
-              )}
+              <Avatar avatarId={avatarId || avatar || '👑'} size={64} className="mx-auto rounded-full border border-slate-700" />
             </div>
 
             <h5 className="text-white font-black text-sm text-center mb-1">{name}</h5>
@@ -72,8 +65,8 @@ export function RosterSelectList<T extends RosterCharacter>({
             className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 hover:border-purple-500/80 cursor-pointer transition-all flex items-center justify-between gap-4 group"
           >
             <div className="flex items-center gap-3">
-              <div className="text-3xl bg-slate-900 w-12 h-12 rounded-lg border border-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                {avatar || '👑'}
+              <div className="group-hover:scale-105 transition-transform shrink-0">
+                <Avatar avatarId={avatarId || avatar || '👑'} size={48} className="rounded-lg border border-slate-800" />
               </div>
               <div className="text-left space-y-0.5">
                 <h5 className="text-white font-black text-sm group-hover:text-purple-400 transition-colors">

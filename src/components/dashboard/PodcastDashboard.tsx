@@ -3,6 +3,7 @@ import { generateGlobalNPC } from '../../config/world/npcRegistry';
 import type { NPCCharacter } from '../../config/world/npcRegistry';
 import { useGameStore } from '../../store/gameStore';
 import type { PersistentNPC } from '../../types/game';
+import Avatar from '../Avatar';
 
 export interface PodcastDashboardProps {
   onSelectGuest?: (guestId: string) => void;
@@ -30,6 +31,7 @@ export const PodcastDashboard: React.FC<PodcastDashboardProps> = ({
         id: guest.id,
         name: guest.name,
         avatar: guest.avatar,
+        avatarId: guest.avatarId,
         reputation: guest.reputation,
         disposition: guest.disposition,
         currentRole: guest.role === 'INTERN' ? 'STREET_INTERN' : guest.role,
@@ -64,9 +66,9 @@ export const PodcastDashboard: React.FC<PodcastDashboardProps> = ({
       {activeGuest ? (
         <div className="p-3 bg-zinc-900 border border-zinc-850 rounded-xl flex items-center gap-3 transition-all animate-fadeIn">
           {/* Linked Unified Avatar Frame */}
-          <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-2xl relative shrink-0 shadow-inner">
-            <span className={activeGuest.role === 'RIVAL' ? "animate-pulse" : ""}>{activeGuest.avatar}</span>
-            <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-zinc-950 ${activeGuest.role === 'RIVAL' ? 'bg-red-500' : 'bg-emerald-500'}`} />
+          <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-2xl relative shrink-0 shadow-inner overflow-hidden">
+            <Avatar avatarId={activeGuest.avatarId || activeGuest.avatar} size={48} className="rounded-xl" />
+            <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-zinc-950 z-20 ${activeGuest.role === 'RIVAL' ? 'bg-red-500' : 'bg-emerald-500'}`} />
           </div>
 
           <div className="flex-1 min-w-0">

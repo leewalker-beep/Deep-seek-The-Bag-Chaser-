@@ -7,6 +7,7 @@ import { LEGACY_UPGRADES } from '../../config/legacyUpgrades';
 import * as Bio from '../../engine/biographyEngine';
 import { generateGlobalNPC } from '../../config/world/npcRegistry';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
+import { getRandomPortrait } from '../../config/portraitRegistry';
 import { HUSTLES } from '../../config/hustles/base';
 
 export interface PlayerStatsSlice {
@@ -365,14 +366,25 @@ export const createPlayerStatsSlice: StateCreator<GameState, [], [], PlayerStats
     const candidatesCount = 3;
     const candidates: RecordLabelArtist[] = [];
 
+    // Ensure we don't get duplicate portraits in the same scouting pool
+    const selectedPortraitIds = new Set<string>();
+
     for (let i = 0; i < candidatesCount; i++) {
       const tierAvatar = getTierAvatar(tier);
       const npcProfile = generateGlobalNPC('CREATOR', undefined, tierAvatar);
 
+      let portrait = getRandomPortrait('music');
+      // Retry once if duplicate to ensure variety
+      if (selectedPortraitIds.has(portrait.id)) {
+        portrait = getRandomPortrait('music');
+      }
+      selectedPortraitIds.add(portrait.id);
+
       const candidateArtist: RecordLabelArtist = {
         id: npcProfile.id,
         name: npcProfile.name,
-        avatar: npcProfile.avatar,
+        avatar: portrait.id,
+        avatarId: portrait.id,
         contractMonthsLeft: 120,
         monthlyRetainer: Math.floor(royalty * 0.2),
         monthlyRevenue: Math.floor(royalty * 1.2),

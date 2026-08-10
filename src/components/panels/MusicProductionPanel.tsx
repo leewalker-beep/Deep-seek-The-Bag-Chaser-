@@ -2,6 +2,7 @@ import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import type { Hustle } from '../../config/hustles/base';
 import { RosterSelectList } from '../ui/RosterSelectList';
+import Avatar from '../Avatar';
 
 interface MusicProductionPanelProps {
   hustle: Hustle;
@@ -96,6 +97,7 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hust
             getDisplayProps={(artist) => ({
               name: artist.name,
               avatar: artist.avatar,
+              avatarId: artist.avatarId,
               subtitle: `${artist.tier.toUpperCase()} Artist`,
               statLine: (
                 <div className="text-right">
@@ -120,7 +122,7 @@ export const MusicProductionPanel: React.FC<MusicProductionPanelProps> = ({ hust
               {/* Character Face Container */}
               <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl shadow-inner relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-500/5 to-transparent pointer-events-none" />
-                <span>{artist.avatar || '🎤'}</span>
+                <Avatar avatarId={artist.avatarId || artist.avatar} size={40} className="rounded-xl border border-slate-700" />
               </div>
 
               {/* Existing Identity & Stats Stack */}

@@ -124,7 +124,7 @@ describe('Rival Recruitment System', () => {
     const exec = candidates?.find(c => c.id === `exec_${rivalId}`)!;
 
     expect(exec.name).toBe('Victor Kane');
-    expect(exec.avatarId).toBe('av_m2');
+    expect(exec.avatarId).toBe('p_elite_1');
     expect(exec.bio).toContain('The apex predator of the corporate world');
   });
 

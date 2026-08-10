@@ -16,10 +16,11 @@ const AchievementsTab = lazy(() => import('./scoreboard/AchievementsTab').then(m
 const EndingsTab = lazy(() => import('./scoreboard/EndingsTab').then(m => ({ default: m.EndingsTab })));
 const DeathsTab = lazy(() => import('./scoreboard/DeathsTab').then(m => ({ default: m.DeathsTab })));
 const FinanceTab = lazy(() => import('./scoreboard/FinanceTab').then(m => ({ default: m.FinanceTab })));
+const PortraitsTab = lazy(() => import('./scoreboard/PortraitsTab').then(m => ({ default: m.PortraitsTab })));
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, isTutorialSkipped, tutorialStep, updatePl } = useGameStore();
-  const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'badges' | 'history' | 'biography' | 'reputation' | 'ledger' | 'empire' | 'achievements' | 'endings' | 'deaths' | 'finance'>('career');
+  const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'badges' | 'history' | 'biography' | 'reputation' | 'ledger' | 'empire' | 'achievements' | 'endings' | 'deaths' | 'finance' | 'portraits'>('career');
   const [confirmingEnd, setConfirmingEnd] = useState(false);
 
   const { setPh } = useGameStore();
@@ -42,7 +43,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   // Tab progressive discovery checks
   const getTabStatus = (tabName: string) => {
     // Core tabs are always unlocked and celebrated
-    if (['career', 'portfolio', 'badges', 'achievements', 'endings', 'deaths', 'finance'].includes(tabName)) {
+    if (['career', 'portfolio', 'badges', 'achievements', 'endings', 'deaths', 'finance', 'portraits'].includes(tabName)) {
       return { isUnlocked: true, isCelebrated: true };
     }
 
@@ -140,6 +141,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       case 'endings': return <EndingsTab />;
       case 'deaths': return <DeathsTab />;
       case 'finance': return <FinanceTab />;
+      case 'portraits': return <PortraitsTab />;
       default: return <CareerTab />;
     }
   };
@@ -157,7 +159,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="flex bg-slate-950/80 p-1 m-4 rounded-xl border border-slate-800/80 overflow-x-auto no-scrollbar gap-1">
-          {['career', 'portfolio', 'badges', 'history', 'biography', 'reputation', 'ledger', 'empire', 'achievements', 'endings', 'deaths', 'finance'].map((tab) => {
+          {['career', 'portfolio', 'badges', 'history', 'biography', 'reputation', 'ledger', 'empire', 'achievements', 'endings', 'deaths', 'finance', 'portraits'].map((tab) => {
             const status = getTabStatus(tab);
             let tabLabel = tab;
             let indicator = null;
