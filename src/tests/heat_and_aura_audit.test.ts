@@ -113,4 +113,39 @@ describe('TEST 1 — Ghost Mode and Heat Audit', () => {
     expect(res.heatImmediatelyAfter).toBe(27);
     expect(res.heatAfterMonthAdvance).toBe(17); // 27 - 10 passive monthly decay
   });
+
+  it('verifies safe/recovery actions never fail randomly under defaultStrategy', () => {
+    const store = useGameStore.getState();
+    const pl = store.pl;
+
+    // Set up player state
+    pl.bag = 100000;
+    pl.clout = 100;
+    pl.aura = 50;
+    pl.mentalHealth = 100;
+    pl.heat = 40;
+
+    const safeHustles = ['r_sleep', 'power_nap', 'wellness_retreat', 'psychiatrist', 'r_ghost_mode'];
+
+    for (const hustleId of safeHustles) {
+      const hustle = HUSTLES[hustleId];
+      const branchId = Object.keys(hustle.branches!)[0];
+      const levelData = hustle.branches![branchId];
+
+      // Run multiple times without forceSuccess to verify 100% deterministic success
+      for (let i = 0; i < 50; i++) {
+        const result = executeHustleAction(
+          hustleId,
+          pl,
+          store.currentMarket,
+          levelData,
+          1,
+          1.0,
+          undefined, // undefined forceSuccess (test random roll path)
+          'NEUTRAL'
+        );
+        expect(result.success, `Hustle ${hustleId} should always succeed without random failure`).toBe(true);
+      }
+    }
+  });
 });
