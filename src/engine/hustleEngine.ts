@@ -43,7 +43,10 @@ export type HustleStrategy = (
 
 const defaultStrategy: HustleStrategy = (hustleId, state, marketType, levelData, currentLevel, minigameMultiplier, forceSuccess, rivalThreat = 'NEUTRAL') => {
   const market = MARKET_CONFIGS[marketType];
-  const success = forceSuccess !== undefined ? forceSuccess : Math.random() < 0.8;
+  const isSafeAction = ['r_sleep', 'power_nap', 'wellness_retreat', 'psychiatrist', 'r_ghost_mode'].includes(hustleId);
+  const success = forceSuccess !== undefined
+    ? forceSuccess
+    : (isSafeAction ? true : Math.random() < 0.8);
   const isVending = levelData.id?.includes('vending');
 
   const result = calculateHustleMath(
