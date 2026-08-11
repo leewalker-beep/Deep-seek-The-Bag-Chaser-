@@ -282,6 +282,19 @@ export interface PassiveBreakdown {
   finalTotal: number;
 }
 
+export interface StatChangeSource {
+  label: string;
+  value: number;
+}
+
+export interface LastStatBreakdown {
+  cash: StatChangeSource[];
+  clout: StatChangeSource[];
+  aura: StatChangeSource[];
+  heat: StatChangeSource[];
+  mental: StatChangeSource[];
+}
+
 export interface GameAction {
   id: string;
   timestamp: number;
@@ -932,6 +945,7 @@ export interface PlayerStats {
   monthsSinceCycleChange: number;
   dynamicPassives: Record<string, number>;
   lastPassiveBreakdown?: PassiveBreakdown;
+  lastStatBreakdown?: LastStatBreakdown;
   activeSpecializationId: string | null;
   specializationHistory: string[];
   rivals: Rival[];
