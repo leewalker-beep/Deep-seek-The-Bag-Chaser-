@@ -55,4 +55,46 @@ describe('Jail System', () => {
     expect(newPl.jailMonthsRemaining).toBe(0);
     expect(result.news.some(m => m.text.includes('RELEASED'))).toBe(true);
   });
+
+  it('should pause narrative clocks and prevent narrative events while in jail', () => {
+    const stats = getInitialStats(3);
+    stats.rivals = []; // Prevent random rival actions
+    stats.currentTier = 'STREET';
+    stats.inJail = true;
+    stats.isIncarcerated = true;
+    stats.jailMonthsRemaining = 5;
+    stats.jailSentenceTotal = 6;
+    stats.monthsSinceLastEvent = 5;
+    stats.narrativeCooldown = 3;
+    stats.activeNarrative = null;
+
+    const result = advanceMonth(stats, 'NORMAL');
+    const newPl = result.newPl;
+
+    // Verify clocks did not change
+    expect(newPl.monthsSinceLastEvent).toBe(5);
+    expect(newPl.narrativeCooldown).toBe(3);
+
+    // Verify no narrative event was triggered
+    expect(newPl.activeNarrative).toBeNull();
+  });
+
+  it('should increment narrative clocks and allow narrative events when NOT in jail', () => {
+    const stats = getInitialStats(3);
+    stats.rivals = []; // Prevent random rival actions
+    stats.currentTier = 'STREET';
+    stats.inJail = false;
+    stats.isIncarcerated = false;
+    stats.monthsSinceLastEvent = 5;
+    stats.narrativeCooldown = 3;
+    stats.activeNarrative = 'some_active_event'; // Prevents new event from triggering and resetting clock
+
+    const result = advanceMonth(stats, 'NORMAL');
+    const newPl = result.newPl;
+
+    // Verify clocks advanced
+    expect(newPl.monthsSinceLastEvent).toBe(6);
+    expect(newPl.narrativeCooldown).toBe(2);
+    expect(newPl.activeNarrative).toBe('some_active_event');
+  });
 });
