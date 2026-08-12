@@ -599,7 +599,9 @@ export function advanceMonth(
   }
 
   newPl.month += 1;
-  newPl.monthsSinceLastEvent = (newPl.monthsSinceLastEvent || 0) + 1;
+  if (!pl.inJail && !pl.isIncarcerated) {
+    newPl.monthsSinceLastEvent = (newPl.monthsSinceLastEvent || 0) + 1;
+  }
 
   // LIFE TRAJECTORY & IDENTITY REFLECTION SYSTEM
   // Every 36 months (3 years)
@@ -665,7 +667,7 @@ export function advanceMonth(
   }
 
   // Narrative Cooldown decrement
-  if (newPl.narrativeCooldown > 0) {
+  if (newPl.narrativeCooldown > 0 && !pl.inJail && !pl.isIncarcerated) {
     newPl.narrativeCooldown--;
   }
 
@@ -1033,6 +1035,9 @@ export function advanceMonth(
   // Narrative Event Triggering Logic
   if (!newPl.activeNarrative) {
     const validEvents = NARRATIVE_EVENTS.filter(event => {
+      // Hard exclusion if player is incarcerated
+      if (newPl.inJail || newPl.isIncarcerated) return false;
+
       // 1. Quick Filters (Static/State-based)
       if (event.trigger.tier && !event.trigger.tier.includes(newPl.currentTier)) return false;
       if (event.trigger.minMonth && newPl.month < event.trigger.minMonth) return false;
