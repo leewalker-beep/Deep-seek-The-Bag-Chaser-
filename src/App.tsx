@@ -139,6 +139,7 @@ import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from './utils/fin
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
 import { MARKET_CONFIGS } from './config/marketConfig';
 import type { Tier, AppTab } from './types/game';
+import { Z_INDEX } from './utils/zLayers';
 
 const renderHustlePanel = (
   panelType: string,
@@ -1275,7 +1276,7 @@ function App() {
   return (
     <div className={`h-screen flex flex-col ${tierClass} text-white transition-colors duration-1000 relative overflow-hidden`}>
       {activeMinigame && (
-        <div className="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/95 z-[4000] flex items-center justify-center p-4" style={{ zIndex: Z_INDEX.CRITICAL_MINIGAME }}>
           <div className="w-full max-w-md">
             {renderHustlePanel(activeMinigame.panelType, activeMinigame.level, activeMinigame, pl, (win: any) => {
               const resultScore = typeof win === 'number' ? win : (win ? 15 : 5);
