@@ -2,10 +2,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import type { LiveWorldEventType } from '../types/game';
+import { scanDialogueForNavigationLinks } from '../utils/discoverabilityUtils';
 
 export const LiveWorldEventModal: React.FC = () => {
   const pl = useGameStore(state => state.pl);
   const dismissLiveEvent = useGameStore(state => state.dismissLiveEvent);
+  const updatePl = useGameStore(state => state.updatePl);
   const event = pl?.activeLiveEvent;
 
   if (!event) return null;
@@ -228,6 +230,34 @@ export const LiveWorldEventModal: React.FC = () => {
 
           {/* Continue / Dismiss Button Area */}
           <div className="px-6 py-4 bg-slate-950/50 border-t border-slate-800/50 flex flex-col gap-1.5 shrink-0">
+            {event && (() => {
+              const textToScan = `${event.headline || ''} ${event.body || ''}`;
+              const links = scanDialogueForNavigationLinks(textToScan);
+              if (links.length === 0) return null;
+              return (
+                <div className="flex flex-wrap gap-2 mb-2 justify-center">
+                  {links.map((link, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        updatePl({
+                          narrativeFlags: {
+                            ...(pl?.narrativeFlags || {}),
+                            [link.actionFlag]: true,
+                            ...(link.scoreboardTab ? { open_scoreboard_tab: link.scoreboardTab } : {})
+                          }
+                        });
+                      }}
+                      className="px-3 py-2 bg-slate-950/80 hover:bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black rounded-lg uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-md hover:border-emerald-500/60 cursor-pointer"
+                    >
+                      <span>🔍</span>
+                      <span>{link.label}</span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+
             <button
               onClick={dismissLiveEvent}
               className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] bg-slate-900 border border-slate-700 hover:border-slate-500 hover:text-white transition-all active:scale-[0.98] ${

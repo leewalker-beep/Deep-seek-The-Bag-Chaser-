@@ -147,7 +147,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className={`fixed inset-0 ${showTutorial ? 'z-[200]' : 'z-50'} flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl`}>
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
