@@ -19,7 +19,7 @@ const FinanceTab = lazy(() => import('./scoreboard/FinanceTab').then(m => ({ def
 const PortraitsTab = lazy(() => import('./scoreboard/PortraitsTab').then(m => ({ default: m.PortraitsTab })));
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { pl, isTutorialSkipped, tutorialStep, updatePl } = useGameStore();
+  const { pl, updatePl } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'badges' | 'history' | 'biography' | 'reputation' | 'ledger' | 'empire' | 'achievements' | 'endings' | 'deaths' | 'finance' | 'portraits'>('career');
   const [confirmingEnd, setConfirmingEnd] = useState(false);
 
@@ -125,8 +125,6 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     onClose();
   };
 
-  const showTutorial = !isTutorialSkipped && tutorialStep < 6;
-
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'career': return <CareerTab />;
@@ -147,7 +145,7 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className={`fixed inset-0 ${showTutorial ? 'z-[200]' : 'z-50'} flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl`}>
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

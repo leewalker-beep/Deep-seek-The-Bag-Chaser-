@@ -5,9 +5,10 @@ import { CHARACTERS } from '../config/characters';
 import type { PlayerStats } from '../types/game';
 import { CinematicModal } from './ui/CinematicModal';
 import { PortraitCard } from './ui/PortraitCard';
+import { scanDialogueForNavigationLinks } from '../utils/discoverabilityUtils';
 
 export const NarrativeEventModal: React.FC = () => {
-  const { pl, resolveNarrativeEvent } = useGameStore();
+  const { pl, resolveNarrativeEvent, updatePl } = useGameStore();
   const eventId = pl.activeNarrative;
 
   if (!eventId) return null;
@@ -44,6 +45,34 @@ export const NarrativeEventModal: React.FC = () => {
             "{event.description}"
           </p>
         </div>
+
+        {/* Discoverability Links */}
+        {(() => {
+          const links = scanDialogueForNavigationLinks(event.description || '');
+          if (links.length === 0) return null;
+          return (
+            <div className="flex flex-wrap justify-center gap-2 -mt-2 mb-1">
+              {links.map((link, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    updatePl({
+                      narrativeFlags: {
+                        ...(pl.narrativeFlags || {}),
+                        [link.actionFlag]: true,
+                        ...(link.scoreboardTab ? { open_scoreboard_tab: link.scoreboardTab } : {})
+                      }
+                    });
+                  }}
+                  className="px-3 py-1.5 bg-slate-950/80 hover:bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black rounded-lg uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-md hover:border-emerald-500/60 cursor-pointer"
+                >
+                  <span>🔍</span>
+                  <span>{link.label}</span>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         <div className="space-y-3">
           {event.choices.map((choice) => {

@@ -838,6 +838,7 @@ function App() {
     triggerTransition,
     clearTransition,
     pendingSpecialization,
+    updatePl,
   } = useGameStore();
 
   const handleQuickStart = () => {
@@ -869,6 +870,46 @@ function App() {
       lastTierRef.current = pl.currentTier;
     }
   }, [pl?.currentTier, triggerTransition]);
+
+  // Discoverability / Contextual Navigation Dispatcher
+  useEffect(() => {
+    if (!pl || !pl.narrativeFlags) return;
+
+    let updatedFlags = null;
+
+    if (pl.narrativeFlags.open_feed) {
+      setShowPhoneFeed(true);
+      updatedFlags = { ...(updatedFlags || pl.narrativeFlags), open_feed: false };
+    }
+
+    if (pl.narrativeFlags.open_advisor) {
+      setShowAdvisor(true);
+      updatedFlags = { ...(updatedFlags || pl.narrativeFlags), open_advisor: false };
+    }
+
+    if (pl.narrativeFlags.open_scoreboard) {
+      setShowScoreboard(true);
+      const targetTab = pl.narrativeFlags.open_scoreboard_tab as string;
+      updatedFlags = {
+        ...(updatedFlags || pl.narrativeFlags),
+        open_scoreboard: false,
+        ...(targetTab ? { target_scoreboard_tab: targetTab, open_scoreboard_tab: '' } : {})
+      };
+    }
+
+    if (updatedFlags) {
+      updatePl({
+        narrativeFlags: updatedFlags
+      });
+    }
+  }, [
+    pl?.narrativeFlags?.open_feed,
+    pl?.narrativeFlags?.open_advisor,
+    pl?.narrativeFlags?.open_scoreboard,
+    pl?.narrativeFlags?.open_scoreboard_tab,
+    updatePl,
+    pl?.narrativeFlags
+  ]);
 
   // Warning system side-effects
   useEffect(() => {
