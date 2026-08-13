@@ -19,7 +19,7 @@ const FinanceTab = lazy(() => import('./scoreboard/FinanceTab').then(m => ({ def
 const PortraitsTab = lazy(() => import('./scoreboard/PortraitsTab').then(m => ({ default: m.PortraitsTab })));
 
 export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { pl, isTutorialSkipped, tutorialStep, updatePl } = useGameStore();
+  const { pl, updatePl } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'badges' | 'history' | 'biography' | 'reputation' | 'ledger' | 'empire' | 'achievements' | 'endings' | 'deaths' | 'finance' | 'portraits'>('career');
   const [confirmingEnd, setConfirmingEnd] = useState(false);
 
@@ -124,8 +124,6 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     setPh('POST_MORTEM');
     onClose();
   };
-
-  const showTutorial = !isTutorialSkipped && tutorialStep < 6;
 
   const renderActiveTab = () => {
     switch (activeTab) {
