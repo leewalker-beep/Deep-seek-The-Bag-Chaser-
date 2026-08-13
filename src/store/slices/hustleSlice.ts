@@ -595,7 +595,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const advancementResult = advanceMonth(
       nextPl,
       state.currentMarket,
-      state.unlockedLegacyUpgradeIds
+      state.unlockedLegacyUpgradeIds,
+      false,
+      { cash: -branch.cost, clout: branch.yieldClout, aura: branch.yieldAura, hustleId }
     );
 
     let finalNextPl = enforceStatCaps(advancementResult.newPl);
@@ -972,7 +974,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       advancementResult = advanceMonth(
         finalNextPl,
         state.currentMarket,
-        state.unlockedLegacyUpgradeIds
+        state.unlockedLegacyUpgradeIds,
+        false,
+        { cash: -result.cost, clout: result.yieldClout, aura: result.yieldAura, heat: result.heatHit, mental: result.mentalHit, hustleId }
       );
 
       finalNextPl = enforceStatCaps(advancementResult.newPl);
@@ -1461,7 +1465,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     } = advanceMonth(
       runningPl,
       state.currentMarket,
-      state.unlockedLegacyUpgradeIds
+      state.unlockedLegacyUpgradeIds,
+      false,
+      { cash: -result.cost + result.yieldCash, clout: result.yieldClout, aura: finalAuraYield - state.pl.aura, heat: result.heatHit, mental: result.mentalHit, hustleId }
     );
 
     let plFinal = enforceStatCaps(newPl);
@@ -1966,7 +1972,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       advancementResult = advanceMonth(
         finalNextPl,
         state.currentMarket,
-        state.unlockedLegacyUpgradeIds
+        state.unlockedLegacyUpgradeIds,
+        false,
+        { cash: -result.cost, clout: result.yieldClout, aura: result.yieldAura, heat: result.heatHit, mental: result.mentalHit, hustleId }
       );
 
       finalNextPl = enforceStatCaps(advancementResult.newPl);

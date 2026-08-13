@@ -725,6 +725,7 @@ function App() {
   const forceUpdate = useReducer(() => ({}), {})[1];
   const [isLedgerPinned, setIsLedgerPinned] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<'clout' | 'mental' | 'aura' | 'heat' | null>(null);
+  const [selectedStatBreakdown, setSelectedStatBreakdown] = useState<'cash' | 'clout' | 'mental' | 'aura' | 'heat' | null>(null);
   const [selectedCharacterForMinigame, setSelectedCharacterForMinigame] = useState<{ name: string; avatar: string } | null>(null);
 
   useEffect(() => {
@@ -1428,10 +1429,47 @@ function App() {
         {/* Stats Row */}
         <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
           <div className="max-w-md mx-auto">
-            <div className="flex justify-between items-center mb-2">
-              <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
+            <div className="flex justify-between items-center mb-1 cursor-pointer select-none group" onClick={() => setSelectedStatBreakdown('cash')}>
+              <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none group-hover:text-emerald-300 transition-colors">
                 ${pl.bag.toLocaleString()}
               </div>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-slate-400">View Breakdown →</span>
+            </div>
+
+            {/* Active Modifiers badges on HUD */}
+            <div className="flex flex-wrap gap-1 mb-2.5">
+              {pl.mentalHealth < 50 && (
+                <span
+                  onClick={() => setSelectedStatBreakdown('mental')}
+                  className="cursor-pointer inline-flex items-center gap-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tight"
+                >
+                  ⚠️ Exhaustion (-{Math.round((1 - (0.75 + 0.25 * (pl.mentalHealth / 50))) * 100)}%)
+                </span>
+              )}
+              {pl.aura >= 100 && (
+                <span
+                  onClick={() => setSelectedStatBreakdown('aura')}
+                  className="cursor-pointer inline-flex items-center gap-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tight"
+                >
+                  ✨ Aura discount (-10%)
+                </span>
+              )}
+              {pl.clout >= 1000 && (
+                <span
+                  onClick={() => setSelectedStatBreakdown('clout')}
+                  className="cursor-pointer inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tight"
+                >
+                  🔍 Public scrutiny
+                </span>
+              )}
+              {((pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0) && (
+                <span
+                  onClick={() => setSelectedStatBreakdown('cash')}
+                  className="cursor-pointer inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tight"
+                >
+                  💼 Clean record bonus
+                </span>
+              )}
             </div>
 
             {/* Stats Grid */}
@@ -1440,11 +1478,12 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'clout' ? null : 'clout');
+                  setSelectedStatBreakdown('clout');
                 }}
-                className="flex flex-col group relative cursor-help stat-tooltip-container"
+                className="flex flex-col group relative cursor-pointer stat-tooltip-container bg-slate-950/20 hover:bg-slate-950/40 border border-slate-800/40 rounded-xl py-1 transition-all animate-in fade-in"
               >
-                <span className="text-[8px] text-slate-500 uppercase">Clout</span>
-                <span id="clout-stat" className={`text-xs font-bold ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
+                <span className="text-[8px] text-slate-500 uppercase font-black">Clout</span>
+                <span id="clout-stat" className={`text-xs font-black ${pl.clout < 5 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>
                   {Math.floor(pl.clout)}{pl.clout < 5 && '!'}
                 </span>
                 <div className={`absolute top-full left-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
@@ -1458,11 +1497,12 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'mental' ? null : 'mental');
+                  setSelectedStatBreakdown('mental');
                 }}
-                className="flex flex-col group relative cursor-help stat-tooltip-container"
+                className="flex flex-col group relative cursor-pointer stat-tooltip-container bg-slate-950/20 hover:bg-slate-950/40 border border-slate-800/40 rounded-xl py-1 transition-all animate-in fade-in"
               >
-                <span className="text-[8px] text-slate-500 uppercase">Mental</span>
-                <span id="mental-stat" className={`text-xs font-bold ${pl.mentalHealth < 30 ? 'text-red-500' : 'text-white'}`}>
+                <span className="text-[8px] text-slate-500 uppercase font-black">Mental</span>
+                <span id="mental-stat" className={`text-xs font-black ${pl.mentalHealth < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
                   {Math.floor(pl.mentalHealth)}%
                   {pl.mentalShieldTurns > 0 && (
                     <span className="text-blue-400 ml-0.5 text-[10px]">🛡️{pl.mentalShieldTurns}</span>
@@ -1479,11 +1519,12 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'aura' ? null : 'aura');
+                  setSelectedStatBreakdown('aura');
                 }}
-                className="flex flex-col group relative cursor-help stat-tooltip-container"
+                className="flex flex-col group relative cursor-pointer stat-tooltip-container bg-slate-950/20 hover:bg-slate-950/40 border border-slate-800/40 rounded-xl py-1 transition-all animate-in fade-in"
               >
-                <span className="text-[8px] text-slate-500 uppercase">Aura</span>
-                <span id="aura-stat" className={`text-xs font-bold ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
+                <span className="text-[8px] text-slate-500 uppercase font-black">Aura</span>
+                <span id="aura-stat" className={`text-xs font-black ${pl.aura < 5 ? 'text-red-500 animate-pulse' : 'text-purple-400'}`}>
                   {Math.floor(pl.aura)}{pl.aura < 5 && '!'}
                 </span>
                 <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
@@ -1497,11 +1538,12 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'heat' ? null : 'heat');
+                  setSelectedStatBreakdown('heat');
                 }}
-                className="flex flex-col group relative cursor-help stat-tooltip-container"
+                className="flex flex-col group relative cursor-pointer stat-tooltip-container bg-slate-950/20 hover:bg-slate-950/40 border border-slate-800/40 rounded-xl py-1 transition-all animate-in fade-in"
               >
-                <span className="text-[8px] text-slate-500 uppercase">Heat</span>
-                <span id="heat-stat" className={`text-xs font-bold ${pl.heat > 70 ? 'text-red-500' : 'text-orange-400'}`}>
+                <span className="text-[8px] text-slate-500 uppercase font-black">Heat</span>
+                <span id="heat-stat" className={`text-xs font-black ${pl.heat > 70 ? 'text-red-500 animate-pulse' : 'text-orange-400'}`}>
                   {Math.floor(pl.heat)}%
                 </span>
                 <div className={`absolute top-full right-0 mt-2 w-48 p-3 bg-slate-950 border border-slate-800 rounded-xl text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-left leading-relaxed ${
@@ -2326,6 +2368,233 @@ function App() {
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
       <NarrativeEventModal />
+
+      {/* Interactive Stat Breakdown Slide-Up Drawer / Modal */}
+      {selectedStatBreakdown && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setSelectedStatBreakdown(null)}>
+          <div
+            className="w-full max-w-md bg-slate-900 border-t-2 border-slate-800 rounded-t-3xl p-6 transform transition-transform duration-300 animate-in slide-in-from-bottom"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle bar at top of drawer */}
+            <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-4 cursor-pointer" onClick={() => setSelectedStatBreakdown(null)} />
+
+            {/* Header */}
+            <div className="text-center mb-5">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 block mb-1">
+                STAT DETAIL & SIMULATION REPORT
+              </span>
+              <h2 className="text-2xl font-black text-white italic uppercase tracking-tight flex items-center justify-center gap-2">
+                {selectedStatBreakdown === 'cash' && <>💰 Liquid Capital</>}
+                {selectedStatBreakdown === 'clout' && <>👑 Clout (Influence)</>}
+                {selectedStatBreakdown === 'aura' && <>✨ Aura (Mystique)</>}
+                {selectedStatBreakdown === 'mental' && <>🧠 Mental Health</>}
+                {selectedStatBreakdown === 'heat' && <>🔥 Wanted Heat</>}
+              </h2>
+            </div>
+
+            {/* Stat Sources / Where It Came From (Priority 1 & 4) */}
+            <div className="mb-5">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                This Month's Activity Breakdown
+              </h3>
+              <div className="bg-slate-950/50 rounded-2xl p-4 border border-slate-800 space-y-3">
+                {(() => {
+                  const sources = pl.lastStatBreakdown?.[selectedStatBreakdown] || [];
+                  if (sources.length === 0) {
+                    return (
+                      <div className="text-center py-2 text-slate-500 text-[11px] italic">
+                        No changes recorded this month.
+                      </div>
+                    );
+                  }
+
+                  let netEffect = 0;
+                  const renderedSources = sources.map((src, i) => {
+                    netEffect += src.value;
+                    const isPositive = src.value >= 0;
+                    return (
+                      <div key={i} className="flex justify-between items-center text-xs">
+                        <span className="text-slate-400 font-medium">{src.label}</span>
+                        <span className={`font-mono font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {isPositive ? '+' : ''}{selectedStatBreakdown === 'cash' ? '$' : ''}{src.value.toLocaleString()}
+                        </span>
+                      </div>
+                    );
+                  });
+
+                  return (
+                    <>
+                      <div className="space-y-2 border-b border-slate-800/80 pb-3">
+                        {renderedSources}
+                      </div>
+                      <div className="flex justify-between items-center pt-1 text-sm font-bold">
+                        <span className="text-white uppercase tracking-wider text-[11px]">Net Monthly Effect</span>
+                        <span className={`font-mono font-black text-base ${netEffect >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {netEffect >= 0 ? '+' : ''}{selectedStatBreakdown === 'cash' ? '$' : ''}{netEffect.toLocaleString()}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Active System Modifiers (Priority 2) */}
+            <div className="mb-5">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Active System Modifiers
+              </h3>
+              <div className="space-y-2">
+                {selectedStatBreakdown === 'mental' && (
+                  <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-3.5 text-xs text-slate-300">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-red-400">🧠 Stress Efficiency</span>
+                      <span className={`font-black ${pl.mentalHealth < 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                        {pl.mentalHealth < 50 ? 'Exhaustion Penalty' : 'Healthy/Full Yield'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">
+                      If Mental Health drops below 50%, you incur an exhaustion penalty: <span className="text-red-400 font-bold">up to -25% cash, clout, and aura earnings</span> across all ventures. Keep your mind healthy to maximize profits.
+                    </p>
+                    {pl.mentalHealth < 50 && (
+                      <div className="mt-2 text-[10px] font-bold bg-red-500/10 border border-red-500/20 text-red-400 rounded px-2.5 py-1 text-center">
+                        ⚠️ Active: -{Math.round((1 - (0.75 + 0.25 * (pl.mentalHealth / 50))) * 100)}% work yield penalty
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedStatBreakdown === 'aura' && (
+                  <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-3.5 text-xs text-slate-300">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-purple-400">✨ Investor Confidence</span>
+                      <span className={`font-black ${pl.aura >= 100 ? 'text-purple-400' : 'text-slate-500'}`}>
+                        {pl.aura >= 100 ? 'Active Discount' : 'Inactive'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">
+                      Commanding respect has direct economic benefits. When your Aura is 100 or higher, investors trust you blindly, granting a <span className="text-purple-400 font-bold">-10% discount on all business upgrade costs</span>.
+                    </p>
+                    {pl.aura >= 100 && (
+                      <div className="mt-2 text-[10px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded px-2.5 py-1 text-center">
+                        ✨ Active: -10% discount on all hustle upgrade costs
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedStatBreakdown === 'clout' && (
+                  <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-3.5 text-xs text-slate-300">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-blue-400">👑 Public Scrutiny</span>
+                      <span className={`font-black ${pl.clout >= 1000 ? 'text-blue-400' : 'text-slate-500'}`}>
+                        {pl.clout >= 1000 ? 'Under Surveillance' : 'Standard Spotlight'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">
+                      When your Clout reaches 1000 or higher, you enter the national spotlight. Under intense public scrutiny, scandals spread faster, multiplying <span className="text-blue-400 font-bold">all Heat hits by 1.25x</span>.
+                    </p>
+                    {pl.clout >= 1000 && (
+                      <div className="mt-2 text-[10px] font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded px-2.5 py-1 text-center">
+                        🔍 Active: Public scrutiny active (1.25x Heat hits)
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedStatBreakdown === 'cash' && (
+                  <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-3.5 text-xs text-slate-300">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-emerald-400">💼 Honest Entrepreneur</span>
+                      <span className={`font-black ${((pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0) ? 'text-emerald-400' : 'text-slate-500'}`}>
+                        {((pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0) ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">
+                      Maintaining a perfectly clean record (0 arrests and 0 scandals) while running at least 30 total hustles establishes immense institutional confidence, boosting your <span className="text-emerald-400 font-bold">passive income by +5%</span>.
+                    </p>
+                    {((pl.totalHustlesCompleted || 0) >= 30 && (pl.arrestCount || 0) === 0 && (pl.scandalCount || 0) === 0) && (
+                      <div className="mt-2 text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded px-2.5 py-1 text-center">
+                        💼 Active: Clean record bonus active (+5% passive yield)
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedStatBreakdown === 'heat' && (
+                  <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-3.5 text-xs text-slate-300">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-orange-400">🔥 Legal WANTED Risk</span>
+                      <span className={`font-black ${pl.heat >= 80 ? 'text-red-500 animate-pulse' : pl.heat >= 50 ? 'text-orange-400' : 'text-slate-500'}`}>
+                        {pl.heat >= 80 ? 'Arrest Imminent' : pl.heat >= 50 ? 'High Risk' : 'Low Profile'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">
+                      As your Heat rises, law enforcement vigilance increases. Crossing <span className="font-bold text-red-500">100% Heat triggers a police raid and prison sentence</span>. Keep your profile low using cooldown actions.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Strategic Actions / Recovery Paths (Priority 3) */}
+            <div>
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                💡 Strategic Recovery Path
+              </h3>
+              {(() => {
+                let actionText = "";
+                let actionHustleId = "";
+                let pathTitle = "";
+
+                if (selectedStatBreakdown === 'heat' || pl.heat >= 50) {
+                  pathTitle = "Wanted Criminal Heat Built up";
+                  actionText = "Ghost Mode can reduce Heat.";
+                  actionHustleId = "r_ghost_mode";
+                } else if (selectedStatBreakdown === 'aura' || pl.aura < 50) {
+                  pathTitle = "Low Aura / Mystique Profile";
+                  actionText = "PR Campaign restores Aura.";
+                  actionHustleId = "r_pr_campaign";
+                } else if (selectedStatBreakdown === 'mental' || pl.mentalHealth < 50) {
+                  pathTitle = "Low Mental Health / Exhaustion";
+                  actionText = "Rest improves Mental Health and can restore Aura.";
+                  actionHustleId = "r_sleep";
+                } else {
+                  return (
+                    <div className="text-center py-4 bg-slate-950/20 border border-slate-800/40 rounded-2xl text-[10px] text-slate-500">
+                      No urgent recovery required. Your statistics are stable.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="bg-slate-950/40 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
+                    <div>
+                      <span className="text-[9px] font-black uppercase text-slate-500 block mb-0.5">{pathTitle}</span>
+                      <p className="text-[11px] leading-relaxed text-slate-300">{actionText}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        // Directly play/navigate to the hustle
+                        setActiveTab('MUD');
+                        setActiveHustleView(actionHustleId);
+                        setSelectedStatBreakdown(null);
+                      }}
+                      className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-wider rounded-xl transition-all active:scale-95"
+                    >
+                      {actionHustleId === 'r_ghost_mode' && "Play Ghost Mode"}
+                      {actionHustleId === 'r_pr_campaign' && "Run PR Campaign"}
+                      {actionHustleId === 'r_sleep' && "Rest Now"}
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       <LiveWorldEventModal />
       <InteractiveStoryModal />
 

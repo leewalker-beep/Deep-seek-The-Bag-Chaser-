@@ -112,7 +112,8 @@ export function advanceMonth(
   pl: PlayerStats,
   currentMarket: MarketType,
   unlockedLegacyUpgrades: string[] = [],
-  skipNarrativeEvent: boolean = false
+  skipNarrativeEvent: boolean = false,
+  activeChanges?: { cash?: number; clout?: number; aura?: number; heat?: number; mental?: number; hustleId?: string }
 ): AdvancementResult {
   const news: (string | TickerMessage)[] = [];
   let newPl = { ...pl };
@@ -121,14 +122,49 @@ export function advanceMonth(
   let newMarket = currentMarket;
   const prevScandals = pl.scandalCount || 0;
 
+  const cashSources: StatChangeSource[] = [];
+  const cloutSources: StatChangeSource[] = [];
+  const auraSources: StatChangeSource[] = [];
+  const heatSources: StatChangeSource[] = [];
+  const mentalSources: StatChangeSource[] = [];
+
+  const activeHustleName = activeChanges?.hustleId
+    ? (HUSTLES[activeChanges.hustleId]?.name || activeChanges.hustleId)
+    : "Hustle";
+
+  if (activeChanges) {
+    if (activeChanges.cash && activeChanges.cash !== 0) {
+      cashSources.push({ label: `${activeHustleName}`, value: activeChanges.cash });
+    }
+    if (activeChanges.clout && activeChanges.clout !== 0) {
+      cloutSources.push({ label: `${activeHustleName}`, value: activeChanges.clout });
+    }
+    if (activeChanges.aura && activeChanges.aura !== 0) {
+      auraSources.push({ label: `${activeHustleName}`, value: activeChanges.aura });
+    }
+    if (activeChanges.heat && activeChanges.heat !== 0) {
+      heatSources.push({ label: `${activeHustleName}`, value: activeChanges.heat });
+    }
+    if (activeChanges.mental && activeChanges.mental !== 0) {
+      mentalSources.push({ label: `${activeHustleName}`, value: activeChanges.mental });
+    }
+  }
+
   // Evaluate reputation tick and update public reputation
   const repTick = evaluateReputationTick(newPl);
+  const repCloutDiff = repTick.newPl.clout - newPl.clout;
+  const repAuraDiff = repTick.newPl.aura - newPl.aura;
+  if (repCloutDiff !== 0) cloutSources.push({ label: "Reputation adjustment", value: repCloutDiff });
+  if (repAuraDiff !== 0) auraSources.push({ label: "Reputation adjustment", value: repAuraDiff });
   newPl = repTick.newPl;
   news.push(...repTick.news.map(msg => ({ text: msg, colorClass: 'text-yellow-400 font-bold' })));
 
   const reputation = newPl.narrativeFlags?.publicReputation as string || "The Hustler";
   if (reputation === "The Crime Boss") {
+    const prevAura = newPl.aura;
     newPl.aura = Math.max(0, newPl.aura - 2);
+    const auraDecay = newPl.aura - prevAura;
+    if (auraDecay !== 0) auraSources.push({ label: "Crime Boss penalty", value: auraDecay });
   }
 
   // Process Consequences
@@ -141,10 +177,18 @@ export function advanceMonth(
     newPl.clout = Math.max(0, newPl.clout - sabotageLosses.clout);
     newPl.aura = Math.max(0, newPl.aura - sabotageLosses.aura);
     newPl.approvalRating = Math.max(0, newPl.approvalRating - 2);
+    cloutSources.push({ label: "Sabotage retaliation", value: -sabotageLosses.clout });
+    auraSources.push({ label: "Sabotage retaliation", value: -sabotageLosses.aura });
   }
   if (isConsequenceActive(newPl, 'philanthropic_halo')) {
+    const oldClout = newPl.clout;
     newPl.clout = Math.min(10000, newPl.clout + 10);
+    cloutSources.push({ label: "Philanthropic halo", value: newPl.clout - oldClout });
+
+    const oldAura = newPl.aura;
     newPl.aura = Math.min(10000, newPl.aura + 20);
+    auraSources.push({ label: "Philanthropic halo", value: newPl.aura - oldAura });
+
     newPl.approvalRating = Math.min(100, newPl.approvalRating + 1.5);
   }
 
@@ -159,7 +203,9 @@ export function advanceMonth(
       baseLoss *= 2; // Double decay under intense spotlight pressure
     }
     const forgottenLoss = applyReputationLossScale(baseLoss, 0, reputation, newPl);
+    const prevClout = newPl.clout;
     newPl.clout = Math.max(0, newPl.clout - forgottenLoss.clout);
+    cloutSources.push({ label: "Being Forgotten decay", value: newPl.clout - prevClout });
     news.push({
       text: `📰 BEING FORGOTTEN: Long period without active ventures decays your clout (-${forgottenLoss.clout} Clout).${isSpotlightActive ? ' Public pressure to maintain the spotlight is intense!' : ''}`,
       colorClass: 'text-yellow-500 font-medium'
@@ -172,7 +218,9 @@ export function advanceMonth(
                           isConsequenceActive(newPl, 'sabotage_retaliation');
   if (hasNegativeCons) {
     const consDecay = applyReputationLossScale(Math.floor(newPl.clout * 0.02), 0, reputation, newPl);
+    const prevClout = newPl.clout;
     newPl.clout = Math.max(0, newPl.clout - consDecay.clout);
+    cloutSources.push({ label: "Active crises decay", value: newPl.clout - prevClout });
     news.push({
       text: `📉 NEGATIVE COOLDOWN: Active social/regulatory crises erode your public stance (-${consDecay.clout} Clout).`,
       colorClass: 'text-orange-400 font-medium'
@@ -197,8 +245,12 @@ export function advanceMonth(
       });
     }
     const heatErosion = applyReputationLossScale(decayClout, decayAura, reputation, newPl);
+    const prevClout = newPl.clout;
+    const prevAura = newPl.aura;
     newPl.clout = Math.max(0, newPl.clout - heatErosion.clout);
     newPl.aura = Math.max(0, newPl.aura - heatErosion.aura);
+    cloutSources.push({ label: "Heat erosion", value: newPl.clout - prevClout });
+    auraSources.push({ label: "Heat erosion", value: newPl.aura - prevAura });
     news.push({
       text: `⚠️ PUBLIC TRUST EROSION: High Heat continues to slowly erode your reputation (-${heatErosion.clout} Clout, -${heatErosion.aura} Aura).`,
       colorClass: 'text-red-300 font-medium'
@@ -208,7 +260,9 @@ export function advanceMonth(
   // 4. Critical Mental Health / Burnout
   if (newPl.mentalHealth <= 30) {
     const burnoutErosion = applyReputationLossScale(0, 5, reputation, newPl);
+    const prevAura = newPl.aura;
     newPl.aura = Math.max(0, newPl.aura - burnoutErosion.aura);
+    auraSources.push({ label: "Burnout passive decay", value: newPl.aura - prevAura });
     news.push({
       text: `🔥 BURNOUT PASSIVE: Critically low mental health erodes your aura (-${burnoutErosion.aura} Aura).`,
       colorClass: 'text-red-300 font-medium'
@@ -221,6 +275,8 @@ export function advanceMonth(
     if (newPl.monthsAtZeroHeat === 6) {
       newPl.clout += 50;
       newPl.aura += 50;
+      cloutSources.push({ label: "Community trust", value: 50 });
+      auraSources.push({ label: "Community trust", value: 50 });
       news.push({
         text: `🕊️ COMMUNITY TRUST: Maintaining a clean public profile for 6 months has restored public trust (+50 Clout, +50 Aura)!`,
         colorClass: 'text-emerald-400 font-bold'
@@ -499,6 +555,11 @@ export function advanceMonth(
       newPl.aura = Math.floor(newPl.aura + 50);
       newPl.grammyCount = (newPl.grammyCount || 0) + 1;
       artist.isGrammyWinner = true;
+
+      cashSources.push({ label: `Grammy: ${artist.name}`, value: 500000 });
+      cloutSources.push({ label: `Grammy: ${artist.name}`, value: 100 });
+      auraSources.push({ label: `Grammy: ${artist.name}`, value: 50 });
+
       news.push({
         text: `🏆 GRAMMY AWARD: ${artist.name} won a Grammy! +$500k | +100 Clout | +50 Aura`,
         colorClass: 'text-yellow-400 font-black'
@@ -512,6 +573,11 @@ export function advanceMonth(
   const totalDeductions = totalRent + upkeep + debtService;
 
   newPl.bag = newPl.bag + passiveIncome - totalDeductions;
+
+  if (passiveIncome !== 0) cashSources.push({ label: "Passive income", value: passiveIncome });
+  if (totalRent !== 0) cashSources.push({ label: "Rent", value: -totalRent });
+  if (upkeep !== 0) cashSources.push({ label: "Business upkeep", value: -upkeep });
+  if (debtService !== 0) cashSources.push({ label: "Debt service", value: -debtService });
 
   // Accumulate monthly passive income and deductions for annual statement
   if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
@@ -540,8 +606,14 @@ export function advanceMonth(
   // Warnings & Overdraft effects
   if (newPl.bag <= 0) {
     newPl.bag = 0;
+    const prevHeat = newPl.heat;
+    const prevMental = newPl.mentalHealth;
     newPl.heat = Math.min(100, newPl.heat + 5);
     newPl.mentalHealth = Math.max(0, newPl.mentalHealth - 5);
+
+    heatSources.push({ label: "Creditor pressure", value: newPl.heat - prevHeat });
+    mentalSources.push({ label: "Financial stress", value: newPl.mentalHealth - prevMental });
+
     if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
     newPl.narrativeFlags.had_bankruptcy_crisis = true;
     news.push({
@@ -693,9 +765,14 @@ export function advanceMonth(
     }
 
     // Onset arrest consequences: 15% current Clout and 20% current Aura penalty upon arrest (scaled by reputation)
+    const prevClout = newPl.clout;
+    const prevAura = newPl.aura;
     const arrestLosses = applyReputationLossScale(Math.floor(newPl.clout * 0.15), Math.floor(newPl.aura * 0.20), reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - arrestLosses.clout);
     newPl.aura = Math.max(0, newPl.aura - arrestLosses.aura);
+
+    cloutSources.push({ label: "Arrest penalty", value: newPl.clout - prevClout });
+    auraSources.push({ label: "Arrest penalty", value: newPl.aura - prevAura });
 
     news.push({
       text: `🚔 BUSTED. ${sentence.charge}. ${sentence.months} months.`,
@@ -712,11 +789,15 @@ export function advanceMonth(
     const sentence = getSentence(newPl.currentTier);
 
     // Passive losses while inside (no longer double deducting bag here because processEntertainmentTimelineTick handles drains)
+    const prevBag = newPl.bag;
     newPl.bag = Math.max(0, newPl.bag - (sentence.bagLossPerMonth * marketMult));
+    cashSources.push({ label: "Incarceration costs", value: newPl.bag - prevBag });
 
     // Scale jail monthly passive Clout loss by reputation
+    const prevClout = newPl.clout;
     const jailPassives = applyReputationLossScale(sentence.cloutLossPerMonth, 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - jailPassives.clout);
+    cloutSources.push({ label: "Incarceration decay", value: newPl.clout - prevClout });
 
     newPl.jailMonthsRemaining--;
 
@@ -750,7 +831,10 @@ export function advanceMonth(
 
   // Decay heat (cool down over time) - Skip if in jail (just arrested or already serving)
   if (newPl.inJail) {
+    const prevHeat = newPl.heat;
     newPl.heat = 0; // Ensure heat is 0 while in jail
+    const heatDiff = newPl.heat - prevHeat;
+    if (heatDiff !== 0) heatSources.push({ label: "Monthly cooldown", value: heatDiff });
   } else {
     let heatDecay = 10;
     const jetCount = newPl.flexAssets['jet'] || 0;
@@ -760,7 +844,10 @@ export function advanceMonth(
       jetBonus *= flexBonusMultiplier;
       heatDecay = heatDecay * Math.max(0, (1 - (jetBonus / 100)));
     }
+    const prevHeat = newPl.heat;
     newPl.heat = Math.max(0, newPl.heat - heatDecay);
+    const heatDiff = newPl.heat - prevHeat;
+    if (heatDiff !== 0) heatSources.push({ label: "Monthly cooldown", value: heatDiff });
   }
 
   // Conglomerate Divisional CEO Monthly Scandals / Leaks
@@ -781,16 +868,26 @@ export function advanceMonth(
 
         if (Math.random() < scandalChance) {
           const fine = 2500000;
+          const prevBag = newPl.bag;
           newPl.bag = Math.max(0, newPl.bag - fine);
+          const prevHeat = newPl.heat;
           newPl.heat = Math.min(100, newPl.heat + 10);
           newPl.scandalCount = (newPl.scandalCount || 0) + 1;
+
+          cashSources.push({ label: `CEO Scandal: ${ceo.name}`, value: newPl.bag - prevBag });
+          heatSources.push({ label: `CEO Scandal: ${ceo.name}`, value: newPl.heat - prevHeat });
+
           news.push({
             text: `⚠️ CONGLOMERATE SCANDAL: ${ceo.name} (${div.name}) caused a compliance breach! Fined $${fine.toLocaleString()} and gained +10 Heat.`,
             colorClass: 'text-red-400 font-bold'
           });
         } else if (leakChance > 0 && Math.random() < leakChance) {
           const siphoned = 750000;
+          const prevBag = newPl.bag;
           newPl.bag = Math.max(0, newPl.bag - siphoned);
+
+          cashSources.push({ label: `CEO Embezzled: ${ceo.name}`, value: newPl.bag - prevBag });
+
           news.push({
             text: `💸 CONGLOMERATE LEAK: Undisclosed accounts linked to ${ceo.name} (${div.name}) siphoned $${siphoned.toLocaleString()}!`,
             colorClass: 'text-orange-400 font-bold'
@@ -803,6 +900,11 @@ export function advanceMonth(
   // Rival AI Updates (Simulated via new robust emergent rivalSimEngine)
   if (newPl.rivals) {
     newPl.rivalThreats = {};
+    const rivalBagBefore = newPl.bag;
+    const rivalHeatBefore = newPl.heat;
+    const rivalAuraBefore = newPl.aura;
+    const rivalCloutBefore = newPl.clout;
+
     const simResult = simulateRivals(newPl, currentMarket);
 
     // Apply simulated changes to rivals list
@@ -827,6 +929,16 @@ export function advanceMonth(
     if (simResult.playerStatsUpdates.approvalRating !== undefined) {
       newPl.approvalRating = Math.max(0, Math.min(100, simResult.playerStatsUpdates.approvalRating));
     }
+
+    const rivalBagDiff = newPl.bag - rivalBagBefore;
+    const rivalHeatDiff = newPl.heat - rivalHeatBefore;
+    const rivalAuraDiff = newPl.aura - rivalAuraBefore;
+    const rivalCloutDiff = newPl.clout - rivalCloutBefore;
+
+    if (rivalBagDiff !== 0) cashSources.push({ label: "Rival actions", value: rivalBagDiff });
+    if (rivalHeatDiff !== 0) heatSources.push({ label: "Rival actions", value: rivalHeatDiff });
+    if (rivalAuraDiff !== 0) auraSources.push({ label: "Rival actions", value: rivalAuraDiff });
+    if (rivalCloutDiff !== 0) cloutSources.push({ label: "Rival actions", value: rivalCloutDiff });
 
     // Merge news ticker events from rival simulation
     simResult.news.forEach(msg => {
@@ -904,7 +1016,12 @@ export function advanceMonth(
         const penalty = Math.floor(newPl.bag * 0.1);
         newPl.bag -= penalty;
         const chalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.15), 0, reputation, newPl);
+        const prevClout = newPl.clout;
         newPl.clout = Math.max(0, newPl.clout - chalLoss.clout);
+
+        cashSources.push({ label: `Failed Challenge`, value: -penalty });
+        cloutSources.push({ label: `Failed Challenge`, value: newPl.clout - prevClout });
+
         news.push({ text: `❌ CHALLENGE FAILED: ${challenge.rivalName} won the challenge. You lost $${penalty.toLocaleString()} (10% of bag).`, colorClass: 'text-red-500 font-bold' });
 
         // Rival wins, they gain 10% net worth
@@ -1203,8 +1320,10 @@ export function advanceMonth(
     const scandals = newPl.scandalCount || 0;
 
     if (approvalRating < 45) {
+      const prevClout = newPl.clout;
       const termLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.25), 0, reputation, newPl);
       newPl.clout = Math.max(0, newPl.clout - termLoss.clout);
+      cloutSources.push({ label: "Failed term backlash", value: newPl.clout - prevClout });
       news.push({
         text: `🗳️ TERM COMPLETE: Low public approval rating has severely damaged your political Clout (-${termLoss.clout} Clout).`,
         colorClass: 'text-red-500 font-black'
@@ -1247,8 +1366,10 @@ export function advanceMonth(
   // Centralized Public Scandal Monitor & Penalty
   const currentScandals = newPl.scandalCount || 0;
   if (currentScandals > prevScandals) {
+    const prevClout = newPl.clout;
     const scandalLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.10), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - scandalLoss.clout);
+    cloutSources.push({ label: "Public scandal penalty", value: newPl.clout - prevClout });
     news.push({
       text: `🚨 PUBLIC SCANDAL: Media backlash has damaged your public Clout (-${scandalLoss.clout} Clout).`,
       colorClass: 'text-red-400 font-bold'
@@ -1257,8 +1378,10 @@ export function advanceMonth(
 
   // Bankruptcy Clout Penalty Check
   if (pl.bag < 0 || newPl.bag < 0) {
+    const prevClout = newPl.clout;
     const bankLoss = applyReputationLossScale(Math.floor(newPl.clout * 0.20), 0, reputation, newPl);
     newPl.clout = Math.max(0, newPl.clout - bankLoss.clout);
+    cloutSources.push({ label: "Bankruptcy backlash", value: newPl.clout - prevClout });
   }
 
   // Check for death conditions
@@ -1439,8 +1562,17 @@ export function advanceMonth(
     return { ...m, tier: m.tier || newPl.currentTier };
   });
 
+  const finalPl = enforceStatCaps(newPl);
+  finalPl.lastStatBreakdown = {
+    cash: cashSources.filter(s => s.value !== 0),
+    clout: cloutSources.filter(s => s.value !== 0),
+    aura: auraSources.filter(s => s.value !== 0),
+    heat: heatSources.filter(s => s.value !== 0),
+    mental: mentalSources.filter(s => s.value !== 0)
+  };
+
   return {
-    newPl: enforceStatCaps(newPl),
+    newPl: finalPl,
     newMarket,
     news: stampedNews,
     shouldDie,

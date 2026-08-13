@@ -455,7 +455,7 @@ const filmStudioStrategy: HustleStrategy = (_hustleId, state, marketType, levelD
   const baseCost = levelData.cost;
   const cost = baseCost * budgetMult * market.expenseMultiplier;
 
-  const perfMult = minigameMultiplier || 1.0;
+  const perfMult = minigameMultiplier !== undefined && minigameMultiplier !== null ? minigameMultiplier : 1.0;
   const finalYieldMult = perfMult * genreMult * budgetMult;
   const yieldCash = Math.floor(levelData.yieldCash * finalYieldMult * market.yieldMultiplier);
 
