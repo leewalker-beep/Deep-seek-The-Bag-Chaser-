@@ -16,7 +16,7 @@ import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
 import { PrologueScreen } from './components/PrologueScreen';
 import { DeathScreen } from './components/DeathScreen';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CinematicTransition } from './components/effects/CinematicTransition';
 import { MarketShiftOverlay } from './components/effects/MarketShiftOverlay';
 import { HERO_ARTWORK } from './config/heroArtwork';
@@ -841,6 +841,34 @@ function App() {
     updatePl,
   } = useGameStore();
 
+  const [isStatDrawerOpen, setIsStatDrawerOpen] = useState(false);
+  const [statDrawerActiveTab, setStatDrawerActiveTab] = useState<'thisMonth' | 'modifiers'>('thisMonth');
+  const [showMonthlySummary, setShowMonthlySummary] = useState(false);
+  const [lastSeenMonth, setLastSeenMonth] = useState(pl.month);
+
+  useEffect(() => {
+    if (pl.month > lastSeenMonth) {
+      setShowMonthlySummary(true);
+      setLastSeenMonth(pl.month);
+    }
+  }, [pl.month, lastSeenMonth]);
+
+  const handleStatTap = (_stat: 'cash' | 'clout' | 'mental' | 'aura' | 'heat') => {
+    setStatDrawerActiveTab('thisMonth');
+    setIsStatDrawerOpen(true);
+  };
+
+  const handleModifierBadgeTap = (_badge: 'exhaustion' | 'aura_discount' | 'public_scrutiny' | 'clean_record') => {
+    setStatDrawerActiveTab('modifiers');
+    setIsStatDrawerOpen(true);
+  };
+
+  const navigateToHustle = (hustleId: string, tierTab: any) => {
+    useGameStore.getState().setActiveTab(tierTab);
+    useGameStore.getState().setActiveHustleView(hustleId);
+    setIsStatDrawerOpen(false); // Close the drawer upon navigation!
+  };
+
   const handleQuickStart = () => {
     const bgId = pl?.backgroundId;
     const catId = pl?.categoryId;
@@ -1429,7 +1457,11 @@ function App() {
         <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50 px-4 py-2">
           <div className="max-w-md mx-auto">
             <div className="flex justify-between items-center mb-2">
-              <div id="bag-amount" className="text-2xl font-black text-emerald-400 font-mono leading-none">
+              <div
+                id="bag-amount"
+                onClick={() => handleStatTap('cash')}
+                className="text-2xl font-black text-emerald-400 font-mono leading-none cursor-pointer hover:opacity-80 transition-opacity"
+              >
                 ${pl.bag.toLocaleString()}
               </div>
             </div>
@@ -1440,6 +1472,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'clout' ? null : 'clout');
+                  handleStatTap('clout');
                 }}
                 className="flex flex-col group relative cursor-help stat-tooltip-container"
               >
@@ -1458,6 +1491,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'mental' ? null : 'mental');
+                  handleStatTap('mental');
                 }}
                 className="flex flex-col group relative cursor-help stat-tooltip-container"
               >
@@ -1479,6 +1513,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'aura' ? null : 'aura');
+                  handleStatTap('aura');
                 }}
                 className="flex flex-col group relative cursor-help stat-tooltip-container"
               >
@@ -1497,6 +1532,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTooltip(prev => prev === 'heat' ? null : 'heat');
+                  handleStatTap('heat');
                 }}
                 className="flex flex-col group relative cursor-help stat-tooltip-container"
               >
@@ -1511,6 +1547,46 @@ function App() {
                   Represents law enforcement attention. High heat triggers sudden raids, arrests, and prison time. Use Ghost Mode to lay low and cool down.
                 </div>
               </div>
+            </div>
+
+            {/* Active Modifier Badges */}
+            <div className="flex flex-wrap gap-1 justify-center mb-3">
+              {pl.mentalHealth < 50 && (
+                <button
+                  onClick={() => handleModifierBadgeTap('exhaustion')}
+                  className="rounded-full py-0.5 px-2 text-[8px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 transition-all shrink-0"
+                >
+                  <span className="text-[9px]">💤</span>
+                  <span>Exhaustion (-{Math.round((1 - (0.75 + 0.25 * (pl.mentalHealth / 50))) * 100)}%)</span>
+                </button>
+              )}
+              {pl.aura >= 100 && (
+                <button
+                  onClick={() => handleModifierBadgeTap('aura_discount')}
+                  className="rounded-full py-0.5 px-2 text-[8px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20 transition-all shrink-0"
+                >
+                  <span className="text-[9px]">👑</span>
+                  <span>Aura discount (-10%)</span>
+                </button>
+              )}
+              {pl.heat >= 70 && (
+                <button
+                  onClick={() => handleModifierBadgeTap('public_scrutiny')}
+                  className="rounded-full py-0.5 px-2 text-[8px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20 transition-all shrink-0"
+                >
+                  <span className="text-[9px]">👁️</span>
+                  <span>Public scrutiny</span>
+                </button>
+              )}
+              {pl.heat === 0 && (
+                <button
+                  onClick={() => handleModifierBadgeTap('clean_record')}
+                  className="rounded-full py-0.5 px-2 text-[8px] font-bold tracking-tight uppercase flex items-center gap-1 border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-all shrink-0"
+                >
+                  <span className="text-[9px]">🛡️</span>
+                  <span>Clean record bonus</span>
+                </button>
+              )}
             </div>
 
             {/* Action Buttons Row */}
@@ -2328,6 +2404,487 @@ function App() {
       <NarrativeEventModal />
       <LiveWorldEventModal />
       <InteractiveStoryModal />
+
+      {/* Stat Breakdown Drawer */}
+      <AnimatePresence>
+        {isStatDrawerOpen && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[2000] flex items-end justify-center">
+            {/* Backdrop tap to close */}
+            <div className="absolute inset-0" onClick={() => setIsStatDrawerOpen(false)} />
+
+            {/* Slide-up container */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative bg-slate-900 border-t border-slate-800 rounded-t-3xl w-full max-w-md h-[72vh] flex flex-col shadow-2xl z-10 overflow-hidden"
+            >
+              {/* Header drag handle line */}
+              <div className="flex justify-center py-2 shrink-0">
+                <div className="w-12 h-1 bg-slate-700 rounded-full" />
+              </div>
+
+              {/* Drawer Header */}
+              <div className="px-5 pb-3 flex justify-between items-center border-b border-slate-800 shrink-0">
+                <div>
+                  <h2 className="text-sm font-black uppercase text-slate-200 tracking-wider">Stat Analysis Console</h2>
+                  <p className="text-[10px] text-slate-500 font-medium">Detailed monthly tracking & tactical interventions</p>
+                </div>
+                <button
+                  onClick={() => setIsStatDrawerOpen(false)}
+                  className="rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 p-1.5 transition-colors text-[10px]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Tabs Row */}
+              <div className="flex bg-slate-950 border-b border-slate-800 text-[10px] font-black uppercase tracking-wider shrink-0">
+                <button
+                  onClick={() => setStatDrawerActiveTab('thisMonth')}
+                  className={`flex-1 py-3 text-center transition-colors ${
+                    statDrawerActiveTab === 'thisMonth'
+                      ? 'text-emerald-400 bg-slate-900 border-b-2 border-emerald-400'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  📊 This Month
+                </button>
+                <button
+                  onClick={() => setStatDrawerActiveTab('modifiers')}
+                  className={`flex-1 py-3 text-center transition-colors ${
+                    statDrawerActiveTab === 'modifiers'
+                      ? 'text-emerald-400 bg-slate-900 border-b-2 border-emerald-400'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  ⚡ Active Modifiers
+                </button>
+              </div>
+
+              {/* Drawer Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 leading-relaxed text-[11px] text-slate-300">
+                {statDrawerActiveTab === 'thisMonth' ? (
+                  <div className="space-y-4">
+                    {/* Cash Breakdown Section */}
+                    <div className="bg-slate-950/60 p-3.5 border border-slate-800/80 rounded-2xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-black text-emerald-400 uppercase tracking-wide">💵 Cash Flow</span>
+                        <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netCash && (pl.lastStatBreakdown as any).netCash >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          Net: {(pl.lastStatBreakdown as any)?.netCash && (pl.lastStatBreakdown as any).netCash >= 0 ? '+' : ''}
+                          {((pl.lastStatBreakdown as any)?.netCash || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 font-medium text-slate-400">
+                        {(pl.lastStatBreakdown as any)?.cash && (pl.lastStatBreakdown as any).cash.length > 0 ? (
+                          ((pl.lastStatBreakdown as any).cash as any[]).map((src, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                              <span className="flex items-center gap-1">• {src.name}</span>
+                              <span className={`font-mono ${src.amount >= 0 ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                                {src.amount >= 0 ? '+' : ''}{src.amount.toLocaleString()} {src.display ? `(${src.display})` : ''}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-slate-600 italic">No cash flow events registered this month.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Aura Breakdown Section */}
+                    <div className="bg-slate-950/60 p-3.5 border border-slate-800/80 rounded-2xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-black text-purple-400 uppercase tracking-wide">✨ Aura Breakdown</span>
+                        <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netAura && (pl.lastStatBreakdown as any).netAura >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+                          Net: {(pl.lastStatBreakdown as any)?.netAura && (pl.lastStatBreakdown as any).netAura >= 0 ? '+' : ''}
+                          {(pl.lastStatBreakdown as any)?.netAura || 0}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 font-medium text-slate-400">
+                        {(pl.lastStatBreakdown as any)?.aura && (pl.lastStatBreakdown as any).aura.length > 0 ? (
+                          ((pl.lastStatBreakdown as any).aura as any[]).map((src, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                              <span className="flex items-center gap-1">• {src.name}</span>
+                              <span className={`font-mono ${src.amount >= 0 ? 'text-purple-400/90' : 'text-red-400/90'}`}>
+                                {src.amount >= 0 ? '+' : ''}{src.amount}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-slate-600 italic">No aura events registered this month.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Clout Breakdown Section */}
+                    <div className="bg-slate-950/60 p-3.5 border border-slate-800/80 rounded-2xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-black text-blue-400 uppercase tracking-wide">👑 Clout Breakdown</span>
+                        <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netClout && (pl.lastStatBreakdown as any).netClout >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                          Net: {(pl.lastStatBreakdown as any)?.netClout && (pl.lastStatBreakdown as any).netClout >= 0 ? '+' : ''}
+                          {(pl.lastStatBreakdown as any)?.netClout || 0}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 font-medium text-slate-400">
+                        {(pl.lastStatBreakdown as any)?.clout && (pl.lastStatBreakdown as any).clout.length > 0 ? (
+                          ((pl.lastStatBreakdown as any).clout as any[]).map((src, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                              <span className="flex items-center gap-1">• {src.name}</span>
+                              <span className={`font-mono ${src.amount >= 0 ? 'text-blue-400/90' : 'text-red-400/90'}`}>
+                                {src.amount >= 0 ? '+' : ''}{src.amount}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-slate-600 italic">No clout events registered this month.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Heat Breakdown Section */}
+                    <div className="bg-slate-950/60 p-3.5 border border-slate-800/80 rounded-2xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-black text-orange-400 uppercase tracking-wide">🔥 Heat (WANTED)</span>
+                        <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netHeat && (pl.lastStatBreakdown as any).netHeat >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                          Net: {(pl.lastStatBreakdown as any)?.netHeat && (pl.lastStatBreakdown as any).netHeat >= 0 ? '+' : ''}
+                          {(pl.lastStatBreakdown as any)?.netHeat || 0}%
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 font-medium text-slate-400">
+                        {(pl.lastStatBreakdown as any)?.heat && (pl.lastStatBreakdown as any).heat.length > 0 ? (
+                          ((pl.lastStatBreakdown as any).heat as any[]).map((src, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                              <span className="flex items-center gap-1">• {src.name}</span>
+                              <span className={`font-mono ${src.amount >= 0 ? 'text-red-400/90' : 'text-emerald-400/90'}`}>
+                                {src.amount >= 0 ? '+' : ''}{src.amount}%
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-slate-600 italic">No heat events registered this month.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mental Health Breakdown Section */}
+                    <div className="bg-slate-950/60 p-3.5 border border-slate-800/80 rounded-2xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-black text-slate-200 uppercase tracking-wide">🧠 Mental Health</span>
+                        <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netMental && (pl.lastStatBreakdown as any).netMental >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          Net: {(pl.lastStatBreakdown as any)?.netMental && (pl.lastStatBreakdown as any).netMental >= 0 ? '+' : ''}
+                          {(pl.lastStatBreakdown as any)?.netMental || 0}%
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 font-medium text-slate-400">
+                        {(pl.lastStatBreakdown as any)?.mental && (pl.lastStatBreakdown as any).mental.length > 0 ? (
+                          ((pl.lastStatBreakdown as any).mental as any[]).map((src, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                              <span className="flex items-center gap-1">• {src.name}</span>
+                              <span className={`font-mono ${src.amount >= 0 ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                                {src.amount >= 0 ? '+' : ''}{src.amount}%
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-slate-600 italic">No mental health events registered this month.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Re-Open Monthly Summary */}
+                    <div className="border-t border-slate-800 pt-4 shrink-0">
+                      <button
+                        onClick={() => {
+                          setIsStatDrawerOpen(false);
+                          setShowMonthlySummary(true);
+                        }}
+                        className="w-full flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 font-bold transition-all uppercase text-[9px] tracking-wide"
+                      >
+                        📋 Re-Open Monthly Summary Report
+                      </button>
+                    </div>
+
+                    {/* EMPIRE RECOVERY INTERVENTIONS */}
+                    <div className="border-t border-slate-800 pt-4 space-y-2.5 shrink-0">
+                      <span className="font-black text-slate-400 uppercase tracking-widest text-[9px] block">Empire Tactical Interventions</span>
+                      <div className="grid grid-cols-1 gap-2">
+                        {pl.heat >= 30 && (
+                          <button
+                            onClick={() => navigateToHustle('r_ghost_mode', 'MUD')}
+                            className="w-full flex items-center justify-between p-3 rounded-2xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 font-bold transition-all uppercase text-[9px] tracking-wide"
+                          >
+                            <span>🔥 High Heat Level ({Math.floor(pl.heat)}%)</span>
+                            <span className="flex items-center gap-1 font-black">Play Ghost Mode ➔</span>
+                          </button>
+                        )}
+                        {pl.aura < 50 && (
+                          <button
+                            onClick={() => navigateToHustle('r_pr_campaign', 'STREET')}
+                            className="w-full flex items-center justify-between p-3 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 font-bold transition-all uppercase text-[9px] tracking-wide"
+                          >
+                            <span>✨ Low Aura Standing ({Math.floor(pl.aura)})</span>
+                            <span className="flex items-center gap-1 font-black">Run PR Campaign ➔</span>
+                          </button>
+                        )}
+                        {pl.mentalHealth < 50 && (
+                          <button
+                            onClick={() => navigateToHustle('r_sleep', 'MUD')}
+                            className="w-full flex items-center justify-between p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold transition-all uppercase text-[9px] tracking-wide"
+                          >
+                            <span>🧠 Mental Exhaustion ({Math.floor(pl.mentalHealth)}%)</span>
+                            <span className="flex items-center gap-1 font-black">Rest Now ➔</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <span className="font-black text-slate-400 uppercase tracking-widest text-[9px] block">Active Strategic Modifiers</span>
+
+                    {/* Exhaustion Badge Info */}
+                    {pl.mentalHealth < 50 ? (
+                      <div className="p-3.5 bg-red-500/5 border border-red-500/20 rounded-2xl leading-relaxed">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs">💤</span>
+                          <span className="font-black text-red-400 uppercase text-[10px]">Exhaustion Penalty Active</span>
+                        </div>
+                        <p className="text-slate-400">
+                          Your Mental Health is critically low (<span className="text-white font-bold">{Math.floor(pl.mentalHealth)}%</span>). All active yields (cash, clout, aura) are cut by up to <span className="text-red-400 font-bold">{Math.round((1 - (0.75 + 0.25 * (pl.mentalHealth / 50))) * 100)}%</span>.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-950/40 border border-slate-800/40 rounded-2xl text-slate-500 text-[10px] italic">
+                        💤 Exhaustion is inactive (Mental Health is normal).
+                      </div>
+                    )}
+
+                    {/* Aura Discount Info */}
+                    {pl.aura >= 100 ? (
+                      <div className="p-3.5 bg-purple-500/5 border border-purple-500/20 rounded-2xl leading-relaxed">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs">👑</span>
+                          <span className="font-black text-purple-300 uppercase text-[10px]">Aura Discount Active</span>
+                        </div>
+                        <p className="text-slate-400">
+                          Your immense Star Aura is commanding (<span className="text-white font-bold">{Math.floor(pl.aura)}</span>). You receive a permanent <span className="text-purple-300 font-bold">10% discount</span> on all Business branch & scaling upgrades!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-950/40 border border-slate-800/40 rounded-2xl text-slate-500 text-[10px] italic">
+                        👑 Aura Discount is inactive (Aura is below 100).
+                      </div>
+                    )}
+
+                    {/* Public Scrutiny Info */}
+                    {pl.heat >= 70 ? (
+                      <div className="p-3.5 bg-orange-500/5 border border-orange-500/20 rounded-2xl leading-relaxed">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs">👁️</span>
+                          <span className="font-black text-orange-400 uppercase text-[10px]">Public Scrutiny Escalated</span>
+                        </div>
+                        <p className="text-slate-400">
+                          Your legal Wanted Heat is critical (<span className="text-white font-bold">{Math.floor(pl.heat)}%</span>). Police presence is heightened, dramatically multiplying the risk of sudden courtroom raids, arrests, and asset confiscation.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-950/40 border border-slate-800/40 rounded-2xl text-slate-500 text-[10px] italic">
+                        👁️ Public Scrutiny is normal (Heat is below 70%).
+                      </div>
+                    )}
+
+                    {/* Clean Record Info */}
+                    {pl.heat === 0 ? (
+                      <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl leading-relaxed">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs">🛡️</span>
+                          <span className="font-black text-emerald-400 uppercase text-[10px]">Clean Record Bonus Active</span>
+                        </div>
+                        <p className="text-slate-400">
+                          You are running a perfectly clean enterprise (<span className="text-white font-bold">0% Heat</span>). Maintaining a clean wanted record for 6 continuous months will award a massive <span className="text-emerald-400 font-bold">+50 Clout & +50 Aura</span> bonus!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-950/40 border border-slate-800/40 rounded-2xl text-slate-500 text-[10px] italic">
+                        🛡️ Clean Record is inactive (Wanted Heat is currently active).
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Concise Monthly Summary Modal */}
+      <AnimatePresence>
+        {showMonthlySummary && (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[3000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="bg-slate-950 px-5 py-4 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div>
+                  <h3 className="text-xs font-black uppercase text-emerald-400 tracking-wider">Simulation Report</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">Operations Overview • Month {pl.month}</p>
+                </div>
+                <button
+                  onClick={() => setShowMonthlySummary(false)}
+                  className="text-slate-400 hover:text-slate-200 text-xs rounded-full bg-slate-800 p-1.5 leading-none shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Scrollable Summary Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 leading-relaxed text-[11px] text-slate-300 animate-fade-in">
+
+                {/* Cash Flow */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-1">
+                    <span className="font-black uppercase text-emerald-400">💵 Cash</span>
+                    <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netCash >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {(pl.lastStatBreakdown as any)?.netCash >= 0 ? '+' : ''}
+                      {((pl.lastStatBreakdown as any)?.netCash || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="pl-2 space-y-1 text-slate-400 font-medium">
+                    {(pl.lastStatBreakdown as any)?.cash && (pl.lastStatBreakdown as any).cash.length > 0 ? (
+                      ((pl.lastStatBreakdown as any).cash as any[]).map((src, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{src.name}</span>
+                          <span className={src.amount >= 0 ? 'text-emerald-400/90' : 'text-red-400/90'}>
+                            {src.amount >= 0 ? '+' : ''}{src.amount.toLocaleString()}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="italic text-slate-600">No events</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Aura */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-1">
+                    <span className="font-black uppercase text-purple-400">✨ Aura</span>
+                    <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netAura >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+                      {(pl.lastStatBreakdown as any)?.netAura >= 0 ? '+' : ''}
+                      {(pl.lastStatBreakdown as any)?.netAura || 0}
+                    </span>
+                  </div>
+                  <div className="pl-2 space-y-1 text-slate-400 font-medium">
+                    {(pl.lastStatBreakdown as any)?.aura && (pl.lastStatBreakdown as any).aura.length > 0 ? (
+                      ((pl.lastStatBreakdown as any).aura as any[]).map((src, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{src.name}</span>
+                          <span className={src.amount >= 0 ? 'text-purple-400/90' : 'text-red-400/90'}>
+                            {src.amount >= 0 ? '+' : ''}{src.amount}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="italic text-slate-600">No events</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Clout */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-1">
+                    <span className="font-black uppercase text-blue-400">👑 Clout</span>
+                    <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netClout >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                      {(pl.lastStatBreakdown as any)?.netClout >= 0 ? '+' : ''}
+                      {(pl.lastStatBreakdown as any)?.netClout || 0}
+                    </span>
+                  </div>
+                  <div className="pl-2 space-y-1 text-slate-400 font-medium">
+                    {(pl.lastStatBreakdown as any)?.clout && (pl.lastStatBreakdown as any).clout.length > 0 ? (
+                      ((pl.lastStatBreakdown as any).clout as any[]).map((src, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{src.name}</span>
+                          <span className={src.amount >= 0 ? 'text-blue-400/90' : 'text-red-400/90'}>
+                            {src.amount >= 0 ? '+' : ''}{src.amount}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="italic text-slate-600">No events</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Heat */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-1">
+                    <span className="font-black uppercase text-orange-400">🔥 Heat</span>
+                    <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netHeat >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {(pl.lastStatBreakdown as any)?.netHeat >= 0 ? '+' : ''}
+                      {(pl.lastStatBreakdown as any)?.netHeat || 0}%
+                    </span>
+                  </div>
+                  <div className="pl-2 space-y-1 text-slate-400 font-medium">
+                    {(pl.lastStatBreakdown as any)?.heat && (pl.lastStatBreakdown as any).heat.length > 0 ? (
+                      ((pl.lastStatBreakdown as any).heat as any[]).map((src, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{src.name}</span>
+                          <span className={src.amount >= 0 ? 'text-red-400/90' : 'text-emerald-400/90'}>
+                            {src.amount >= 0 ? '+' : ''}{src.amount}%
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="italic text-slate-600">No events</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mental Health */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-1">
+                    <span className="font-black uppercase text-slate-200">🧠 Mental Health</span>
+                    <span className={`font-mono font-bold ${(pl.lastStatBreakdown as any)?.netMental >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {(pl.lastStatBreakdown as any)?.netMental >= 0 ? '+' : ''}
+                      {(pl.lastStatBreakdown as any)?.netMental || 0}%
+                    </span>
+                  </div>
+                  <div className="pl-2 space-y-1 text-slate-400 font-medium">
+                    {(pl.lastStatBreakdown as any)?.mental && (pl.lastStatBreakdown as any).mental.length > 0 ? (
+                      ((pl.lastStatBreakdown as any).mental as any[]).map((src, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{src.name}</span>
+                          <span className={src.amount >= 0 ? 'text-emerald-400/90' : 'text-red-400/90'}>
+                            {src.amount >= 0 ? '+' : ''}{src.amount}%
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="italic text-slate-600">No events</div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Modal Actions */}
+              <div className="bg-slate-950 p-4 border-t border-slate-800 flex justify-end shrink-0">
+                <button
+                  onClick={() => setShowMonthlySummary(false)}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black uppercase text-[10px] tracking-wider transition-colors shadow-lg"
+                >
+                  Continue Operations
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />

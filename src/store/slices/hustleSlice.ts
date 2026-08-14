@@ -50,6 +50,7 @@ import * as Bio from '../../engine/biographyEngine';
 import { BACKGROUNDS } from '../../config/backgrounds';
 import { recordCharacterChoice } from '../../utils/characterFormation';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
+import { accumulateStatBreakdown } from '../../utils/statBreakdownHelper';
 
 
 
@@ -600,6 +601,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     let finalNextPl = enforceStatCaps(advancementResult.newPl);
     finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+    finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
+      state.pl.lastStatBreakdown,
+      state.pl,
+      finalNextPl,
+      hustleId,
+      { yieldCash: 0, cost: branch.cost, yieldClout: branch.yieldClout, yieldAura: branch.yieldAura, mentalHit: 0, heatHit: 0 },
+      advancementResult.passiveIncome,
+      advancementResult.totalRent
+    );
     const finalCurrentMarket = advancementResult.newMarket;
     const tickNews = advancementResult.news;
 
@@ -977,6 +987,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       finalNextPl = enforceStatCaps(advancementResult.newPl);
       finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+      finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
+        state.pl.lastStatBreakdown,
+        state.pl,
+        finalNextPl,
+        hustleId,
+        { yieldCash: 0, cost: result.cost, yieldClout: result.yieldClout, yieldAura: result.yieldAura, mentalHit: result.mentalHit, heatHit: result.heatHit },
+        advancementResult.passiveIncome,
+        advancementResult.totalRent
+      );
       finalCurrentMarket = advancementResult.newMarket;
       tickNews = advancementResult.news;
 
@@ -1056,6 +1075,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       console.log(`⏰ TIMELINE GUARD: Executed ${hustleId}:${branchId}. Time advanced 1 month.`);
+    }
+
+    if (!finalNextPl.lastStatBreakdown) {
+      finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
+        state.pl.lastStatBreakdown,
+        state.pl,
+        finalNextPl,
+        hustleId,
+        { yieldCash: 0, cost: result.cost, yieldClout: result.yieldClout, yieldAura: result.yieldAura, mentalHit: result.mentalHit, heatHit: result.heatHit },
+        0,
+        0
+      );
     }
 
     set({
@@ -1466,6 +1497,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     let plFinal = enforceStatCaps(newPl);
     plFinal.lastPassiveBreakdown = passiveBreakdown;
+    plFinal.lastStatBreakdown = accumulateStatBreakdown(
+      state.pl.lastStatBreakdown,
+      state.pl,
+      plFinal,
+      hustleId,
+      result,
+      passiveIncome,
+      totalRent
+    );
 
     // Update active challenges
     if (result.success && state.pl.activeChallenges.length > 0) {
@@ -1971,6 +2011,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       finalNextPl = enforceStatCaps(advancementResult.newPl);
       finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+      finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
+        state.pl.lastStatBreakdown,
+        state.pl,
+        finalNextPl,
+        hustleId,
+        { yieldCash: 0, cost: result.cost, yieldClout: result.yieldClout, yieldAura: result.yieldAura, mentalHit: result.mentalHit, heatHit: result.heatHit },
+        advancementResult.passiveIncome,
+        advancementResult.totalRent
+      );
       finalCurrentMarket = advancementResult.newMarket;
       tickNews = advancementResult.news;
 
@@ -2127,6 +2176,18 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     const executionNewsStr = `${isRepeat ? '🔄' : '⬆️'} ${isRepeat ? 'Purchased' : 'Upgraded'}: ${targetNodeData.name || hustle.name} (-$${result.cost.toLocaleString()})`;
+
+    if (!finalNextPl.lastStatBreakdown) {
+      finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
+        state.pl.lastStatBreakdown,
+        state.pl,
+        finalNextPl,
+        hustleId,
+        { yieldCash: 0, cost: result.cost, yieldClout: result.yieldClout, yieldAura: result.yieldAura, mentalHit: result.mentalHit, heatHit: result.heatHit },
+        0,
+        0
+      );
+    }
 
     set({
       pl: enforceStatCaps(finalNextPl),
@@ -3084,6 +3145,15 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       const advancedPl = enforceStatCaps(advancementResult.newPl);
       advancedPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
+      advancedPl.lastStatBreakdown = accumulateStatBreakdown(
+        playerToUse.lastStatBreakdown,
+        playerToUse,
+        advancedPl,
+        null,
+        null,
+        advancementResult.passiveIncome,
+        advancementResult.totalRent
+      );
       const finalCurrentMarket = advancementResult.newMarket;
 
       // 2. Check for active legacy story choice events first!
