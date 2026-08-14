@@ -255,7 +255,7 @@ export const BeatSequence: React.FC<BeatSequenceProps> = ({ onComplete, level = 
                   }`}
                   style={{
                     top: `${node.position}%`,
-                    transform: 'translateY(-50%)',
+                    y: "-50%",
                   }}
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ repeat: Infinity, duration: 0.6 }}
