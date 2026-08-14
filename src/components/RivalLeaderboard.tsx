@@ -38,10 +38,13 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
   playerName,
   rivals = []
 }) => {
-  const { pl, retaliateRival, sabotageRival, helpRival, counterBid, recruitRival } = useGameStore();
+  const { pl, retaliateRival, sabotageRival, helpRival, counterBid, recruitRival, focusedRivalId, setFocusedRivalId } = useGameStore();
 
   // State for tracking expanded rival card
   const [expandedRivalId, setExpandedRivalId] = useState<string | null>(null);
+
+  // State for focused highlight pulse
+  const [pulseRivalId, setPulseRivalId] = useState<string | null>(null);
 
   // State for immediate feedback tracking
   const [actionFeedback, setActionFeedback] = useState<{
@@ -50,6 +53,30 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
     message: string;
     relationshipChange: { fear: string; respect: string; trust: string };
   } | null>(null);
+
+  // Listener for focusedRivalId trigger from feed
+  useEffect(() => {
+    if (focusedRivalId) {
+      setExpandedRivalId(focusedRivalId);
+      setPulseRivalId(focusedRivalId);
+
+      // Scroll card into view
+      setTimeout(() => {
+        const element = document.querySelector(`[data-testid="rival-card-${focusedRivalId}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // Clear pulse state and focused trigger after 2 seconds
+      const timer = setTimeout(() => {
+        setPulseRivalId(null);
+        setFocusedRivalId(null);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [focusedRivalId, setFocusedRivalId]);
 
   // Clear action feedback after a timeout
   useEffect(() => {
@@ -60,6 +87,24 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
       return () => clearTimeout(timer);
     }
   }, [actionFeedback]);
+
+  // Helper to extract last 3-5 major history interactions
+  const getRivalHistory = (rival: Rival) => {
+    const historyEvents = pl.history || [];
+    const filtered = historyEvents.filter(ev => {
+      if (ev.category !== 'RIVAL') return false;
+      const lowerRivalName = rival.name.toLowerCase();
+      const matchParticipant = ev.participants?.some(p => p.toLowerCase().includes(lowerRivalName));
+      const matchId = ev.id?.includes(rival.id);
+      const matchDesc = ev.description?.toLowerCase().includes(lowerRivalName) || ev.title?.toLowerCase().includes(lowerRivalName);
+      return matchParticipant || matchId || matchDesc;
+    });
+
+    // Sort descending (newest first) and limit to last 3-5 major interactions
+    return filtered
+      .sort((a, b) => b.month - a.month)
+      .slice(0, 5);
+  };
 
   const allParticipants = [
     ...(rivals || []),
@@ -183,6 +228,11 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
+        @keyframes focused-pulse {
+          0% { border-color: rgba(234, 179, 8, 1); box-shadow: 0 0 25px rgba(234, 179, 8, 0.8); }
+          50% { border-color: rgba(168, 85, 247, 1); box-shadow: 0 0 40px rgba(168, 85, 247, 0.9); }
+          100% { border-color: rgba(234, 179, 8, 1); box-shadow: 0 0 25px rgba(234, 179, 8, 0.8); }
+        }
         .animate-shake {
           animation: shake 0.35s ease-in-out;
         }
@@ -206,6 +256,9 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
         }
         .animate-fade-in {
           animation: fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-focused-pulse {
+          animation: focused-pulse 1s infinite alternate;
         }
       `}</style>
 
@@ -282,9 +335,15 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
             cardStyle += " animate-glow-gold-purple border-2";
           }
 
+          // If focused from World Feed, apply golden/purple animated pulse highlight
+          if (pulseRivalId === p.id) {
+            cardStyle += " animate-focused-pulse border-2 scale-[1.02] z-10 shadow-2xl transition-transform duration-300";
+          }
+
           return (
             <div
               key={p.id}
+              data-testid={`rival-card-${p.id}`}
               onClick={() => {
                 if (!isPlayer) {
                   setExpandedRivalId(isExpanded ? null : p.id);
@@ -301,7 +360,13 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
 
               {/* Action Result Banner */}
               {feedback && (
-                <div className="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center p-4 rounded-xl z-20 border border-slate-700/50 animate-fade-in text-center">
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActionFeedback(null);
+                  }}
+                  className="absolute inset-0 bg-slate-950/95 flex flex-col justify-center items-center p-4 rounded-xl z-50 border border-slate-700/50 animate-fade-in text-center cursor-pointer select-none"
+                >
                   <div className="text-xs font-black text-white mb-2 uppercase tracking-wide">
                     {feedback.type.includes('success') || feedback.type === 'recruit' || feedback.type === 'help' || feedback.type === 'counter' ? '🎉 VICTORY' : '🚨 COMPROMISED'}
                   </div>
@@ -321,6 +386,9 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                         Trust {feedback.relationshipChange.trust}
                       </span>
                     </div>
+                  </div>
+                  <div className="text-[8px] text-slate-500 uppercase tracking-widest mt-3 font-bold">
+                    [ Click anywhere to dismiss ]
                   </div>
                 </div>
               )}
@@ -415,11 +483,18 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                     }
                   })()
                 ) : (
-                  <div className="flex flex-col items-end shrink-0">
-                    <div className={`text-xs font-mono ${amountStyle}`}>
-                      ${p.netWorth.toLocaleString()}
+                  <div className="flex flex-col items-end shrink-0 gap-1.5">
+                    <div className="flex items-center gap-2">
+                      {!isExpanded && (
+                        <span className="text-[8px] font-black uppercase tracking-wider text-slate-500 bg-slate-800/40 px-2 py-0.5 rounded border border-slate-700/30 animate-pulse select-none">
+                          👉 Tap to engage ⚡
+                        </span>
+                      )}
+                      <div className={`text-xs font-mono ${amountStyle}`}>
+                        ${p.netWorth.toLocaleString()}
+                      </div>
                     </div>
-                    <span className="text-[8px] text-slate-500 font-bold uppercase mt-0.5">
+                    <span className="text-[8px] text-slate-500 font-bold uppercase">
                       {isExpanded ? 'Collapse ▲' : 'Details ▼'}
                     </span>
                   </div>
@@ -471,6 +546,87 @@ export const RivalLeaderboard: React.FC<RivalLeaderboardProps> = ({
                         </span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Relationship Memory Profile */}
+                  <div className="grid grid-cols-3 gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60 text-[10px] text-center">
+                    <div className="flex flex-col items-center">
+                      <span className="text-red-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">😨 Fear</span>
+                      <div className="text-white font-mono font-bold text-xs mt-0.5">
+                        {pAsRival.fear ?? 20}
+                        {pAsRival.lastFearDelta !== undefined && pAsRival.lastFearDelta !== 0 && (
+                          <span className={`ml-1 text-[9px] ${pAsRival.lastFearDelta > 0 ? "text-red-400" : "text-emerald-400"}`}>
+                            ({pAsRival.lastFearDelta > 0 ? `+${pAsRival.lastFearDelta}` : pAsRival.lastFearDelta})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-emerald-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">✊ Respect</span>
+                      <div className="text-white font-mono font-bold text-xs mt-0.5">
+                        {pAsRival.respect ?? 20}
+                        {pAsRival.lastRespectDelta !== undefined && pAsRival.lastRespectDelta !== 0 && (
+                          <span className={`ml-1 text-[9px] ${pAsRival.lastRespectDelta > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                            ({pAsRival.lastRespectDelta > 0 ? `+${pAsRival.lastRespectDelta}` : pAsRival.lastRespectDelta})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-blue-400 font-bold uppercase tracking-wider text-[8px] mb-0.5">🤝 Trust</span>
+                      <div className="text-white font-mono font-bold text-xs mt-0.5">
+                        {pAsRival.trust ?? 20}
+                        {pAsRival.lastTrustDelta !== undefined && pAsRival.lastTrustDelta !== 0 && (
+                          <span className={`ml-1 text-[9px] ${pAsRival.lastTrustDelta > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                            ({pAsRival.lastTrustDelta > 0 ? `+${pAsRival.lastTrustDelta}` : pAsRival.lastTrustDelta})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rival History Section */}
+                  <div className="bg-slate-950/45 p-4 rounded-xl border border-slate-800/80 text-[11px] space-y-2">
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold uppercase tracking-wider text-[9px] mb-1">
+                      <span>📖</span>
+                      <span>Rival History (Timeline)</span>
+                    </div>
+                    {getRivalHistory(pAsRival).length === 0 ? (
+                      <div className="text-slate-500 italic py-1 pl-1">No major past interactions recorded with this rival yet.</div>
+                    ) : (
+                      <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1 no-scrollbar">
+                        {getRivalHistory(pAsRival).map((ev, evIdx) => {
+                          let eventEmoji = "📝";
+                          const lowerTitle = ev.title.toLowerCase();
+                          if (lowerTitle.includes("sabotage")) {
+                            eventEmoji = lowerTitle.includes("success") ? "🎯" : "🚫";
+                          } else if (lowerTitle.includes("investment") || lowerTitle.includes("partnership") || lowerTitle.includes("relief") || lowerTitle.includes("help")) {
+                            eventEmoji = "🤝";
+                          } else if (lowerTitle.includes("bidding") || lowerTitle.includes("counter")) {
+                            eventEmoji = "⚡";
+                          } else if (lowerTitle.includes("recruited") || lowerTitle.includes("adversary") || lowerTitle.includes("recruit")) {
+                            eventEmoji = "👑";
+                          } else if (lowerTitle.includes("retaliation") || lowerTitle.includes("retaliated")) {
+                            eventEmoji = "🔥";
+                          }
+
+                          return (
+                            <div key={ev.id || evIdx} className="flex items-start gap-2 bg-slate-900/40 p-2 rounded-lg border border-slate-800/50 hover:border-slate-700/50 transition-all">
+                              <span className="text-sm shrink-0">{eventEmoji}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold mb-0.5">
+                                  <span className="text-slate-200">{ev.title}</span>
+                                  <span className="font-mono text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">
+                                    Month {ev.month}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-normal leading-normal">{ev.description}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Recent Activity */}

@@ -64,6 +64,15 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
 
   const worldFeed = pl.worldFeed || [];
 
+  const handleViewRivalry = (rivalId: string) => {
+    const rival = pl.rivals?.find(r => r.id === rivalId);
+    if (rival) {
+      useGameStore.getState().setActiveTab(rival.tier as AppTab);
+      useGameStore.getState().setFocusedRivalId(rivalId);
+      onClose();
+    }
+  };
+
   // Group into categories
   const categories: { id: WorldFeedCategory | 'ALL'; label: string; icon: string }[] = [
     { id: 'ALL', label: 'All Feeds', icon: '📱' },
@@ -141,6 +150,18 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
               </span>
             )}
           </div>
+          {item.rivalIdLink && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewRivalry(item.rivalIdLink!);
+              }}
+              className="mt-2 w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md active:scale-95 border border-indigo-400/20"
+            >
+              <span>⚔️</span>
+              <span>View Rivalry</span>
+            </button>
+          )}
         </div>
       );
     }
@@ -202,6 +223,18 @@ export const WorldReactionFeed: React.FC<WorldReactionFeedProps> = ({ onClose })
             </span>
           )}
         </div>
+        {item.rivalIdLink && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewRivalry(item.rivalIdLink!);
+            }}
+            className="mt-2.5 w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md active:scale-95 border border-indigo-400/20"
+          >
+            <span>⚔️</span>
+            <span>View Rivalry</span>
+          </button>
+        )}
       </div>
     );
   };

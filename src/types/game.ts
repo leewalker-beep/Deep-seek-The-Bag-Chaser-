@@ -384,6 +384,12 @@ export interface Rival {
   relationshipWithPlayer?: number; // -100 to 100
   sabotagedCount?: number;
   helpedCount?: number;
+  fear?: number;
+  respect?: number;
+  trust?: number;
+  lastFearDelta?: number;
+  lastRespectDelta?: number;
+  lastTrustDelta?: number;
 
   // Simulated assets/actions using existing systems or mimicking them logically
   businesses?: string[];          // e.g. ["Deli", "Logistics"]
@@ -777,6 +783,7 @@ export interface WorldFeedItem {
   avatarId?: string;
   effect?: string;
   pinned?: boolean;
+  rivalIdLink?: string;
 }
 
 export interface OriginBonus {
@@ -1081,6 +1088,7 @@ export interface GameState {
   difficulty: 1 | 2 | 3;
   activeTransition: HeroArtwork | null;
   transitionQueue: HeroArtwork[];
+  focusedRivalId: string | null;
   chosenBackground?: string;
   chosenBackgroundCategory?: string;
   chosenBackgroundVariation?: string;
@@ -1107,6 +1115,7 @@ export interface GameState {
   setActiveTab: (tab: AppTab) => void;
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
+  setFocusedRivalId: (id: string | null) => void;
   setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
   dismissLiveEvent: () => void;
