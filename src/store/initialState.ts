@@ -142,6 +142,7 @@ export const getInitialStats = (
     monthsSinceCycleChange: 0,
     dynamicPassives: {},
     lastPassiveBreakdown: undefined,
+    lastStatBreakdown: undefined,
     activeSpecializationId: null,
     specializationHistory: [],
     rivals: [
