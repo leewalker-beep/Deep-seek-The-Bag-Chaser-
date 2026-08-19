@@ -52,6 +52,10 @@ import { recordCharacterChoice } from '../../utils/characterFormation';
 import { processWorldReaction } from '../../engine/reactiveWorldEngine';
 import { accumulateStatBreakdown } from '../../utils/statBreakdownHelper';
 
+const RECOVERY_HUSTLE_IDS = ['r_sleep', 'power_nap', 'therapy_session', 'wellness_retreat', 'psychiatrist'];
+const isRecoveryAction = (id: string) => RECOVERY_HUSTLE_IDS.includes(id);
+const isGhostModeAction = (id: string) => id === 'r_ghost_mode';
+
 
 
 export interface HustleSlice {
@@ -554,6 +558,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       backupSave();
     }
 
+    const initialHeat = state.pl.heat;
     const newBag = state.pl.bag - branch.cost;
     const newClout = state.pl.clout + branch.yieldClout;
     const newAura = state.pl.aura + branch.yieldAura;
@@ -600,6 +605,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     );
 
     let finalNextPl = enforceStatCaps(advancementResult.newPl);
+    if (isRecoveryAction(hustleId) || isGhostModeAction(hustleId)) {
+      finalNextPl.heat = Math.min(finalNextPl.heat, initialHeat);
+    }
     finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
     finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
       state.pl.lastStatBreakdown,
@@ -727,6 +735,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     if (!branch) return { success: false, message: 'Branch not found' };
 
+    const initialHeat = state.pl.heat;
     const market = MARKET_CONFIGS[state.currentMarket];
     const isVending = hustleId === 'r_vending';
     const rivalThreat = state.pl.rivalThreats?.[hustle.tier] || 'NEUTRAL';
@@ -1075,6 +1084,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       }
 
       console.log(`⏰ TIMELINE GUARD: Executed ${hustleId}:${branchId}. Time advanced 1 month.`);
+    }
+
+    if (isRecoveryAction(hustleId) || isGhostModeAction(hustleId)) {
+      finalNextPl.heat = Math.min(finalNextPl.heat, initialHeat);
     }
 
     if (!finalNextPl.lastStatBreakdown) {
@@ -1576,6 +1589,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     plFinal = reactedPl;
+
+    if (isRecoveryAction(hustleId) || (isGhostModeAction(hustleId) && result.success)) {
+      plFinal.heat = Math.min(plFinal.heat, initialHeat);
+    }
 
     // --- SINGLE SOURCE OF TRUTH TRANSACTION CALCULATIONS ---
     const appliedCashDelta = plFinal.bag - initialBag;
