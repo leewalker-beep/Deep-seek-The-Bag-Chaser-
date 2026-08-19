@@ -52,24 +52,31 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
+        codeSplitting: {
+          minSize: 0,
+          groups: [
+            {
+              name: 'react-vendor',
+              test: /node_modules\/(react|react-dom)/,
+              priority: 40,
+            },
+            {
+              name: 'framer-motion',
+              test: /node_modules\/(framer-motion|motion-dom|motion-utils)/,
+              priority: 30,
+            },
+            {
+              name: 'zustand',
+              test: /node_modules\/zustand/,
+              priority: 20,
+            },
+            {
+              name: 'vendor',
+              test: /node_modules/,
+              priority: 10,
             }
-            if (
-              id.includes('framer-motion') ||
-              id.includes('motion-dom') ||
-              id.includes('motion-utils')
-            ) {
-              return 'framer-motion';
-            }
-            if (id.includes('zustand')) {
-              return 'zustand';
-            }
-            return 'vendor';
-          }
-        }
+          ]
+        } as any
       }
     },
     target: 'es2020',
