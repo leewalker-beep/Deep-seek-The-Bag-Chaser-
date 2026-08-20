@@ -53,7 +53,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
     id: 'street_kid',
     name: 'Street Kid',
-    description: 'You grew up with nothing. Every dollar feels like survival.',
+    description: 'Grew up with nothing. Every dollar is survival.',
     variations: [
       {
         id: 'sk_scrap',
@@ -125,7 +125,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
     id: 'legacy',
     name: 'The Chosen',
-    description: 'A legacy foretold. You are the one they were waiting for.',
+    description: 'A foretold destiny reborn across lifetimes.',
     variations: [
       {
         id: 'lc_chosen',
@@ -145,7 +145,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
     id: 'dropout',
     name: 'The Dropout',
-    description: 'You left school early to chase money. You have something to prove.',
+    description: 'Left school early to chase wealth and influence.',
     variations: [
       {
         id: 'dr_vending',
@@ -217,7 +217,7 @@ export const BACKGROUND_CATEGORIES: BackgroundCategory[] = [
   {
     id: 'benefactor',
     name: 'The Benefactor',
-    description: 'A head start from those who came before. You carry their legacy.',
+    description: 'Family head start with deep resources and high expectations.',
     variations: [
       {
         id: 'bn_mining',

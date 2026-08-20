@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { type HeroArtwork } from '../../config/heroArtwork';
 import { useGameStore } from '../../store/gameStore';
@@ -6,136 +6,21 @@ import { BACKGROUND_CATEGORIES } from '../../config/backgrounds';
 import { analyzeBehavior } from '../../utils/personalityAnalyzer';
 import { type PlayerStats } from '../../types/game';
 import { detectIdentityEvolution } from '../../utils/identitySystem';
+import {
+  ADVISOR_CONGRATULATIONS,
+  PLAYSTYLE_QUOTES,
+  type PlaystyleQuote,
+  determinePlaystyle,
+  calculateTransitionDuration,
+  generateDynamicChapterIntro,
+} from '../../utils/cinematicUtils';
+
+export { PLAYSTYLE_QUOTES, type PlaystyleQuote, determinePlaystyle, calculateTransitionDuration, generateDynamicChapterIntro };
 
 interface CinematicTransitionProps {
   artwork: HeroArtwork;
   onComplete: () => void;
 }
-
-const ADVISOR_CONGRATULATIONS: Record<string, string> = {
-  MUD: "Back to the grind. But this time, you have the lineage of giants.",
-  STREET: "You've survived the mud, kid. Now let's see if you can claim the block.",
-  STARTUP: "Incorporated and legitimate. Welcome to the real game. Make the numbers speak.",
-  CORPORATE: "Suit up. We're playing with real leverage now. Institutional power is yours.",
-  ELITE: "Sovereign wealth. You're entering a select club. Guard your neck; it's thin up here.",
-  MOGUL: "A true empire. You've conquered commerce. Now, the ultimate seat of power beckons.",
-  PRESIDENT: "Mr. President. Commander-in-Chief. You've reached the absolute peak of power.",
-  LEGEND: "You've broken past the mortal grid. The sandbox is yours to reshape as you see fit."
-};
-
-export interface PlaystyleQuote {
-  id: string;
-  text: string;
-  author: string;
-}
-
-export const PLAYSTYLE_QUOTES: Record<string, PlaystyleQuote[]> = {
-  steady_builder: [
-    { id: 'sb_1', text: "Patience and perseverance have a magical effect before which difficulties disappear and obstacles vanish.", author: "John Quincy Adams" },
-    { id: 'sb_2', text: "It's not that I'm so smart, it's just that I stay with problems longer.", author: "Albert Einstein" },
-    { id: 'sb_3', text: "Step by step the walk is completed.", author: "Proverb" },
-    { id: 'sb_4', text: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
-    { id: 'sb_5', text: "Consistency is the true foundation of greatness.", author: "Anonymous" }
-  ],
-  risk_taker: [
-    { id: 'rt_1', text: "Only those who will risk going too far can possibly find out how far one can go.", author: "T.S. Eliot" },
-    { id: 'rt_2', text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", author: "Ralph Waldo Emerson" },
-    { id: 'rt_3', text: "The biggest risk is not taking any risk.", author: "Mark Zuckerberg" },
-    { id: 'rt_4', text: "Fortune favors the bold.", author: "Virgil" },
-    { id: 'rt_5', text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "Muhammad Ali" }
-  ],
-  investor: [
-    { id: 'inv_1', text: "The individual investor should act consistently as an investor and not as a speculator.", author: "Benjamin Graham" },
-    { id: 'inv_2', text: "The best investment you can make is in yourself.", author: "Warren Buffett" },
-    { id: 'inv_3', text: "Someone is sitting in the shade today because someone planted a tree a long time ago.", author: "Warren Buffett" },
-    { id: 'inv_4', text: "Compound interest is the eighth wonder of the world.", author: "Albert Einstein" },
-    { id: 'inv_5', text: "Do not put all your eggs in one basket.", author: "Warren Buffett" }
-  ],
-  peoples_champion: [
-    { id: 'pc_1', text: "The best way to find yourself is to lose yourself in the service of others.", author: "Mahatma Gandhi" },
-    { id: 'pc_2', text: "We rise by lifting others.", author: "Robert Ingersoll" },
-    { id: 'pc_3', text: "Life's most persistent and urgent question is, 'What are you doing for others?'", author: "Martin Luther King Jr." },
-    { id: 'pc_4', text: "The greatness of a community is most accurately measured by the compassionate actions of its members.", author: "Coretta Scott King" },
-    { id: 'pc_5', text: "No one has ever become poor by giving.", author: "Anne Frank" }
-  ],
-  crime_boss: [
-    { id: 'cb_1', text: "He who has great power should use it lightly.", author: "Seneca" },
-    { id: 'cb_2', text: "You have power over your mind - not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
-    { id: 'cb_3', text: "Nearly all men can stand adversity, but if you want to test a man's character, give him power.", author: "Abraham Lincoln" },
-    { id: 'cb_4', text: "The measure of a man is what he does with power.", author: "Plato" },
-    { id: 'cb_5', text: "With power comes great responsibility.", author: "Proverb" }
-  ],
-  celebrity: [
-    { id: 'cel_1', text: "Influence is when you are not the one talking but everyone is listening.", author: "Anonymous" },
-    { id: 'cel_2', text: "Fame is a vapor, popularity an accident. Only one thing endures and that is character.", author: "Horace Greeley" },
-    { id: 'cel_3', text: "To be recognized is to be responsible.", author: "Proverb" },
-    { id: 'cel_4', text: "The key to successful leadership today is influence, not authority.", author: "Ken Blanchard" },
-    { id: 'cel_5', text: "Fame is only good if you use it to put a spotlight on things that matter.", author: "Anonymous" }
-  ]
-};
-
-export function determinePlaystyle(pl: PlayerStats): { id: string; name: string; narration: string } {
-  if (!pl) {
-    return {
-      id: 'steady_builder',
-      name: 'Steady Builder',
-      narration: "You chose patience over shortcuts, quietly building an empire one investment at a time."
-    };
-  }
-
-  const publicReputation = (pl.narrativeFlags?.publicReputation as string) || "The Hustler";
-  const behavior = analyzeBehavior(pl);
-
-  const isCrimeBoss = publicReputation === 'The Crime Boss' || (pl.arrestCount && pl.arrestCount > 0) || pl.heat > 75;
-  const isCharitable = publicReputation === 'The Philanthropist' || publicReputation === "The People's Champion" || (pl.hustleLevels?.['philanthropy_empire'] || 0) > 0 || (pl.philanthropyDonation && pl.philanthropyDonation > 10000000);
-  const isCelebrity = publicReputation === 'The Celebrity' || (pl.artists && Object.keys(pl.artists).length > 0) || (pl.rolodex && pl.rolodex.length > 0) || pl.clout > 30000;
-  const isInvestor = publicReputation === 'The Investor' || publicReputation === 'The Billionaire' || (pl.lastPassiveBreakdown?.finalTotal && pl.lastPassiveBreakdown.finalTotal > 50000) || pl.rentalCount > 0 || (pl.foundersBacked && pl.foundersBacked.length > 0);
-  const isRiskTaker = publicReputation === 'The Controversial Tycoon' || behavior.riskCadenceRatio > 0.4 || pl.heat > 60;
-
-  if (isCrimeBoss) {
-    return {
-      id: 'crime_boss',
-      name: 'Crime Boss',
-      narration: "Your rise was powerful, but never without controversy. Every victory came with enemies."
-    };
-  }
-  if (isCharitable) {
-    return {
-      id: 'peoples_champion',
-      name: "People's Champion",
-      narration: "Communities remember those who helped them when times were hardest."
-    };
-  }
-  if (isCelebrity) {
-    return {
-      id: 'celebrity',
-      name: 'Celebrity',
-      narration: "Your name became as valuable as your businesses, with influence opening doors that money alone never could."
-    };
-  }
-  if (isInvestor) {
-    return {
-      id: 'investor',
-      name: 'Investor',
-      narration: "You learned early that ownership creates freedom, allowing your empire to grow while others continued trading time for money."
-    };
-  }
-  if (isRiskTaker) {
-    return {
-      id: 'risk_taker',
-      name: 'Risk Taker',
-      narration: "While others hesitated, you embraced uncertainty, turning bold decisions into remarkable rewards."
-    };
-  }
-
-  return {
-    id: 'steady_builder',
-    name: 'Steady Builder',
-    narration: "You chose patience over shortcuts, quietly building an empire one investment at a time."
-  };
-}
-
-export function generateDynamicChapterIntro(pl: PlayerStats, tier: string): string {
   if (!pl) return "Welcome to the next level of the grind.";
 
   const name = pl.name || "CHASER";
@@ -323,13 +208,50 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
     ? generateDynamicChapterIntro(pl, artwork.id)
     : ADVISOR_CONGRATULATIONS[artwork.id];
 
+  const activeQuoteText = isTier ? selectedQuote.text : artwork.quote;
+
+  const dynamicDuration = useMemo(() => {
+    return calculateTransitionDuration(congratulatoryLine, activeQuoteText);
+  }, [congratulatoryLine, activeQuoteText]);
+
+  const startTimeRef = useRef<number>(Date.now());
+  const completedRef = useRef<boolean>(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDismiss = () => {
+    if (completedRef.current) return;
+    // 400ms grace period to prevent accidental skip from rapid taps during transition fade-in
+    if (Date.now() - startTimeRef.current < 400) return;
+
+    completedRef.current = true;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    onComplete();
+  };
+
   useEffect(() => {
     if (isTier) {
       playChime();
     }
-    const timer = setTimeout(onComplete, 4000);
-    return () => clearTimeout(timer);
-  }, [onComplete, isTier]);
+    startTimeRef.current = Date.now();
+    completedRef.current = false;
+
+    timerRef.current = setTimeout(() => {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
+    }, dynamicDuration);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [onComplete, isTier, dynamicDuration]);
 
   useEffect(() => {
     if (isTier && selectedQuote && selectedQuote.id !== 'default' && pl && updatePl) {
@@ -351,8 +273,9 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden"
-      style={{ pointerEvents: 'auto' }} // Explicitly block input
+      onClick={handleDismiss}
+      className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden cursor-pointer select-none"
+      style={{ pointerEvents: 'auto' }}
     >
       {/* Background Hero Image with Hardware Accelerated Ken Burns Effect */}
       <motion.div
@@ -450,15 +373,20 @@ export const CinematicTransition: React.FC<CinematicTransitionProps> = ({ artwor
             </motion.div>
           )}
 
-          {/* Decorative Progress/Timer Line */}
-          <div className="w-48 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 3.8, ease: "linear" }}
-              className="h-full"
-              style={{ backgroundColor: artwork.color }}
-            />
+          {/* Decorative Progress/Timer Line & Tap Indicator */}
+          <div className="space-y-2">
+            <div className="w-48 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: Math.max(0.1, dynamicDuration / 1000 - 0.2), ease: "linear" }}
+                className="h-full"
+                style={{ backgroundColor: artwork.color }}
+              />
+            </div>
+            <span className="text-[10px] text-slate-500 uppercase font-mono tracking-widest block opacity-70">
+              Tap anywhere to skip
+            </span>
           </div>
         </motion.div>
       </div>

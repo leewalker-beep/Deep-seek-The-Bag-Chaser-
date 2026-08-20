@@ -145,9 +145,9 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
             {slideIndex < 8 && (
               <button
                 onClick={() => setSlideIndex(8)}
-                className="text-[9px] text-slate-500 hover:text-white uppercase tracking-widest font-black transition-colors"
+                className="px-3.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 shadow-md shadow-emerald-500/5"
               >
-                Skip to Summary ➔
+                <span>⏭</span> Skip to Summary
               </button>
             )}
           </div>
@@ -164,19 +164,60 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
         {/* Main Cinematic Content Area */}
         <div className="flex-grow p-6 md:p-8 overflow-y-auto no-scrollbar relative z-10 flex flex-col justify-center">
 
-          {/* Slide 0: Chapter Cover */}
+          {/* Slide 0: Chapter Cover & Year Preview */}
           {slideIndex === 0 && (
-            <div className="text-center space-y-6 max-w-2xl mx-auto py-8">
+            <div className="text-center space-y-5 max-w-2xl mx-auto py-2">
               <div className="text-emerald-500/80 text-xs font-black tracking-[0.4em] uppercase font-mono">
-                CHAPTER {review.yearNumber} INTRO
+                CHAPTER {review.yearNumber} INTRO & HIGHLIGHTS
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none uppercase">
+              <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-none uppercase">
                 "{review.chapterTitle}"
               </h1>
               <div className="w-16 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400 mx-auto rounded-full" />
-              <p className="text-slate-400 text-sm md:text-base leading-relaxed italic">
-                The city watched closely. Decisions made over the past twelve months have forged a powerful trajectory, shaping a name that echoes in high-society lounges and executive boardrooms alike.
+              <p className="text-slate-400 text-xs md:text-sm leading-relaxed italic">
+                Decisions made over the past twelve months have forged a powerful trajectory, shaping your legacy across the city.
               </p>
+
+              {/* Year Highlight Preview Box */}
+              <div className="bg-slate-950/70 rounded-2xl p-5 border border-emerald-500/30 text-left space-y-3 shadow-xl relative overflow-hidden">
+                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <span>🌟</span> Year Highlight
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-slate-400">
+                    Net Worth Shift: <span className={review.netWorthChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{review.netWorthChange >= 0 ? '+' : ''}${review.netWorthChange.toLocaleString()}</span>
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white uppercase tracking-tight">
+                    "{review.definingMomentTitle}"
+                  </h3>
+                  <p className="text-xs text-slate-300 font-serif leading-relaxed mt-1 italic">
+                    {review.definingMomentDescription}
+                  </p>
+                </div>
+                {review.emotionalSignature && (
+                  <div className="pt-2 border-t border-white/5 text-[11px] text-emerald-300/90 font-serif font-semibold italic">
+                    "{review.emotionalSignature}"
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Action options on Slide 0 */}
+              <div className="flex justify-center items-center gap-3 pt-2">
+                <button
+                  onClick={() => setSlideIndex(1)}
+                  className="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
+                >
+                  Read Full Review (9 Slides) ▶
+                </button>
+                <button
+                  onClick={handleFullDismiss}
+                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md"
+                >
+                  Skip Review & Return to Game ➔
+                </button>
+              </div>
             </div>
           )}
 
