@@ -2,10 +2,6 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { type HeroArtwork } from '../../config/heroArtwork';
 import { useGameStore } from '../../store/gameStore';
-import { BACKGROUND_CATEGORIES } from '../../config/backgrounds';
-import { analyzeBehavior } from '../../utils/personalityAnalyzer';
-import { type PlayerStats } from '../../types/game';
-import { detectIdentityEvolution } from '../../utils/identitySystem';
 import {
   ADVISOR_CONGRATULATIONS,
   PLAYSTYLE_QUOTES,
