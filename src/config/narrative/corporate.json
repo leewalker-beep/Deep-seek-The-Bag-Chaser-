@@ -1775,6 +1775,12 @@
         "setFlags": {
           "twitch_eye_active": true
         }
+      },
+      {
+        "id": "twitch_2_decline",
+        "label": "Decline Surveillance Tap",
+        "description": "Pass on installing the regional surveillance network tap.",
+        "consequences": {}
       }
     ]
   },
@@ -1807,6 +1813,12 @@
         "setFlags": {
           "slick_heist_done": true
         }
+      },
+      {
+        "id": "slick_2_decline",
+        "label": "Pass on Heist",
+        "description": "Refuse authorization for raiding the seized-property warehouse.",
+        "consequences": {}
       }
     ]
   },
@@ -1841,6 +1853,12 @@
         "setFlags": {
           "slick_arc_complete": "legit"
         }
+      },
+      {
+        "id": "slick_3_decline",
+        "label": "Maintain Current Setup",
+        "description": "Pass on investing $500k to restructure the legacy logistics network.",
+        "consequences": {}
       }
     ]
   },
@@ -1919,6 +1937,12 @@
         "setFlags": {
           "rosa_campaign_funded": true
         }
+      },
+      {
+        "id": "rosa_2_decline",
+        "label": "Decline Campaign Fund",
+        "description": "Wish Rosa well in her City Council race without financial backing.",
+        "consequences": {}
       }
     ]
   },
@@ -1985,6 +2009,12 @@
         "setFlags": {
           "jdog_label_active": true
         }
+      },
+      {
+        "id": "jdog_2_decline",
+        "label": "Decline Label Launch",
+        "description": "Decide against bankrolling a formal music label infrastructure.",
+        "consequences": {}
       }
     ]
   },
@@ -2048,6 +2078,12 @@
           "cassie_intro": true,
           "rel_cassie": 80
         }
+      },
+      {
+        "id": "cassie_1_decline",
+        "label": "Pass on Invite",
+        "description": "Skip the high-society gala invitation and save the entry cost.",
+        "consequences": {}
       }
     ]
   },
@@ -2081,6 +2117,12 @@
         "setFlags": {
           "cassie_shares_bought": true
         }
+      },
+      {
+        "id": "cassie_2_decline",
+        "label": "Ignore Tip",
+        "description": "Decide against risking $1M on unverified insider trading gossip.",
+        "consequences": {}
       }
     ]
   },
@@ -2145,6 +2187,12 @@
         "setFlags": {
           "ray_kane_crushed": true
         }
+      },
+      {
+        "id": "ray_2_decline",
+        "label": "Pass on Ambush",
+        "description": "Decline Ray's tactical plan and avoid escalating conflict with rival forces.",
+        "consequences": {}
       }
     ]
   },
@@ -2175,6 +2223,12 @@
           "lexi_mural_done": true,
           "rel_lexi": 100
         }
+      },
+      {
+        "id": "lexi_1_decline",
+        "label": "Keep Walls Plain",
+        "description": "Thank Lexi for the design but leave the office interior unpainted.",
+        "consequences": {}
       }
     ]
   },
@@ -2208,6 +2262,12 @@
         "setFlags": {
           "lexi_gallery_funded": true
         }
+      },
+      {
+        "id": "lexi_2_decline",
+        "label": "Pass on Sponsorship",
+        "description": "Wish Lexi success with the gallery without committing corporate funds.",
+        "consequences": {}
       }
     ]
   },
@@ -2238,6 +2298,12 @@
           "dante_hired": true,
           "rel_dante": 70
         }
+      },
+      {
+        "id": "dante_1_decline",
+        "label": "Pass on Fixer",
+        "description": "Decline Dante's fee and handle legal pressure through standard channels.",
+        "consequences": {}
       }
     ]
   },
@@ -2301,6 +2367,12 @@
           "lila_investor": true,
           "rel_lila": 80
         }
+      },
+      {
+        "id": "lila_1_decline",
+        "label": "Decline Equity Buy-In",
+        "description": "Pass on Lila Vance's private equity buy-in opportunity.",
+        "consequences": {}
       }
     ]
   },
@@ -2334,6 +2406,12 @@
         "setFlags": {
           "big_g_peace_broker": true
         }
+      },
+      {
+        "id": "big_g_2_decline",
+        "label": "Decline Mediation",
+        "description": "Politely stay out of local street disputes and let Big G handle the conflict.",
+        "consequences": {}
       }
     ]
   },
@@ -2398,6 +2476,12 @@
           "tessa_consultant": true,
           "rel_tessa": 70
         }
+      },
+      {
+        "id": "tessa_1_decline",
+        "label": "Decline Offer",
+        "description": "Refuse Tessa's proposal and let the standard IRS audit proceed.",
+        "consequences": {}
       }
     ]
   },
@@ -2525,6 +2609,12 @@
           "summers_bill_passed": true,
           "rel_summers": 80
         }
+      },
+      {
+        "id": "summers_1_decline",
+        "label": "Remain Neutral",
+        "description": "Decline to spend political clout lobbying for the zoning bill.",
+        "consequences": {}
       }
     ]
   },
@@ -2555,6 +2645,12 @@
           "khalid_partner": true,
           "rel_khalid": 100
         }
+      },
+      {
+        "id": "khalid_1_decline",
+        "label": "Decline Partnership",
+        "description": "Stick to existing domestic freight routes for the time being.",
+        "consequences": {}
       }
     ]
   },
@@ -2586,6 +2682,12 @@
           "elara_active": true,
           "rel_elara": 80
         }
+      },
+      {
+        "id": "elara_1_decline",
+        "label": "Decline Sabotage",
+        "description": "Pass on digital sabotage and choose to out-compete rivals naturally.",
+        "consequences": {}
       }
     ]
   },
@@ -2616,6 +2718,12 @@
           "reed_ally": true,
           "rel_reed": 100
         }
+      },
+      {
+        "id": "reed_1_decline",
+        "label": "Decline Political Contribution",
+        "description": "Refuse to contribute funds to Hudson Reed's mayoral campaign.",
+        "consequences": {}
       }
     ]
   },
@@ -2756,6 +2864,12 @@
           "valdez_spy": true,
           "rel_valdez": 100
         }
+      },
+      {
+        "id": "valdez_1_decline",
+        "label": "Decline Encryption Keys",
+        "description": "Decline Sofia Valdez's server encryption keys offer.",
+        "consequences": {}
       }
     ]
   },
@@ -2788,6 +2902,12 @@
         "setFlags": {
           "partner_status": "liquidated"
         }
+      },
+      {
+        "id": "partner_1_decline",
+        "label": "Pass on Exile",
+        "description": "Pardon the breach and handle the regulatory meeting internally.",
+        "consequences": {}
       }
     ]
   },
@@ -2819,6 +2939,12 @@
           "cartel_member": true,
           "rel_cartel": 100
         }
+      },
+      {
+        "id": "cartel_1_decline",
+        "label": "Pass on Pact",
+        "description": "Walk away from the private hangar meeting and leave cartel business to others.",
+        "consequences": {}
       }
     ]
   },
@@ -2850,6 +2976,12 @@
           "digi_sync_active": true,
           "rel_digi": 80
         }
+      },
+      {
+        "id": "digi_sync_1_decline",
+        "label": "Pass on Collective",
+        "description": "Decline the hacker collective's sabotage proposal.",
+        "consequences": {}
       }
     ]
   },
@@ -2884,6 +3016,12 @@
         "setFlags": {
           "digi_sync_arc_complete": "neutralized"
         }
+      },
+      {
+        "id": "digi_sync_2_decline",
+        "label": "Ignore Extortion",
+        "description": "Refuse to engage with or pay off the extortion ring.",
+        "consequences": {}
       }
     ]
   },

@@ -1491,6 +1491,12 @@
           "twitch_partner": true,
           "rel_twitch": 80
         }
+      },
+      {
+        "id": "twitch_1_decline",
+        "label": "Pass on Drive",
+        "description": "Turn down Twitch's traffic grid exploit drive.",
+        "consequences": {}
       }
     ]
   },
@@ -1523,6 +1529,12 @@
         "setFlags": {
           "twitch_eye_active": true
         }
+      },
+      {
+        "id": "twitch_2_decline",
+        "label": "Decline Surveillance Tap",
+        "description": "Pass on installing the regional surveillance network tap.",
+        "consequences": {}
       }
     ]
   },
@@ -1553,6 +1565,12 @@
           "slick_partner": true,
           "rel_slick": 70
         }
+      },
+      {
+        "id": "slick_1_decline",
+        "label": "Decline Goods",
+        "description": "Turn down Slick's hot tech consignment shipment.",
+        "consequences": {}
       }
     ]
   },
@@ -1585,6 +1603,12 @@
         "setFlags": {
           "slick_heist_done": true
         }
+      },
+      {
+        "id": "slick_2_decline",
+        "label": "Pass on Heist",
+        "description": "Refuse authorization for raiding the seized-property warehouse.",
+        "consequences": {}
       }
     ]
   },
@@ -1724,6 +1748,12 @@
           "jdog_studio_active": true,
           "rel_jdog": 90
         }
+      },
+      {
+        "id": "jdog_1_decline",
+        "label": "Hold Off on Studio",
+        "description": "Tell J-Dog to build hype first before investing in a studio space.",
+        "consequences": {}
       }
     ]
   },
@@ -1757,6 +1787,12 @@
         "setFlags": {
           "jdog_label_active": true
         }
+      },
+      {
+        "id": "jdog_2_decline",
+        "label": "Decline Label Launch",
+        "description": "Decide against bankrolling a formal music label infrastructure.",
+        "consequences": {}
       }
     ]
   },
@@ -1787,6 +1823,12 @@
           "cassie_intro": true,
           "rel_cassie": 80
         }
+      },
+      {
+        "id": "cassie_1_decline",
+        "label": "Pass on Invite",
+        "description": "Skip the high-society gala invitation and save the entry cost.",
+        "consequences": {}
       }
     ]
   },
@@ -1848,6 +1890,12 @@
           "lexi_mural_done": true,
           "rel_lexi": 100
         }
+      },
+      {
+        "id": "lexi_1_decline",
+        "label": "Keep Walls Plain",
+        "description": "Thank Lexi for the design but leave the office interior unpainted.",
+        "consequences": {}
       }
     ]
   },
@@ -1878,6 +1926,12 @@
           "dante_hired": true,
           "rel_dante": 70
         }
+      },
+      {
+        "id": "dante_1_decline",
+        "label": "Pass on Fixer",
+        "description": "Decline Dante's fee and handle legal pressure through standard channels.",
+        "consequences": {}
       }
     ]
   },
@@ -1941,6 +1995,12 @@
         "setFlags": {
           "big_g_peace_broker": true
         }
+      },
+      {
+        "id": "big_g_2_decline",
+        "label": "Decline Mediation",
+        "description": "Politely stay out of local street disputes and let Big G handle the conflict.",
+        "consequences": {}
       }
     ]
   },
@@ -1971,6 +2031,12 @@
           "tessa_consultant": true,
           "rel_tessa": 70
         }
+      },
+      {
+        "id": "tessa_1_decline",
+        "label": "Decline Offer",
+        "description": "Refuse Tessa's proposal and let the standard IRS audit proceed.",
+        "consequences": {}
       }
     ]
   },
@@ -2032,6 +2098,12 @@
           "digi_sync_active": true,
           "rel_digi": 80
         }
+      },
+      {
+        "id": "digi_sync_1_decline",
+        "label": "Pass on Collective",
+        "description": "Decline the hacker collective's sabotage proposal.",
+        "consequences": {}
       }
     ]
   },
