@@ -131,8 +131,8 @@ export function calculateTransitionDuration(congratulatoryLine?: string, quoteTe
   const wordCount = textToRead.split(/\s+/).filter(Boolean).length;
   // Reading speed: ~225 words per minute = 3.75 words per second
   const readingTimeMs = (wordCount / 225) * 60 * 1000;
-  // Base padding of 2000ms for intro animations and reading margin
-  const calculatedDuration = Math.round(readingTimeMs + 2000);
+  // Base padding of 3000ms for intro animations (1.5s before message fade-in) and reading margin
+  const calculatedDuration = Math.round(readingTimeMs + 3000);
   // Minimum floor of 4000ms
   return Math.max(4000, calculatedDuration);
 }

@@ -1,10 +1,20 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { render, fireEvent, act, cleanup } from '@testing-library/react';
 import { calculateTransitionDuration, generateDynamicChapterIntro } from '../utils/cinematicUtils';
+import { CinematicTransition } from '../components/effects/CinematicTransition';
 import { type PlayerStats } from '../types/game';
+import { type HeroArtwork } from '../config/heroArtwork';
 
-describe('Cinematic Transitions - Dynamic Duration & PRESIDENT Tier Intro', () => {
+describe('Cinematic Transitions - Dynamic Duration & Tap-to-Skip Mechanics', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
   test('calculateTransitionDuration enforces 4000ms minimum floor for short messages', () => {
-    const durationShort = calculateTransitionDuration("Back", "Grind"); // 2 words: (2/225)*60000 + 2000 = 2533ms -> floor to 4000
+    const durationShort = calculateTransitionDuration("Back", "Grind"); // 2 words: (2/225)*60000 + 3000 = 3533ms -> floor to 4000
     expect(durationShort).toBe(4000);
   });
 
@@ -13,7 +23,7 @@ describe('Cinematic Transitions - Dynamic Duration & PRESIDENT Tier Intro', () =
     const longQuote = "Only those who will risk going too far can possibly find out how far one can go.";
 
     const durationLong = calculateTransitionDuration(longAdvisorMessage, longQuote);
-    // ~140 words at 225 wpm = ~37s + 2s base = ~39s
+    // ~140 words at 225 wpm = ~37s + 3s base = ~40s
     expect(durationLong).toBeGreaterThan(15000);
     expect(durationLong).toBeLessThan(60000);
   });
@@ -62,5 +72,48 @@ describe('Cinematic Transitions - Dynamic Duration & PRESIDENT Tier Intro', () =
     expect(chapterIntro).toContain('rose like a phoenix');
     expect(chapterIntro).toContain('Commander-in-Chief CHASER');
     expect(chapterIntro).toContain('specialized POLITICAL leadership');
+  });
+
+  test('CinematicTransition component respects 400ms grace period and allows tap-to-skip', () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    const mockArtwork: HeroArtwork = {
+      id: 'PRESIDENT',
+      title: 'THE OVAL OFFICE',
+      subtitle: 'Commander-in-Chief',
+      quote: 'The buck stops here.',
+      imageUrl: 'test.jpg',
+      color: '#3b82f6'
+    };
+
+    const { container } = render(
+      <CinematicTransition artwork={mockArtwork} onComplete={onComplete} />
+    );
+
+    const overlay = container.firstChild as HTMLElement;
+    expect(overlay).not.toBeNull();
+
+    // Click immediately within 400ms grace period -> should NOT skip
+    act(() => {
+      fireEvent.click(overlay);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+
+    // Advance time past 400ms grace period
+    act(() => {
+      vi.advanceTimersByTime(450);
+    });
+
+    // Click after grace period -> should trigger onComplete immediately and cancel timer
+    act(() => {
+      fireEvent.click(overlay);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+
+    // Fast-forward full duration to ensure timer does NOT invoke onComplete a second time
+    act(() => {
+      vi.advanceTimersByTime(60000);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });
