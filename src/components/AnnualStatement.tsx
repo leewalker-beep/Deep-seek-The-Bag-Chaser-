@@ -145,9 +145,9 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
             {slideIndex < 8 && (
               <button
                 onClick={() => setSlideIndex(8)}
-                className="px-3.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 shadow-md shadow-emerald-500/5"
+                className="px-4 py-2 bg-slate-800/90 hover:bg-slate-700/90 border-2 border-emerald-500/50 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-500/10"
               >
-                <span>⏭</span> Skip to Summary
+                <span className="text-sm">⏭</span> Skip to Summary
               </button>
             )}
           </div>
@@ -179,43 +179,65 @@ export const AnnualStatement: React.FC<Props> = ({ onDismiss }) => {
               </p>
 
               {/* Year Highlight Preview Box */}
-              <div className="bg-slate-950/70 rounded-2xl p-5 border border-emerald-500/30 text-left space-y-3 shadow-xl relative overflow-hidden">
-                <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                    <span>🌟</span> Year Highlight
+              <div className="bg-slate-950/80 rounded-2xl p-5 border border-emerald-500/40 text-left space-y-3.5 shadow-2xl relative overflow-hidden">
+                <div className="flex flex-wrap justify-between items-center border-b border-white/10 pb-2.5 gap-2">
+                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <span>🌟</span> Year Highlight Preview
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-slate-400">
-                    Net Worth Shift: <span className={review.netWorthChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{review.netWorthChange >= 0 ? '+' : ''}${review.netWorthChange.toLocaleString()}</span>
-                  </span>
+                  <div className="flex gap-3 text-[11px] font-mono font-bold">
+                    <span className="text-slate-400">
+                      Net Worth: <span className={review.netWorthChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{review.netWorthChange >= 0 ? '+' : ''}${review.netWorthChange.toLocaleString()}</span>
+                    </span>
+                    {(review.activeIncome > 0 || review.passiveIncome > 0) && (
+                      <span className="text-slate-400 hidden md:inline">
+                        Earned: <span className="text-emerald-400">+${(review.activeIncome + review.passiveIncome).toLocaleString()}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 <div>
-                  <h3 className="text-base font-black text-white uppercase tracking-tight">
+                  <div className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-0.5">Defining Moment</div>
+                  <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">
                     "{review.definingMomentTitle}"
                   </h3>
-                  <p className="text-xs text-slate-300 font-serif leading-relaxed mt-1 italic">
+                  <p className="text-xs md:text-sm text-slate-300 font-serif leading-relaxed mt-1.5 italic">
                     {review.definingMomentDescription}
                   </p>
                 </div>
+
                 {review.emotionalSignature && (
-                  <div className="pt-2 border-t border-white/5 text-[11px] text-emerald-300/90 font-serif font-semibold italic">
-                    "{review.emotionalSignature}"
+                  <div className="pt-2.5 border-t border-white/10 flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">Signature:</span>
+                    <span className="text-xs text-emerald-300 font-serif font-semibold italic">
+                      "{review.emotionalSignature}"
+                    </span>
                   </div>
                 )}
               </div>
 
               {/* Quick Action options on Slide 0 */}
-              <div className="flex justify-center items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 pt-2">
                 <button
                   onClick={() => setSlideIndex(1)}
-                  className="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
+                  className="px-5 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
                 >
-                  Read Full Review (9 Slides) ▶
+                  <span>Read Full Review (9 Slides)</span>
+                  <span>▶</span>
+                </button>
+                <button
+                  onClick={() => setSlideIndex(8)}
+                  className="px-5 py-3.5 bg-slate-800/90 hover:bg-slate-750 border-2 border-emerald-500/40 text-emerald-400 hover:text-emerald-300 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
+                >
+                  <span>Skip to Summary</span>
+                  <span>⏭</span>
                 </button>
                 <button
                   onClick={handleFullDismiss}
-                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md"
+                  className="px-5 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
                 >
-                  Skip Review & Return to Game ➔
+                  <span>Return to Game</span>
+                  <span>➔</span>
                 </button>
               </div>
             </div>
