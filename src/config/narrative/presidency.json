@@ -2031,6 +2031,12 @@
         "setFlags": {
           "marcus_hub_active": true
         }
+      },
+      {
+        "id": "marcus_2_decline",
+        "label": "Pass on Logistics Hub",
+        "description": "Decline funding the $20M global logistics facility lease.",
+        "consequences": {}
       }
     ]
   },
@@ -2094,6 +2100,12 @@
         "setFlags": {
           "ashley_quantum_active": true
         }
+      },
+      {
+        "id": "ashley_2_decline",
+        "label": "Pass on Upgrade",
+        "description": "Hold off on committing $50M to quantum server hardware.",
+        "consequences": {}
       }
     ]
   },
@@ -2320,6 +2332,12 @@
         "setFlags": {
           "ghost_crypto_active": true
         }
+      },
+      {
+        "id": "ghost_2_decline",
+        "label": "Pass on GhostCoin",
+        "description": "Opt out of launching a high-risk darknet digital currency.",
+        "consequences": {}
       }
     ]
   },
@@ -2698,6 +2716,12 @@
         "setFlags": {
           "elena_expansion_active": true
         }
+      },
+      {
+        "id": "elena_2_decline",
+        "label": "Pass on Joint Venture",
+        "description": "Keep union expansion funds reserved for future opportunities.",
+        "consequences": {}
       }
     ]
   },

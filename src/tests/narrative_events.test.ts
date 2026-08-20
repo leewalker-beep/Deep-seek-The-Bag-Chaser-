@@ -173,4 +173,106 @@ describe('Narrative Events Logic', () => {
     // Let's re-verify NarrativeEventModal logic for stat requirements if we were doing E2E.
     // For unit, we can just ensure resolveNarrativeEvent works.
   });
+
+  describe('40 Transactional Narrative Events Decline Options Audit', () => {
+    const targetEventIds = [
+      'cartel_1_the_meeting',
+      'char_ashley_1_innovation',
+      'char_ashley_2_quantum',
+      'char_bennett_1_trust',
+      'char_big_g_2_truce',
+      'char_cassie_1_network',
+      'char_cassie_2_insider',
+      'char_chen_2_franchise',
+      'char_dante_1_fixer',
+      'char_elara_1_sabotage',
+      'char_elena_2_expansion',
+      'char_fiona_1_propaganda',
+      'char_ghost_1_darknet',
+      'char_ghost_2_crypto',
+      'char_jdog_1_studio',
+      'char_jdog_2_label',
+      'char_khalid_1_export',
+      'char_khalid_2_embargo',
+      'char_lexi_1_mural',
+      'char_lexi_2_exhibition',
+      'char_lila_1_invest',
+      'char_marcus_2_logistics',
+      'char_miller_3_commissioner',
+      'char_ray_2_intelligence',
+      'char_reed_1_campaign',
+      'char_reed_2_scandal',
+      'char_rosa_2_political',
+      'char_rosso_1_shipping',
+      'char_slick_1_consignment',
+      'char_slick_2_warehouse',
+      'char_slick_3_retirement',
+      'char_summers_1_bill',
+      'char_tessa_1_audit',
+      'char_twitch_1_data_leak',
+      'char_twitch_2_surveillance',
+      'char_twitch_3_mainframe_exploit',
+      'char_valdez_1_espionage',
+      'digi_sync_1_the_offer',
+      'digi_sync_2_the_extortion',
+      'partner_1_the_betrayal'
+    ];
+
+    it('verifies that all 40 specified events contain a decline option with zero consequences', () => {
+      for (const eventId of targetEventIds) {
+        const event = NARRATIVE_EVENTS.find(e => e.id === eventId);
+        expect(event, `Event ${eventId} should exist in narrative pool`).toBeDefined();
+        expect(event!.choices.length, `Event ${eventId} should have at least 2 choices`).toBeGreaterThanOrEqual(2);
+
+        const declineChoice = event!.choices[1];
+        expect(declineChoice, `Event ${eventId} should have a decline choice as choice index 1`).toBeDefined();
+        expect(declineChoice.consequences, `Event ${eventId} decline choice consequences should be empty`).toEqual({});
+      }
+    });
+
+    it('resolving a decline choice leaves player stats unchanged and completes the event', () => {
+      const { resolveNarrativeEvent } = useGameStore.getState();
+
+      useGameStore.setState(s => ({
+        pl: {
+          ...s.pl,
+          activeNarrative: 'cartel_1_the_meeting',
+          bag: 500000,
+          clout: 200,
+          aura: 200,
+          heat: 10
+        }
+      }));
+
+      resolveNarrativeEvent('cartel_1_decline');
+
+      const state = useGameStore.getState().pl;
+      expect(state.activeNarrative).toBeNull();
+      expect(state.bag).toBe(500000);
+      expect(state.clout).toBe(200);
+      expect(state.aura).toBe(200);
+      expect(state.heat).toBe(10);
+      expect(state.completedNarrativeEvents).toContain('cartel_1_the_meeting');
+    });
+
+    it('verifies char_miller_3_commissioner heat reduction behavior', () => {
+      const { resolveNarrativeEvent } = useGameStore.getState();
+
+      useGameStore.setState(s => ({
+        pl: {
+          ...s.pl,
+          activeNarrative: 'char_miller_3_commissioner',
+          bag: 10000000,
+          heat: 85
+        }
+      }));
+
+      // Choice miller_clean_slate has heat: -1000 to completely wipe heat
+      resolveNarrativeEvent('miller_clean_slate');
+
+      const state = useGameStore.getState().pl;
+      expect(state.heat).toBe(0); // Heat clamped to 0 from 85 - 1000
+      expect(state.bag).toBe(5000000); // 10M - 5M
+    });
+  });
 });

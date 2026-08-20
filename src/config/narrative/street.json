@@ -839,6 +839,12 @@
           "twitch_partner": true,
           "rel_twitch": 80
         }
+      },
+      {
+        "id": "twitch_1_decline",
+        "label": "Pass on Drive",
+        "description": "Turn down Twitch's traffic grid exploit drive.",
+        "consequences": {}
       }
     ]
   },
@@ -869,6 +875,12 @@
           "slick_partner": true,
           "rel_slick": 70
         }
+      },
+      {
+        "id": "slick_1_decline",
+        "label": "Decline Goods",
+        "description": "Turn down Slick's hot tech consignment shipment.",
+        "consequences": {}
       }
     ]
   },
@@ -930,6 +942,12 @@
           "jdog_studio_active": true,
           "rel_jdog": 90
         }
+      },
+      {
+        "id": "jdog_1_decline",
+        "label": "Hold Off on Studio",
+        "description": "Tell J-Dog to build hype first before investing in a studio space.",
+        "consequences": {}
       }
     ]
   },
