@@ -88,32 +88,32 @@ const ORIGIN_DETAILS: Record<string, {
   playstyle: string;
 }> = {
   street_kid: {
-    shortDescription: "You grew up with nothing. Every dollar feels like survival.",
-    advantages: "Sharp survival grit. +15% Cash from street level operations (MUD & STREET tiers). Reduced jail sentences & faster Heat cooling.",
-    disadvantages: "Extremely scarce starting capital. High grind index, vulnerable to early stress & careless mistakes.",
-    mindset: "Hunger, caution, and absolute determination. Survival is the only rule.",
-    playstyle: "Great for players who want to build a gritty grassroots empire from the ground up, master active street-level hustles, and stay resilient under high heat."
+    shortDescription: "Raised with nothing. Every dollar is survival.",
+    advantages: "+15% MUD & STREET cash yields. Shorter jail sentences and faster Heat cooling.",
+    disadvantages: "Scarce starter capital. Vulnerable to early stress and mistakes.",
+    mindset: "Hunger and survival above all.",
+    playstyle: "Build a grassroots street empire through active hustles while managing high Heat."
   },
   dropout: {
-    shortDescription: "You left school early to chase money. You have something to prove.",
-    advantages: "Highly adaptable and charismatic. +20% Clout across early tiers (up to CORPORATE). Faster networking & artist scouting.",
-    disadvantages: "Under relentless scrutiny. Highly competitive landscape. Prone to larger aura drops if public ventures fail.",
-    mindset: "Rebel with a cause. Rejection of authority, driven by the pure thrill of the hustle.",
-    playstyle: "Ideal for players focusing on tech startups, music production, media agencies, or any route heavily driven by clout, reputation, and public influence."
+    shortDescription: "Left school early to chase money with something to prove.",
+    advantages: "+20% Clout through CORPORATE tier. Faster networking and talent discovery.",
+    disadvantages: "High scrutiny and competition. Harsh Aura penalties on failed public ventures.",
+    mindset: "Rebel driven by pure hustle.",
+    playstyle: "Fast clout growth in startups, media agencies, music, and public platforms."
   },
   benefactor: {
-    shortDescription: "A head start from those who came before. You carry their legacy.",
-    advantages: "Elite family headstart. Start with substantial liquid capital. +15% Aura at Corporate levels and above (CORPORATE to MOGUL). Matching sector specialization yields +10%.",
-    disadvantages: "Higher rent and maintenance overheads. Lacks street survival instincts, suffering higher stress penalty during street-level grinds.",
-    mindset: "Entitlement, expectations, and the pressure of a name. Failure is not an option.",
-    playstyle: "Perfect for players who want to bypass the early struggle, focus heavily on corporate buyouts, premium real estate trusts, high-finance lobbying, and political campaign dominance."
+    shortDescription: "Wealthy family head start carrying ancestral legacy.",
+    advantages: "Substantial starting capital. +15% Aura at CORPORATE tier and above.",
+    disadvantages: "High rent and upkeep costs. Susceptible to early street-level stress.",
+    mindset: "Expectation and legacy. Failure is not an option.",
+    playstyle: "Bypass early street grinds for corporate buyouts, real estate, and high finance."
   },
   legacy: {
-    shortDescription: "A legacy foretold. You are the one they were waiting for.",
-    advantages: "A destiny realized. +10% cash across all tiers. Starts with massive starting capital, high clout, and aura.",
-    disadvantages: "Massive target on your back. High-stakes rivals target you aggressively from Month 1.",
-    mindset: "Absolute destiny. Born for greatness, carrying the weight of ancient or meta-prophecy.",
-    playstyle: "Unlocked via permanent legacy. Use this to speedrun the entire progression from poverty to the presidency with overwhelming advantages."
+    shortDescription: "A destiny foretold across lifetimes.",
+    advantages: "+10% cash across all tiers. Starts with massive capital, high clout, and aura.",
+    disadvantages: "High-stakes rivals target you aggressively from Month 1.",
+    mindset: "Born for greatness.",
+    playstyle: "Speedrun from poverty to presidency with cosmic advantages."
   }
 };
 
@@ -745,25 +745,25 @@ export const PrologueScreen: React.FC<PrologueScreenProps> = ({ onStart }) => {
                       id: 'capital',
                       name: '🚀 Aggressive Capitalist',
                       bonus: '+$250 Cash',
-                      desc: 'Prioritize raw liquid assets to immediately fund early business upgrades.'
+                      desc: 'Max liquid cash to immediately fund early business upgrades.'
                     },
                     {
                       id: 'clout',
                       name: '📣 Influence Hustler',
                       bonus: '+10 Clout',
-                      desc: 'Leverage viral networking potential to scout high-tier talent early.'
+                      desc: 'Viral reach to scout high-tier talent early.'
                     },
                     {
                       id: 'aura',
                       name: '✨ Charismatic Player',
                       bonus: '+10 Aura',
-                      desc: 'Establish a powerful, magnetic presence that stabilizes public reputation.'
+                      desc: 'Magnetic presence to shield public reputation.'
                     },
                     {
                       id: 'balanced',
                       name: '⚖️ Stable Insider',
                       bonus: 'Balanced',
-                      desc: 'A well-rounded, adaptive launchpad suited for any strategic pivot.'
+                      desc: 'Adaptable foundation ready for any pivot.'
                     }
                   ].map(f => {
                     const isFocusSelected = startingFocusId === f.id;
