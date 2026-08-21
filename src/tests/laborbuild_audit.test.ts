@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { useGameStore } from '../store/gameStore';
 import { BACKGROUNDS } from '../config/backgrounds';
-import { checkDeathConditions, advanceMonth } from '../engine/advancementEngine';
+import { checkDeathConditions } from '../engine/advancementEngine';
 
 describe('Building / LaborBuild First-Play Reproduction Audit', () => {
   it('TEST 1: Real First-Play Reproduction Across 100+ Background/Focus Variations', () => {
@@ -10,7 +10,8 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
 
     let totalRuns = 0;
     let deaths = 0;
-    const records: any[] = [];
+    const deathRecords: any[] = [];
+    const causeCounts: Record<string, number> = {};
 
     for (const bg of BACKGROUNDS) {
       for (const focus of focusOptions) {
@@ -24,7 +25,7 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
           if (focus === 'clout') extraClout = 10;
           if (focus === 'aura') extraAura = 10;
 
-          // Real new-player initialization path (Prologue completion)
+          // Real new-player initialization path
           useGameStore.getState().resetGame(
             bg.id,
             3, // Grinder difficulty
@@ -45,6 +46,16 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
 
           const stateBefore = JSON.parse(JSON.stringify(useGameStore.getState().pl));
 
+          // Capture actual initial stats
+          const startingBag = stateBefore.bag;
+          const startingMH = stateBefore.mentalHealth;
+          const startingAura = stateBefore.aura;
+          const startingHeat = stateBefore.heat;
+          const startingClout = stateBefore.clout;
+          const startingLevel = stateBefore.hustleLevels['r_labor'] || 1;
+          const playerTier = stateBefore.currentTier;
+          const originBackground = bg.id;
+
           // FIRST PLAY of Building/LaborBuild ('r_labor')
           const result = useGameStore.getState().executeHustle('r_labor', mult);
 
@@ -54,51 +65,66 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
           const fatalCause = useGameStore.getState().fatalCause;
 
           const isDead = phAfter === 'POST_MORTEM';
+
+          // Delta Ledger Calculations
+          const buildingMHDelta = result.mentalHit;
+          const mhAfterHustle = startingMH + buildingMHDelta;
+          const monthEndMHDelta = stateAfter.mentalHealth - mhAfterHustle;
+          const finalMH = stateAfter.mentalHealth;
+
           if (isDead) {
             deaths++;
-          }
+            const fatalStat = stateAfter.deathContext?.fatalStat || 'unknown';
+            causeCounts[fatalStat] = (causeCounts[fatalStat] || 0) + 1;
 
-          records.push({
-            runId: totalRuns,
-            bgId: bg.id,
-            bgCategory: stateBefore.categoryId,
-            focus,
-            mult,
-            startBag: stateBefore.bag,
-            startMH: stateBefore.mentalHealth,
-            startAura: stateBefore.aura,
-            startHeat: stateBefore.heat,
-            startClout: stateBefore.clout,
-            startLevel: stateBefore.hustleLevels['r_labor'] || 1,
-            playerTier: stateBefore.currentTier,
-            hustleLevel: 1,
-            resultSuccess: result.success,
-            minigameMultiplier: mult,
-            baseMHChange: -8,
-            actualHustleMHChange: result.mentalHit,
-            finalMH: stateAfter.mentalHealth,
-            finalAura: stateAfter.aura,
-            finalHeat: stateAfter.heat,
-            finalBag: stateAfter.bag,
-            finalClout: stateAfter.clout,
-            isDead,
-            deathBadge,
-            fatalCause,
-            fatalStatInContext: stateAfter.deathContext?.fatalStat,
-            fatalStatValInContext: stateAfter.deathContext?.fatalStatValue
-          });
+            deathRecords.push({
+              runId: totalRuns,
+              originBackground,
+              focus,
+              minigameMultiplier: mult,
+              minigameResult: result.success ? 'SUCCESS' : 'FAILED',
+              startingBag,
+              startingMH,
+              startingAura,
+              startingHeat,
+              startingClout,
+              startingLevel,
+              playerTier,
+              hustleLevel: 1,
+              baseMHChange: -8,
+              allMHModifiers: 'MUD Tier Multiplier (1.5x)',
+              buildingMHDelta,
+              mhAfterHustle,
+              monthEndMHDelta,
+              finalMH,
+              finalHeat: stateAfter.heat,
+              finalAura: stateAfter.aura,
+              finalClout: stateAfter.clout,
+              finalBag: stateAfter.bag,
+              isDead,
+              exactFatalCondition: `fatalStat: ${fatalStat}, fatalStatValue: ${stateAfter.deathContext?.fatalStatValue}`,
+              fatalCause,
+              deathContext: stateAfter.deathContext,
+              lastActionExecuted: stateAfter.lastExecutedHustleId || 'r_labor'
+            });
+          }
         }
       }
     }
 
     console.log(`TEST 1 SUMMARY: Total Runs = ${totalRuns}, Total Deaths = ${deaths}`);
-    const deadRuns = records.filter(r => r.isDead);
-    console.log(`Deaths Triggered by Starting Aura = 0 (Dropout / Benefactor): ${deadRuns.length}`);
-    if (deadRuns.length > 0) {
-      console.log('SAMPLE AURA DEATH RUN:', JSON.stringify(deadRuns[0], null, 2));
+    console.log(`Death Causes Breakdown:`, causeCounts);
+
+    if (deaths > 0) {
+      console.log(`\n=== ALL FIRST-PLAY DEATH RECORDS (${deaths}) ===`);
+      deathRecords.forEach((record, index) => {
+        console.log(`\n--- DEATH RECORD #${index + 1} ---`);
+        console.log(JSON.stringify(record, null, 2));
+      });
     }
 
-    expect(totalRuns).toBeGreaterThanOrEqual(100);
+    // Explicit assertion: A fresh player must NOT die from first Building play
+    expect(deaths).toBe(0);
   });
 
   it('TEST 2: Controlled Baseline State vs Execution Delta', () => {
@@ -129,7 +155,7 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
     });
   });
 
-  it('TEST 4: Month Transition and Death Order Tracing', () => {
+  it('TEST 4: Month Transition and MH Delta Ledger Tracing', () => {
     useGameStore.getState().resetGame('sk_delivery', 3, 'street_kid', 'sk_delivery', 'av_m1', {
       bag: 0, clout: 0, aura: 0, biography: [], recordedBioKeys: [], hustlePlays: {}, totalHustlesCompleted: 0, actionLog: []
     });
@@ -138,18 +164,33 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
     const result = useGameStore.getState().executeHustle('r_labor', 1.0, true);
     const plAfterHustle = JSON.parse(JSON.stringify(useGameStore.getState().pl));
 
-    // Trace Mental Health step-by-step
-    const mhBeforeBuilding = plBeforeHustle.mentalHealth; // 100
-    const hustleMHHit = result.mentalHit; // -12
-    const mhAfterBuilding = mhBeforeBuilding + hustleMHHit; // 88
+    // Full Delta Ledger:
+    // MH Before Building (100)
+    // + Building MH Delta (-12)
+    // + Active Modifier Delta (0)
+    // + Month Transition Delta (0)
+    // + Sleep/Rest/Recovery Delta (0)
+    // + Narrative Delta (0)
+    // + Rival Delta (0)
+    // = Final MH (88)
 
-    //advanceMonth is bundled inside executeHustle
+    const mhBeforeBuilding = plBeforeHustle.mentalHealth; // 100
+    const buildingMHDelta = result.mentalHit; // -12
+    const mhAfterBuilding = mhBeforeBuilding + buildingMHDelta; // 88
+    const monthTransitionMHDelta = plAfterHustle.mentalHealth - mhAfterBuilding; // 0
     const finalMH = plAfterHustle.mentalHealth; // 88
 
-    console.log(`TEST 4 TRACE: MH Before Building=${mhBeforeBuilding} -> MH Hit=${hustleMHHit} -> MH After Building=${mhAfterBuilding} -> Final MH=${finalMH}`);
+    console.log(`TEST 4 DELTA LEDGER:`);
+    console.log(`  MH Before Building: ${mhBeforeBuilding}`);
+    console.log(`  Building MH Delta:   ${buildingMHDelta}`);
+    console.log(`  MH After Building:   ${mhAfterBuilding}`);
+    console.log(`  Month-End MH Delta:  ${monthTransitionMHDelta}`);
+    console.log(`  Final MH:            ${finalMH}`);
+
     expect(mhBeforeBuilding).toBe(100);
-    expect(hustleMHHit).toBe(-12);
+    expect(buildingMHDelta).toBe(-12);
     expect(mhAfterBuilding).toBe(88);
+    expect(monthTransitionMHDelta).toBe(0);
     expect(finalMH).toBe(88);
   });
 
@@ -165,11 +206,29 @@ describe('Building / LaborBuild First-Play Reproduction Audit', () => {
     expect(pl.consequences.length).toBe(0);
   });
 
-  it('TEST 6: Death Threshold Verification', () => {
-    useGameStore.getState().resetGame('sk_delivery', 3);
+  it('TEST 6: Full Death Path Verification (Low MH Burnout)', () => {
+    // 1. Fresh player first play with prologueStats -> remains alive
+    useGameStore.getState().resetGame('sk_delivery', 3, 'street_kid', 'sk_delivery', 'av_m1', {
+      bag: 0, clout: 0, aura: 0, biography: [], recordedBioKeys: [], hustlePlays: {}, totalHustlesCompleted: 0, actionLog: []
+    });
+    expect(useGameStore.getState().ph).toBe('PLAYING');
 
-    const testPl = { ...useGameStore.getState().pl, clout: 0, aura: 0, mentalHealth: 0, bag: -1 };
-    const deathCheck = checkDeathConditions(testPl);
-    expect(deathCheck.shouldDie).toBe(true);
+    useGameStore.getState().executeHustle('r_labor', 1.0, true);
+    expect(useGameStore.getState().ph).toBe('PLAYING');
+    expect(useGameStore.getState().pl.mentalHealth).toBe(88);
+
+    // 2. Deliberately reduce Mental Health to threshold (e.g. MH = 5)
+    useGameStore.setState(state => ({
+      pl: { ...state.pl, mentalHealth: 5 }
+    }));
+
+    // Execute Building when MH is already low -> triggers burnout death
+    useGameStore.getState().executeHustle('r_labor', 1.0, true);
+
+    const endState = useGameStore.getState();
+    expect(endState.ph).toBe('POST_MORTEM');
+    expect(endState.deathBadge).toBe('BONE CRUSHER');
+    expect(endState.pl.deathContext?.fatalStat).toBe('mental');
+    console.log(`TEST 6 VERIFICATION: Low MH player correctly died of burnout. Fatal stat = ${endState.pl.deathContext?.fatalStat}`);
   });
 });
