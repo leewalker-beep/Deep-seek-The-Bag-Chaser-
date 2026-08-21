@@ -3492,5 +3492,374 @@
         "logMessage": "❌ SHATTERED EXPECTATIONS: You turned your back. Your name is written in anger across the city."
       }
     ]
+  },
+  {
+    "id": "jail_1_cellmate",
+    "title": "The Cellmate's Pitch",
+    "pacingCategory": "MAJOR",
+    "description": "Big Sal, a veteran on the block serving 15 years, gestures to the bench in your cell. \"Look, kid, in here you either learn the lay of the land or get eaten alive. You want advice on surviving lockup or do you think you know it all?\"",
+    "trigger": {
+      "probability": 0.5,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "sal_listen",
+        "label": "Listen to Sal's Survival Rules",
+        "description": "Soak in Sal's wisdom on staying low and avoiding yard drama.",
+        "consequences": {
+          "mentalHealth": 15,
+          "clout": -5,
+          "biographyEntry": "Took cellmate Big Sal's advice on surviving lockup."
+        },
+        "setFlags": {
+          "cellmate_sal_ally": true
+        }
+      },
+      {
+        "id": "sal_ignore",
+        "label": "Keep Your Distance",
+        "description": "Assert your independence and manage your own time.",
+        "consequences": {
+          "aura": 10,
+          "mentalHealth": -5
+        },
+        "setFlags": {
+          "cellmate_sal_ignored": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_2_parole_hearing",
+    "title": "The Parole Board",
+    "pacingCategory": "MAJOR",
+    "description": "You are escorted in handcuffs to the prison administrative board room. Three stern parole commissioners review your detention file. \"Explain why this board should consider early probation for someone with your profile.\"",
+    "trigger": {
+      "probability": 0.4,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "parole_remorse",
+        "label": "Express Remorse & Reform",
+        "description": "Pledge full rehabilitation and compliance with state probation.",
+        "consequences": {
+          "aura": 15,
+          "clout": -10,
+          "biographyEntry": "Pledged full reform before the state parole board."
+        },
+        "setFlags": {
+          "parole_strategy": "remorse"
+        }
+      },
+      {
+        "id": "parole_defiance",
+        "label": "Challenge the Proceedings",
+        "description": "Argue that your conviction was politically motivated.",
+        "consequences": {
+          "clout": 15,
+          "aura": -10,
+          "biographyEntry": "Maintained fierce defiance during the parole review."
+        },
+        "setFlags": {
+          "parole_strategy": "defiant"
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_3_visitation",
+    "title": "Glass Division",
+    "pacingCategory": "MAJOR",
+    "description": "An outside associate picks up the visitation phone on the other side of the reinforced glass. \"The streets are whispering about your absence. Empire operations are holding, but we need your direction on how to posture outside.\"",
+    "trigger": {
+      "probability": 0.4,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "visit_prudent",
+        "label": "Maintain Low-Profile Operations",
+        "description": "Order associates to keep heads down and preserve capital until your release.",
+        "consequences": {
+          "biographyEntry": "Maintained quiet tactical focus from behind bars."
+        },
+        "setFlags": {
+          "visitation_directive": "prudent"
+        }
+      },
+      {
+        "id": "visit_bold",
+        "label": "Press Forward Aggressively",
+        "description": "Instruct the team to expand market presence regardless of your location.",
+        "consequences": {
+          "biographyEntry": "Ordered outside associates to press forward without hesitation."
+        },
+        "setFlags": {
+          "visitation_directive": "bold"
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_4_smuggled_phone",
+    "title": "The Contraband Line",
+    "pacingCategory": "MAJOR",
+    "description": "A trusty runner slips a concealed package under your mattress. \"Encrypted burner. Clean line. $1,500 cash from your outside account gets you direct access to make moves from inside.\"",
+    "trigger": {
+      "probability": 0.45,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "phone_buy",
+        "label": "Purchase Burner Phone ($1,500)",
+        "description": "Pay for the contraband line to coordinate business outside.",
+        "consequences": {
+          "bag": -1500,
+          "clout": 15,
+          "heat": 10,
+          "biographyEntry": "Ran remote financial moves using a smuggled contraband phone."
+        },
+        "setFlags": {
+          "has_jail_burner": true
+        }
+      },
+      {
+        "id": "phone_decline",
+        "label": "Decline the Contraband",
+        "description": "Refuse to risk additional legal charges for illegal electronics.",
+        "consequences": {
+          "heat": -5,
+          "mentalHealth": 5
+        },
+        "setFlags": {
+          "declined_jail_burner": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_5_informant",
+    "title": "The Yard Informant",
+    "pacingCategory": "MAJOR",
+    "description": "An inmate doing bookkeeping for the prison warden pulls you aside in the yard. \"I got eyes on private ledger transfers. $2,000 in commissary credits and I hand you financial dirt on a major market competitor.\"",
+    "trigger": {
+      "probability": 0.35,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "informant_buy",
+        "label": "Buy Competitor Intelligence ($2,000)",
+        "description": "Transfer commissary funds for the financial dossier.",
+        "consequences": {
+          "bag": -2000,
+          "clout": 25,
+          "aura": 10,
+          "biographyEntry": "Acquired critical financial intel on outside rivals through a prison informant."
+        },
+        "setFlags": {
+          "bought_jail_intel": true
+        }
+      },
+      {
+        "id": "informant_pass",
+        "label": "Pass on the Offer",
+        "description": "Ignore prison yard rumors and keep your money.",
+        "consequences": {},
+        "setFlags": {
+          "passed_jail_intel": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_6_block_politics",
+    "title": "Yard Politics",
+    "pacingCategory": "MAJOR",
+    "description": "Tensions flare in the recreation block as rival prison factions push inmates to declare allegiance. A block lieutenant approaches: \"Nobody walks the yard neutral without paying for block security or standing tall.\"",
+    "trigger": {
+      "probability": 0.4,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "politics_pay",
+        "label": "Pay for Yard Neutrality ($1,000)",
+        "description": "Pay for block protection to avoid physical conflicts.",
+        "consequences": {
+          "bag": -1000,
+          "mentalHealth": 15
+        },
+        "setFlags": {
+          "paid_yard_protection": true
+        }
+      },
+      {
+        "id": "politics_stand",
+        "label": "Stand Your Ground",
+        "description": "Rely on personal reputation and refuse to pay tribute.",
+        "consequences": {
+          "clout": 20,
+          "mentalHealth": -10
+        },
+        "setFlags": {
+          "stood_ground_yard": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_7_legal_update",
+    "title": "The Legal Briefing",
+    "pacingCategory": "MAJOR",
+    "description": "Your defense attorney visits during legal counsel hours with a court document. \"We found a procedural discrepancy in the arrest warrant. For a $3,000 retainer, we can file an emergency writ of habeas corpus.\"",
+    "trigger": {
+      "probability": 0.4,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "legal_file_writ",
+        "label": "Fund Emergency Writ ($3,000)",
+        "description": "Pay legal fees to challenge procedural violations in court.",
+        "consequences": {
+          "bag": -3000,
+          "aura": 20,
+          "biographyEntry": "Filed an emergency legal writ challenging detention procedures."
+        },
+        "setFlags": {
+          "filed_jail_writ": true
+        }
+      },
+      {
+        "id": "legal_wait",
+        "label": "Wait Out Sentence",
+        "description": "Decline additional legal fees and serve out remaining time.",
+        "consequences": {
+          "mentalHealth": 5
+        },
+        "setFlags": {
+          "waited_out_sentence": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_8_quiet_reflection",
+    "title": "Midnight Reflection",
+    "pacingCategory": "MAJOR",
+    "description": "At 3 AM, the cellblock is dead quiet except for distant dripping pipes. Sitting on the edge of your bunk, you reflect on the high-stakes decisions and relentless ambition that led to this cell.",
+    "trigger": {
+      "probability": 0.5,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "reflect_ambition",
+        "label": "Accept the Cost of Power",
+        "description": "Recognize that incarceration is simply the tax paid on relentless ambition.",
+        "consequences": {
+          "biographyEntry": "Reflected in midnight solitude on the true price of ambition."
+        },
+        "setFlags": {
+          "jail_reflection": "accepted_cost"
+        }
+      },
+      {
+        "id": "reflect_resolve",
+        "label": "Vow an Unstoppable Comeback",
+        "description": "Swear that prison wall steel will only forge a sharper, relentless drive upon release.",
+        "consequences": {
+          "biographyEntry": "Swore in the quiet cell that incarceration was merely a temporary setback."
+        },
+        "setFlags": {
+          "jail_reflection": "vowed_comeback"
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_9_early_release",
+    "title": "Administrative Favor",
+    "pacingCategory": "MAJOR",
+    "description": "A corrupt records officer pauses in front of your cell door late at night. \"Sentence credit logs can be updated for good behavior... if a $5,000 consulting fee finds its way to an off-grid account.\"",
+    "trigger": {
+      "probability": 0.35,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "release_bribe",
+        "label": "Pay Processing Fee ($5,000)",
+        "description": "Transfer funds to expedite prison administrative release logs.",
+        "consequences": {
+          "bag": -5000,
+          "mentalHealth": 15,
+          "heat": 10,
+          "biographyEntry": "Bribed prison administrative staff to fast-track sentence logs."
+        },
+        "setFlags": {
+          "bribed_release_clerk": true
+        }
+      },
+      {
+        "id": "release_refuse",
+        "label": "Refuse the Extortion",
+        "description": "Decline corrupt bribes and maintain clean record integrity.",
+        "consequences": {
+          "aura": 15,
+          "heat": -5
+        },
+        "setFlags": {
+          "refused_release_clerk": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "jail_10_guard_bribe",
+    "title": "Commissary & Privileges",
+    "pacingCategory": "MAJOR",
+    "description": "A sympathetic guard offers an off-the-record arrangement: for $800 a month, you receive extra library access, high-end commissary rations, and private yard time.",
+    "trigger": {
+      "probability": 0.45,
+      "once": true,
+      "jailOnly": true
+    },
+    "choices": [
+      {
+        "id": "guard_pay_privilege",
+        "label": "Pay for Privileges ($800)",
+        "description": "Secure better meals, books, and extended recreation time.",
+        "consequences": {
+          "bag": -800,
+          "mentalHealth": 20
+        },
+        "setFlags": {
+          "paid_guard_privileges": true
+        }
+      },
+      {
+        "id": "guard_standard",
+        "label": "Stick to Standard Routine",
+        "description": "Serve time on standard prison provisions.",
+        "consequences": {},
+        "setFlags": {
+          "declined_guard_privileges": true
+        }
+      }
+    ]
   }
 ]

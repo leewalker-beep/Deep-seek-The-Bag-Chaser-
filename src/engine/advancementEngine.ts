@@ -1034,9 +1034,14 @@ export function advanceMonth(
 
   // Narrative Event Triggering Logic
   if (!newPl.activeNarrative) {
+    const isJailed = newPl.inJail === true || newPl.isIncarcerated === true;
     const validEvents = NARRATIVE_EVENTS.filter(event => {
-      // Hard exclusion if player is incarcerated
-      if (newPl.inJail || newPl.isIncarcerated) return false;
+      // Incarceration gating: jail-only events trigger ONLY when jailed; non-jail events trigger ONLY when free
+      if (isJailed) {
+        if (!event.trigger.jailOnly) return false;
+      } else {
+        if (event.trigger.jailOnly) return false;
+      }
 
       // 1. Quick Filters (Static/State-based)
       if (event.trigger.tier && !event.trigger.tier.includes(newPl.currentTier)) return false;

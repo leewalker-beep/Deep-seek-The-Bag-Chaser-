@@ -493,6 +493,7 @@ export interface NarrativeEvent {
     minMonth?: number;
     probability: number;
     once?: boolean;
+    jailOnly?: boolean;
     flagReqs?: Record<string, string | number | boolean>;
   };
   requirement?: {
