@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
   const performanceProfiles = [
-    { name: 'Poor Performance (0 taps)', taps: 0 },
-    { name: 'Normal Performance (5 taps)', taps: 5 },
-    { name: 'Excellent Performance (25 taps)', taps: 25 },
+    { name: '0 taps (Poor)', taps: 0 },
+    { name: '5 taps (Normal)', taps: 5 },
+    { name: '25 taps (Excellent)', taps: 25 },
   ];
 
   for (const profile of performanceProfiles) {
-    test(`REAL NEW GAME FLOW -> Building / LaborBuild -> ${profile.name}`, async ({ page }) => {
+    test(`REAL UI FIRST PLAY -> Building / LaborBuild -> ${profile.name}`, async ({ page }) => {
       // 1. Navigate to root application
       await page.goto('http://localhost:5173');
       await page.waitForLoadState('networkidle');
@@ -27,7 +27,7 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
       // 4. Choose Face
       await page.click('button:has-text("Confirm Face")');
 
-      // 5. Choose Origin (The Dropout - zero starter aura)
+      // 5. Choose Origin (The Dropout - dr_tech)
       await page.click('button:has-text("The Dropout")');
       await page.click('button:has-text("Confirm Origin & Proceed")');
 
@@ -56,43 +56,117 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
         await monthlySummaryDismiss.click();
       }
 
-      // 10. Verify MUD Tier Active & Find Building / Labor & Property Hustle Card
+      // Wait for store to be available
+      await page.waitForFunction(() => !!(window as any).__gameStore__);
+
+      // 10. CAPTURE & CONFIRM ACTUAL STARTING PLAYER STATE
+      const startingState = await page.evaluate(() => {
+        const store = (window as any).__gameStore__.getState();
+        const pl = store.pl;
+        return {
+          bag: pl.bag,
+          clout: pl.clout,
+          aura: pl.aura,
+          mentalHealth: pl.mentalHealth,
+          heat: pl.heat,
+          currentTier: pl.currentTier,
+          buildingLevel: pl.hustleLevels['r_labor'] || 1,
+          backgroundId: pl.backgroundId,
+          categoryId: pl.categoryId,
+          difficulty: store.difficulty,
+          ph: store.ph
+        };
+      });
+
+      console.log(`\n=== ACTUAL STARTING PLAYER STATE (${profile.name}) ===`);
+      console.log(JSON.stringify(startingState, null, 2));
+
+      // 11. Verify MUD Tier Active & Find Building Card
       await page.waitForSelector('#hustle-card-r_labor');
       const laborCard = page.locator('#hustle-card-r_labor');
       await expect(laborCard).toBeVisible();
 
-      // 11. Click Building Card to open hustle view / branch choice
+      // 12. Click Building Card to open branch choice
       await laborCard.click();
 
-      // 12. Click "#hustle-execute-button"
+      // 13. Click "#hustle-execute-button"
       const executeBtn = page.locator('#hustle-execute-button');
       await expect(executeBtn).toBeVisible({ timeout: 5000 });
+
+      // Capture before-hustle stats immediately before execute click
+      const beforeHustleStats = await page.evaluate(() => {
+        const pl = (window as any).__gameStore__.getState().pl;
+        return {
+          bag: pl.bag,
+          clout: pl.clout,
+          aura: pl.aura,
+          mentalHealth: pl.mentalHealth,
+          heat: pl.heat
+        };
+      });
+
       await executeBtn.click();
 
-      // 13. Interact with LaborBuild minigame button ("BUILD!!!" or "MAINTAIN")
+      // 14. Interact with LaborBuild minigame button ("BUILD!!!" or "MAINTAIN")
       const minigameBtn = page.locator('button:has-text("BUILD!!!"), button:has-text("MAINTAIN")');
       await expect(minigameBtn).toBeVisible({ timeout: 10000 });
 
-      // Perform taps according to performance profile
+      // Perform taps
       for (let i = 0; i < profile.taps; i++) {
         await minigameBtn.click({ force: true });
         await page.waitForTimeout(80);
       }
 
-      // Wait for minigame timer (5.0s) to expire and trigger completion
-      await page.waitForTimeout(7000);
+      // 15. WAIT DETERMINISTICALLY FOR MINIGAME UNMOUNT / COMPLETION
+      await expect(minigameBtn).not.toBeVisible({ timeout: 15000 });
+
+      // Wait brief moment for month advancement and modal animations
+      await page.waitForTimeout(1000);
 
       // Dismiss post-hustle monthly summary modal if visible
       if (await monthlySummaryDismiss.isVisible()) {
         await monthlySummaryDismiss.click();
       }
 
-      // 14. Observe outcome & player state after minigame + month transition
-      const postMortemHeader = page.locator('h1:has-text("GAME OVER"), h2:has-text("GAME OVER"), h1:has-text("POST MORTEM")');
-      const isDead = await postMortemHeader.isVisible();
+      // 16. CAPTURE AFTER-HUSTLE STATS & PHASE
+      const afterHustleStats = await page.evaluate(() => {
+        const store = (window as any).__gameStore__.getState();
+        const pl = store.pl;
+        return {
+          bag: pl.bag,
+          clout: pl.clout,
+          aura: pl.aura,
+          mentalHealth: pl.mentalHealth,
+          heat: pl.heat,
+          ph: store.ph,
+          deathBadge: store.deathBadge,
+          fatalCause: store.fatalCause,
+          deathContext: pl.deathContext
+        };
+      });
 
-      console.log(`E2E PROFILE [${profile.name}]: Is Post-Mortem / Dead = ${isDead}`);
-      expect(isDead).toBe(false);
+      // Inspect UI for Post-Mortem / Game Over header
+      const postMortemHeader = page.locator('h1:has-text("GAME OVER"), h2:has-text("GAME OVER"), h1:has-text("POST MORTEM")');
+      const isDeadUI = await postMortemHeader.isVisible();
+      const isDeadStore = afterHustleStats.ph === 'POST_MORTEM';
+      const isDead = isDeadUI || isDeadStore;
+
+      console.log(`\n=== BEFORE vs AFTER STATS (${profile.name}) ===`);
+      console.log(`MH:    ${beforeHustleStats.mentalHealth} -> ${afterHustleStats.mentalHealth}`);
+      console.log(`HEAT:  ${beforeHustleStats.heat} -> ${afterHustleStats.heat}`);
+      console.log(`AURA:  ${beforeHustleStats.aura} -> ${afterHustleStats.aura}`);
+      console.log(`CLOUT: ${beforeHustleStats.clout} -> ${afterHustleStats.clout}`);
+      console.log(`BAG:   $${beforeHustleStats.bag} -> $${afterHustleStats.bag}`);
+      console.log(`DEAD?: ${isDead} (UI=${isDeadUI}, Store=${isDeadStore})`);
+
+      if (isDead) {
+        console.log(`DEATH CONTEXT:`, JSON.stringify(afterHustleStats.deathContext, null, 2));
+      }
+
+      // HARD INVARIANTS:
+      expect(isDeadUI).toBe(false);
+      expect(isDeadStore).toBe(false);
+      expect(afterHustleStats.ph).not.toBe('POST_MORTEM');
     });
   }
 });
