@@ -141,14 +141,15 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
         }
 
         // 16. CAPTURE GRANULAR AFTER-HUSTLE STATS & DELTA BREAKDOWN
+        // Specifically filter for r_labor event/action without assumptions or array position guesses
         const afterHustleData = await page.evaluate(() => {
           const store = (window as any).__gameStore__.getState();
           const pl = store.pl;
           const actionLog = pl.actionLog || [];
-          const lastAction = actionLog[0] || {};
+          const laborAction = actionLog.find((a: any) => a.hustleId === 'r_labor');
           const eventList = pl.events || [];
-          const hustleEvent = eventList.find((e: any) => e.type === 'HUSTLE_COMPLETED') || {};
-          const meta = hustleEvent.metadata || {};
+          const laborEvent = eventList.find((e: any) => e.type === 'HUSTLE_COMPLETED' && e.metadata?.hustleId === 'r_labor');
+          const meta = laborEvent ? laborEvent.metadata : null;
 
           return {
             bag: pl.bag,
@@ -160,12 +161,12 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
             deathBadge: store.deathBadge,
             fatalCause: store.fatalCause,
             deathContext: pl.deathContext,
-            // Granular logged deltas
-            directHustleMHDelta: meta.mentalHit !== undefined ? meta.mentalHit : lastAction.mentalHit,
-            directHustleHeatDelta: meta.heatHit !== undefined ? meta.heatHit : lastAction.heatHit,
-            directHustleYieldCash: meta.profit !== undefined ? meta.profit : lastAction.netCash,
-            multiplier: meta.multiplier !== undefined ? meta.multiplier : 1.0,
-            success: meta.success !== undefined ? meta.success : true
+            // Granular logged deltas strictly from r_labor event/action
+            directHustleMHDelta: meta?.mentalHit !== undefined ? meta.mentalHit : (laborAction?.mentalHit !== undefined ? laborAction.mentalHit : null),
+            directHustleHeatDelta: meta?.heatHit !== undefined ? meta.heatHit : (laborAction?.heatHit !== undefined ? laborAction.heatHit : null),
+            directHustleYieldCash: meta?.profit !== undefined ? meta.profit : (laborAction?.netCash !== undefined ? laborAction.netCash : null),
+            multiplier: meta?.multiplier !== undefined ? meta.multiplier : (laborAction?.multiplier !== undefined ? laborAction.multiplier : null),
+            success: meta?.success !== undefined ? meta.success : (laborAction?.success !== undefined ? laborAction.success : null)
           };
         });
 
@@ -175,21 +176,21 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
         const isDeadStore = afterHustleData.ph === 'POST_MORTEM';
         const isDead = isDeadUI || isDeadStore;
 
-        // Granular MH Transition Chain
+        // Granular MH Transition Chain - use 'NOT FOUND' if direct delta is null
         const mhBefore = beforeHustleStats.mentalHealth; // 100
-        const directMHDelta = afterHustleData.directHustleMHDelta !== undefined ? afterHustleData.directHustleMHDelta : -12;
-        const mhAfterResolution = mhBefore + directMHDelta;
+        const directMHDelta = afterHustleData.directHustleMHDelta !== null ? afterHustleData.directHustleMHDelta : 'NOT FOUND';
+        const mhAfterResolution = (typeof directMHDelta === 'number') ? (mhBefore + directMHDelta) : 'NOT FOUND';
         const finalMH = afterHustleData.mentalHealth;
-        const monthEndMHDelta = finalMH - mhAfterResolution;
+        const monthEndMHDelta = (typeof mhAfterResolution === 'number') ? (finalMH - mhAfterResolution) : 'NOT FOUND';
 
         // Granular Heat Transition Chain
         const heatBefore = beforeHustleStats.heat; // 0
-        const directHeatDelta = afterHustleData.directHustleHeatDelta !== undefined ? afterHustleData.directHustleHeatDelta : 0;
-        const heatAfterResolution = heatBefore + directHeatDelta;
+        const directHeatDelta = afterHustleData.directHustleHeatDelta !== null ? afterHustleData.directHustleHeatDelta : 'NOT FOUND';
+        const heatAfterResolution = (typeof directHeatDelta === 'number') ? (heatBefore + directHeatDelta) : 'NOT FOUND';
         const finalHeat = afterHustleData.heat;
-        const monthEndHeatDelta = finalHeat - heatAfterResolution;
+        const monthEndHeatDelta = (typeof heatAfterResolution === 'number') ? (finalHeat - heatAfterResolution) : 'NOT FOUND';
 
-        console.log(`\n=== RUN ${iter}/7 [${profile.name}] GRANULAR TRACE ===`);
+        console.log(`\n=== RUN ${iter}/7 [${profile.name}] AUDIT TRACE ===`);
         console.log(`MH CHAIN:   Before=${mhBefore} -> Direct Delta=${directMHDelta} -> After Res=${mhAfterResolution} -> Month-End Delta=${monthEndMHDelta} -> Final MH=${finalMH}`);
         console.log(`HEAT CHAIN: Before=${heatBefore} -> Direct Delta=${directHeatDelta} -> After Res=${heatAfterResolution} -> Month-End Delta=${monthEndHeatDelta} -> Final Heat=${finalHeat}`);
         console.log(`AURA CHAIN: Before=${beforeHustleStats.aura} -> Aura After=${afterHustleData.aura}`);
@@ -198,6 +199,16 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
 
         if (isDead) {
           console.log(`CRITICAL DEATH CONTEXT:`, JSON.stringify({
+            iteration: iter,
+            profile: profile.name,
+            startingMH: mhBefore,
+            startingHeat: heatBefore,
+            directMHDelta,
+            monthEndMHDelta,
+            directHeatDelta,
+            monthEndHeatDelta,
+            finalMH,
+            finalHeat,
             fatalCause: afterHustleData.fatalCause,
             deathContext: afterHustleData.deathContext,
             deathBadge: afterHustleData.deathBadge,
