@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-test.describe.configure({ mode: 'parallel' });
-
 test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
   const performanceProfiles = [
     { name: '0 taps (Poor)', taps: 0 },
@@ -14,9 +12,15 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
 
   for (let iter = 1; iter <= totalIterations; iter++) {
     for (const profile of performanceProfiles) {
-      test(`Run ${iter}/7: REAL UI FIRST PLAY -> Building / LaborBuild -> ${profile.name}`, async ({ page }) => {
-        // 1. Navigate to root application
+      test(`Run ${iter}/7: REAL UI FIRST PLAY -> Building / LaborBuild -> ${profile.name}`, async ({ page, context }) => {
+        // Ensure complete context isolation: clear localStorage & sessionStorage
+        await context.clearCookies();
         await page.goto('http://localhost:5173');
+        await page.evaluate(() => {
+          localStorage.clear();
+          sessionStorage.clear();
+        });
+        await page.reload();
         await page.waitForLoadState('networkidle');
 
         // 2. Begin Prologue Flow
@@ -84,7 +88,7 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
           };
         });
 
-        // 1. ASSERTIONS FOR FRESH-PLAYER STARTING STATE:
+        // ASSERTIONS FOR FRESH-PLAYER STARTING STATE:
         expect(startingState.mentalHealth).toBe(100);
         expect(startingState.heat).toBe(0);
         expect(startingState.ph).not.toBe('POST_MORTEM');
@@ -136,10 +140,16 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
           await monthlySummaryDismiss.click();
         }
 
-        // 16. CAPTURE AFTER-HUSTLE STATS & PHASE
-        const afterHustleStats = await page.evaluate(() => {
+        // 16. CAPTURE GRANULAR AFTER-HUSTLE STATS & DELTA BREAKDOWN
+        const afterHustleData = await page.evaluate(() => {
           const store = (window as any).__gameStore__.getState();
           const pl = store.pl;
+          const actionLog = pl.actionLog || [];
+          const lastAction = actionLog[0] || {};
+          const eventList = pl.events || [];
+          const hustleEvent = eventList.find((e: any) => e.type === 'HUSTLE_COMPLETED') || {};
+          const meta = hustleEvent.metadata || {};
+
           return {
             bag: pl.bag,
             clout: pl.clout,
@@ -149,40 +159,56 @@ test.describe('Real LaborBuild UI First-Play Reproduction Audit', () => {
             ph: store.ph,
             deathBadge: store.deathBadge,
             fatalCause: store.fatalCause,
-            deathContext: pl.deathContext
+            deathContext: pl.deathContext,
+            // Granular logged deltas
+            directHustleMHDelta: meta.mentalHit !== undefined ? meta.mentalHit : lastAction.mentalHit,
+            directHustleHeatDelta: meta.heatHit !== undefined ? meta.heatHit : lastAction.heatHit,
+            directHustleYieldCash: meta.profit !== undefined ? meta.profit : lastAction.netCash,
+            multiplier: meta.multiplier !== undefined ? meta.multiplier : 1.0,
+            success: meta.success !== undefined ? meta.success : true
           };
         });
 
         // Inspect UI for Post-Mortem / Game Over header
         const postMortemHeader = page.locator('h1:has-text("GAME OVER"), h2:has-text("GAME OVER"), h1:has-text("POST MORTEM")');
         const isDeadUI = await postMortemHeader.isVisible();
-        const isDeadStore = afterHustleStats.ph === 'POST_MORTEM';
+        const isDeadStore = afterHustleData.ph === 'POST_MORTEM';
         const isDead = isDeadUI || isDeadStore;
 
         // Granular MH Transition Chain
-        const mhBeforeBuilding = beforeHustleStats.mentalHealth; // 100
-        const finalMH = afterHustleStats.mentalHealth;
-        const totalMHDelta = finalMH - mhBeforeBuilding;
+        const mhBefore = beforeHustleStats.mentalHealth; // 100
+        const directMHDelta = afterHustleData.directHustleMHDelta !== undefined ? afterHustleData.directHustleMHDelta : -12;
+        const mhAfterResolution = mhBefore + directMHDelta;
+        const finalMH = afterHustleData.mentalHealth;
+        const monthEndMHDelta = finalMH - mhAfterResolution;
 
-        console.log(`\n=== RUN ${iter}/7 [${profile.name}] STAT TRACE ===`);
-        console.log(`MH CHAIN:   MH Before=${mhBeforeBuilding} -> Total MH Delta=${totalMHDelta} -> Final MH=${finalMH}`);
-        console.log(`HEAT CHAIN: Heat Before=${beforeHustleStats.heat} -> Heat After=${afterHustleStats.heat}`);
-        console.log(`AURA CHAIN: Aura Before=${beforeHustleStats.aura} -> Aura After=${afterHustleStats.aura}`);
-        console.log(`CASH CHAIN: Bag Before=$${beforeHustleStats.bag} -> Bag After=$${afterHustleStats.bag}`);
+        // Granular Heat Transition Chain
+        const heatBefore = beforeHustleStats.heat; // 0
+        const directHeatDelta = afterHustleData.directHustleHeatDelta !== undefined ? afterHustleData.directHustleHeatDelta : 0;
+        const heatAfterResolution = heatBefore + directHeatDelta;
+        const finalHeat = afterHustleData.heat;
+        const monthEndHeatDelta = finalHeat - heatAfterResolution;
+
+        console.log(`\n=== RUN ${iter}/7 [${profile.name}] GRANULAR TRACE ===`);
+        console.log(`MH CHAIN:   Before=${mhBefore} -> Direct Delta=${directMHDelta} -> After Res=${mhAfterResolution} -> Month-End Delta=${monthEndMHDelta} -> Final MH=${finalMH}`);
+        console.log(`HEAT CHAIN: Before=${heatBefore} -> Direct Delta=${directHeatDelta} -> After Res=${heatAfterResolution} -> Month-End Delta=${monthEndHeatDelta} -> Final Heat=${finalHeat}`);
+        console.log(`AURA CHAIN: Before=${beforeHustleStats.aura} -> Aura After=${afterHustleData.aura}`);
+        console.log(`CASH CHAIN: Before=$${beforeHustleStats.bag} -> Cash After=$${afterHustleData.bag}`);
         console.log(`RESULT:     Dead?=${isDead} (UI=${isDeadUI}, Store=${isDeadStore})`);
 
         if (isDead) {
           console.log(`CRITICAL DEATH CONTEXT:`, JSON.stringify({
-            fatalCause: afterHustleStats.fatalCause,
-            deathContext: afterHustleStats.deathContext,
-            deathBadge: afterHustleStats.deathBadge
+            fatalCause: afterHustleData.fatalCause,
+            deathContext: afterHustleData.deathContext,
+            deathBadge: afterHustleData.deathBadge,
+            exactPoint: 'Post-hustle month advancement death check'
           }, null, 2));
         }
 
         // HARD INVARIANTS:
         expect(isDeadUI).toBe(false);
         expect(isDeadStore).toBe(false);
-        expect(afterHustleStats.ph).not.toBe('POST_MORTEM');
+        expect(afterHustleData.ph).not.toBe('POST_MORTEM');
       });
     }
   }
