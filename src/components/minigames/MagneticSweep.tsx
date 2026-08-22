@@ -430,7 +430,7 @@ export const MagneticSweep: React.FC<MagneticSweepProps> = ({
             animate={{ top: '85%', opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.5, ease: 'easeIn' }}
             className="absolute w-12 h-12 flex items-center justify-center text-3xl z-20 pointer-events-none"
-            style={{ transform: 'translate(-50%, -50%)' }}
+            style={{ x: '-50%', y: '-50%' }}
           >
             {item.emoji}
           </motion.div>

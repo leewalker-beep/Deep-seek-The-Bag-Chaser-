@@ -116,7 +116,7 @@ export const TapAssign: React.FC<TapAssignProps> = ({ onComplete, level = 1, tie
               className={`absolute w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-2xl border-t-2 border-white/20 ${
                 t.type === 0 ? 'bg-blue-600' : t.type === 1 ? 'bg-purple-600' : 'bg-orange-600'
               }`}
-              style={{ left: `${t.x}%`, top: `${t.y}%`, transform: 'translate(-50%, -50%)' }}
+              style={{ left: `${t.x}%`, top: `${t.y}%`, x: '-50%', y: '-50%' }}
             >
               {t.type === 0 ? '✉️' : t.type === 1 ? '📞' : '🛠️'}
             </motion.button>

@@ -148,7 +148,7 @@ export const WordTap: React.FC<WordTapProps> = ({ onComplete, level = 1, tier = 
                 className={`absolute px-5 py-2.5 rounded-xl text-xs font-black shadow-2xl border-t-2 transition-transform active:scale-75 ${
                 word.isGood ? 'bg-emerald-500 text-black border-emerald-300' : 'bg-red-600 text-white border-red-400'
                 }`}
-                style={{ left: `${word.x}%`, top: `${word.y}%`, transform: 'translateX(-50%)' }}
+                style={{ left: `${word.x}%`, top: `${word.y}%`, x: '-50%' }}
             >
                 {word.text}
             </motion.button>
