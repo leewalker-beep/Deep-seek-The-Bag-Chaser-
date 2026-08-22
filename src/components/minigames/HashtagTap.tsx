@@ -113,7 +113,7 @@ export const HashtagTap: React.FC<HashtagTapProps> = ({ onComplete, level = 1, t
               whileTap={{ scale: 0.8 }}
               onClick={() => handleTap(h.id)}
               className="absolute px-5 py-2.5 bg-blue-600/20 border-2 border-blue-500/50 rounded-xl text-blue-300 font-black text-sm shadow-[0_0_20px_rgba(59,130,246,0.2)] active:bg-blue-500 active:text-white transition-colors"
-              style={{ left: `${h.x}%`, top: `${h.y}%`, transform: 'translate(-50%, -50%)' }}
+              style={{ left: `${h.x}%`, top: `${h.y}%`, x: '-50%', y: '-50%' }}
             >
               {h.text}
             </motion.button>

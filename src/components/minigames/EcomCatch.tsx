@@ -286,7 +286,7 @@ export const EcomCatch: React.FC<EcomCatchProps> = ({ onComplete, level = 1, tie
               whileTap={{ scale: 0.8 }}
               onClick={() => handleCatch(item.id)}
               className="absolute p-4 drop-shadow-2xl active:scale-125 transition-transform flex flex-col items-center"
-              style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translate(-50%, -50%)' }}
+              style={{ left: `${item.x}%`, top: `${item.y}%`, x: '-50%', y: '-50%' }}
             >
               <div className="text-6xl">{item.icon}</div>
               <div className="text-[8px] text-slate-400 font-bold text-center leading-tight mt-0.5">
