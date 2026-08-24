@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import { StatCard } from '../ui/StatCard';
 import { ProgressBar } from '../ui/ProgressBar';
+import { getMasteryCount } from '../../utils/masteryUtils';
 
 export const CareerTab: React.FC = () => {
   const { pl } = useGameStore();
@@ -50,6 +51,13 @@ export const CareerTab: React.FC = () => {
           <StatCard label="Legacy Score" value={pl.legacyPoints || 0} colorClass="text-yellow-400" />
           <div className="absolute top-full right-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
             Current rating of your character's life. Converts to buyable meta upgrades upon death.
+          </div>
+        </div>
+
+        <div className="group relative">
+          <StatCard label="Mastery Crowns" value={getMasteryCount(pl)} icon="👑" colorClass="text-yellow-400" />
+          <div className="absolute top-full left-0 mt-1 w-44 p-2 bg-slate-950 border border-slate-800 rounded text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-snug">
+            Number of hustles mastered across all tiers. Required to advance to higher progression tiers.
           </div>
         </div>
 

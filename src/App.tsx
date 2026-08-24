@@ -1761,9 +1761,22 @@ function App() {
               <button
                 id="advance-tier-button"
                 onClick={() => advanceTier()}
-                className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95"
+                className="w-full mb-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5"
               >
-                ⚡ ADVANCE TO NEXT TIER ⚡
+                <span>⚡ ADVANCE TO NEXT TIER ⚡</span>
+                {(() => {
+                  const nextTierName = PROGRESSION_ORDER[currentTierIndex + 1];
+                  const nextReq = nextTierName ? TIER_REQUIREMENTS[nextTierName] : null;
+                  const currentCrowns = pl ? getMasteryCount(pl) : 0;
+                  if (nextReq && nextReq.crowns > 0) {
+                    return (
+                      <span className="text-[10px] font-mono text-purple-200 tracking-wider">
+                        CROWNS {currentCrowns} / {nextReq.crowns} • READY TO ADVANCE
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </button>
             )}
 
@@ -1775,11 +1788,13 @@ function App() {
 
               if (!showFlexMarket && nextReq && nextReq.crowns > 0 && !canAdvance) {
                 const remaining = Math.max(0, nextReq.crowns - currentCrowns);
+                const crownRequirementMet = remaining === 0;
+
                 return (
                   <div className="mb-4 p-3 bg-slate-900/90 border border-yellow-500/30 rounded-xl">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-[10px] font-black uppercase text-yellow-400 tracking-wider flex items-center gap-1">
-                        👑 Advancement Requirement ({nextTierName}): Crown Progress
+                        👑 NEXT TIER ({nextTierName}) REQUIREMENT: CROWNS
                       </span>
                       <span className="text-[10px] font-mono font-bold text-slate-300">
                         {currentCrowns} / {nextReq.crowns}
@@ -1791,12 +1806,16 @@ function App() {
                         style={{ width: `${Math.min(100, (currentCrowns / nextReq.crowns) * 100)}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-[9px] text-slate-400 font-medium">
-                      <span>Current: <strong className="text-white">{currentCrowns}</strong></span>
-                      <span>Required: <strong className="text-white">{nextReq.crowns}</strong></span>
-                      <span>
-                        Remaining: <strong className={currentCrowns >= nextReq.crowns ? "text-emerald-400" : "text-amber-400"}>{remaining}</strong>
-                      </span>
+                    <div className="text-[10px] font-bold text-center mt-1">
+                      {crownRequirementMet ? (
+                        <span className="text-emerald-400 uppercase tracking-wider">
+                          CROWNS {currentCrowns} / {nextReq.crowns} • CROWN REQUIREMENT MET
+                        </span>
+                      ) : (
+                        <span className="text-amber-400 uppercase tracking-wider">
+                          CROWNS {currentCrowns} / {nextReq.crowns} • {remaining} MORE CROWN{remaining > 1 ? 'S' : ''} NEEDED
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
