@@ -196,8 +196,12 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
               <div>
                 <div className="flex justify-between text-[8px] mb-0.5">
                   <span className="text-slate-500">Mastery Crowns</span>
-                  <span className={getMasteryCount(stats) >= nextRequirements.crowns ? 'text-yellow-400' : 'text-slate-400'}>
-                    👑 {getMasteryCount(stats)} / {nextRequirements.crowns} ({Math.max(0, nextRequirements.crowns - getMasteryCount(stats))} remaining)
+                  <span className={getMasteryCount(stats) >= nextRequirements.crowns ? 'text-yellow-400 font-bold' : 'text-slate-400'}>
+                    👑 {getMasteryCount(stats)} / {nextRequirements.crowns} ({
+                      getMasteryCount(stats) >= nextRequirements.crowns
+                        ? 'Requirement Met'
+                        : `${nextRequirements.crowns - getMasteryCount(stats)} more needed`
+                    })
                   </span>
                 </div>
                 <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
