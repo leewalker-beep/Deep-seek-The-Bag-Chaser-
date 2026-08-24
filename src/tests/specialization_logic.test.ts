@@ -17,7 +17,8 @@ describe('Specialization System', () => {
         ...state.pl,
         bag: 100000,
         clout: 200,
-        aura: 200
+        aura: 200,
+        masteredHustles: ['r_labor', 'r_delivery', 'r_plasma']
       }
     }));
 

@@ -43,7 +43,7 @@ import { applyReputationLossScale } from '../../engine/reputationEngine';
 import { calculateLegacyScore } from '../../engine/legacyEngine';
 import { backupSave } from '../../utils/saveUtils';
 import { SPECIALIZATIONS } from '../../config/specializations';
-import { isHustleMastered } from '../../utils/masteryUtils';
+import { isHustleMastered, getMasteryCount } from '../../utils/masteryUtils';
 import { GAME_CONSTANTS } from '../../config/gameConstants';
 import { NARRATIVE_EVENTS } from '../../config/narrativeEvents';
 import * as Bio from '../../engine/biographyEngine';
@@ -2274,12 +2274,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (!nextTier) return false;
 
     const req = TIER_REQUIREMENTS[nextTier];
+    const currentCrowns = getMasteryCount(state.pl);
 
     const isTutorialStep6 = !state.isTutorialSkipped && state.tutorialStep === 5;
 
     if (isTutorialStep6 || (state.pl.bag >= req.cash &&
         state.pl.clout >= req.clout &&
-        state.pl.aura >= req.aura)) {
+        state.pl.aura >= req.aura &&
+        currentCrowns >= (req.crowns || 0))) {
 
       if (isTutorialStep6) {
          // Tutorial auto-advance logic
@@ -2301,6 +2303,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (state.pl.bag < req.cash) missing.push(`$${req.cash.toLocaleString()} cash`);
     if (state.pl.clout < req.clout) missing.push(`${req.clout} clout`);
     if (state.pl.aura < req.aura) missing.push(`${req.aura} aura`);
+    if (req.crowns && currentCrowns < req.crowns) {
+      const remaining = req.crowns - currentCrowns;
+      missing.push(`${req.crowns} Crowns (${currentCrowns}/${req.crowns}, need ${remaining} more)`);
+    }
 
     set({
       news: [`❌ Cannot advance to ${nextTier}: Need ${missing.join(', ')}`, ...state.news.slice(0, 49)]

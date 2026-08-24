@@ -203,7 +203,8 @@ describe('Comprehensive Stat Integrity & Player Experience Verification', () => 
               ...s.pl,
               bag: 150000,
               clout: 300,
-              aura: 300
+              aura: 300,
+              masteredHustles: ['r_labor', 'r_delivery', 'r_plasma']
             }
           }));
           const success = useGameStore.getState().advanceTier();

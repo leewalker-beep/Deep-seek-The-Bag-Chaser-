@@ -135,6 +135,7 @@ import { PremiumLoader } from './components/ui/PremiumLoader';
 import { saveHallOfFameEntry } from './utils/hallOfFame';
 import { getEnding } from './config/endings';
 import { getDominantStat } from './utils/endingUtils';
+import { getMasteryCount } from './utils/masteryUtils';
 import { HUSTLES } from './config/hustles/base';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from './utils/financialObligationsUtils';
@@ -1211,7 +1212,8 @@ function App() {
     const nextTier = PROGRESSION_ORDER[currentTierIndex + 1];
     if (!nextTier) return false;
     const req = TIER_REQUIREMENTS[nextTier];
-    return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura;
+    const currentCrowns = getMasteryCount(pl);
+    return pl.bag >= req.cash && pl.clout >= req.clout && pl.aura >= req.aura && currentCrowns >= (req.crowns || 0);
   }, [pl, currentTierIndex]);
 
   // Automatically save to Hall of Fame when entering post-mortem
@@ -1764,6 +1766,43 @@ function App() {
                 ⚡ ADVANCE TO NEXT TIER ⚡
               </button>
             )}
+
+            {/* Next Tier Crown Requirement Banner */}
+            {(() => {
+              const nextTierName = PROGRESSION_ORDER[currentTierIndex + 1];
+              const nextReq = nextTierName ? TIER_REQUIREMENTS[nextTierName] : null;
+              const currentCrowns = pl ? getMasteryCount(pl) : 0;
+
+              if (!showFlexMarket && nextReq && nextReq.crowns > 0 && !canAdvance) {
+                const remaining = Math.max(0, nextReq.crowns - currentCrowns);
+                return (
+                  <div className="mb-4 p-3 bg-slate-900/90 border border-yellow-500/30 rounded-xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-black uppercase text-yellow-400 tracking-wider flex items-center gap-1">
+                        👑 Advancement Requirement ({nextTierName}): Crown Progress
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-slate-300">
+                        {currentCrowns} / {nextReq.crowns}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5 mb-1.5 overflow-hidden">
+                      <div
+                        className="bg-yellow-400 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, (currentCrowns / nextReq.crowns) * 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[9px] text-slate-400 font-medium">
+                      <span>Current: <strong className="text-white">{currentCrowns}</strong></span>
+                      <span>Required: <strong className="text-white">{nextReq.crowns}</strong></span>
+                      <span>
+                        Remaining: <strong className={currentCrowns >= nextReq.crowns ? "text-emerald-400" : "text-amber-400"}>{remaining}</strong>
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Flex Market */}
             {showFlexMarket && <FlexMarket />}
