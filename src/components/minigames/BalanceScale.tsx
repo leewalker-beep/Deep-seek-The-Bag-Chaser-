@@ -15,6 +15,11 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
   const [failed, setFailed] = useState(false);
   const [feedback, setFeedback] = useState<'left' | 'right' | null>(null);
   const requestRef = useRef<number | null>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   // Centralized Scaling
   const scaling = getScalingMultiplier(level, tier);
@@ -66,9 +71,9 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
       const score = 1 - Math.abs(50 - balance) / 50;
       const multiplier = 1.0 + score * 3.0;
       if (navigator.vibrate) navigator.vibrate(100);
-      onComplete(multiplier);
+      onCompleteRef.current(multiplier);
     }
-  }, [timeLeft, failed, balance, onComplete]);
+  }, [timeLeft, failed, balance]);
 
   const handleCorrect = (amount: number) => {
     if (failed) return;
@@ -85,7 +90,7 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
         <h2 className="text-2xl font-black text-red-500 mb-2 italic tracking-tighter uppercase">MARKET CRASH</h2>
         <p className="text-slate-400 mb-6 font-bold uppercase tracking-widest text-[10px]">You lost control of the assets</p>
         <button
-          onClick={() => onComplete(0.2)}
+          onClick={() => onCompleteRef.current(0.2)}
           className="w-full py-4 bg-red-600 text-white font-black rounded-2xl hover:bg-red-500 transition-all border-b-4 border-red-800 active:border-b-0 active:translate-y-1"
         >
           LIQUIDATE POSITION
