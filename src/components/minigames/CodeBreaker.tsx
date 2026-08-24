@@ -83,8 +83,8 @@ export const CodeBreaker: React.FC<CodeBreakerProps> = ({ onComplete, level = 1 
     if (exactMatches === codeLength) {
       // Crack success!
       setGameOver(true);
-      setStatusMessage('🔓 FIREWALL BREACHED! Encryption cracked.');
       const attemptsUsed = maxAttempts - newAttempts;
+      setStatusMessage(`🔓 FIREWALL BREACHED! Encryption cracked in ${attemptsUsed} attempt${attemptsUsed === 1 ? '' : 's'}.`);
       // Multiplier from 1.2x to 2.0x based on remaining attempts
       const multiplier = Math.min(2.0, 1.2 + (newAttempts / maxAttempts) * 0.8);
       setTimeout(() => onComplete(multiplier), 1200);
