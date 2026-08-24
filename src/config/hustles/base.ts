@@ -353,12 +353,12 @@ HUSTLES.drop = {
   tier: 'STARTUP',
   icon: '📦',
   description: 'Middleman your way to wealth',
-  miniGame: 'SwipeAuthentic',
+  miniGame: 'SwipeOrder',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 4000, yieldCash: 15000, yieldClout: 2, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeAuthentic' },
-    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 30000, yieldCash: 85000, yieldClout: 6, yieldAura: 4, mentalHit: -18, cloutReq: 80, auraReq: 40, nextBranches: ['l3'], miniGame: 'SwipeAuthentic' },
-    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 200000, yieldCash: 500000, yieldClout: 18, yieldAura: 10, mentalHit: -25, cloutReq: 250, auraReq: 150, miniGame: 'SwipeAuthentic' }
+    l1: { level: 1, id: 'l1', name: 'Basic Store', cost: 4000, yieldCash: 15000, yieldClout: 2, yieldAura: 2, mentalHit: -10, cloutReq: 20, auraReq: 10, nextBranches: ['l2'], miniGame: 'SwipeOrder' },
+    l2: { level: 2, id: 'l2', name: 'Automated Store', cost: 30000, yieldCash: 85000, yieldClout: 6, yieldAura: 4, mentalHit: -18, cloutReq: 80, auraReq: 40, nextBranches: ['l3'], miniGame: 'SwipeOrder' },
+    l3: { level: 3, id: 'l3', name: 'Global Supply Chain', cost: 200000, yieldCash: 500000, yieldClout: 18, yieldAura: 10, mentalHit: -25, cloutReq: 250, auraReq: 150, miniGame: 'SwipeOrder' }
   }
 };
 
@@ -526,7 +526,7 @@ HUSTLES.global_franchise = {
   tier: 'CORPORATE',
   icon: '🍔',
   description: 'Scalable standardized success',
-  miniGame: 'Roulette',
+  miniGame: 'TapAssign',
   levels: [
     { level: 1, id: 'l1', cost: 500000, yieldCash: 1000000, yieldClout: 12, yieldAura: 6, mentalHit: -30, cloutReq: 400, auraReq: 400, passiveYield: 20000 },
     { level: 2, id: 'l2', cost: 3000000, yieldCash: 6500000, yieldClout: 30, yieldAura: 15, mentalHit: -40, cloutReq: 800, auraReq: 800, passiveYield: 60000 },
@@ -573,7 +573,7 @@ HUSTLES.virtual_assistant_agency = {
   tier: 'CORPORATE',
   icon: '🤝',
   description: 'Arbitrage global labor',
-  miniGame: 'Blackjack',
+  miniGame: 'TapAssign',
   hasPanel: true,
   panelType: 'VA_AGENCY',
   levels: [
@@ -588,12 +588,12 @@ HUSTLES.lobbying = {
   tier: 'CORPORATE',
   icon: '🏛️',
   description: 'Influence politics, reduce negative events',
-  miniGame: 'HigherLower',
+  miniGame: 'ReadTheRoom',
   startBranchId: 'l1',
   branches: {
-    l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 500, auraReq: 500, nextBranches: ['l2'] },
-    l2: { level: 2, id: 'l2', name: 'National Reach', cost: 10000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 800, auraReq: 800, nextBranches: ['l3'] },
-    l3: { level: 3, id: 'l3', name: 'Global Influence', cost: 20000000, yieldCash: 0, yieldClout: 400, yieldAura: 200, mentalHit: -20, cloutReq: 1200, auraReq: 1200 },
+    l1: { level: 1, id: 'l1', name: 'Local Influence', cost: 5000000, yieldCash: 0, yieldClout: 100, yieldAura: 50, mentalHit: -10, cloutReq: 500, auraReq: 500, nextBranches: ['l2'], miniGame: 'ReadTheRoom' },
+    l2: { level: 2, id: 'l2', name: 'National Reach', cost: 10000000, yieldCash: 0, yieldClout: 200, yieldAura: 100, mentalHit: -15, cloutReq: 800, auraReq: 800, nextBranches: ['l3'], miniGame: 'ReadTheRoom' },
+    l3: { level: 3, id: 'l3', name: 'Global Influence', cost: 20000000, yieldCash: 0, yieldClout: 400, yieldAura: 200, mentalHit: -20, cloutReq: 1200, auraReq: 1200, miniGame: 'ReadTheRoom' },
   },
 };
 
@@ -603,7 +603,7 @@ HUSTLES.disaster = {
   tier: 'CORPORATE',
   icon: '🛡️',
   description: 'Insurance and crisis management',
-  miniGame: 'Roulette',
+  miniGame: 'PinchToZoom',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 500, auraReq: 500, nextBranches: ['l2'] },
@@ -632,7 +632,7 @@ HUSTLES.psychiatrist = {
   tier: 'ELITE',
   icon: '🧠',
   description: 'Elite mental health care',
-  miniGame: 'QuickReaction',
+  miniGame: 'WordTap',
   startBranchId: 'l1',
   branches: {
     l1: { id: 'l1', name: 'Psychiatrist Session', level: 1, cost: 5000000, yieldCash: 0, yieldClout: 0, yieldAura: 0, mentalHit: 80, cloutReq: 0, auraReq: 0, shieldTurns: 6 },
@@ -708,7 +708,7 @@ HUSTLES.film_studio = {
   tier: 'MOGUL',
   icon: '🎬',
   description: 'Produce blockbusters. Greenlight or pass?',
-  miniGame: 'SwipeAuthentic',
+  miniGame: 'RiskMeter',
   hasPanel: true,
   panelType: 'FILM_STUDIO',
   levels: [
@@ -791,7 +791,7 @@ HUSTLES.data_monopoly = {
   tier: 'PRESIDENT',
   icon: '🔒',
   description: 'Own every byte of personal information',
-  miniGame: 'ReactionGrid',
+  miniGame: 'CodeBreaker',
   levels: [
     { level: 1, id: 'l1', cost: 10000000000, yieldCash: 18000000000, yieldClout: 1500, yieldAura: 800, mentalHit: -60, cloutReq: 20000, auraReq: 20000, passiveYield: 300000000 },
   ]
