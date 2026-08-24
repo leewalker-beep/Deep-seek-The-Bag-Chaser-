@@ -1395,7 +1395,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const auraLossAmt = isMajor ? 10 : 5;
       const reputation = state.pl.narrativeFlags?.publicReputation as string || "The Hustler";
       const failedLosses = applyReputationLossScale(0, auraLossAmt, reputation, state.pl);
-      finalAuraYield = Math.max(0, finalAuraYield - failedLosses.aura);
+      const isFreshPlayer = (state.pl.month <= 2) || ((state.pl.totalHustlesCompleted || 0) < 3);
+      const auraFloor = isFreshPlayer ? 1 : 0;
+      finalAuraYield = Math.max(auraFloor, finalAuraYield - failedLosses.aura);
       if (!result.tickerMessages) result.tickerMessages = [];
       result.tickerMessages.push({
         text: `📉 FAILING VENTURE: Lost -${failedLosses.aura} Aura due to operational setback.`,
@@ -1405,7 +1407,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
       // High Clout Public Backlash for failure
       if (state.pl.clout >= 1000) {
-        finalAuraYield = Math.max(0, finalAuraYield - 10);
+        finalAuraYield = Math.max(auraFloor, finalAuraYield - 10);
         result.heatHit += 10;
         result.tickerMessages.push({
           text: `📰 HIGH PROFILE FAIL: National media mocks your failed venture (-10 Aura, +10 Heat).`,

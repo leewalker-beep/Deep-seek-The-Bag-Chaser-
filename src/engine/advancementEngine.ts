@@ -69,11 +69,13 @@ export function checkDeathConditions(pl: PlayerStats): {
   fatalStat?: 'clout' | 'aura' | 'mental' | 'bag' | 'heat';
   fatalStatValue?: number;
 } {
-  // Only protect clout/aura death during tutorial
-  // Mental health and bag death always apply
+  // Protect clout/aura death during tutorial and fresh early-game window
+  // (e.g. initial 2 in-game months or first 3 completed hustles)
   const inTutorial = !pl.isTutorialSkipped && pl.tutorialStep < 6;
+  const isFreshPlayer = (pl.month <= 2) || ((pl.totalHustlesCompleted || 0) < 3);
+  const isProtectedFromReputationDeath = inTutorial || isFreshPlayer;
 
-  if (pl.clout <= 0 && !inTutorial) {
+  if (pl.clout <= 0 && !isProtectedFromReputationDeath) {
     return {
       shouldDie: true,
       deathCause: 'Irrelevant: The world has moved on without you.',
@@ -81,7 +83,7 @@ export function checkDeathConditions(pl: PlayerStats): {
       fatalStatValue: pl.clout,
     };
   }
-  if (pl.aura <= 0 && !inTutorial) {
+  if (pl.aura <= 0 && !isProtectedFromReputationDeath) {
     return {
       shouldDie: true,
       deathCause: 'Canceled: Your reputation is destroyed.',
