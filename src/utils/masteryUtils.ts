@@ -242,14 +242,11 @@ export const getCrownProgress = (player: PlayerStats, hId: string): CrownProgres
  * AND the hustle has actually been played.
  */
 export const getMasteryCount = (player: PlayerStats): number => {
-  if (player.masteredHustles && player.masteredHustles.length > 0) {
-    return player.masteredHustles.length;
-  }
-
+  const masteredSet = new Set(player.masteredHustles || []);
   let count = 0;
 
   Object.keys(HUSTLES).forEach(hId => {
-    if (isHustleMastered(player, hId)) {
+    if (masteredSet.has(hId) || isHustleMastered(player, hId)) {
       count++;
     }
   });

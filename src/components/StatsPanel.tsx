@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import type { PlayerStats, MarketType } from '../types/game';
 import { MARKET_CONFIGS } from '../config/marketConfig';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS, getTierMax } from '../config/tiers';
+import { getMasteryCount } from '../utils/masteryUtils';
 import { useGameStore } from '../store/gameStore';
 
 interface StatsPanelProps {
@@ -191,6 +192,19 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
                 <div className="h-full bg-purple-500 rounded-full" style={{ width: `${progressToNext?.aura || 0}%` }} />
               </div>
             </div>
+            {nextRequirements.crowns > 0 && (
+              <div>
+                <div className="flex justify-between text-[8px] mb-0.5">
+                  <span className="text-slate-500">Mastery Crowns</span>
+                  <span className={getMasteryCount(stats) >= nextRequirements.crowns ? 'text-yellow-400' : 'text-slate-400'}>
+                    👑 {getMasteryCount(stats)} / {nextRequirements.crowns} ({Math.max(0, nextRequirements.crowns - getMasteryCount(stats))} remaining)
+                  </span>
+                </div>
+                <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${Math.min(100, (getMasteryCount(stats) / nextRequirements.crowns) * 100)}%` }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

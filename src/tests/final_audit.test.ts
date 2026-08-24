@@ -126,7 +126,7 @@ describe('Final Audit: Store-Level Verification', () => {
   it('Tier Advancement Audit (Point 8)', () => {
     const { advanceTier, selectSpecialization } = useGameStore.getState();
 
-    // STREET Req: cash 50k, clout 100, aura 100, fee 20k
+    // STREET Req: cash 50k, clout 100, aura 100, fee 20k, crowns 3
     useGameStore.setState(s => ({
       pl: {
         ...s.pl,
@@ -134,6 +134,7 @@ describe('Final Audit: Store-Level Verification', () => {
         bag: 70000, // 50k + 20k fee
         clout: 100,
         aura: 100,
+        masteredHustles: ['r_labor', 'r_delivery', 'r_plasma'],
         unlockedAchievements: [],
         loginStreak: 0,
         events: []
