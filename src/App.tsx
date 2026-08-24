@@ -64,6 +64,8 @@ const RunnerRoute = lazy(() => import('./components/minigames/RunnerRoute').then
 const MemeCoinPump = lazy(() => import('./components/minigames/MemeCoinPump').then(m => ({ default: m.MemeCoinPump })));
 const EcomCatch = lazy(() => import('./components/minigames/EcomCatch').then(m => ({ default: m.EcomCatch })));
 const TapApprove = lazy(() => import('./components/minigames/TapApprove').then(m => ({ default: m.TapApprove })));
+const ReadTheRoom = lazy(() => import('./components/minigames/ReadTheRoom').then(m => ({ default: m.ReadTheRoom })));
+const CodeBreaker = lazy(() => import('./components/minigames/CodeBreaker').then(m => ({ default: m.CodeBreaker })));
 const DragMerge = lazy(() => import('./components/minigames/DragMerge').then(m => ({ default: m.DragMerge })));
 const PatternMemory = lazy(() => import('./components/minigames/PatternMemory').then(m => ({ default: m.PatternMemory })));
 const BalanceScale = lazy(() => import('./components/minigames/BalanceScale').then(m => ({ default: m.BalanceScale })));
@@ -2055,6 +2057,8 @@ function App() {
 
                 if (activeMiniGame === 'CaptchaDrone' || activeMiniGame === 'CAPTCHA_GAME') return <CaptchaDrone onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
                 if (activeMiniGame === 'ClickbaitGame' || activeMiniGame === 'CLICKBAIT_GAME') return <ClickbaitGame onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
+                if (activeMiniGame === 'ReadTheRoom') return <ReadTheRoom onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'CodeBreaker') return <CodeBreaker onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'SignSpinner' || activeMiniGame === 'SIGN_SPINNER_GAME') return <SignSpinner onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
                 if (activeMiniGame === 'ReviewFarm' || activeMiniGame === 'REVIEW_FARM_GAME') return <ReviewFarm onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
                 if (activeMiniGame === 'ConcertJam' || activeMiniGame === 'CONCERT_JAM_GAME') return <ConcertJam onComplete={(win) => onComplete(win ? 1.5 : 0.5)} level={hustleLevel} />;
