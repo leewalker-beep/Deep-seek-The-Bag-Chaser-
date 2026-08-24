@@ -8,6 +8,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       'tests/**', // Exclude Playwright tests in root tests/ folder
+      '**/*.spec.ts', // Exclude Playwright spec files
     ],
     globals: true,
   },
