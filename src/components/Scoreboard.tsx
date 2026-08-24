@@ -22,8 +22,32 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { pl, updatePl } = useGameStore();
   const [activeTab, setActiveTab] = useState<'career' | 'portfolio' | 'badges' | 'history' | 'biography' | 'reputation' | 'ledger' | 'empire' | 'achievements' | 'endings' | 'deaths' | 'finance' | 'portraits'>('career');
   const [confirmingEnd, setConfirmingEnd] = useState(false);
+  const tabContainerRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const { setPh } = useGameStore();
+
+  const checkScroll = React.useCallback(() => {
+    if (tabContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabContainerRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll]);
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabContainerRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      tabContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const targetTab = pl.narrativeFlags?.target_scoreboard_tab as string;
   useEffect(() => {
@@ -145,46 +169,84 @@ export const Scoreboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[3500] flex items-center justify-center p-2 sm:p-4 bg-slate-950/95 backdrop-blur-xl">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]"
+        className="w-full max-w-3xl lg:max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[92vh] max-h-[920px]"
       >
         <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
           <h2 className="text-2xl font-black tracking-tighter uppercase italic text-white">The Scoreboard</h2>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
         </div>
 
-        <div className="flex bg-slate-950/80 p-1 m-4 rounded-xl border border-slate-800/80 overflow-x-auto no-scrollbar gap-1">
-          {['career', 'portfolio', 'badges', 'history', 'biography', 'reputation', 'ledger', 'empire', 'achievements', 'endings', 'deaths', 'finance', 'portraits'].map((tab) => {
-            const status = getTabStatus(tab);
-            let tabLabel = tab;
-            let indicator = null;
-
-            if (!status.isUnlocked) {
-              indicator = <span className="text-[9px] mr-1">🔒</span>;
-            } else if (!status.isCelebrated) {
-              indicator = <span className="text-[10px] mr-1 text-emerald-400 animate-pulse">✨</span>;
-            }
-
-            return (
+        <div className="relative mx-4 my-3 group/tabnav">
+          {/* Left scroll button & gradient mask */}
+          {canScrollLeft && (
+            <>
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent z-10 rounded-l-xl" />
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`flex-shrink-0 flex items-center gap-1 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                  activeTab === tab
-                    ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-emerald-400 border border-slate-700/50 shadow-md'
-                    : !status.isUnlocked
-                      ? 'text-slate-500 hover:text-slate-300 opacity-60'
-                      : 'text-slate-400 hover:text-white'
-                }`}
+                onClick={() => scrollTabs('left')}
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-slate-800/90 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs shadow-md backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+                aria-label="Scroll tabs left"
               >
-                {indicator}
-                <span>{tabLabel}</span>
+                ‹
               </button>
-            );
-          })}
+            </>
+          )}
+
+          {/* Right scroll button & gradient mask */}
+          {canScrollRight && (
+            <>
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-950 via-slate-950/90 to-transparent z-10 rounded-r-xl flex items-center justify-end pr-1">
+                <span className="text-[8px] font-mono font-bold text-emerald-400/80 animate-pulse tracking-tighter uppercase mr-1 hidden sm:inline">
+                  MORE →
+                </span>
+              </div>
+              <button
+                onClick={() => scrollTabs('right')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-emerald-950/90 border border-emerald-500/50 text-emerald-400 hover:text-white flex items-center justify-center text-xs shadow-lg shadow-emerald-500/10 backdrop-blur-sm transition-all hover:scale-110 active:scale-95 animate-pulse"
+                aria-label="Scroll tabs right"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          <div
+            ref={tabContainerRef}
+            onScroll={checkScroll}
+            className="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 overflow-x-auto scroll-smooth gap-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
+          >
+            {['career', 'portfolio', 'badges', 'history', 'biography', 'reputation', 'ledger', 'empire', 'achievements', 'endings', 'deaths', 'finance', 'portraits'].map((tab) => {
+              const status = getTabStatus(tab);
+              let tabLabel = tab;
+              let indicator = null;
+
+              if (!status.isUnlocked) {
+                indicator = <span className="text-[9px] mr-1">🔒</span>;
+              } else if (!status.isCelebrated) {
+                indicator = <span className="text-[10px] mr-1 text-emerald-400 animate-pulse">✨</span>;
+              }
+
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`flex-shrink-0 flex items-center gap-1 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                    activeTab === tab
+                      ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-emerald-400 border border-slate-700/50 shadow-md'
+                      : !status.isUnlocked
+                        ? 'text-slate-500 hover:text-slate-300 opacity-60'
+                        : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {indicator}
+                  <span>{tabLabel}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
