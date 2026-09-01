@@ -12,8 +12,8 @@ interface Word {
   speed: number;
 }
 
-const GOOD_WORDS = ['VIRAL', 'TRENDING', 'EPIC', 'MUST-READ', 'SHOCKING', 'EXCLUSIVE', 'LEAKED', 'HYPE', 'BREAKING', 'MASTERMIND'];
-const BAD_WORDS = ['BORING', 'LAME', 'OLD', 'REPOST', 'AD', 'SPAM', 'FAKE', 'TRASH', 'EXPOSED', 'SCANDAL'];
+const GOOD_WORDS = ['VIRAL', 'TRENDING', 'EPIC', 'MUST-READ', 'EXCLUSIVE', 'HYPE', 'BREAKING', 'GOODWILL', 'SPIN', 'PRAISE'];
+const BAD_WORDS = ['BORING', 'LAME', 'OLD', 'SPAM', 'FAKE', 'TRASH', 'EXPOSED', 'SCANDAL', 'LEAK', 'BACKLASH'];
 
 interface WordTapProps {
   onComplete: (multiplier: number) => void;
