@@ -603,7 +603,7 @@ HUSTLES.disaster = {
   tier: 'CORPORATE',
   icon: '🛡️',
   description: 'Insurance and crisis management',
-  miniGame: 'PinchToZoom',
+  miniGame: 'ReactionGrid',
   startBranchId: 'l1',
   branches: {
     l1: { level: 1, id: 'l1', name: 'Basic Insurance', cost: 5000000, yieldCash: 0, yieldClout: 50, yieldAura: 25, mentalHit: -8, cloutReq: 500, auraReq: 500, nextBranches: ['l2'] },
@@ -722,7 +722,7 @@ HUSTLES.fight_promoter = {
   tier: 'MOGUL',
   icon: '🥊',
   description: "High risk, high reward. Early losses are part of the game — stick with it.",
-  miniGame: 'MarketPredictor',
+  miniGame: 'RiskMeter',
   levels: [
     { level: 1, cost: 800000000, yieldCash: 800000000, yieldClout: 800, yieldAura: 400, mentalHit: -10, cloutReq: 3000, auraReq: 3000, passiveYield: 0 }
   ]
@@ -748,7 +748,7 @@ HUSTLES.philanthropy_empire = {
   tier: 'MOGUL',
   icon: '🎗️',
   description: 'Solve world hunger for the tax break. Buy immortality.',
-  miniGame: 'MarketPredictor',
+  miniGame: 'BalanceScale',
   hasPanel: true,
   panelType: 'PHILANTHROPY',
   levels: [
@@ -857,7 +857,7 @@ HUSTLES.open_sports_league = {
   icon: '🏆',
   description: 'Own the game',
   isRepeatable: true,
-  miniGame: 'PinchToZoom',
+  miniGame: 'RiskMeter',
   levels: [
     { level: 1, cost: 2000000000, yieldCash: 0, yieldClout: 2000, yieldAura: 500, mentalHit: -10, cloutReq: 2000, auraReq: 500, passiveYield: 50000000, isRepeatable: true }
   ]
@@ -895,7 +895,7 @@ HUSTLES.open_movie = {
   tier: 'OPEN',
   icon: '🎬',
   description: 'Finance a Hollywood blockbuster',
-  miniGame: 'PinchToZoom',
+  miniGame: 'RiskMeter',
   hasPanel: true,
   panelType: 'FUND_MOVIE',
   levels: [
