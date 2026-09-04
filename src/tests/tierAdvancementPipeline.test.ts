@@ -52,8 +52,8 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
       expect(useGameStore.getState().news[0].text || useGameStore.getState().news[0]).toContain('Cannot advance to STREET');
     });
 
-    it('blocks advancement to CORPORATE if Crown requirement (5 crowns) is not met', () => {
-      // CORPORATE requires 5m cash, 1200 clout, 1200 aura, 5 crowns
+    it('blocks advancement to CORPORATE if Crown requirement (7 crowns) is not met', () => {
+      // CORPORATE requires 5m cash, 1200 clout, 1200 aura, 7 crowns
       useGameStore.setState(state => ({
         pl: {
           ...state.pl,
@@ -61,21 +61,21 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
           bag: 10000000,
           clout: 2000,
           aura: 2000,
-          masteredHustles: ['r_labor', 'r_delivery', 'r_plasma', 'r_vending'] // 4 crowns
+          masteredHustles: ['r_labor', 'r_delivery', 'r_plasma', 'r_vending', 'r_ghost_mode', 'r_scrap'] // 6 crowns
         }
       }));
 
       const req = TIER_REQUIREMENTS.CORPORATE;
-      expect(req.crowns).toBe(5);
-      expect(getMasteryCount(useGameStore.getState().pl)).toBe(4);
+      expect(req.crowns).toBe(7);
+      expect(getMasteryCount(useGameStore.getState().pl)).toBe(6);
 
       const success = useGameStore.getState().advanceTier();
       expect(success).toBe(false);
       expect(useGameStore.getState().pendingSpecialization).toBe(false);
     });
 
-    it('blocks advancement to MOGUL if Crown requirement (7 crowns) is not met', () => {
-      // MOGUL requires 500m cash, 10000 clout, 10000 aura, 7 crowns
+    it('blocks advancement to MOGUL if Crown requirement (11 crowns) is not met', () => {
+      // MOGUL requires 500m cash, 10000 clout, 10000 aura, 11 crowns
       useGameStore.setState(state => ({
         pl: {
           ...state.pl,
@@ -83,13 +83,13 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
           bag: 1000000000,
           clout: 15000,
           aura: 15000,
-          masteredHustles: ['r_labor', 'r_delivery', 'r_plasma', 'r_vending', 'r_ghost_mode', 'r_scrap'] // 6 crowns
+          masteredHustles: ['r_labor', 'r_delivery', 'r_plasma', 'r_vending', 'r_ghost_mode', 'r_scrap', 'street_eats', 'cc', 'pod', 'saas_mvp'] // 10 crowns
         }
       }));
 
       const req = TIER_REQUIREMENTS.MOGUL;
-      expect(req.crowns).toBe(7);
-      expect(getMasteryCount(useGameStore.getState().pl)).toBe(6);
+      expect(req.crowns).toBe(11);
+      expect(getMasteryCount(useGameStore.getState().pl)).toBe(10);
 
       const success = useGameStore.getState().advanceTier();
       expect(success).toBe(false);
@@ -191,9 +191,9 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
       expect(stateAfter.activeTab).toBe('STREET');
       expect(stateAfter.pl.activeSpecializationId).toBe(spec.id);
       expect(stateAfter.pl.specializationHistory).toContain(spec.id);
-      expect(stateAfter.pl.bag).toBe(initialBag - expectedFee + 1000); // 100000 - 16000 + 1000 (from TIER_PROMOTION live event) = 85000
-      expect(stateAfter.pl.clout).toBe(750);
-      expect(stateAfter.pl.aura).toBe(715);
+      expect(stateAfter.pl.bag).toBe(initialBag - expectedFee); // 100000 - 16000 = 84000
+      expect(stateAfter.pl.clout).toBe(700);
+      expect(stateAfter.pl.aura).toBe(700);
 
       // Biography persistence
       expect(stateAfter.pl.biography.some(line => line.includes('Rose to the STREET tier') || line.includes('Ascended to the STREET') || line.includes('STREET tier'))).toBe(true);
@@ -243,13 +243,17 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
         }
 
         // Case C: Fully qualified
+        const allMasteredList = [
+          'r_labor', 'r_delivery', 'r_plasma', 'r_vending', 'r_ghost_mode', 'r_scrap', 'street_eats',
+          'cleaning', 'h_sign_spinner', 'cc', 'pod', 'techFlip', 'sw', 'drop', 'h_talent_agent'
+        ]; // 15 crowns
         const plQualifies = {
           ...useGameStore.getState().pl,
           currentTier,
           bag: req.cash + 10000,
           clout: req.clout + 100,
           aura: req.aura + 100,
-          masteredHustles: ['r_labor', 'r_delivery', 'r_scrap', 'street_eats', 'r_plasma', 'r_vending', 'r_ghost_mode']
+          masteredHustles: allMasteredList.slice(0, req.crowns)
         };
         const canAdvanceC = plQualifies.bag >= req.cash &&
           plQualifies.clout >= req.clout &&
