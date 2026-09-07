@@ -2008,7 +2008,20 @@ function App() {
                 if (activeMiniGame === 'DragMerge') return <DragMerge onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'BalanceScale') return <BalanceScale onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
                 if (activeMiniGame === 'ReactionGrid') return <ReactionGrid onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
-                if (activeMiniGame === 'RiskMeter') return <RiskMeter onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                if (activeMiniGame === 'RiskMeter') {
+                  if (hustle.id === 'film_studio') {
+                    return (
+                      <RiskMeter
+                        onComplete={onComplete}
+                        level={hustleLevel}
+                        tier={pl.currentTier}
+                        title="BOX OFFICE RISK ASSESSMENT"
+                        instruction="Stop needle in the GOLD ZONE for a blockbuster hit"
+                      />
+                    );
+                  }
+                  return <RiskMeter onComplete={onComplete} level={hustleLevel} tier={pl.currentTier} />;
+                }
                 if (activeMiniGame === 'RotateToScale') return (
                   <RotateToScale
                     level={hustleLevel}

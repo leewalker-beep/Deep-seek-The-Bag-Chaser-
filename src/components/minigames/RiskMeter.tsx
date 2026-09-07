@@ -9,6 +9,7 @@ interface RiskMeterProps {
   tier?: Tier;
   title?: string;
   instruction?: string;
+  instructions?: string;
 }
 
 export const RiskMeter: React.FC<RiskMeterProps> = ({
@@ -16,8 +17,10 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
   level = 1,
   tier = 'MUD',
   title = "ELITE RISK ASSESSMENT",
-  instruction = "Stop needle in the GOLD ZONE"
+  instruction,
+  instructions,
 }) => {
+  const activeInstruction = instruction || instructions || "Stop needle in the GOLD ZONE";
   const [position, setPosition] = useState(0);
   const [isStopped, setIsStopped] = useState(false);
   const [feedback, setFeedback] = useState<'success' | 'fail' | null>(null);
@@ -92,7 +95,7 @@ export const RiskMeter: React.FC<RiskMeterProps> = ({
         <h2 className="text-2xl font-black text-yellow-500 italic uppercase tracking-tighter">{title} <span className="text-white text-xs">L{level}</span></h2>
         <div className="flex items-center justify-center gap-2 mt-1">
              <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-yellow-500">🎯</motion.span>
-             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{instruction}</p>
+             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{activeInstruction}</p>
         </div>
       </div>
 
