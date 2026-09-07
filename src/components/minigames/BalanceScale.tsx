@@ -127,12 +127,12 @@ export const BalanceScale: React.FC<BalanceScaleProps> = ({ onComplete, level = 
         <div className="absolute left-[35%] right-[35%] top-0 bottom-0 bg-emerald-500/10 z-0" />
 
         <motion.div
-          animate={{ x: `${balance}%` }}
+          animate={{ left: `${balance}%` }}
           transition={{ type: 'spring', damping: 25, stiffness: 300, bounce: 0 }}
           className={`absolute w-12 h-12 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-10 flex items-center justify-center border-2 ${
               deviation > 30 ? 'bg-red-500 border-red-300' : deviation > 15 ? 'bg-yellow-500 border-yellow-300' : 'bg-emerald-500 border-emerald-300'
           }`}
-          style={{ left: 0, transform: 'translate(-50%, 0)' }}
+          style={{ x: '-50%' }}
         >
             <div className="text-2xl">💰</div>
         </motion.div>
