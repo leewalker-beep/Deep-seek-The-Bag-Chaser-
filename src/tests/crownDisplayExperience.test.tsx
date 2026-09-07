@@ -25,10 +25,14 @@ describe('Crown Progression Display Experience Audit', () => {
     ...overrides
   } as unknown as PlayerStats);
 
-  test('Tier requirements correctly define crown thresholds for MUD, STARTUP, and ELITE transitions', () => {
+  test('Tier requirements correctly define cumulative crown thresholds across all transitions', () => {
     expect(TIER_REQUIREMENTS.STREET.crowns).toBe(3);    // MUD -> STREET requires 3 crowns
-    expect(TIER_REQUIREMENTS.CORPORATE.crowns).toBe(5); // STARTUP -> CORPORATE requires 5 crowns
-    expect(TIER_REQUIREMENTS.MOGUL.crowns).toBe(7);     // ELITE -> MOGUL requires 7 crowns
+    expect(TIER_REQUIREMENTS.STARTUP.crowns).toBe(5);   // STREET -> STARTUP requires 5 crowns
+    expect(TIER_REQUIREMENTS.CORPORATE.crowns).toBe(7); // STARTUP -> CORPORATE requires 7 crowns
+    expect(TIER_REQUIREMENTS.ELITE.crowns).toBe(9);     // CORPORATE -> ELITE requires 9 crowns
+    expect(TIER_REQUIREMENTS.MOGUL.crowns).toBe(11);    // ELITE -> MOGUL requires 11 crowns
+    expect(TIER_REQUIREMENTS.PRESIDENT.crowns).toBe(13);// MOGUL -> PRESIDENT requires 13 crowns
+    expect(TIER_REQUIREMENTS.OPEN.crowns).toBe(15);     // PRESIDENT -> OPEN requires 15 crowns
   });
 
   test('Calculates remaining crowns status correctly when crowns are incomplete', () => {
@@ -108,7 +112,7 @@ describe('Crown Progression Display Experience Audit', () => {
   test('StatsPanel crowns row correctly formats requirement met vs remaining count', () => {
     const plMissing = createMockPlayer({
       currentTier: 'STARTUP',
-      masteredHustles: ['r_labor', 'r_delivery', 'r_scrap', 'cc'] // 4 crowns (needs 5 for CORPORATE)
+      masteredHustles: ['r_labor', 'r_delivery', 'r_scrap', 'cc', 'pod', 'saas_mvp'] // 6 crowns (needs 7 for CORPORATE)
     });
 
     const nextReq = TIER_REQUIREMENTS.CORPORATE;
@@ -121,7 +125,7 @@ describe('Crown Progression Display Experience Audit', () => {
 
     const plMet = createMockPlayer({
       currentTier: 'STARTUP',
-      masteredHustles: ['r_labor', 'r_delivery', 'r_scrap', 'cc', 'pod'] // 5 crowns
+      masteredHustles: ['r_labor', 'r_delivery', 'r_scrap', 'cc', 'pod', 'saas_mvp', 'ecom_brand'] // 7 crowns
     });
 
     const countMet = getMasteryCount(plMet);
