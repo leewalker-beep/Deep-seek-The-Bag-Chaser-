@@ -31,8 +31,9 @@ export function calculateLegacyScore(pl: PlayerStats): number {
   // 2. Total hustles completed (2 points each)
   const hustlePoints = (stats.totalHustles || 0) * 2;
 
-  // 3. Total achievements unlocked (75 points each)
+  // 3. Total achievements unlocked (75 points each) & Crowns mastered (150 points each)
   const achievementPoints = (pl.unlockedAchievements?.length || 0) * 75;
+  const crownPoints = (pl.masteredHustles?.length || 0) * 150;
 
   // 4. Total endings unlocked (250 points each)
   let endingsUnlocked = 0;
@@ -100,7 +101,7 @@ export function calculateLegacyScore(pl: PlayerStats): number {
     }
   }
 
-  const baseScore = profitPoints + hustlePoints + achievementPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints + characterBonus + presidentialBonus;
+  const baseScore = profitPoints + hustlePoints + achievementPoints + crownPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints + characterBonus + presidentialBonus;
 
   // 8. Login streak (50 bonus points for long streaks)
   const streakBonus = (pl.loginStreak || 0) * 50;

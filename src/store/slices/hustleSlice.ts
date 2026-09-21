@@ -1331,9 +1331,9 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       const performanceFactor = Math.max(0, minigameMultiplier ?? 1.0);
       const performanceBonus = Math.floor((performanceFactor - 1.0) * 15);
 
-      const execution = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
-      const vision = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
-      const burnDiscipline = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));
+      const execution = Math.max(60, Math.min(100, (40 + Math.floor(Math.random() * 40)) + performanceBonus));
+      const vision = Math.max(60, Math.min(100, (40 + Math.floor(Math.random() * 40)) + performanceBonus));
+      const burnDiscipline = Math.max(60, Math.min(100, (40 + Math.floor(Math.random() * 40)) + performanceBonus));
 
       const firstName = FOUNDER_FIRST_NAMES[Math.floor(Math.random() * FOUNDER_FIRST_NAMES.length)];
       const lastName = FOUNDER_LAST_NAMES[Math.floor(Math.random() * FOUNDER_LAST_NAMES.length)];
@@ -2503,6 +2503,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const state = get();
     const spec = SPECIALIZATIONS.find(s => s.id === specializationId);
     if (!spec) return;
+
+    // Prevent duplicate selection or re-selecting an already chosen specialization
+    if (state.pl.activeSpecializationId === specializationId || state.pl.specializationHistory?.includes(specializationId)) {
+      set({ pendingSpecialization: false });
+      return;
+    }
 
     const currentIndex = PROGRESSION_ORDER.indexOf(state.pl.currentTier);
     const nextTier = PROGRESSION_ORDER[currentIndex + 1];
