@@ -65,14 +65,16 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
         onOutbid(outbidAmount);
         setFeedback('rival');
         setTimeout(() => setFeedback(null), 300);
-        if (navigator.vibrate) navigator.vibrate([30, 20]);
+        if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+          window.navigator.vibrate([30, 20]);
+        }
       }
     }, 1500);
 
     return () => {
       if (rivalRef.current) window.clearInterval(rivalRef.current);
     };
-  }, [gameState, initialPlayerBid, onOutbid]);
+  }, [gameState, initialPlayerBid, onOutbid, scaling]);
 
   // Power Decay Logic
   useEffect(() => {
@@ -86,7 +88,7 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     return () => {
       if (decayRef.current) window.clearInterval(decayRef.current);
     };
-  }, [gameState]);
+  }, [gameState, scaling]);
 
   // Countdown timer
   useEffect(() => {
@@ -109,17 +111,17 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
 
   // Handle game end
   const finalMultiplier = useMemo(() => {
-      const won = currentPlayerBid > currentRivalBid;
-      if (!won) return 0.5;
-      // Multiplier increases with scaling and time left
-      return (1.5 + scaling * 0.5) * (1 + (timeLeft / 20));
+    const won = currentPlayerBid > currentRivalBid;
+    if (!won) return 0.5;
+    // Multiplier increases with scaling and time left
+    return Number(((1.5 + scaling * 0.5) * (1 + (timeLeft / 20))).toFixed(2));
   }, [currentPlayerBid, currentRivalBid, scaling, timeLeft]);
 
   useEffect(() => {
     if (gameState === 'ENDED') {
-      if (navigator.vibrate) {
-          const won = currentPlayerBid > currentRivalBid;
-          navigator.vibrate(won ? 100 : 50);
+      if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+        const won = currentPlayerBid > currentRivalBid;
+        window.navigator.vibrate(won ? 100 : 50);
       }
 
       const timer = window.setTimeout(() => {
@@ -129,17 +131,22 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
     }
   }, [gameState, onComplete, finalMultiplier, currentPlayerBid, currentRivalBid]);
 
-  const handleTap = () => {
+  const handleTap = (e?: React.SyntheticEvent) => {
+    if (e) e.preventDefault();
     if (gameState !== 'PLAYING') return;
 
     setPlayerPower(prev => {
       const next = Math.min(100, prev + 12);
-      if (navigator.vibrate) navigator.vibrate(10);
+      if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+        window.navigator.vibrate(10);
+      }
       if (next >= 100) {
         setCurrentPlayerBid(curr => curr + (initialPlayerBid * 0.15));
         setFeedback('bid');
         setTimeout(() => setFeedback(null), 300);
-        if (navigator.vibrate) navigator.vibrate(40);
+        if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+          window.navigator.vibrate(40);
+        }
         return 0;
       }
       return next;
@@ -157,57 +164,57 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
   const [cText, cFrom, cBtn, cBtnBorder, cTo] = colors.split(' ');
 
   return (
-    <div className={`fixed inset-0 transition-colors duration-200 bg-slate-950 flex flex-col items-center justify-center p-4 z-[100] font-mono ${
-        feedback === 'bid' ? 'bg-emerald-950/20' : feedback === 'rival' ? 'bg-red-950/20' : 'bg-slate-950'
+    <div className={`w-full transition-colors duration-200 bg-slate-950 flex flex-col items-center justify-center p-2 font-mono min-h-[420px] ${
+      feedback === 'bid' ? 'bg-emerald-950/20' : feedback === 'rival' ? 'bg-red-950/20' : 'bg-slate-950'
     }`}>
-      <div className="w-full max-w-md bg-slate-900 border-4 border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-slate-900 border-4 border-slate-800 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
         <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${cFrom} via-purple-600 ${cTo} animate-pulse`} />
 
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">ELITE TIER OPERATIONS</div>
-            <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{title}</h2>
+            <div className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">ELITE TIER OPERATIONS</div>
+            <h2 className="text-xl font-black text-white italic tracking-tighter uppercase">{title}</h2>
           </div>
-          <div className={`text-3xl font-black font-mono px-3 py-1 rounded-xl border-2 transition-colors duration-300 ${
-              timeLeft < 4 ? 'text-red-500 border-red-500/50 bg-red-500/10 animate-pulse' : 'text-slate-400 border-slate-800'
+          <div className={`text-2xl font-black font-mono px-3 py-1 rounded-xl border-2 transition-colors duration-300 ${
+            timeLeft < 4 ? 'text-red-500 border-red-500/50 bg-red-500/10 animate-pulse' : 'text-slate-400 border-slate-800'
           }`}>
             {timeLeft}s
           </div>
         </div>
 
         {selectedCharacter && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-full text-[10px] font-bold text-blue-400 justify-center mb-6" data-testid="boardroom-battle-character">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-full text-[10px] font-bold text-blue-400 justify-center mb-4" data-testid="boardroom-battle-character">
             <span className="text-sm" data-testid="boardroom-battle-character-avatar">{selectedCharacter.avatar}</span>
             <span>Dealing with: <strong className="text-white" data-testid="boardroom-battle-character-name">{selectedCharacter.name}</strong></span>
           </div>
         )}
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-10 gap-6">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-6 gap-4">
           <div className={`text-center transition-all duration-300 ${feedback === 'bid' ? 'scale-110' : ''}`}>
-            <div className="text-5xl mb-3">{icon}</div>
-            <div className="text-[10px] text-slate-500 font-black uppercase mb-1">{scoreLabel}</div>
-            <div className={`text-lg font-black font-mono transition-colors duration-300 ${currentPlayerBid > currentRivalBid ? 'text-emerald-400' : 'text-white'}`}>
-                ${currentPlayerBid.toLocaleString()}
+            <div className="text-4xl mb-2">{icon}</div>
+            <div className="text-[9px] text-slate-500 font-black uppercase mb-0.5">{scoreLabel}</div>
+            <div className={`text-base font-black font-mono transition-colors duration-300 ${currentPlayerBid > currentRivalBid ? 'text-emerald-400' : 'text-white'}`}>
+              ${currentPlayerBid.toLocaleString()}
             </div>
           </div>
 
-          <div className="text-2xl font-black text-slate-800 italic">VS</div>
+          <div className="text-xl font-black text-slate-800 italic">VS</div>
 
           <div className={`text-center transition-all duration-300 ${feedback === 'rival' ? 'scale-110' : ''}`}>
-            <div className="text-5xl mb-3">🧛</div>
-            <div className="text-[10px] text-slate-500 font-black uppercase mb-1">RIVAL</div>
-            <div className={`text-lg font-black font-mono transition-colors duration-300 ${currentRivalBid > currentPlayerBid ? 'text-red-400' : 'text-white'}`}>
-                ${currentRivalBid.toLocaleString()}
+            <div className="text-4xl mb-2">🧛</div>
+            <div className="text-[9px] text-slate-500 font-black uppercase mb-0.5">RIVAL</div>
+            <div className={`text-base font-black font-mono transition-colors duration-300 ${currentRivalBid > currentPlayerBid ? 'text-red-400' : 'text-white'}`}>
+              ${currentRivalBid.toLocaleString()}
             </div>
           </div>
         </div>
 
-        <div className="mb-10">
-          <div className="flex justify-between items-end mb-3">
-            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{instruction}</div>
-            <div className={`text-sm font-black ${cText} font-mono`}>{Math.floor(playerPower)}%</div>
+        <div className="mb-6">
+          <div className="flex justify-between items-end mb-2">
+            <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{instruction}</div>
+            <div className={`text-xs font-black ${cText} font-mono`}>{Math.floor(playerPower)}%</div>
           </div>
-          <div className="h-5 bg-slate-950 rounded-full border-2 border-slate-800 overflow-hidden p-0.5 shadow-inner">
+          <div className="h-4 bg-slate-950 rounded-full border-2 border-slate-800 overflow-hidden p-0.5 shadow-inner">
             <motion.div
               className={`h-full bg-gradient-to-r ${cFrom} via-cyan-400 to-emerald-500 rounded-full`}
               initial={{ width: '0%' }}
@@ -220,28 +227,29 @@ export const BoardroomBattle: React.FC<BoardroomBattleProps> = ({
         {gameState === 'PLAYING' ? (
           <button
             onPointerDown={handleTap}
-            className={`w-full ${cBtn} hover:opacity-90 active:scale-95 py-8 rounded-2xl border-b-8 ${cBtnBorder} transition-all group`}
+            onTouchStart={handleTap}
+            className={`w-full ${cBtn} hover:opacity-90 active:scale-95 py-6 rounded-2xl border-b-8 ${cBtnBorder} transition-all group touch-manipulation`}
           >
-            <div className="text-2xl font-black text-white uppercase italic tracking-tighter group-active:translate-y-1">
-              DOMINATE
+            <div className="text-xl font-black text-white uppercase italic tracking-tighter group-active:translate-y-1">
+              DOMINATE & RAISE BID
             </div>
           </button>
         ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-8"
+            className="text-center py-4"
           >
-            <div className={`text-4xl font-black uppercase italic tracking-tighter ${currentPlayerBid > currentRivalBid ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
+            <div className={`text-2xl font-black uppercase italic tracking-tighter ${currentPlayerBid > currentRivalBid ? 'text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
               {currentPlayerBid > currentRivalBid ? 'BOARD SECURED' : 'TAKEOVER FAILED'}
             </div>
+            <div className="text-xs font-mono text-slate-300 mt-1">YIELD: {finalMultiplier.toFixed(2)}x</div>
           </motion.div>
         )}
       </div>
 
-      <div className="mt-8 text-[10px] text-slate-600 text-center font-black uppercase tracking-[0.2em] max-w-xs leading-relaxed opacity-50">
-        MASH THE BUTTON TO BUILD INFLUENCE<br/>
-        FILL THE METER TO AUTOMATICALLY RAISE BID
+      <div className="mt-4 text-[9px] text-slate-500 text-center font-black uppercase tracking-widest opacity-60">
+        RAPIDLY TAP BUTTON TO BUILD POWER • FULL METER AUTOMATICALLY RAISES YOUR BID
       </div>
     </div>
   );
