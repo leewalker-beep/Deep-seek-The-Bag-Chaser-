@@ -55,7 +55,30 @@ export function calculateLegacyScore(pl: PlayerStats): number {
   // 7. Mid-run Legacy Points (from Achievements and Philanthropy)
   const midRunPoints = pl.legacyPoints || 0;
 
-  // 11. Presidential Legacy Bonuses
+  // 11. Character & Network Legacy Bonuses
+  let characterBonus = 0;
+  // Recruited/Allied Rivals
+  const recruitedRivalsCount = pl.rivals?.filter(r => r.status === 'ally')?.length || 0;
+  characterBonus += recruitedRivalsCount * 250;
+
+  // High-relationship Rolodex celebrities & backed founders
+  const loyalCelebritiesCount = pl.rolodex?.filter(c => c.relationshipScore >= 75)?.length || 0;
+  characterBonus += loyalCelebritiesCount * 100;
+  const backedFoundersCount = pl.foundersBacked?.length || 0;
+  characterBonus += backedFoundersCount * 100;
+
+  // Regional CEOs & Cabinet Allies
+  const ceoCount = Object.keys(pl.conglomerateCEOs || {}).length;
+  characterBonus += ceoCount * 150;
+  const trustedCabinetCount = Object.values(pl.cabinet || {}).filter(m => m.isTrustedAlly || m.loyalty >= 85).length;
+  characterBonus += trustedCabinetCount * 200;
+
+  // Character Formation milestones
+  const charityCount = (pl.narrativeFlags?.charity_choices_count as number) || 0;
+  const unethicalCount = (pl.narrativeFlags?.unethical_choices_count as number) || 0;
+  characterBonus += (charityCount + unethicalCount) * 50;
+
+  // 12. Presidential Legacy Bonuses
   let presidentialBonus = 0;
   if (pl.currentTier === 'PRESIDENT' || (pl.presidentMonth && pl.presidentMonth > 0)) {
     const orderCount = pl.presidentialDiary?.filter(d => d.type === 'ORDER').length || 0;
@@ -77,7 +100,7 @@ export function calculateLegacyScore(pl: PlayerStats): number {
     }
   }
 
-  const baseScore = profitPoints + hustlePoints + achievementPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints + presidentialBonus;
+  const baseScore = profitPoints + hustlePoints + achievementPoints + endingPoints + deathBadgePoints + timePoints + midRunPoints + characterBonus + presidentialBonus;
 
   // 8. Login streak (50 bonus points for long streaks)
   const streakBonus = (pl.loginStreak || 0) * 50;

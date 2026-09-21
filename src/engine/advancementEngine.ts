@@ -546,6 +546,7 @@ export function advanceMonth(
     newPl.mentalHealth = Math.max(0, newPl.mentalHealth - 5);
     if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
     newPl.narrativeFlags.had_bankruptcy_crisis = true;
+    newPl.narrativeFlags.memory_major_failure = true;
     news.push({
       text: `🚨 LIQUIDITY CRUNCH: You are completely broke ($0) after paying monthly obligations! Creditor pressure builds (+5 Heat) and financial stress mounts (-5 Mental Health).`,
       colorClass: 'text-red-500 font-bold animate-pulse'
@@ -559,6 +560,8 @@ export function advanceMonth(
 
   // Record First Passive Income
   if (passiveIncome > 0 && !newPl.history?.some(h => h.id === 'first_passive_income')) {
+    if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+    newPl.narrativeFlags.memory_first_passive_income = true;
     recordHistoryEvent(newPl, {
       id: 'first_passive_income',
       title: 'First Passive Income',
@@ -568,6 +571,11 @@ export function advanceMonth(
       month: newPl.month
     });
     newPl = processWorldReaction(newPl, 'FIRST_PASSIVE_INCOME', {}).updatedPl;
+  }
+
+  if (newPl.bag >= 1000000 && !newPl.narrativeFlags?.memory_major_success) {
+    if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+    newPl.narrativeFlags.memory_major_success = true;
   }
 
   // New Record Label Artists handling (contract countdown, poaching alerts, revenue/retainer calculations)
@@ -678,6 +686,8 @@ export function advanceMonth(
     const sentence = getSentence(newPl.currentTier);
     newPl.inJail = true;
     newPl.isIncarcerated = true;
+    if (!newPl.narrativeFlags) newPl.narrativeFlags = {};
+    newPl.narrativeFlags.memory_first_arrest = true;
 
     let sentenceMonths = sentence.months;
     if (newPl.chosenBackgroundCategory === 'street_kid') {
