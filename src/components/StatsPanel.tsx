@@ -4,6 +4,7 @@ import { MARKET_CONFIGS } from '../config/marketConfig';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS, getTierMax } from '../config/tiers';
 import { getMasteryCount } from '../utils/masteryUtils';
 import { useGameStore } from '../store/gameStore';
+import { ImmediateGoalCard } from './ui/ImmediateGoalCard';
 
 interface StatsPanelProps {
   stats: PlayerStats;
@@ -63,6 +64,11 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
 
   return (
     <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 mb-3">
+      {/* Immediate Goal Guidance Banner */}
+      <div className="mb-3">
+        <ImmediateGoalCard />
+      </div>
+
       {/* Tier Badge */}
       <div className="flex justify-between items-center mb-2">
         <span className="text-[10px] text-slate-500 uppercase tracking-wider">CURRENT TIER</span>

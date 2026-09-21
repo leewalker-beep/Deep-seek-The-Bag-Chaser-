@@ -58,7 +58,7 @@ export const TutorialBox: React.FC = () => {
   const steps = [
     {
       title: "Step 1: GET THAT BAG",
-      text: "No money, no moves. Every hustle puts cash in your pocket.",
+      text: "Cash is your fuel. You need money to fund operations, buy business upgrades, and pay tier advancement fees.",
       hustles: ['r_delivery', 'r_scrap'],
       goalText: "Goal: Earn $500 total",
       check: () => pl.bag >= 500,
@@ -66,7 +66,7 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 2: EVERY HUSTLE IS A TEST",
-      text: "Nail the minigame, multiply your cut. Slack off and you leave money on the table.",
+      text: "Nail the minigame to multiply your payouts. Mastering hustles awards permanent Crowns required for tier promotion.",
       hustles: ['r_delivery'],
       goalText: "Goal: Complete a minigame",
       check: () => pl.totalHustlesCompleted >= 1 || pl.bag >= 50,
@@ -74,7 +74,7 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 3: BUILD YOUR REP",
-      text: "Clout opens doors. Nobody moves up without people knowing their name.",
+      text: "Clout is your public reach and street rep. Higher career tiers require elevated Clout to qualify for advancement.",
       hustles: ['cc', 'pod'],
       goalText: "Goal: Earn 10 Clout",
       check: () => pl.clout >= 10,
@@ -82,7 +82,7 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 4: COMMAND THE ROOM",
-      text: "Aura is how they look at you when you walk in. Earn it.",
+      text: "Aura is your personal presence and star power. High Aura unlocks major business deals and protects your public image.",
       hustles: ['r_ghost_mode', 'street_eats'],
       goalText: "Goal: Earn 10 Aura",
       check: () => pl.aura >= 10,
@@ -90,7 +90,7 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 5: KNOW WHEN TO CHILL",
-      text: "Heat gets you caught. Cool down before the streets catch up to you.",
+      text: "Mental Health is your stamina—0% causes burnout death. High Heat brings police raids and arrest. Rest to recover!",
       hustles: ['r_sleep'],
       goalText: "Goal: Restore mental health",
       check: () => pl.mentalHealth >= 100,
@@ -98,7 +98,7 @@ export const TutorialBox: React.FC = () => {
     },
     {
       title: "Step 6: LEVEL UP OR GET LEFT BEHIND",
-      text: "Hit the targets. Move up. The mud doesn't wait for anyone.",
+      text: "Master hustles to earn Crowns, hit your stat targets, and advance to STREET tier to unlock bigger business operations.",
       hustles: [],
       goalText: "Goal: Tap to advance",
       check: () => pl.currentTier === 'STREET',

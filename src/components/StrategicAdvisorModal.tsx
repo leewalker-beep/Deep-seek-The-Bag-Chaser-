@@ -145,6 +145,21 @@ export const StrategicAdvisorModal: React.FC<StrategicAdvisorModalProps> = ({ on
 
         {/* Content Box */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 no-scrollbar">
+          {/* Primary Advisor Direct Directive */}
+          {advice.primaryDirective && (
+            <div className="p-4 bg-gradient-to-r from-emerald-950/60 via-slate-900 to-indigo-950/60 border-2 border-emerald-500/40 rounded-2xl relative overflow-hidden shadow-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs">💡</span>
+                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">
+                  PRIMARY ADVISOR DIRECTIVE
+                </span>
+              </div>
+              <p className="text-sm font-black text-white uppercase italic tracking-tight leading-snug">
+                "{advice.primaryDirective}"
+              </p>
+            </div>
+          )}
+
           {/* Situation briefing box */}
           <div className="p-4 bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800 rounded-2xl space-y-2 relative overflow-hidden">
             <div className="absolute top-1 right-1 bg-slate-900 border border-slate-800 text-[7px] font-black tracking-widest text-slate-500 px-1.5 py-0.5 rounded uppercase">
