@@ -2,7 +2,46 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SPECIALIZATIONS } from '../config/specializations';
 import { useGameStore } from '../store/gameStore';
-import { PROGRESSION_ORDER } from '../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
+import { getMasteryCount } from '../utils/masteryUtils';
+
+const TRANSITION_THEMES: Record<string, { title: string; subtitle: string; icon: string }> = {
+  STREET: {
+    title: "ESCAPE THE MUD",
+    subtitle: "You've survived the daily grind. Now begin building your local empire.",
+    icon: "🏙️"
+  },
+  STARTUP: {
+    title: "ACCELERATE THE ENGINE",
+    subtitle: "Incorporate, scale digital assets, and outpace aggressive market rivals.",
+    icon: "🚀"
+  },
+  CORPORATE: {
+    title: "SCALE THE ENTERPRISE",
+    subtitle: "Institutional compliance unlocked. Command corporate boards and media empires.",
+    icon: "🏢"
+  },
+  ELITE: {
+    title: "EXERT SOVEREIGN INFLUENCE",
+    subtitle: "Sovereign wealth and syndicates. Dictate market moves from high-rise sanctuaries.",
+    icon: "👑"
+  },
+  MOGUL: {
+    title: "UNLEASH DOMINANT POWER",
+    subtitle: "Uncontested commercial power. Every industry answers to your global umbrella.",
+    icon: "⚡"
+  },
+  PRESIDENT: {
+    title: "ASCEND TO THE OVAL OFFICE",
+    subtitle: "Commander-in-Chief. Exercise supreme statecraft and govern national GDP.",
+    icon: "🇺🇸"
+  },
+  OPEN: {
+    title: "SEAL YOUR IMMORTAL LEGACY",
+    subtitle: "Absolute transcendence. Infinite freedom to shape your story for the Hall of Fame.",
+    icon: "💎"
+  }
+};
 
 export const SpecializationModal: React.FC = () => {
   const { pl, pendingSpecialization, selectSpecialization } = useGameStore();
@@ -11,6 +50,9 @@ export const SpecializationModal: React.FC = () => {
     const currentIndex = PROGRESSION_ORDER.indexOf(pl.currentTier);
     return PROGRESSION_ORDER[currentIndex + 1];
   }, [pl.currentTier]);
+
+  const req = nextTier ? TIER_REQUIREMENTS[nextTier] : null;
+  const theme = nextTier ? TRANSITION_THEMES[nextTier] || { title: `ADVANCE TO ${nextTier}`, subtitle: "Step into your next career tier.", icon: "⚡" } : null;
 
   const options = useMemo(() => {
     // Pick 3 random specializations
@@ -28,11 +70,21 @@ export const SpecializationModal: React.FC = () => {
         className="max-w-2xl w-full bg-slate-900 border-2 border-emerald-500/30 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.2)]"
       >
         <div className="p-8 border-b border-slate-800 bg-gradient-to-br from-emerald-900/20 to-transparent">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono font-black text-emerald-400 uppercase tracking-widest bg-emerald-950/80 border border-emerald-500/30 rounded px-2 py-0.5">
+              {theme?.icon} {nextTier} TIER PROMOTION
+            </span>
+            {req && (
+              <span className="text-[10px] font-mono text-slate-400 uppercase">
+                FILING FEE: <span className="text-emerald-400 font-bold">${req.fee.toLocaleString()}</span> • CROWNS: <span className="text-yellow-400 font-bold">{getMasteryCount(pl)}/{req.crowns}</span>
+              </span>
+            )}
+          </div>
           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">
-            TIER ADVANCED: <span className="text-emerald-400">{nextTier}</span>
+            {theme?.title}
           </h2>
-          <p className="text-slate-400 text-sm mt-2 font-medium">
-            Choose your specialization to mitigate the stat tax and gain unique bonuses for this tier.
+          <p className="text-slate-300 text-xs mt-2 font-medium leading-relaxed">
+            {theme?.subtitle} Select your corporate specialization below to manage filing fees and stat taxes.
           </p>
         </div>
 

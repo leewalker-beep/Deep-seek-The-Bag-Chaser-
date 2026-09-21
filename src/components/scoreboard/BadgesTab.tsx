@@ -4,10 +4,18 @@ import { useGameStore } from '../../store/gameStore';
 import { EmptyState } from '../ui/EmptyState';
 import { ScrollableList } from '../ui/ScrollableList';
 import { HUSTLE_BADGES } from '../../config/badges';
-import { PROGRESSION_ORDER } from '../../config/tiers';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../../config/tiers';
+import { getMasteryCount } from '../../utils/masteryUtils';
+import { HUSTLES } from '../../config/hustles/base';
 
 export const BadgesTab: React.FC = () => {
   const { pl } = useGameStore();
+
+  const currentCrowns = getMasteryCount(pl);
+  const currentTierIdx = PROGRESSION_ORDER.indexOf(pl.currentTier);
+  const nextTier = PROGRESSION_ORDER[currentTierIdx + 1];
+  const nextReq = nextTier ? TIER_REQUIREMENTS[nextTier] : null;
+  const remainingCrowns = nextReq ? Math.max(0, nextReq.crowns - currentCrowns) : 0;
 
   return (
     <motion.div
@@ -42,12 +50,35 @@ export const BadgesTab: React.FC = () => {
         )}
       </div>
 
+      {/* CROWN MASTERY OVERVIEW */}
+      <div className="p-4 bg-slate-950/90 border border-yellow-500/30 rounded-2xl space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-black uppercase text-yellow-400 tracking-wider flex items-center gap-1.5">
+            👑 CROWN MASTERY STATUS
+          </span>
+          <span className="text-xs font-mono font-bold text-slate-300">
+            {currentCrowns} Unique Career{currentCrowns !== 1 ? 's' : ''} Mastered
+          </span>
+        </div>
+        <p className="text-[10px] text-slate-400 italic">
+          "I mastered a different way of making it." — Crowns are permanent and prove your versatility.
+        </p>
+        {nextReq && (
+          <div className="pt-2 border-t border-slate-900 flex justify-between items-center text-[10px] font-bold">
+            <span className="text-slate-400 uppercase">NEXT TIER GATE ({nextTier}):</span>
+            <span className={remainingCrowns === 0 ? "text-emerald-400 uppercase font-black" : "text-amber-400 font-mono"}>
+              {remainingCrowns === 0 ? "👑 REQUIREMENT MET" : `${remainingCrowns} MORE CROWN${remainingCrowns > 1 ? 'S' : ''} NEEDED (${currentCrowns}/${nextReq.crowns})`}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* HUSTLE MASTERY SECTION */}
       <div className="grid grid-cols-1 gap-3">
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mastery Badges</div>
         {pl.masteredHustles.length === 0 ? (
           <EmptyState
-            message="No hustles mastered yet. Max out a hustle to earn a badge."
+            message="No hustles mastered yet. Complete a hustle's play targets to earn a permanent Crown!"
             className="text-slate-600 text-sm bg-slate-950/30"
           />
         ) : (
@@ -55,21 +86,27 @@ export const BadgesTab: React.FC = () => {
             <div className="space-y-3 pb-8 flex flex-col">
               {pl.masteredHustles.map(hId => {
                 const badge = HUSTLE_BADGES[hId];
-                if (!badge) return null;
+                const hustleObj = HUSTLES[hId];
+                const icon = badge?.icon || hustleObj?.icon || '👑';
+                const name = badge?.name || hustleObj?.name || hId;
+                const desc = badge?.description || `Mastered execution in ${name}.`;
+
                 return (
-                  <div key={badge.id} className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl flex items-center gap-4 relative overflow-hidden shrink-0">
-                    <div className="absolute top-0 right-0 p-1 bg-emerald-500/10 text-[8px] font-bold text-emerald-400 border-l border-b border-emerald-500/20">MASTERED</div>
+                  <div key={hId} className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl flex items-center gap-4 relative overflow-hidden shrink-0">
+                    <div className="absolute top-0 right-0 p-1 bg-emerald-500/10 text-[8px] font-bold text-emerald-400 border-l border-b border-emerald-500/20">👑 MASTERED</div>
                     <div className="text-4xl bg-slate-900 w-16 h-16 flex items-center justify-center rounded-xl shadow-inner border border-slate-800 shrink-0">
-                      {badge.icon}
+                      {icon}
                     </div>
                     <div className="flex-1">
-                      <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{badge.name}</div>
-                      <div className="text-xs text-slate-400 italic mb-2">{badge.description}</div>
+                      <div className="font-black text-white text-lg tracking-tight leading-none mb-1">{name}</div>
+                      <div className="text-xs text-slate-400 italic mb-2">{desc}</div>
                       <div className="flex flex-wrap gap-2">
-                        <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
-                          BUFF: {badge.buff.value}x {badge.buff.type}
-                        </div>
-                        {badge.futureBenefit && badge.relevantTier && (
+                        {badge?.buff && (
+                          <div className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-[9px] font-bold uppercase tracking-wider">
+                            BUFF: {badge.buff.value}x {badge.buff.type}
+                          </div>
+                        )}
+                        {badge?.futureBenefit && badge?.relevantTier && (
                           (() => {
                             const currentTierIdx = PROGRESSION_ORDER.indexOf(pl.currentTier);
                             const relevantTierIdx = PROGRESSION_ORDER.indexOf(badge.relevantTier);

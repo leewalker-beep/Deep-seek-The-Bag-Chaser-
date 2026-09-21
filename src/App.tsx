@@ -220,72 +220,72 @@ const TIER_ONBOARDING_DATA: Record<string, {
   tabToOpen: 'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION';
 }> = {
   STREET: {
-    title: 'WELCOME TO STREET',
-    subtitle: "You're no longer surviving. You're beginning to build.",
+    title: 'STREET TIER: BUILD',
+    subtitle: "From surviving to building. Lay brick-by-brick foundations.",
     bullets: [
-      'Buy your first passive income asset (Vending Machines or Rent Portfolio).',
-      'Rivals are becoming more active on the Leaderboard.',
-      'Reputation now matters more; your actions shift public perception.'
+      'Establish permanent street cred and local business footholds.',
+      'Buy passive cash flow assets like Vending Networks and Rent Portfolios.',
+      'Master STREET hustles to earn Crowns required for the STARTUP climb.'
     ],
     tabToOpen: 'OPPORTUNITIES'
   },
   STARTUP: {
-    title: 'WELCOME TO STARTUP',
-    subtitle: "Incorporated and ready. You're entering the real business arena.",
+    title: 'STARTUP TIER: SCALE',
+    subtitle: "Incorporated and capitalized. Scale operations exponentially.",
     bullets: [
-      'Launch scalable high-growth tech startup hustles.',
-      'Hire corporate employees and automate your business for passive cash flow.',
-      'Rivals are scaling their net worths rapidly—monitor their market moves.'
+      'Launch high-growth tech MVPs, E-com brands, and agency pipelines.',
+      'Hire staff to automate operations and maximize passive monthly yields.',
+      'Out-scale aggressive market rivals attempting to buy up your sectors.'
     ],
     tabToOpen: 'OPPORTUNITIES'
   },
   CORPORATE: {
-    title: 'WELCOME TO CORPORATE',
-    subtitle: "Institutional compliance, polished suits, and serious leverage.",
+    title: 'CORPORATE TIER: CONTROL',
+    subtitle: "Institutional dominance. Control media and corporate networks.",
     bullets: [
-      'Expand into massive financial, tech, or media corporations.',
-      'Manage high-ticket media empires or film studios to control public relation slates.',
-      'Earn substantial Clout to bypass high-tier advancement tax requirements.'
+      'Control massive media networks, global franchises, and data analytics firms.',
+      'Exert corporate leverage to insulate your holdings from market shocks.',
+      'Secure 7 Mastery Crowns to unlock sovereign ELITE syndicate standing.'
     ],
     tabToOpen: 'REPUTATION'
   },
   ELITE: {
-    title: 'WELCOME TO ELITE',
-    subtitle: "Sovereign wealth and global syndicates. The air is extremely thin up here.",
+    title: 'ELITE TIER: INFLUENCE',
+    subtitle: "Sovereign wealth. Dictate markets and wield syndicate power.",
     bullets: [
-      'Balance extreme active heat contracts with high-end luxury flex assets.',
-      'Acquire premium corporate holdings and sovereign passive assets.',
-      'Protect your assets from hostile rival counter-bids on the Leaderboard.'
+      'Deploy private equity and sovereign hedge funds across global sectors.',
+      'Acquire luxury conglomerates and high-yielding flex prestige assets.',
+      'Shield your empire from hostile rival takeovers with high Aura & Clout.'
     ],
     tabToOpen: 'AMBITIONS'
   },
   MOGUL: {
-    title: 'WELCOME TO MOGUL',
-    subtitle: "The peak of commercial power. Every sector answers to your empire.",
+    title: 'MOGUL TIER: DOMINATE',
+    subtitle: "Uncontested commercial power. Unify every sector under your empire.",
     bullets: [
-      'Liquidate massive assets to prep the ultimate presidential campaign trail.',
-      'Fund strategic political PACs to ease congressional fundraising costs.',
-      'Acknowledge and fulfill remaining life ambitions to lock in final meta-legacy points.'
+      'Dominate film studios, sports leagues, and aerospace megaprojects.',
+      'Build massive liquid capital reserves for national political bids.',
+      'Master 11 unique careers to unlock the presidential campaign trail.'
     ],
     tabToOpen: 'AMBITIONS'
   },
   PRESIDENT: {
-    title: 'WELCOME TO THE OVAL OFFICE',
-    subtitle: "Commander-in-Chief. You control the government cabinet and nation's policy.",
+    title: 'PRESIDENTIAL TIER: GOVERN',
+    subtitle: "Commander-in-Chief. Exercise executive statecraft and national policy.",
     bullets: [
-      'Keep macro GDP, Inflation, and National Debt indicators stabilized.',
-      'Fire corrupt cabinet members to shield your administration from massive scandals.',
-      'Build congressional support to pass major executive orders and reforms.'
+      'Govern macro GDP, inflation, and national debt indicators.',
+      'Form an elite cabinet and pass major congressional executive orders.',
+      'Steer the nation through crisis to secure an immortal statesman legacy.'
     ],
     tabToOpen: 'CRITICAL'
   },
   OPEN: {
-    title: 'WELCOME TO THE OPEN ERA',
-    subtitle: "Absolute transcendence. You have broken past the mortal constraints of the grind.",
+    title: 'OPEN ERA: CHOOSE YOUR LEGACY',
+    subtitle: "Absolute career transcendence. Unrestricted freedom to shape your story.",
     bullets: [
-      'Amass infinite passive wealth with zero tier restrictions.',
-      'Fulfill supreme legacy milestones to maximize Hall of Fame rankings.',
-      'Master every remaining business branch to seal your immortal footprint.'
+      'Amass infinite wealth across all unlocked sectors without restrictions.',
+      'Fulfill all 15 Mastery Crowns to complete total career completion.',
+      'Seal your immortal placement in the Hall of Fame.'
     ],
     tabToOpen: 'AMBITIONS'
   }

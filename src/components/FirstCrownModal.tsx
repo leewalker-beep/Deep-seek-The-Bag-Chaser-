@@ -37,6 +37,9 @@ export const FirstCrownModal: React.FC = () => {
             <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
               FIRST CROWN EARNED!
             </h2>
+            <p className="text-[11px] text-yellow-300 italic font-medium mt-1">
+              "I mastered a different way of making it."
+            </p>
             <p className="text-xs font-bold text-slate-300 uppercase tracking-wide mt-1">
               You mastered <span className="text-yellow-400 font-black">{pendingFirstCrown.hustleName}</span>!
             </p>
