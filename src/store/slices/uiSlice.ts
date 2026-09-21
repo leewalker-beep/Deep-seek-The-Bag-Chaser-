@@ -17,6 +17,7 @@ export interface UISlice {
   activeTransition: HeroArtwork | null;
   transitionQueue: HeroArtwork[];
   focusedRivalId: string | null;
+  pendingFirstCrown: { hustleId: string; hustleName: string } | null;
 
   setPh: (ph: 'PLAYING' | 'POST_MORTEM' | 'PROLOGUE' | 'LEGACY_SHOP') => void;
   setActiveTab: (tab: AppTab) => void;
@@ -31,6 +32,7 @@ export interface UISlice {
   triggerTransition: (artwork: HeroArtwork) => void;
   clearTransition: () => void;
   setFocusedRivalId: (id: string | null) => void;
+  setPendingFirstCrown: (crown: { hustleId: string; hustleName: string } | null) => void;
 }
 
 export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get) => ({
@@ -48,6 +50,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   activeTransition: null,
   transitionQueue: [],
   focusedRivalId: null,
+  pendingFirstCrown: null,
 
   setPh: (ph) => set({ ph }),
   setActiveTab: (tab) => set({ activeTab: tab, activeHustleView: null }),
@@ -64,6 +67,7 @@ export const createUISlice: StateCreator<GameState, [], [], UISlice> = (set, get
   })),
   setPendingSpecialization: (pending) => set({ pendingSpecialization: pending }),
   setFocusedRivalId: (id) => set({ focusedRivalId: id }),
+  setPendingFirstCrown: (crown) => set({ pendingFirstCrown: crown }),
   setTutorialSkipped: (skipped) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('bag-chaser-tutorial-complete', 'true');

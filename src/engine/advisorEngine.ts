@@ -1,4 +1,7 @@
 import type { PlayerStats, MarketType, Rival } from '../types/game';
+import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from '../config/tiers';
+import { getMasteryCount } from '../utils/masteryUtils';
+import { calculateMonthlyUpkeep } from '../utils/financialObligationsUtils';
 
 export interface AdvisorInsight {
   id: string;
@@ -29,6 +32,7 @@ export interface AdvisorInsight {
 }
 
 export interface StrategicAdvisorOutput {
+  primaryDirective: string;
   whatIsHappening: string;
   whyItHappened: string;
   biggestOpportunity: {
@@ -918,7 +922,58 @@ export function generateStrategicAdvice(
     recommendation: topRisk.recommendation,
   };
 
+  // Derive Primary Directive (Answers the player's most urgent question directly)
+  let primaryDirective = "Focus on building liquid cash capital and street clout.";
+
+  if (pl.mentalHealth <= 30) {
+    primaryDirective = "Your mental health is depleted. Rest before burnout strikes.";
+  } else if (pl.heat >= 75 && !pl.inJail && !(pl as any).isIncarcerated) {
+    primaryDirective = "Your Heat is becoming dangerous. Feds are closing in.";
+  } else if (pl.inJail || (pl as any).isIncarcerated) {
+    primaryDirective = "You are currently incarcerated. Serve your term or arrange legal defense.";
+  } else if (pl.currentTier === 'OPEN') {
+    primaryDirective = "Your career is unrestricted. Build an immortal legacy.";
+  } else if (pl.currentTier === 'PRESIDENT') {
+    primaryDirective = "Stabilize national economic indicators and maintain public approval.";
+  } else {
+    const currIdx = PROGRESSION_ORDER.indexOf(pl.currentTier);
+    const nextTierName = PROGRESSION_ORDER[currIdx + 1];
+    const nextReqs = nextTierName ? TIER_REQUIREMENTS[nextTierName] : null;
+
+    if (nextReqs) {
+      const masteredCount = getMasteryCount(pl);
+      const hasCash = pl.bag >= nextReqs.cash;
+      const hasClout = pl.clout >= nextReqs.clout;
+      const hasAura = pl.aura >= nextReqs.aura;
+      const hasCrowns = masteredCount >= nextReqs.crowns;
+
+      if (hasCash && hasClout && hasAura && hasCrowns) {
+        if ((pl as any).pendingSpecialization) {
+          primaryDirective = "You can advance, but your current specialization choice will affect your strategy.";
+        } else {
+          primaryDirective = "You have met all requirements to advance to the next career tier.";
+        }
+      } else if (!hasCrowns) {
+        const needed = nextReqs.crowns - masteredCount;
+        primaryDirective = `You need ${needed} more Crown${needed > 1 ? 's' : ''}.`;
+      } else if (hasCash && !hasAura) {
+        primaryDirective = "You are strong financially but weak in Aura.";
+      } else if (hasCash && !hasClout) {
+        primaryDirective = "You are strong financially but weak in Clout.";
+      } else if (!hasCash) {
+        const passiveIncome = pl.passiveIncome || 0;
+        const upkeep = calculateMonthlyUpkeep(pl);
+        if (passiveIncome > 0 && passiveIncome >= upkeep) {
+          primaryDirective = "Your passive income now covers your monthly obligations.";
+        } else {
+          primaryDirective = `Accumulate liquid capital to reach the $${nextReqs.cash.toLocaleString()} tier requirement.`;
+        }
+      }
+    }
+  }
+
   return {
+    primaryDirective,
     whatIsHappening: summaryHappening,
     whyItHappened: summaryWhy,
     biggestOpportunity,

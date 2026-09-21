@@ -1008,6 +1008,9 @@ export interface PlayerStats {
   inJail: boolean;
   isIncarcerated?: boolean;
   currentRentObligations?: number;
+  passiveIncome?: number;
+  worldReactions?: any[];
+  jailSentenceMonths?: number;
   jailMonthsRemaining: number;
   jailSentenceTotal: number;
   jailCharge: string;
@@ -1090,6 +1093,7 @@ export interface GameState {
   activeTransition: HeroArtwork | null;
   transitionQueue: HeroArtwork[];
   focusedRivalId: string | null;
+  pendingFirstCrown?: { hustleId: string; hustleName: string } | null;
   chosenBackground?: string;
   chosenBackgroundCategory?: string;
   chosenBackgroundVariation?: string;
@@ -1117,6 +1121,7 @@ export interface GameState {
   setActiveHustleView: (hustleId: string | null) => void;
   setActiveTierBadge: (badge: string | null) => void;
   setFocusedRivalId: (id: string | null) => void;
+  setPendingFirstCrown: (crown: { hustleId: string; hustleName: string } | null) => void;
   setShowMinigame: (show: boolean) => void;
   dismissNarrative: () => void;
   dismissLiveEvent: () => void;

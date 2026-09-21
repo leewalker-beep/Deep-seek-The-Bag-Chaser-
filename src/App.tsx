@@ -90,6 +90,7 @@ const VCPitchRoom = lazy(() => import('./components/hustles/panels/VCPitchRoom')
 
 import { RivalLeaderboard } from './components/RivalLeaderboard';
 import { SpecializationModal } from './components/SpecializationModal';
+import { FirstCrownModal } from './components/FirstCrownModal';
 import { NarrativeEventModal } from './components/NarrativeEventModal';
 import { LiveWorldEventModal } from './components/LiveWorldEventModal';
 import { InteractiveStoryModal } from './components/InteractiveStoryModal';
@@ -137,6 +138,7 @@ import { getEnding } from './config/endings';
 import { getDominantStat } from './utils/endingUtils';
 import { getMasteryCount } from './utils/masteryUtils';
 import { HUSTLES } from './config/hustles/base';
+import { ImmediateGoalCard } from './components/ui/ImmediateGoalCard';
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from './utils/financialObligationsUtils';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -1618,17 +1620,23 @@ function App() {
               </button>
               <button
                 onClick={() => setShowPhoneFeed(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20"
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 relative"
               >
                 <span className="text-[15px] leading-none">📱</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Feed</span>
+                {pl.worldReactions && pl.worldReactions.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                )}
               </button>
               <button
                 onClick={() => setShowAdvisor(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20"
+                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20 relative"
               >
                 <span className="text-[15px] leading-none">🧠</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Advisor</span>
+                {(pl.mentalHealth <= 30 || pl.heat >= 75 || canAdvance) && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                )}
               </button>
             </div>
           </div>
@@ -1756,6 +1764,11 @@ function App() {
           </Suspense>
         ) : !activeHustleView ? (
           <>
+            {/* Contextual Immediate Player Goal Banner */}
+            <div className="mb-4">
+              <ImmediateGoalCard />
+            </div>
+
             {/* Advance Tier Button */}
             {canAdvance && activeTab !== 'FLEX' && (
               <button
@@ -2476,6 +2489,7 @@ function App() {
       {!isTutorialSkipped && <TutorialBox />}
       <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
       <SpecializationModal />
+      <FirstCrownModal />
       <NarrativeEventModal />
       <LiveWorldEventModal />
       <InteractiveStoryModal />

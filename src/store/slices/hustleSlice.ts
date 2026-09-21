@@ -443,6 +443,11 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         }
         get().logEvent('SPECIAL_EVENT', { type: 'HUSTLE_MASTERY', hustleId: hId, hustleName: h.name });
 
+        // First Crown Moment Celebration
+        if (masteredHustles.length === 1) {
+          get().setPendingFirstCrown({ hustleId: hId, hustleName: h.name });
+        }
+
         // Immediate Campaign Impact
         if (state.pl.currentTier === 'PRESIDENT') {
           const masteryCount = masteredHustles.length;
