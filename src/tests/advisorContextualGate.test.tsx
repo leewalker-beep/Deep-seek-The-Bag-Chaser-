@@ -112,8 +112,8 @@ describe('Strategic Advisor Contextual Gating Integration Tests', () => {
 
     render(<App />);
 
-    // We expect the "WELCOME TO STREET" onboarding modal to display immediately, bypassing the gate
-    const welcomeHeader = await screen.findByText(/WELCOME TO STREET/i);
+    // We expect the "STREET TIER: BUILD" onboarding modal to display immediately, bypassing the gate
+    const welcomeHeader = await screen.findByText(/STREET TIER: BUILD/i);
     expect(welcomeHeader).toBeTruthy();
   });
 });
