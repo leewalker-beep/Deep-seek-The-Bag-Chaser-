@@ -429,6 +429,24 @@ export function processWorldReaction(
       break;
     }
 
+    case 'CROWN_EARNED': {
+      addMultiOutletReports({
+        business: `EXCELLENCE STANDARDS: {PLAYER} achieves total Crown mastery in {BUSINESS}, setting new operational benchmarks.`,
+        popCulture: `{PLAYER} just mastered {BUSINESS}! Nobody else in the industry is touching those standards! 👑🔥 #Mastery`,
+        local: `{PLAYER}'s mastery of {BUSINESS} brings national recognition to our district.`
+      });
+      addRivalCommentIfPossible('CrownEarned');
+      break;
+    }
+
+    case 'SPECIALIZATION_CHOSEN': {
+      addMultiOutletReports({
+        business: `STRATEGIC REALIGNMENT: {PLAYER} officially commits to the specialization path.`,
+        financial: `Capital markets adjust valuations as {PLAYER} focuses enterprise leverage.`
+      });
+      break;
+    }
+
     case 'BUSINESS_LAUNCH': {
       // Check if this is the player's very first business ever played
       const totalPlays = Object.values(pl.hustlePlays || {}).reduce((a, b) => a + b, 0);

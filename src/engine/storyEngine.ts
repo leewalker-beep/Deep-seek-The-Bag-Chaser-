@@ -226,11 +226,53 @@ export function generateHistoricalStories(pl: PlayerStats): TickerMessage[] {
     });
   }
 
-  const firstPassive = pl.history?.find(h => h.id === 'first_passive_income');
+  const firstPassive = pl.history?.find(h => h.id === 'first_passive_income') || pl.narrativeFlags?.memory_first_passive_income;
   if (firstPassive && pl.lastPassiveBreakdown && pl.lastPassiveBreakdown.finalTotal > 200000) {
     stories.push({
       text: `📰 From a humble first passive stream, ${pName} now pulls in $${pl.lastPassiveBreakdown.finalTotal.toLocaleString()}/mo entirely passively.`,
       colorClass: 'text-indigo-400 font-bold',
+      tier: pl.currentTier,
+    });
+  }
+
+  // World Memory System retrospectives
+  const flags = pl.narrativeFlags || {};
+  if (flags.memory_first_employee) {
+    stories.push({
+      text: `📰 Memory: Industry insiders recall when ${pName} hired their very first employee. Now they manage an entire enterprise.`,
+      colorClass: 'text-blue-300 font-medium',
+      tier: pl.currentTier,
+    });
+  }
+
+  if (flags.memory_first_crown) {
+    stories.push({
+      text: `📰 Mastery Legacy: City business circles still talk about ${pName}'s first Crown mastery, which defined their operational standard.`,
+      colorClass: 'text-yellow-300 font-bold',
+      tier: pl.currentTier,
+    });
+  }
+
+  if (flags.memory_first_arrest || (pl.arrestCount && pl.arrestCount > 0)) {
+    stories.push({
+      text: `📰 Criminal Record: Critics note that despite early arrests, ${pName} built a formidable, resilient career.`,
+      colorClass: 'text-red-300 font-medium',
+      tier: pl.currentTier,
+    });
+  }
+
+  if (flags.memory_specialization) {
+    stories.push({
+      text: `📰 Strategic Focus: ${pName}'s commitment to the ${flags.memory_specialization} specialization remains a defining competitive advantage.`,
+      colorClass: 'text-indigo-300 font-medium',
+      tier: pl.currentTier,
+    });
+  }
+
+  if (flags.memory_became_president || pl.currentTier === 'PRESIDENT') {
+    stories.push({
+      text: `📰 Oval Office Legacy: Historians analyze President ${pName}'s historic election from the mud to national leadership.`,
+      colorClass: 'text-amber-400 font-extrabold',
       tier: pl.currentTier,
     });
   }

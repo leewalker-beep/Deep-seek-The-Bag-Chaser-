@@ -148,6 +148,7 @@ export const WordTap: React.FC<WordTapProps> = ({
           <h2 className="text-lg font-black text-blue-400 italic tracking-tighter uppercase drop-shadow-lg">
             {displayTitle} <span className="text-white text-xs">L{level}</span>
           </h2>
+          <div className="text-[9px] text-slate-400 font-medium italic">{displayInstructions}</div>
           <div className="text-xl text-emerald-400 font-mono font-black tabular-nums">SCORE: {score}</div>
         </div>
         <div className="flex flex-col items-end">

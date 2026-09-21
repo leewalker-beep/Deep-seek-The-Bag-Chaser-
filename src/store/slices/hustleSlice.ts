@@ -445,6 +445,8 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
         // First Crown Moment Celebration
         if (masteredHustles.length === 1) {
+          if (!state.pl.narrativeFlags) state.pl.narrativeFlags = {};
+          state.pl.narrativeFlags.memory_first_crown = h.name;
           get().setPendingFirstCrown({ hustleId: hId, hustleName: h.name });
         }
 
@@ -2340,6 +2342,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
         ...state.pl.flexAssets,
         [assetId]: newCount
       },
+      narrativeFlags: {
+        ...state.pl.narrativeFlags,
+        ...(asset.cost >= 1000000 ? { memory_first_major_investment: true } : {})
+      }
     });
     plAfterPurchase.legacyScore = calculateLegacyScore(plAfterPurchase);
 
@@ -2523,6 +2529,12 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       currentTier: nextTier,
       activeSpecializationId: specializationId,
       specializationHistory: [...state.pl.specializationHistory, specializationId],
+      narrativeFlags: {
+        ...state.pl.narrativeFlags,
+        memory_specialization: spec.name,
+        ...(nextTier === 'PRESIDENT' ? { memory_became_president: true } : {}),
+        ...(nextTier === 'OPEN' ? { memory_transition_open: true } : {})
+      },
       prePresidencyTier: nextTier === 'PRESIDENT' ? state.pl.currentTier : state.pl.prePresidencyTier,
       congressSupport: nextTier === 'PRESIDENT' && state.pl.clout > 500 ? state.pl.congressSupport + 10 : state.pl.congressSupport,
       approvalFloor: nextTier === 'PRESIDENT' && state.pl.aura > 500 ? 5 : state.pl.approvalFloor,
@@ -2590,6 +2602,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     const nextPl = enforceStatCaps({
       ...state.pl,
       bag: state.pl.bag - cost,
+      narrativeFlags: {
+        ...state.pl.narrativeFlags,
+        memory_major_rival_conflict: true
+      },
       rivals: state.pl.rivals.map(r =>
         r.id === rivalId ? {
           ...r,
@@ -2745,6 +2761,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       ...state.pl,
       bag: state.pl.bag - cost,
       aura: state.pl.aura + 25,
+      narrativeFlags: {
+        ...state.pl.narrativeFlags,
+        memory_first_partnership: true
+      },
       rivals: state.pl.rivals.map(r =>
         r.id === rivalId ? {
           ...r,
@@ -2978,7 +2998,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     if (cons.heat) nextPl.heat += cons.heat;
     if (cons.mentalHealth) nextPl.mentalHealth += cons.mentalHealth;
 
-    // Apply Narrative Flags
+    // Apply Narrative Flags & Character Relationship Deltas
     if (choice.setFlags) {
       nextPl.narrativeFlags = {
         ...nextPl.narrativeFlags,
@@ -2993,6 +3013,26 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
       if (choice.setFlags.university_accepted) {
         nextPl.narrativeFlags.just_accepted_university = true;
       }
+    }
+
+    // Update rival/character relationship if applicable
+    if (event?.characterId && nextPl.rivals) {
+      const charId = event.characterId;
+      nextPl.rivals = nextPl.rivals.map(r => {
+        if (r.characterId === charId || r.id === charId || r.id === charId.replace('char_', '')) {
+          let delta = 0;
+          if (choice.setFlags?.relationship_delta && typeof choice.setFlags.relationship_delta === 'number') {
+            delta = choice.setFlags.relationship_delta;
+          } else if (cons.aura && cons.aura > 0) {
+            delta = 10;
+          } else if (cons.aura && cons.aura < 0) {
+            delta = -10;
+          }
+          const newRel = Math.min(100, Math.max(-100, (r.relationshipWithPlayer || 0) + delta));
+          return { ...r, relationshipWithPlayer: newRel };
+        }
+        return r;
+      });
     }
 
     // Apply Biography Entry

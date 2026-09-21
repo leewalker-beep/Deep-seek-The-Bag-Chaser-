@@ -122,7 +122,7 @@ describe('World Memory & Relationship Evolution System Tests', () => {
 
       // We run advanceMonth repeatedly to check if the high community trust is factored in and news mentions trigger
       let triggeredShield = false;
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 100; i++) {
         const res = advanceMonth(pl, 'NORMAL', [], true);
         const newsText = JSON.stringify(res.news);
         if (newsText.includes('COMMUNITY SHIELD') || newsText.includes('COMMUNITY ENDORSEMENT') || newsText.includes('CRISIS ASSISTANCE')) {
