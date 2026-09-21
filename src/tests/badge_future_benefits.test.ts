@@ -21,7 +21,7 @@ describe('Badge Future Benefits', () => {
         hustleLevels: { 'audio': 4 },
         hustleBranchIds: { 'audio': 'l4' },
         hustlePlays: { 'audio': 20 },
-        masteredHustles: []
+        masteredHustles: ['r_labor', 'r_delivery', 'r_plasma', 'r_vending', 'r_ghost_mode', 'r_scrap', 'street_eats', 'cleaning', 'cc', 'pod', 'techFlip', 'sw', 'drop']
       }
     }));
 

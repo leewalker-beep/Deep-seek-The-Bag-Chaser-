@@ -191,9 +191,9 @@ describe('Complete Tier Advancement Pipeline Audit & Regression Suite', () => {
       expect(stateAfter.activeTab).toBe('STREET');
       expect(stateAfter.pl.activeSpecializationId).toBe(spec.id);
       expect(stateAfter.pl.specializationHistory).toContain(spec.id);
-      expect(stateAfter.pl.bag).toBe(initialBag - expectedFee); // 100000 - 16000 = 84000
-      expect(stateAfter.pl.clout).toBe(700);
-      expect(stateAfter.pl.aura).toBe(700);
+      expect(stateAfter.pl.bag).toBe(initialBag - expectedFee + 1000); // 100000 - 16000 + 1000 (STREET ambition reward) = 85000
+      expect(stateAfter.pl.clout).toBe(750);
+      expect(stateAfter.pl.aura).toBe(715);
 
       // Biography persistence
       expect(stateAfter.pl.biography.some(line => line.includes('Rose to the STREET tier') || line.includes('Ascended to the STREET') || line.includes('STREET tier'))).toBe(true);

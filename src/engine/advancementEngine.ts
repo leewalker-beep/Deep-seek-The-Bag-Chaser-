@@ -674,7 +674,7 @@ export function advanceMonth(
   }
 
   // JAIL CHECK — fires after month increment
-  if (pl.heat >= 100 && !newPl.inJail) {
+  if ((pl.heat >= 100 || newPl.heat >= 100) && !newPl.inJail) {
     const sentence = getSentence(newPl.currentTier);
     newPl.inJail = true;
     newPl.isIncarcerated = true;

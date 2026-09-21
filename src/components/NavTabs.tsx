@@ -16,7 +16,7 @@ export const NavTabs: React.FC<NavTabsProps> = React.memo(({
 }) => {
   const campaignStage = useGameStore(state => state.pl.campaignStage || 0);
   const inJail = useGameStore(state => state.pl.inJail);
-  const isPresident = campaignStage >= 8;
+  const isPresident = currentTier === 'PRESIDENT' && campaignStage >= 8;
 
   const currentIndex = PROGRESSION_ORDER.indexOf(currentTier);
   const flexUnlocked = currentIndex >= 3;
