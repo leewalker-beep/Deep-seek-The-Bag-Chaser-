@@ -607,6 +607,10 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     let finalNextPl = enforceStatCaps(advancementResult.newPl);
     if (isRecoveryAction(hustleId) || isGhostModeAction(hustleId)) {
       finalNextPl.heat = Math.min(finalNextPl.heat, initialHeat);
+      if (finalNextPl.heat < 100) {
+        finalNextPl.inJail = false;
+        finalNextPl.isIncarcerated = false;
+      }
     }
     finalNextPl.lastPassiveBreakdown = advancementResult.passiveBreakdown;
     finalNextPl.lastStatBreakdown = accumulateStatBreakdown(
@@ -1317,7 +1321,7 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
 
     let updatedFounders: Founder[] = [...(state.pl.foundersBacked || [])];
     if (hustleId === 'venture_capital' && result.success) {
-      const performanceFactor = minigameMultiplier || 1.0;
+      const performanceFactor = Math.max(0, minigameMultiplier ?? 1.0);
       const performanceBonus = Math.floor((performanceFactor - 1.0) * 15);
 
       const execution = Math.max(10, Math.min(100, (30 + Math.floor(Math.random() * 40)) + performanceBonus));

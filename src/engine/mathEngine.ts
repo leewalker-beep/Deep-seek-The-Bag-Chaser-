@@ -466,7 +466,7 @@ export function calculateHustleStatsAdditive(
   }
 
   // --- Centralized Cash Yield Linear Multiplier ---
-  const scoreMult = result.minigameMult !== undefined ? result.minigameMult : 1.0;
+  const scoreMult = (result.minigameMult != null && !isNaN(result.minigameMult)) ? result.minigameMult : 1.0;
   const baseYield = scoreMult !== 0 ? result.yieldCash / scoreMult : result.yieldCash;
 
   const totalMultiplier = 1.0 + (scoreMult - 1) + combinedDynamicBonus + badgeYieldBonus + tierBadgeBonus + counterBidBonus + marketLeaderBonus + mogulBonus + legacyBonus + specBonus + flexBonus + bgYieldBonus + presidentEconomyBonus + repYieldBonus + cloutSponsorshipBonus;

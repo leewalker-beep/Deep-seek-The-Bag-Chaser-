@@ -3006,12 +3006,13 @@ function App() {
 
       {pl.pendingTermEnd && (
         <PresidentialTermEnd
-          onContinue={() =>
+          onContinue={() => {
             useGameStore.getState().updatePl({
               pendingTermEnd: false,
               currentTier: 'OPEN'
-            })
-          }
+            });
+            useGameStore.getState().setActiveTab('OPEN');
+          }}
         />
       )}
     </div>
