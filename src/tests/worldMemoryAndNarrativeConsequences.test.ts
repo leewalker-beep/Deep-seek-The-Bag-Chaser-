@@ -17,7 +17,7 @@ describe('Living World, Character & Narrative Consequence Pass (PASTE 6)', () =>
     const pl = store.pl;
 
     // Simulate first business & first employee
-    store.executeHustle('r_labor');
+    store.executeHustle('r_labor', 1.0, true);
     const updatedPl1 = useGameStore.getState().pl;
 
     // Check first hustle / history
