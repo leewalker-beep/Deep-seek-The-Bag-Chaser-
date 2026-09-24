@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('Verify thematic wrappers', async ({ page }) => {
   await page.goto('http://localhost:5173');
@@ -25,7 +25,7 @@ test('Verify thematic wrappers', async ({ page }) => {
   for (const wrapper of wrappers) {
     console.log(`Checking ${wrapper.id}...`);
     // Manually trigger the minigame via window.useGameStore if possible
-    await page.evaluate((id) => {
+    await page.evaluate((wrapperId) => {
       const store = (window as any).useGameStore;
       store.setState({ showMinigame: true }); // or wrapper ID check based on store schema
     }, wrapper.id);

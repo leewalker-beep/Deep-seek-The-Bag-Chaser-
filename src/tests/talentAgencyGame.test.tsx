@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, screen, act, cleanup } from '@testing-library/react';
+import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import { TalentAgencyGame } from '../components/minigames/TalentAgencyGame';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 

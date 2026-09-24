@@ -41,7 +41,16 @@ export const createAdvancementWorker = () => {
   return new Worker(URL.createObjectURL(blob));
 };
 
-export const runParallelMonthUpdate = (stateData: any, onWorkerFinished: (result: any) => void) => {
+export interface ParallelMonthData {
+  income: number;
+  mult: number;
+  [key: string]: unknown;
+}
+
+export const runParallelMonthUpdate = (
+  stateData: ParallelMonthData,
+  onWorkerFinished: (result: number) => void
+) => {
   const blobCode = `
     self.onmessage = function(e) {
       const data = e.data;
@@ -52,7 +61,7 @@ export const runParallelMonthUpdate = (stateData: any, onWorkerFinished: (result
   const blob = new Blob([blobCode], { type: 'application/javascript' });
   const worker = new Worker(URL.createObjectURL(blob));
   worker.postMessage(stateData);
-  worker.onmessage = (e) => {
+  worker.onmessage = (e: MessageEvent<number>) => {
     onWorkerFinished(e.data);
     worker.terminate();
   };
