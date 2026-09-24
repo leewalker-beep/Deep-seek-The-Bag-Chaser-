@@ -4,39 +4,41 @@ Thank you for contributing to Bag Chaser!
 
 ## Development Standards
 
-- **TypeScript**: All new code must be fully typed. Avoid `any`.
+- **TypeScript**: All new code must be strictly typed. Avoid `any` casts and unused variables.
 - **React Patterns**:
-  - Use functional components and hooks.
-  - Keep components small and focused.
-  - For complex game loops in minigames, use `useRef` for unstable values to prevent stale closures.
+  - Use functional components, custom hooks, and `React.lazy` code-splitting for heavy screens and minigames.
+  - Keep components small, focused, and wrapped with `React.memo` where appropriate.
+  - For high-frequency minigame render loops, use `useRef` for unstable frame states to avoid stale closures.
 - **State Management**:
-  - Put game logic in `src/engine/` and call it from Zustand actions.
-  - Avoid putting complex logic directly inside React components.
-- **Mobile First**: The UI is designed for mobile screens (390px width). Ensure all new components are responsive and have touch-friendly targets (min 44x44px).
+  - Encapsulate pure domain and math logic in engine utilities (`src/engine/`) and invoke them through Zustand slice actions (`src/store/slices/`).
+  - Keep React component views clean by delegating stat deltas and state calculations to Zustand slices.
+- **Accessibility & Mobile First**:
+  - The primary viewport targets mobile layouts (390px width). Ensure all buttons and touchable elements fulfill the minimum target size of 44x44px.
+  - Use visible focus indicators and explicit `Escape` key handlers on core overlay modals.
 
-## Folder Structure
+## Workflow Commands
 
-- `src/components/`: React UI components.
-  - `minigames/`: Self-contained game components.
-  - `ui/`: Reusable primitive components (buttons, modals).
-- `src/config/`: Static data and configuration.
-- `src/engine/`: Pure logic and math modules.
-- `src/store/`: Zustand store and slices.
-- `src/types/`: TypeScript interfaces and types.
-- `src/utils/`: Generic helper functions.
+```bash
+# Install dependencies
+bun install # or npm install
 
-## Workflow
+# Start local dev server
+npm run dev
 
-1.  **Run Tests**: Before starting, ensure all tests pass: `npm run test`.
-2.  **Add Feature**: Implement your changes following the [Adding Content](./ADDING_CONTENT.md) guide.
-3.  **Documentation**: If you add a new system, update the relevant docs in `docs/`.
-4.  **Verify**: Run the game locally and test your changes across different tiers.
-5.  **Build**: Ensure the project builds successfully: `npm run build`.
+# Run unit and integration tests
+bun test
 
-## Testing
+# Run TypeScript compilation & production build
+npm run build
 
-We use **Vitest** for unit and integration tests.
-- Run tests: `npx vitest run src`
-- Tests are located in `src/__tests__/` or alongside the files they test.
+# Run ESLint checks
+npm run lint
+```
 
-**Note**: Playwright E2E tests are located in `tests/` and are used for browser-level verification.
+## Side-Effect File Protection
+
+Running full test suites may automatically update test audit artifacts such as `audit_results.json`. Before committing changes, restore these tracked files:
+
+```bash
+git checkout HEAD audit_results.json
+```
