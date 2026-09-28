@@ -14,16 +14,18 @@ import { GameViewport } from './components/ui/GameViewport';
 import { BranchChoice } from './components/BranchChoice';
 import { FlexMarket } from './components/FlexMarket';
 import { NewsTicker } from './components/NewsTicker';
-import { PrologueScreen } from './components/PrologueScreen';
-import { DeathScreen } from './components/DeathScreen';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CinematicTransition } from './components/effects/CinematicTransition';
 import { MarketShiftOverlay } from './components/effects/MarketShiftOverlay';
 import { HERO_ARTWORK } from './config/heroArtwork';
 import TierBackground from './components/TierBackground';
-import { TheReceipts } from './components/TheReceipts';
 import Avatar from './components/Avatar';
-import { WorldReactionFeed } from './components/WorldReactionFeed';
+
+// Lazy Loaded Screens & Modals
+const PrologueScreen = lazy(() => import('./components/PrologueScreen').then(m => ({ default: m.PrologueScreen })));
+const DeathScreen = lazy(() => import('./components/DeathScreen').then(m => ({ default: m.DeathScreen })));
+const TheReceipts = lazy(() => import('./components/TheReceipts').then(m => ({ default: m.TheReceipts })));
+const WorldReactionFeed = lazy(() => import('./components/WorldReactionFeed').then(m => ({ default: m.WorldReactionFeed })));
 
 // Lazy Loaded Minigames
 const SwipeOrder = lazy(() => import('./components/minigames/SwipeOrder').then(m => ({ default: m.SwipeOrder })));
@@ -88,15 +90,20 @@ const CryptoMineRush = lazy(() => import('./components/hustles/panels/CryptoMine
 const PodcastFlowState = lazy(() => import('./components/hustles/panels/PodcastFlowState').then(m => ({ default: m.PodcastFlowState })));
 const VCPitchRoom = lazy(() => import('./components/hustles/panels/VCPitchRoom').then(m => ({ default: m.VCPitchRoom })));
 
-import { RivalLeaderboard } from './components/RivalLeaderboard';
-import { SpecializationModal } from './components/SpecializationModal';
-import { FirstCrownModal } from './components/FirstCrownModal';
-import { NarrativeEventModal } from './components/NarrativeEventModal';
-import { LiveWorldEventModal } from './components/LiveWorldEventModal';
-import { InteractiveStoryModal } from './components/InteractiveStoryModal';
-import { EndgameSummary } from './components/EndgameSummary';
-import { StrategicAdvisorModal } from './components/StrategicAdvisorModal';
-import { AdvisorMentorModal } from './components/AdvisorMentorModal';
+const RivalLeaderboard = lazy(() => import('./components/RivalLeaderboard').then(m => ({ default: m.RivalLeaderboard })));
+const SpecializationModal = lazy(() => import('./components/SpecializationModal').then(m => ({ default: m.SpecializationModal })));
+const FirstCrownModal = lazy(() => import('./components/FirstCrownModal').then(m => ({ default: m.FirstCrownModal })));
+const NarrativeEventModal = lazy(() => import('./components/NarrativeEventModal').then(m => ({ default: m.NarrativeEventModal })));
+const LiveWorldEventModal = lazy(() => import('./components/LiveWorldEventModal').then(m => ({ default: m.LiveWorldEventModal })));
+const InteractiveStoryModal = lazy(() => import('./components/InteractiveStoryModal').then(m => ({ default: m.InteractiveStoryModal })));
+const EndgameSummary = lazy(() => import('./components/EndgameSummary').then(m => ({ default: m.EndgameSummary })));
+const StrategicAdvisorModal = lazy(() => import('./components/StrategicAdvisorModal').then(m => ({ default: m.StrategicAdvisorModal })));
+const AdvisorMentorModal = lazy(() => import('./components/AdvisorMentorModal').then(m => ({ default: m.AdvisorMentorModal })));
+const FlexOpportunityModal = lazy(() => import('./components/FlexOpportunityModal').then(m => ({ default: m.FlexOpportunityModal })));
+const AnnualStatement = lazy(() => import('./components/AnnualStatement').then(m => ({ default: m.AnnualStatement })));
+const JailOverlay = lazy(() => import('./components/JailOverlay').then(m => ({ default: m.JailOverlay })));
+const PresidentialTermEnd = lazy(() => import('./components/PresidentialTermEnd').then(m => ({ default: m.PresidentialTermEnd })));
+
 import { getOrAssignQuoteForPrompt } from './utils/mentorQuotes';
 
 // Heavy Screens
@@ -109,28 +116,26 @@ const VCPanel = lazy(() => import('./components/hustles/panels/VCPanel').then(m 
 const FundMoviePanel = lazy(() => import('./components/panels/FundMoviePanel').then(m => ({ default: m.FundMoviePanel })));
 const MarryCelebrityPanel = lazy(() => import('./components/panels/MarryCelebrityPanel').then(m => ({ default: m.MarryCelebrityPanel })));
 
+// Lazy Loaded Hustle Panels
+const MusicProductionPanel = lazy(() => import('./components/panels/MusicProductionPanel').then(m => ({ default: m.MusicProductionPanel })));
+const StreetwearPanel = lazy(() => import('./components/hustles/panels/StreetwearPanel').then(m => ({ default: m.StreetwearPanel })));
+const DataAnalyticsPanel = lazy(() => import('./components/hustles/panels/DataAnalyticsPanel').then(m => ({ default: m.DataAnalyticsPanel })));
+const CryptoMiningPanel = lazy(() => import('./components/hustles/panels/CryptoMiningPanel').then(m => ({ default: m.CryptoMiningPanel })));
+const VAAgencyPanel = lazy(() => import('./components/hustles/panels/VAAgencyPanel').then(m => ({ default: m.VAAgencyPanel })));
+const RealEstatePanel = lazy(() => import('./components/hustles/panels/RealEstatePanel').then(m => ({ default: m.RealEstatePanel })));
+const GlobalConglomeratePanel = lazy(() => import('./components/hustles/panels/GlobalConglomeratePanel').then(m => ({ default: m.GlobalConglomeratePanel })));
+const FilmStudioPanel = lazy(() => import('./components/panels/FilmStudioPanel').then(m => ({ default: m.FilmStudioPanel })));
+const SpaceInvestmentPanel = lazy(() => import('./components/panels/SpaceInvestmentPanel').then(m => ({ default: m.SpaceInvestmentPanel })));
+const PhilanthropyPanel = lazy(() => import('./components/panels/PhilanthropyPanel').then(m => ({ default: m.PhilanthropyPanel })));
+const PresidentCampaignPanel = lazy(() => import('./components/panels/PresidentCampaignPanel').then(m => ({ default: m.PresidentCampaignPanel })));
+const RestPanel = lazy(() => import('./components/panels/RestPanel').then(m => ({ default: m.RestPanel })));
+
 import { DailyChallenges } from './components/DailyChallenges';
 import { TutorialBox } from './components/TutorialBox';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
-import { FlexOpportunityModal } from './components/FlexOpportunityModal';
-import { AnnualStatement } from './components/AnnualStatement';
-import { JailOverlay } from './components/JailOverlay';
 import { BigWinCelebration } from './components/effects/BigWinCelebration';
 import { RewardCard } from './components/effects/RewardCard';
 import { TierBadgeCelebration } from './components/effects/TierBadgeCelebration';
-import { MusicProductionPanel } from './components/panels/MusicProductionPanel';
-import { StreetwearPanel } from './components/hustles/panels/StreetwearPanel';
-import { DataAnalyticsPanel } from './components/hustles/panels/DataAnalyticsPanel';
-import { CryptoMiningPanel } from './components/hustles/panels/CryptoMiningPanel';
-import { VAAgencyPanel } from './components/hustles/panels/VAAgencyPanel';
-import { RealEstatePanel } from './components/hustles/panels/RealEstatePanel';
-import { GlobalConglomeratePanel } from './components/hustles/panels/GlobalConglomeratePanel';
-import { FilmStudioPanel } from './components/panels/FilmStudioPanel';
-import { SpaceInvestmentPanel } from './components/panels/SpaceInvestmentPanel';
-import { PhilanthropyPanel } from './components/panels/PhilanthropyPanel';
-import { PresidentCampaignPanel } from './components/panels/PresidentCampaignPanel';
-import { RestPanel } from './components/panels/RestPanel';
-import { PresidentialTermEnd } from './components/PresidentialTermEnd';
 import { MinigameLoader } from './components/ui/MinigameLoader';
 import { PremiumLoader } from './components/ui/PremiumLoader';
 import { saveHallOfFameEntry } from './utils/hallOfFame';
@@ -768,30 +773,30 @@ function App() {
   // Prologue screen
   if (ph === 'PROLOGUE') {
     return (
-      <PrologueScreen
-        onStart={(name, backgroundId, categoryId, variationId, avatarId, prologueStats) => {
-          resetGame(backgroundId, 3, categoryId, variationId, avatarId, prologueStats);
-          setPlayerName(name);
-          // Set isTutorialSkipped explicitly in the store as well
-          useGameStore.setState({ isTutorialSkipped: true });
-        }}
-      />
+      <Suspense fallback={<PremiumLoader message="Loading Prologue..." subtitle="Preparing Your Journey" />}>
+        <PrologueScreen
+          onStart={(name, backgroundId, categoryId, variationId, avatarId, prologueStats) => {
+            resetGame(backgroundId, 3, categoryId, variationId, avatarId, prologueStats);
+            setPlayerName(name);
+            // Set isTutorialSkipped explicitly in the store as well
+            useGameStore.setState({ isTutorialSkipped: true });
+          }}
+        />
+      </Suspense>
     );
   }
 
   // Death screen
   if (ph === 'POST_MORTEM') {
     return (
-      <>
+      <Suspense fallback={<PremiumLoader message="Loading Career Dossier..." subtitle="Compiling Legacy" />}>
         {showHallOfFame ? (
-          <Suspense fallback={<PremiumLoader message="Reading the History Books..." subtitle="Retrieving Legends" />}>
-            <HallOfFame
-              onNewRun={() => {
-                resetGame();
-                window.location.reload();
-              }}
-            />
-          </Suspense>
+          <HallOfFame
+            onNewRun={() => {
+              resetGame();
+              window.location.reload();
+            }}
+          />
         ) : showSummary ? (
           <EndgameSummary
             onRestart={() => resetGame()}
@@ -809,7 +814,7 @@ function App() {
             onLegacyShop={() => useGameStore.setState({ ph: 'LEGACY_SHOP' })}
           />
         )}
-      </>
+      </Suspense>
     );
   }
 
@@ -1245,6 +1250,7 @@ function App() {
       <div className="flex-grow overflow-y-auto relative no-scrollbar">
         {/* Main Content */}
         <div className="max-w-md mx-auto px-4 py-3 pb-24">
+        <Suspense fallback={<PremiumLoader message="Loading Interface..." subtitle="Updating Screen" />}>
         {pl.inJail || pl.isIncarcerated ? (
           <JailOverlay />
         ) : activeTab === 'PRESIDENCY' ? (
@@ -1675,11 +1681,7 @@ function App() {
                   );
                 }
                 if (hustle.panelType === 'FESTIVAL') {
-                  return (
-                    <Suspense fallback={<PremiumLoader message="Tuning Instruments..." subtitle="Setting up the Main Stage" />}>
-                      <EntertainmentDashboard />
-                    </Suspense>
-                  );
+                  return <EntertainmentDashboard />;
                 }
                 if (hustle.panelType === 'DATA_ANALYTICS') {
                   return <DataAnalyticsPanel hustle={hustle} />;
@@ -1698,33 +1700,23 @@ function App() {
                 }
                 if (hustle.panelType === 'VENTURE_CAPITAL') {
                   return (
-                    <Suspense fallback={<PremiumLoader message="Reviewing Pitches..." subtitle="Reading Founder Decks" />}>
-                      <VCPanel
-                        hustle={hustle}
-                        onExecute={(founder) => {
-                          setSelectedCharacterForMinigame(founder || null);
-                          setShowMinigame(true);
-                        }}
-                      />
-                    </Suspense>
+                    <VCPanel
+                      hustle={hustle}
+                      onExecute={(founder) => {
+                        setSelectedCharacterForMinigame(founder || null);
+                        setShowMinigame(true);
+                      }}
+                    />
                   );
                 }
                 if (hustle.panelType === 'FILM_STUDIO') {
                   return <FilmStudioPanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'FUND_MOVIE') {
-                  return (
-                    <Suspense fallback={<PremiumLoader message="Casting Lead Actors..." subtitle="Reading Script Screenplays" />}>
-                      <FundMoviePanel hustle={hustle} />
-                    </Suspense>
-                  );
+                  return <FundMoviePanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'MARRY_CELEBRITY') {
-                  return (
-                    <Suspense fallback={<PremiumLoader message="Sending Invitations..." subtitle="Renting a Hollywood Mansion" />}>
-                      <MarryCelebrityPanel hustle={hustle} />
-                    </Suspense>
-                  );
+                  return <MarryCelebrityPanel hustle={hustle} />;
                 }
                 if (hustle.panelType === 'SPACE_INVESTMENT') {
                   return <SpaceInvestmentPanel hustle={hustle} />;
@@ -1867,22 +1859,25 @@ function App() {
             })()}
           </div>
         )}
+        </Suspense>
       </div>
       </div>
 
-      {/* Receipts Modal */}
-      {showReceipts && (
-        <TheReceipts
-          onClose={() => setShowReceipts(false)}
-          isPinned={isLedgerPinned}
-          onTogglePin={() => setIsLedgerPinned(!isLedgerPinned)}
-        />
-      )}
+      <Suspense fallback={<PremiumLoader message="Loading Modal..." subtitle="Please wait" />}>
+        {/* Receipts Modal */}
+        {showReceipts && (
+          <TheReceipts
+            onClose={() => setShowReceipts(false)}
+            isPinned={isLedgerPinned}
+            onTogglePin={() => setIsLedgerPinned(!isLedgerPinned)}
+          />
+        )}
 
-      {/* World Reaction Phone Feed Modal */}
-      {showPhoneFeed && (
-        <WorldReactionFeed onClose={() => setShowPhoneFeed(false)} />
-      )}
+        {/* World Reaction Phone Feed Modal */}
+        {showPhoneFeed && (
+          <WorldReactionFeed onClose={() => setShowPhoneFeed(false)} />
+        )}
+      </Suspense>
 
 
       {/* Generic Hustle Reward Card */}
@@ -1924,64 +1919,64 @@ function App() {
         />
       )}
 
-      {showScoreboard && (
-        <Suspense fallback={<PremiumLoader message="Compiling Biography..." subtitle="Gathering Milestones" />}>
+      <Suspense fallback={<PremiumLoader message="Loading Dynamic Overlay..." subtitle="Initializing View" />}>
+        {showScoreboard && (
           <Scoreboard onClose={() => setShowScoreboard(false)} />
-        </Suspense>
-      )}
-      {showAdvisor && (
-        <StrategicAdvisorModal
-          onClose={() => setShowAdvisor(false)}
-          initialTab={advisorTab}
-        />
-      )}
-      {activeAdvisorPrompt && (
-        <AdvisorMentorModal
-          title={activeAdvisorPrompt.title}
-          subtitle={activeAdvisorPrompt.subtitle}
-          bullets={activeAdvisorPrompt.bullets}
-          ctaLabel={activeAdvisorPrompt.ctaLabel}
-          quote={activeAdvisorPrompt.quote}
-          onClose={() => {
-            if (activeAdvisorPrompt.onCloseExtra) {
-              activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
-            }
-            setActiveAdvisorPrompt(null);
-          }}
-          onTakeMeThere={
-            activeAdvisorPrompt.onTakeMeThereCustom
-              ? () => {
-                  activeAdvisorPrompt.onTakeMeThereCustom!(useGameStore.getState());
-                  setActiveAdvisorPrompt(null);
-                }
-              : activeAdvisorPrompt.tabToOpen
-              ? () => {
-                  setAdvisorTab(activeAdvisorPrompt.tabToOpen!);
-                  setShowAdvisor(true);
-                  if (activeAdvisorPrompt.onCloseExtra) {
-                    activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
+        )}
+        {showAdvisor && (
+          <StrategicAdvisorModal
+            onClose={() => setShowAdvisor(false)}
+            initialTab={advisorTab}
+          />
+        )}
+        {activeAdvisorPrompt && (
+          <AdvisorMentorModal
+            title={activeAdvisorPrompt.title}
+            subtitle={activeAdvisorPrompt.subtitle}
+            bullets={activeAdvisorPrompt.bullets}
+            ctaLabel={activeAdvisorPrompt.ctaLabel}
+            quote={activeAdvisorPrompt.quote}
+            onClose={() => {
+              if (activeAdvisorPrompt.onCloseExtra) {
+                activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
+              }
+              setActiveAdvisorPrompt(null);
+            }}
+            onTakeMeThere={
+              activeAdvisorPrompt.onTakeMeThereCustom
+                ? () => {
+                    activeAdvisorPrompt.onTakeMeThereCustom!(useGameStore.getState());
+                    setActiveAdvisorPrompt(null);
                   }
-                  setActiveAdvisorPrompt(null);
-                }
-              : undefined
-          }
-        />
-      )}
-      {activeTierBadge && (
-        <TierBadgeCelebration
-          tier={activeTierBadge}
-          onClose={() => setActiveTierBadge(null)}
-        />
-      )}
+                : activeAdvisorPrompt.tabToOpen
+                ? () => {
+                    setAdvisorTab(activeAdvisorPrompt.tabToOpen!);
+                    setShowAdvisor(true);
+                    if (activeAdvisorPrompt.onCloseExtra) {
+                      activeAdvisorPrompt.onCloseExtra(useGameStore.getState());
+                    }
+                    setActiveAdvisorPrompt(null);
+                  }
+                : undefined
+            }
+          />
+        )}
+        {activeTierBadge && (
+          <TierBadgeCelebration
+            tier={activeTierBadge}
+            onClose={() => setActiveTierBadge(null)}
+          />
+        )}
 
-      {/* New Tutorial Box */}
-      {!isTutorialSkipped && <TutorialBox />}
-      <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
-      <SpecializationModal />
-      <FirstCrownModal />
-      <NarrativeEventModal />
-      <LiveWorldEventModal />
-      <InteractiveStoryModal />
+        {/* New Tutorial Box */}
+        {!isTutorialSkipped && <TutorialBox />}
+        <DailyChallenges isOpen={showChallenges} onClose={() => setShowChallenges(false)} />
+        <SpecializationModal />
+        <FirstCrownModal />
+        <NarrativeEventModal />
+        <LiveWorldEventModal />
+        <InteractiveStoryModal />
+      </Suspense>
 
       {/* Stat Breakdown Drawer */}
       <AnimatePresence>
@@ -2467,57 +2462,59 @@ function App() {
       {/* News Ticker */}
       <NewsTicker news={news} currentTier={pl.currentTier} />
 
-      {pl.pendingAnnualStatement && (
-        <AnnualStatement
-          onDismiss={() => {
-            const nextStartDimensions = evaluateIdentityDimensions(pl);
-            const nextStartNetWorth = calculateNetWorth(pl);
-            const updatedFlags = {
-              ...(pl.narrativeFlags || {}),
-              year_start_bag: pl.bag,
-              year_start_net_worth: nextStartNetWorth,
-              year_start_clout: pl.clout,
-              year_start_aura: pl.aura,
-              year_start_tier: pl.currentTier,
-              year_start_reputation: (pl.narrativeFlags?.publicReputation as string) || 'The Hustler',
-              year_start_dimensions: JSON.stringify(nextStartDimensions),
-              annualPassiveEarned: 0,
-              annualPassiveSpent: 0,
-            };
+      <Suspense fallback={<PremiumLoader message="Preparing Event Screen..." subtitle="Loading Details" />}>
+        {pl.pendingAnnualStatement && (
+          <AnnualStatement
+            onDismiss={() => {
+              const nextStartDimensions = evaluateIdentityDimensions(pl);
+              const nextStartNetWorth = calculateNetWorth(pl);
+              const updatedFlags = {
+                ...(pl.narrativeFlags || {}),
+                year_start_bag: pl.bag,
+                year_start_net_worth: nextStartNetWorth,
+                year_start_clout: pl.clout,
+                year_start_aura: pl.aura,
+                year_start_tier: pl.currentTier,
+                year_start_reputation: (pl.narrativeFlags?.publicReputation as string) || 'The Hustler',
+                year_start_dimensions: JSON.stringify(nextStartDimensions),
+                annualPassiveEarned: 0,
+                annualPassiveSpent: 0,
+              };
 
-            useGameStore.getState().updatePl({
-              pendingAnnualStatement: false,
-              annualCashEarned: 0,
-              annualCashSpent: 0,
-              annualHustlesRun: 0,
-              narrativeFlags: updatedFlags,
-            });
-          }}
-        />
-      )}
+              useGameStore.getState().updatePl({
+                pendingAnnualStatement: false,
+                annualCashEarned: 0,
+                annualCashSpent: 0,
+                annualHustlesRun: 0,
+                narrativeFlags: updatedFlags,
+              });
+            }}
+          />
+        )}
 
-      {pl.pendingFlexOffer && (
-        <FlexOpportunityModal
-          threshold={pl.pendingFlexOffer}
-          onDismiss={() =>
-            useGameStore.getState().updatePl({
-              pendingFlexOffer: null
-            })
-          }
-        />
-      )}
+        {pl.pendingFlexOffer && (
+          <FlexOpportunityModal
+            threshold={pl.pendingFlexOffer}
+            onDismiss={() =>
+              useGameStore.getState().updatePl({
+                pendingFlexOffer: null
+              })
+            }
+          />
+        )}
 
-      {pl.pendingTermEnd && (
-        <PresidentialTermEnd
-          onContinue={() => {
-            useGameStore.getState().updatePl({
-              pendingTermEnd: false,
-              currentTier: 'OPEN'
-            });
-            useGameStore.getState().setActiveTab('OPEN');
-          }}
-        />
-      )}
+        {pl.pendingTermEnd && (
+          <PresidentialTermEnd
+            onContinue={() => {
+              useGameStore.getState().updatePl({
+                pendingTermEnd: false,
+                currentTier: 'OPEN'
+              });
+              useGameStore.getState().setActiveTab('OPEN');
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

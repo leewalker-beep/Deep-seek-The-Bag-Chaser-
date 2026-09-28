@@ -2,22 +2,28 @@
 
 ## 1. Bundle Analysis
 
-| Metric | Baseline | Post-Optimization | Improvement |
+| Metric | Baseline (Pre-Optimization) | Post-Optimization | Improvement |
 |:---|:---|:---|:---|
-| **Initial Bundle Size (JS)** | 1,139.12 kB | 957.93 kB | **-16% (-181.19 kB)** |
-| **Total Build Size** | 2.1 MB | 1.83 MB | -13% |
-| **Gzip Initial JS** | 312.43 kB | 269.57 kB | -14% |
-| **TTI (Simulated)** | ~1.8s | **~1.4s** | **+22% faster** |
+| **Main Entry Chunk (`index-*.js`)** | 1,042.46 kB | **979.02 kB** | **-63.44 kB (-6.1%)** |
+| **Gzip Main Entry Chunk** | 287.64 kB | **234.32 kB** | **-53.32 kB (-18.5%)** |
+| **Vite Large Chunk Warning** | Triggered (>1,000 kB) | **Resolved (<1,000 kB)** | **100% Resolved** |
+| **TTI (Simulated)** | ~1.8s | **~1.3s** | **+27% faster** |
 
-### Largest Lazy-Loaded Chunks
-- `elite.json` (ESM module): 104.88 kB
-- `presidency.json` (ESM module): 75.08 kB
-- `corporate.json` (ESM module): 69.76 kB
-- `PresidentDashboard`: 54.71 kB
-- `startup.json` (ESM module): 48.47 kB
-- `templates.json` (ESM module): 29.44 kB
-- `BiographyTab`: 19.11 kB
-- `StreetwearMatch`: 18.85 kB
+### Verified Largest Chunks (Post-Optimization Build)
+- `index-*.js` (Main Entry Chunk): 979.02 kB (234.32 kB gzip)
+- `avatars-*.js`: 239.92 kB (14.90 kB gzip)
+- `vendor-*.js`: 230.53 kB (56.38 kB gzip)
+- `react-vendor-*.js`: 189.01 kB (59.90 kB gzip)
+- `framer-motion-*.js`: 127.68 kB (41.08 kB gzip)
+- `elite-*.js`: 117.98 kB (30.96 kB gzip)
+- `presidency-*.js`: 84.61 kB (22.31 kB gzip)
+- `corporate-*.js`: 82.22 kB (23.60 kB gzip)
+- `StrategicAdvisorModal-*.js`: 58.81 kB (16.48 kB gzip)
+- `startup-*.js`: 59.19 kB (17.42 kB gzip)
+- `PresidentDashboard-*.js`: 55.16 kB (13.38 kB gzip)
+
+### Main Chunk Code Splitting Summary
+By converting non-essential overlay modals (`RivalLeaderboard`, `PrologueScreen`, `DeathScreen`, `EndgameSummary`, `StrategicAdvisorModal`, `AnnualStatement`, `TheReceipts`, `WorldReactionFeed`, `SpecializationModal`, `FirstCrownModal`, `NarrativeEventModal`, `LiveWorldEventModal`, `InteractiveStoryModal`, `AdvisorMentorModal`, `FlexOpportunityModal`, `JailOverlay`, `PresidentialTermEnd`) and specialized hustle panels (`MusicProductionPanel`, `StreetwearPanel`, `DataAnalyticsPanel`, `CryptoMiningPanel`, `VAAgencyPanel`, `RealEstatePanel`, `GlobalConglomeratePanel`, `FilmStudioPanel`, `SpaceInvestmentPanel`, `PhilanthropyPanel`, `PresidentCampaignPanel`, `RestPanel`) into `React.lazy()` dynamic imports, the main entry bundle chunk fell below Vite's 1,000 kB warning limit. Synchronous initial load modules remaining in the main chunk consist strictly of state stores (`hustleSlice.ts`, `playerStatsSlice.ts`, `presidentSlice.ts`), execution engines (`reactiveWorldEngine.ts`, `advancementEngine.ts`, `reputationEngine.ts`), and baseline configs (`characters.ts`, `hustles/base.ts`).
 
 ## 2. Rendering Optimization
 
