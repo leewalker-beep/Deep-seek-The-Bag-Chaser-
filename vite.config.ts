@@ -66,6 +66,11 @@ export default defineConfig({
               priority: 30,
             },
             {
+              name: 'html2canvas',
+              test: /node_modules\/html2canvas/,
+              priority: 25,
+            },
+            {
               name: 'zustand',
               test: /node_modules\/zustand/,
               priority: 20,
@@ -87,6 +92,7 @@ export default defineConfig({
         drop_debugger: true
       }
     },
+    assetsInlineLimit: 0,
     chunkSizeWarningLimit: 1000
   },
   server: {

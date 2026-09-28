@@ -1919,7 +1919,7 @@ function App() {
         />
       )}
 
-      <Suspense fallback={<PremiumLoader message="Loading Dynamic Overlay..." subtitle="Initializing View" />}>
+      <Suspense fallback={null}>
         {showScoreboard && (
           <Scoreboard onClose={() => setShowScoreboard(false)} />
         )}
