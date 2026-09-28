@@ -2,22 +2,30 @@
 
 ## 1. Bundle Analysis
 
-| Metric | Baseline | Post-Optimization | Improvement |
-|:---|:---|:---|:---|
-| **Initial Bundle Size (JS)** | 1,139.12 kB | 957.93 kB | **-16% (-181.19 kB)** |
-| **Total Build Size** | 2.1 MB | 1.83 MB | -13% |
-| **Gzip Initial JS** | 312.43 kB | 269.57 kB | -14% |
-| **TTI (Simulated)** | ~1.8s | **~1.4s** | **+22% faster** |
+| Metric | Baseline (Pre-Optimization) | Post-Optimization (`React.lazy` + `html2canvas` isolation) | Post-Optimization (`assetsInlineLimit: 0`) | Total Improvement |
+|:---|:---|:---|:---|:---|
+| **Main Entry Chunk (`index-*.js`) Raw** | 1,042.46 kB | **979.14 kB** | **754.86 kB** | **-287.60 kB (-27.6%)** |
+| **Main Entry Chunk (`index-*.js`) Gzip** | 287.64 kB | **234.34 kB** | **223.14 kB** | **-64.50 kB (-22.4%)** |
+| **Vite Large Chunk Warning** | Triggered (>1,000 kB) | **Resolved** | **Resolved** | **100% Resolved** |
 
-### Largest Lazy-Loaded Chunks
-- `elite.json` (ESM module): 104.88 kB
-- `presidency.json` (ESM module): 75.08 kB
-- `corporate.json` (ESM module): 69.76 kB
-- `PresidentDashboard`: 54.71 kB
-- `startup.json` (ESM module): 48.47 kB
-- `templates.json` (ESM module): 29.44 kB
-- `BiographyTab`: 19.11 kB
-- `StreetwearMatch`: 18.85 kB
+### Verified Build Artifacts (Clean Output Measurements)
+- `index-*.js` (Main Entry Chunk): **754.86 kB** (223.14 kB gzip)
+- `html2canvas-*.js` (Isolated Library Chunk): **198.67 kB** (46.13 kB gzip)
+- `vendor-*.js` (Shared Vendor Modules): **31.92 kB** (10.23 kB gzip)
+- `react-vendor-*.js`: **189.01 kB** (59.90 kB gzip)
+- `framer-motion-*.js`: **127.68 kB** (41.08 kB gzip)
+- `elite-*.js` (Dynamic Tier JSON): **117.98 kB** (30.96 kB gzip)
+- `presidency-*.js` (Dynamic Tier JSON): **84.61 kB** (22.31 kB gzip)
+- `corporate-*.js` (Dynamic Tier JSON): **82.22 kB** (23.60 kB gzip)
+- `startup-*.js` (Dynamic Tier JSON): **59.19 kB** (17.42 kB gzip)
+- `StrategicAdvisorModal-*.js`: **58.81 kB** (16.48 kB gzip)
+- `PresidentDashboard-*.js`: **55.16 kB** (13.38 kB gzip)
+
+### Code-Splitting & Asset Inlining Summary
+1. **Dynamic `import()` Modal & Panel Lazy Loading**: Converted non-essential overlay modals (`RivalLeaderboard`, `PrologueScreen`, `DeathScreen`, `EndgameSummary`, `StrategicAdvisorModal`, `AnnualStatement`, `TheReceipts`, `WorldReactionFeed`, `SpecializationModal`, `FirstCrownModal`, `NarrativeEventModal`, `LiveWorldEventModal`, `InteractiveStoryModal`, `AdvisorMentorModal`, `FlexOpportunityModal`, `JailOverlay`, `PresidentialTermEnd`) and specialized hustle panels (`MusicProductionPanel`, `StreetwearPanel`, `DataAnalyticsPanel`, `CryptoMiningPanel`, `VAAgencyPanel`, `RealEstatePanel`, `GlobalConglomeratePanel`, `FilmStudioPanel`, `SpaceInvestmentPanel`, `PhilanthropyPanel`, `PresidentCampaignPanel`, `RestPanel`) into `React.lazy()` components.
+2. **`html2canvas` Isolation**: Created a dedicated `codeSplitting` group named `html2canvas` in `vite.config.ts` (priority 25) and updated `HallOfFame.tsx` to dynamically load `html2canvas` via `await import('html2canvas')` only on share button click. This removed `html2canvas` from top-level imports in `vendor-*.js` and `index-*.js`.
+3. **Avatar SVG Extraction (`assetsInlineLimit: 0`)**: Configured `assetsInlineLimit: 0` in `vite.config.ts`. Individual SVG avatar files under `src/assets/avatars/` were extracted from base64 Data URLs inside `index-*.js` into separate HTTP-cacheable static SVG files, dropping raw initial JS size by an additional **~224 kB**.
+4. **Tier Narrative On-Demand Loading**: Confirmed that tier narrative JSON files (`mud`, `street`, `startup`, `corporate`, `elite`, `presidency`) exist as separate ESM chunks loaded dynamically via `src/utils/narrativeLoader.ts` strictly when the player reaches or inspects the corresponding tier.
 
 ## 2. Rendering Optimization
 

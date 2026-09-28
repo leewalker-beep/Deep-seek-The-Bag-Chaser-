@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import html2canvas from 'html2canvas';
 import type { HallOfFameEntry } from '../types/game';
 import { getHallOfFameEntries, getBestRun } from '../utils/hallOfFame';
 import { ENDINGS } from '../config/endings';
@@ -56,7 +55,8 @@ export const HallOfFame: React.FC<HallOfFameProps> = ({ onNewRun: _onNewRun }) =
     try {
       if (!cardRef.current) throw new Error('Card ref not found');
 
-      const canvas = await html2canvas(cardRef.current, {
+      const html2canvasModule = (await import('html2canvas')).default;
+      const canvas = await html2canvasModule(cardRef.current, {
         backgroundColor: null,
         scale: 2,
         logging: false,
