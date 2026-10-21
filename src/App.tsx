@@ -144,6 +144,7 @@ import { getDominantStat } from './utils/endingUtils';
 import { getMasteryCount } from './utils/masteryUtils';
 import { HUSTLES } from './config/hustles/base';
 import { ImmediateGoalCard } from './components/ui/ImmediateGoalCard';
+const FieldGuideModal = lazy(() => import('./components/ui/FieldGuideModal').then(m => ({ default: m.FieldGuideModal })));
 import { LEVEL_MULTIPLIERS } from './engine/mathEngine';
 import { calculateMonthlyUpkeep, calculateMonthlyDebtService } from './utils/financialObligationsUtils';
 import { PROGRESSION_ORDER, TIER_REQUIREMENTS } from './config/tiers';
@@ -278,6 +279,7 @@ function App() {
   const [showChallenges, setShowChallenges] = useState(false);
   const [showPhoneFeed, setShowPhoneFeed] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
+  const [showGameGuide, setShowGameGuide] = useState(false);
   const [advisorTab, setAdvisorTab] = useState<'ALL' | 'CRITICAL' | 'IMPORTANT' | 'OPPORTUNITIES' | 'INFO' | 'AMBITIONS' | 'HISTORY' | 'REPUTATION'>('ALL');
   const [activeAdvisorPrompt, setActiveAdvisorPrompt] = useState<{
     id?: string;
@@ -494,6 +496,38 @@ function App() {
     mentalHit: number;
     heatHit: number;
   } | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeHustleResult) { setActiveHustleResult(null); setActiveHustleView(null); return; }
+        if (activeHustleView) { setActiveHustleView(null); setShowMinigame(false); return; }
+        if (showGameGuide) { setShowGameGuide(false); return; }
+        if (showPhoneFeed) { setShowPhoneFeed(false); return; }
+        if (showReceipts) { setShowReceipts(false); return; }
+        if (showChallenges) { setShowChallenges(false); return; }
+        if (showScoreboard) { setShowScoreboard(false); return; }
+        if (showAdvisor) { setShowAdvisor(false); return; }
+        if (isStatDrawerOpen) { setIsStatDrawerOpen(false); return; }
+        if (showMonthlySummary) { setShowMonthlySummary(false); return; }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    activeHustleResult,
+    activeHustleView,
+    showGameGuide,
+    showPhoneFeed,
+    showReceipts,
+    showChallenges,
+    showScoreboard,
+    showAdvisor,
+    isStatDrawerOpen,
+    showMonthlySummary,
+    setActiveHustleView,
+    setShowMinigame
+  ]);
 
   useEffect(() => {
     if (pl?.currentTier) {
@@ -1093,28 +1127,32 @@ function App() {
             <div className="flex w-full gap-[6px]">
               <button
                 onClick={() => setShowScoreboard(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+                aria-label="View Stats & Scoreboard"
               >
                 <span className="text-[15px] leading-none">📊</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Stats</span>
               </button>
               <button
                 onClick={() => setShowChallenges(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+                aria-label="View Goals & Challenges"
               >
                 <span className="text-[15px] leading-none">🔥</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Goals</span>
               </button>
               <button
                 onClick={() => setShowReceipts(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold transition-colors uppercase tracking-tighter border border-slate-700/50"
+                aria-label="View Receipts & Ledger"
               >
                 <span className="text-[15px] leading-none">🧾</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Receipts</span>
               </button>
               <button
                 onClick={() => setShowPhoneFeed(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 relative"
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 font-bold transition-colors uppercase tracking-tighter border border-indigo-500/20 relative"
+                aria-label="View Phone Feed & World Reactions"
               >
                 <span className="text-[15px] leading-none">📱</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Feed</span>
@@ -1123,8 +1161,17 @@ function App() {
                 )}
               </button>
               <button
+                onClick={() => setShowGameGuide(true)}
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold transition-colors uppercase tracking-tighter border border-blue-500/20"
+                aria-label="Field Guide & Rules"
+              >
+                <span className="text-[15px] leading-none">📖</span>
+                <span className="text-[9.5px] leading-none font-black uppercase">Guide</span>
+              </button>
+              <button
                 onClick={() => setShowAdvisor(true)}
-                className="flex-1 flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20 relative"
+                className="flex-1 min-h-[44px] flex flex-col items-center justify-center gap-[4px] py-[6px] px-[2px] rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold transition-colors uppercase tracking-tighter border border-emerald-500/20 relative"
+                aria-label="Open Strategic Advisor"
               >
                 <span className="text-[15px] leading-none">🧠</span>
                 <span className="text-[9.5px] leading-none font-black uppercase">Advisor</span>
@@ -1261,7 +1308,37 @@ function App() {
           <>
             {/* Contextual Immediate Player Goal Banner */}
             <div className="mb-4">
-              <ImmediateGoalCard />
+              <ImmediateGoalCard onNavigate={(route) => {
+                if (route === 'ADVANCE') {
+                  if (canAdvance) advanceTier();
+                  return;
+                }
+                const mainTabs = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN', 'FLEX', 'SCOREBOARD'];
+                if (mainTabs.includes(route)) {
+                  setActiveTab(route as any);
+                  return;
+                }
+                if (route === 'RIVALS' || route === 'PORTFOLIO') {
+                  setActiveTab('SCOREBOARD');
+                  return;
+                }
+                if (route.startsWith('r_') || route.length > 0) {
+                  const hustleObj = HUSTLES[route] || Object.values(HUSTLES).find((h: any) => h.id === route);
+                  if (hustleObj) {
+                    setActiveTab(hustleObj.tier as any);
+                  } else if (route === 'r_sleep' || route === 'r_ghost_mode' || route === 'r_delivery') {
+                    setActiveTab('MUD');
+                  }
+                  setTimeout(() => {
+                    const el = document.getElementById(`hustle-card-${route}`) || document.getElementById(`hustle-${route}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      el.classList.add('ring-2', 'ring-emerald-400', 'animate-pulse');
+                      setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400', 'animate-pulse'), 2000);
+                    }
+                  }, 150);
+                }
+              }} />
             </div>
 
             {/* Advance Tier Button */}
@@ -1883,12 +1960,32 @@ function App() {
       {/* Generic Hustle Reward Card */}
       {activeHustleResult && (
         <RewardCard
-          title={activeHustleResult.success ? "HUSTLE SUCCESS" : "HUSTLE FAILURE"}
-          subtitle={HUSTLES[activeHustleResult.hustleId]?.name || "Hustle Results"}
+          title={HUSTLES[activeHustleResult.hustleId]?.name || "Hustle Operations"}
+          subtitle={activeHustleResult.success ? "Execution Succeeded" : "Execution Encountered Failure"}
           isRare={activeHustleResult.yieldCash > (HUSTLES[activeHustleResult.hustleId]?.levels?.[0]?.yieldCash || 0) * 5}
+          whatHappened={
+            activeHustleResult.success
+              ? `Successfully completed ${HUSTLES[activeHustleResult.hustleId]?.name || 'operation'} with net return of $${(activeHustleResult.yieldCash - activeHustleResult.cost).toLocaleString()}.`
+              : `Operation failed or encountered friction. Net change: $${(activeHustleResult.yieldCash - activeHustleResult.cost).toLocaleString()}.`
+          }
+          whyItHappened={[
+            `Gross Cash Yield: +$${activeHustleResult.yieldCash.toLocaleString()}`,
+            ...(activeHustleResult.cost > 0 ? [`Action Overhead Cost: -$${activeHustleResult.cost.toLocaleString()}`] : []),
+            ...(activeHustleResult.yieldClout !== 0 ? [`Clout Impact: ${activeHustleResult.yieldClout > 0 ? '+' : ''}${activeHustleResult.yieldClout}`] : []),
+            ...(activeHustleResult.yieldAura !== 0 ? [`Aura Impact: ${activeHustleResult.yieldAura > 0 ? '+' : ''}${activeHustleResult.yieldAura}`] : []),
+            ...(activeHustleResult.mentalHit !== 0 ? [`Mental Stamina Impact: ${activeHustleResult.mentalHit > 0 ? '+' : ''}${activeHustleResult.mentalHit}%`] : []),
+            ...(activeHustleResult.heatHit !== 0 ? [`Law Enforcement Heat: ${activeHustleResult.heatHit > 0 ? '+' : ''}${activeHustleResult.heatHit}%`] : [])
+          ]}
+          whatNext={
+            pl.mentalHealth <= 30
+              ? { message: `Mental health is dangerously low (${Math.floor(pl.mentalHealth)}%). Rest now via Sleep or Power Nap to prevent burnout.`, actionLabel: "Rest & Recover", route: "r_sleep" }
+              : pl.heat >= 75
+              ? { message: `WANTED Heat is critical (${Math.floor(pl.heat)}%). Run Ghost Mode or lay low to avoid police arrest.`, actionLabel: "Lay Low", route: "r_ghost_mode" }
+              : { message: "Continue executing hustles to build capital and progress toward Crown mastery.", actionLabel: "View Hustles", route: pl.currentTier }
+          }
           stats={[
             {
-              label: 'Cash Flow',
+              label: 'Net Cash Flow',
               value: activeHustleResult.yieldCash - activeHustleResult.cost,
               colorClass: (activeHustleResult.yieldCash - activeHustleResult.cost) >= 0 ? 'text-emerald-400' : 'text-red-400'
             },
@@ -1916,6 +2013,16 @@ function App() {
             setActiveHustleResult(null);
             setActiveHustleView(null);
           }}
+          onNavigateNext={(route) => {
+            setActiveHustleResult(null);
+            setActiveHustleView(null);
+            const mainTabs = ['MUD', 'STREET', 'STARTUP', 'CORPORATE', 'ELITE', 'MOGUL', 'PRESIDENT', 'OPEN', 'FLEX', 'SCOREBOARD'];
+            if (mainTabs.includes(route)) {
+              setActiveTab(route as any);
+            } else if (route.startsWith('r_')) {
+              setActiveTab('MUD');
+            }
+          }}
         />
       )}
 
@@ -1923,6 +2030,10 @@ function App() {
         {showScoreboard && (
           <Scoreboard onClose={() => setShowScoreboard(false)} />
         )}
+        {showGameGuide && (
+          <FieldGuideModal onClose={() => setShowGameGuide(false)} />
+        )}
+
         {showAdvisor && (
           <StrategicAdvisorModal
             onClose={() => setShowAdvisor(false)}

@@ -155,10 +155,16 @@ html, body, #root {
 .flash-orange { animation: flash-orange 1s infinite; }
 .flash-red-border { animation: flash-red-border 1s infinite; border-width: 2px; }
 
-/* Performance optimizations */
+/* Performance & Accessibility focus rings */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #34d399 !important;
+  outline-offset: 2px !important;
+  border-radius: 0.5rem;
 }
 
 img, video, canvas {

@@ -39,6 +39,26 @@ describe('Onboarding & Immediate Goal Guidance System', () => {
       expect(goal.message).toContain('Serve your sentence');
     });
 
+    it('returns FINANCIAL DANGER goal when capital is <= $0 during career', () => {
+      basePlayer.bag = 0;
+      basePlayer.totalHustlesCompleted = 5;
+      basePlayer.mentalHealth = 100;
+      basePlayer.heat = 0;
+      const goal = getImmediateGoal(basePlayer);
+      expect(goal.type).toBe('RISK');
+      expect(goal.label).toBe('FINANCIAL DANGER');
+      expect(goal.message).toContain('Capital is depleted ($0)');
+      expect(goal.actionLabel).toBe('Earn Cash Now');
+      expect(goal.isDismissable).toBe(false);
+    });
+
+    it('includes targetRoute and actionLabel on immediate goals for direct navigation', () => {
+      basePlayer.mentalHealth = 20;
+      const goal = getImmediateGoal(basePlayer);
+      expect(goal.targetRoute).toBe('r_sleep');
+      expect(goal.actionLabel).toBe('Rest & Recover');
+    });
+
     it('returns CROWN goal for 0 crowns early in game', () => {
       basePlayer.currentTier = 'MUD';
       basePlayer.bag = 100;

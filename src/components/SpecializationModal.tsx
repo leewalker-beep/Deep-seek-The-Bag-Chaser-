@@ -123,7 +123,10 @@ export const SpecializationModal: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-6 bg-slate-950/50 border-t border-slate-800 flex justify-center">
+        <div className="p-6 bg-slate-950/50 border-t border-slate-800 flex flex-col items-center gap-1.5 text-center">
+            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              🛡️ CROWNS ARE PERMANENT — ALL {getMasteryCount(pl)} CROWNS REMAIN INTACT ACROSS TIERS
+            </div>
             <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] animate-pulse">
                 CHOOSE WISELY • YOUR LEGACY DEPENDS ON IT
             </p>
