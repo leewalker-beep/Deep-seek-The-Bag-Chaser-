@@ -131,30 +131,36 @@ export const isHustleMastered = (player: PlayerStats, hId: string): boolean => {
   const hustle = HUSTLES[hId];
   if (!hustle) return false;
 
-  const currentLevel = player.hustleLevels[hId] || 0;
+  const plays = player.hustlePlays?.[hId] || 0;
+  let actualPlays = plays;
+  if (hId === 'r_vending') {
+    actualPlays = Math.max(plays, player.vendingCount || 0);
+  }
+  if (hId === 'h_sign_spinner' || hId === 'r_flyers') {
+    actualPlays = Math.max(
+      plays,
+      player.hustlePlays?.['r_flyers'] || 0,
+      player.hustlePlays?.['h_sign_spinner'] || 0
+    );
+  }
 
   // A hustle has to be unlocked or played to be mastered.
-  const hasPlayed = player.hustleLevels[hId] !== undefined || player.hustleBranchIds[hId] !== undefined;
+  const hasPlayed = actualPlays > 0 || player.hustleLevels?.[hId] !== undefined || player.hustleBranchIds?.[hId] !== undefined;
   if (!hasPlayed) return false;
 
-  const plays = player.hustlePlays?.[hId] || 0;
+  let currentLevel = player.hustleLevels?.[hId] || 0;
+  if (!currentLevel && hustle.branches) {
+    const branchId = player.hustleBranchIds?.[hId] || hustle.startBranchId;
+    if (branchId && hustle.branches[branchId]) {
+      currentLevel = hustle.branches[branchId].level;
+    }
+  } else if (!currentLevel && hustle.levels) {
+    currentLevel = 1;
+  }
 
   // Check if we have a custom requirement for this hustle
   const req = MASTERY_REQUIREMENTS[hId];
   if (req) {
-    // Vending Machine play count can be either plays or vendingCount
-    let actualPlays = plays;
-    if (hId === 'r_vending') {
-      actualPlays = Math.max(plays, player.vendingCount || 0);
-    }
-    // Human Billboard can be h_sign_spinner or r_flyers
-    if (hId === 'h_sign_spinner') {
-      actualPlays = Math.max(plays, player.hustlePlays?.['r_flyers'] || 0);
-    }
-    if (hId === 'r_flyers') {
-      actualPlays = Math.max(plays, player.hustlePlays?.['h_sign_spinner'] || 0);
-    }
-
     if (actualPlays < req.minPlays) return false;
 
     if (req.noLevelReq) return true;
@@ -212,7 +218,15 @@ export const getCrownProgress = (player: PlayerStats, hId: string): CrownProgres
     );
   }
 
-  const actualLevel = player.hustleLevels[hId] || 1;
+  const hustle = HUSTLES[hId];
+  let actualLevel = player.hustleLevels?.[hId] || 1;
+  if (hustle?.branches) {
+    const branchId = player.hustleBranchIds?.[hId] || hustle.startBranchId;
+    if (branchId && hustle.branches[branchId]) {
+      actualLevel = Math.max(actualLevel, hustle.branches[branchId].level);
+    }
+  }
+
   const targetLevel = req.noLevelReq ? undefined : req.minLevel;
 
   let progressPercent = 0;
