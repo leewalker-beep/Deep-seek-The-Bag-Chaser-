@@ -40,7 +40,8 @@ export const NavTabs: React.FC<NavTabsProps> = React.memo(({
             key={tab} data-testid={`nav-tab-${tab.toLowerCase()}`}
             onClick={() => !isLocked && onTabChange(tab)}
             disabled={isLocked}
-            className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shrink-0 select-none ${
+            title={isLocked ? `🔒 ${tab} Tier is locked until you advance from your current tier.` : `View ${tab} Tier`}
+            className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shrink-0 select-none flex items-center gap-1.5 ${
               isActive
                 ? 'bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-300/30'
                 : isLocked
@@ -48,7 +49,8 @@ export const NavTabs: React.FC<NavTabsProps> = React.memo(({
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300 active:scale-95 border border-slate-700/50'
             }`}
           >
-            {tab}
+            {isLocked && <span className="text-[10px]">🔒</span>}
+            <span>{tab}</span>
           </button>
         );
       })}

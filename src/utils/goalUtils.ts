@@ -8,6 +8,9 @@ export interface ImmediateGoal {
   message: string; // e.g. "Rest before your next major hustle", "Earn your first Crown"
   subtext?: string;
   actionHint?: string;
+  targetRoute?: string; // Tab or hustle ID to navigate to
+  actionLabel?: string; // CTA text on button
+  isDismissable?: boolean;
   badgeClass: string;
   borderClass: string;
 }
@@ -21,6 +24,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Rest before your next major hustle',
       subtext: `Mental health is critical (${Math.floor(pl.mentalHealth)}%). Danger of burnout death!`,
       actionHint: 'Run Sleep or Power Nap to recover mental health',
+      targetRoute: 'r_sleep',
+      actionLabel: 'Rest & Recover',
+      isDismissable: false,
       badgeClass: 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse',
       borderClass: 'border-red-500/40 bg-red-950/20'
     };
@@ -34,6 +40,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Heat is approaching the arrest zone',
       subtext: `Heat is at ${Math.floor(pl.heat)}%. Federal raids and police arrest are imminent!`,
       actionHint: 'Run Ghost Mode or lay low to cool down Heat',
+      targetRoute: 'r_ghost_mode',
+      actionLabel: 'Cool Heat Now',
+      isDismissable: false,
       badgeClass: 'bg-orange-500/20 text-orange-400 border-orange-500/40 animate-pulse',
       borderClass: 'border-orange-500/40 bg-orange-950/20'
     };
@@ -47,10 +56,30 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Serve your sentence or arrange a legal defense',
       subtext: pl.jailSentenceMonths ? `${pl.jailSentenceMonths} month(s) remaining on sentence.` : 'In police custody.',
       actionHint: 'Pass months or bribe officials to regain freedom',
+      targetRoute: 'MUD',
+      actionLabel: 'View Status',
+      isDismissable: false,
       badgeClass: 'bg-red-500/20 text-red-400 border-red-500/40',
       borderClass: 'border-red-500/40 bg-red-950/20'
     };
   }
+
+  // 4. Critical Financial Risk (Negative or zero capital when player has already begun career)
+  if (pl.bag <= 0 && (pl.totalHustlesCompleted || 0) > 0 && !pl.inJail && !(pl as any).isIncarcerated) {
+    return {
+      type: 'RISK',
+      label: 'FINANCIAL DANGER',
+      message: `Capital is depleted ($${pl.bag.toLocaleString()})`,
+      subtext: 'High bankruptcy risk from monthly rent & upkeep deductions. Run cash hustles immediately.',
+      actionHint: 'Run zero-cost hustles to build liquid reserves',
+      targetRoute: pl.currentTier,
+      actionLabel: 'Earn Cash Now',
+      isDismissable: false,
+      badgeClass: 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse',
+      borderClass: 'border-red-500/40 bg-red-950/20'
+    };
+  }
+
 
   // 4. OPEN Tier
   if (pl.currentTier === 'OPEN') {
@@ -60,6 +89,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Your career is now unrestricted',
       subtext: 'Build global sports leagues, movie studios, or eternal dynasties.',
       actionHint: 'Explore OPEN tier opportunities and Flex assets',
+      targetRoute: 'FLEX',
+      actionLabel: 'Explore Flex Assets',
+      isDismissable: true,
       badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
       borderClass: 'border-amber-500/40 bg-amber-950/20'
     };
@@ -73,6 +105,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Stabilize the current national situation',
       subtext: `Approval: ${Math.floor(pl.approvalRating || 50)}% • Inflation: ${(pl.inflation || 3).toFixed(1)}%`,
       actionHint: 'Issue Executive Orders and balance national priorities',
+      targetRoute: 'PRESIDENT',
+      actionLabel: 'Manage Country',
+      isDismissable: true,
       badgeClass: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
       borderClass: 'border-blue-500/40 bg-blue-950/20'
     };
@@ -98,6 +133,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: `You meet all requirements for ${nextTier} tier`,
         subtext: 'Tap ADVANCE TIER to upgrade your headquarters and unlock new ventures!',
         actionHint: `Ready to advance to ${nextTier}`,
+        targetRoute: 'ADVANCE',
+        actionLabel: `Advance to ${nextTier}`,
+        isDismissable: false,
         badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40 animate-pulse',
         borderClass: 'border-purple-500/40 bg-purple-950/20'
       };
@@ -105,14 +143,33 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
 
     // 7. Missing Crowns
     if (!hasCrowns) {
+      // If brand-new player with 0 completed hustles in MUD tier, give specific starter guidance
+      if ((pl.totalHustlesCompleted || 0) === 0 && pl.currentTier === 'MUD' && (!pl.masteredHustles || pl.masteredHustles.length === 0)) {
+        return {
+          type: 'CROWN',
+          label: 'STARTER HUSTLE',
+          message: 'Earn your first Crown',
+          subtext: 'Start your career with Delivery Gigs or Day Labor to build capital and earn your first Crown.',
+          actionHint: 'Tap Delivery Gigs to launch your first minigame',
+          targetRoute: 'r_delivery',
+          actionLabel: 'Start Delivery Gigs',
+          isDismissable: true,
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse',
+          borderClass: 'border-emerald-500/40 bg-emerald-950/20'
+        };
+      }
+
       const remainingCrowns = nextReqs.crowns - masteredCount;
       if (masteredCount === 0) {
         return {
           type: 'CROWN',
           label: 'NEXT GOAL',
           message: 'Earn your first Crown',
-          subtext: `Master a hustle by hitting its completion target (need ${nextReqs.crowns} Crown${nextReqs.crowns > 1 ? 's' : ''} for ${nextTier}).`,
+          subtext: `Master a hustle by hitting its completion target (need ${nextReqs.crowns} Crown${nextReqs.crowns > 1 ? 's' : ''} for ${nextTier}). Crowns are PERMANENT.`,
           actionHint: 'Execute hustles repeatedly to earn permanent Mastery Crowns',
+          targetRoute: pl.currentTier,
+          actionLabel: 'View Active Hustles',
+          isDismissable: true,
           badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
           borderClass: 'border-yellow-500/40 bg-yellow-950/20'
         };
@@ -123,6 +180,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: `Master ${remainingCrowns} more hustle${remainingCrowns > 1 ? 's' : ''}`,
         subtext: `Crown Progress: ${masteredCount}/${nextReqs.crowns} Crowns earned for ${nextTier} tier.`,
         actionHint: 'Check Crown progress bars on your hustle cards',
+        targetRoute: pl.currentTier,
+        actionLabel: 'Master Hustles',
+        isDismissable: true,
         badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
         borderClass: 'border-yellow-500/40 bg-yellow-950/20'
       };
@@ -137,6 +197,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: 'Your assets now generate monthly income',
         subtext: `+$${Math.floor(totalPassive).toLocaleString()}/month passive cashflow active.`,
         actionHint: 'Reinvest earnings into high-yield business upgrades',
+        targetRoute: 'PORTFOLIO',
+        actionLabel: 'View Portfolio',
+        isDismissable: true,
         badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
         borderClass: 'border-emerald-500/40 bg-emerald-950/20'
       };
@@ -151,6 +214,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: `Earn $${needed.toLocaleString()} more to qualify for ${nextTier}`,
         subtext: `Capital: $${pl.bag.toLocaleString()} / $${nextReqs.cash.toLocaleString()}`,
         actionHint: 'Execute high-yield hustles and maintain minigame multipliers',
+        targetRoute: pl.currentTier,
+        actionLabel: 'Earn Cash',
+        isDismissable: true,
         badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
         borderClass: 'border-emerald-500/40 bg-emerald-950/20'
       };
@@ -164,6 +230,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: `Earn ${needed} more Clout to qualify for ${nextTier}`,
         subtext: `Clout: ${Math.floor(pl.clout)} / ${nextReqs.clout}`,
         actionHint: 'Run media, podcasting, or social street hustles',
+        targetRoute: pl.currentTier,
+        actionLabel: 'Gain Clout',
+        isDismissable: true,
         badgeClass: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
         borderClass: 'border-blue-500/40 bg-blue-950/20'
       };
@@ -177,6 +246,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
         message: `Earn ${needed} more Aura to qualify for ${nextTier}`,
         subtext: `Aura: ${Math.floor(pl.aura)} / ${nextReqs.aura}`,
         actionHint: 'Run PR campaigns or high-presence street plays',
+        targetRoute: pl.currentTier,
+        actionLabel: 'Build Aura',
+        isDismissable: true,
         badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
         borderClass: 'border-purple-500/40 bg-purple-950/20'
       };
@@ -192,6 +264,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
       message: 'Your assets now generate monthly income',
       subtext: `+$${Math.floor(totalPassive).toLocaleString()}/month passive cashflow active.`,
       actionHint: 'Reinvest earnings into high-yield business upgrades',
+      targetRoute: 'PORTFOLIO',
+      actionLabel: 'View Portfolio',
+      isDismissable: true,
       badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
       borderClass: 'border-emerald-500/40 bg-emerald-950/20'
     };
@@ -204,6 +279,9 @@ export function getImmediateGoal(pl: PlayerStats): ImmediateGoal {
     message: 'Build cash and clout to advance',
     subtext: 'Execute hustles, score high in minigames, and protect your stats.',
     actionHint: 'Tap any active hustle card to start',
+    targetRoute: pl.currentTier,
+    actionLabel: 'View Hustles',
+    isDismissable: true,
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     borderClass: 'border-emerald-500/40 bg-emerald-950/20'
   };

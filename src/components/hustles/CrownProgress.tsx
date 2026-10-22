@@ -9,12 +9,24 @@ interface CrownProgressProps {
 
 export const CrownProgress: React.FC<CrownProgressProps> = ({ player, hustleId }) => {
   const crownProgress = useMemo(() => {
-    const progress = getCrownProgress(player, hustleId);
-    if (!progress || progress.isMastered) return null;
-    return progress;
+    return getCrownProgress(player, hustleId);
   }, [hustleId, player]);
 
   if (!crownProgress) return null;
+
+  if (crownProgress.isMastered) {
+    return (
+      <div className="bg-yellow-500/10 rounded-xl p-2 mb-3 border border-yellow-500/30 flex items-center justify-between text-xs text-yellow-300">
+        <span className="font-bold flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+          <span>👑</span>
+          <span>MASTERED</span>
+        </span>
+        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded">
+          PERMANENT CROWN
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-900/60 rounded-xl p-2.5 mb-3 border border-yellow-500/10 flex flex-col gap-1.5 text-xs text-slate-300">

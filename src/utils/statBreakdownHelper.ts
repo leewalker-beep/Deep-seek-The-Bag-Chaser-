@@ -60,7 +60,7 @@ export function calculateAndSetStatBreakdown(
       });
     } else {
       cashSources.push({
-        name: unaccountedCash > 0 ? 'Other passive yields' : 'Rent & upkeep deductions',
+        name: unaccountedCash > 0 ? 'Other passive yields' : 'Expenses & operational costs',
         amount: unaccountedCash
       });
     }
@@ -101,7 +101,7 @@ export function calculateAndSetStatBreakdown(
       });
     } else {
       auraSources.push({
-        name: unaccountedAura > 0 ? 'Rest bonus' : 'Heat erosion',
+        name: unaccountedAura > 0 ? 'Aura boost' : (plBefore.heat >= 70 ? 'Heat erosion' : 'Public scrutiny'),
         amount: unaccountedAura
       });
     }

@@ -10,9 +10,10 @@ interface StatsPanelProps {
   stats: PlayerStats;
   market: MarketType;
   onOpenReceipts?: () => void;
+  onNavigate?: (route: string) => void;
 }
 
-export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenReceipts }) => {
+export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenReceipts, onNavigate }) => {
   const { addTickerMessage } = useGameStore();
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ stats, market, onOpenRec
     <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 mb-3">
       {/* Immediate Goal Guidance Banner */}
       <div className="mb-3">
-        <ImmediateGoalCard />
+        <ImmediateGoalCard onNavigate={onNavigate} />
       </div>
 
       {/* Tier Badge */}
