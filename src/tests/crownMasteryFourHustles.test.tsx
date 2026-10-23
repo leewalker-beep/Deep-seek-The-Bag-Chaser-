@@ -5,16 +5,19 @@ import { getCrownProgress, isHustleMastered, getMasteryCount, MASTERY_REQUIREMEN
 import { CrownProgress } from '../components/hustles/CrownProgress';
 import { useGameStore } from '../store/gameStore';
 
-describe('Crown Mastery Regression Suite for Core Four Hustles', () => {
+describe('Crown Mastery Regression Suite for Core Four Hustles and Multi-Branch Hustles', () => {
   beforeEach(() => {
     useGameStore.getState().resetGame();
   });
 
-  it('validates configured mastery requirements for all four target hustles', () => {
+  it('validates configured mastery requirements for target hustles', () => {
     expect(MASTERY_REQUIREMENTS['r_delivery']).toEqual({ minPlays: 10, minLevel: 2 });
     expect(MASTERY_REQUIREMENTS['r_scrap']).toEqual({ minPlays: 10, minLevel: 2 });
     expect(MASTERY_REQUIREMENTS['r_plasma']).toEqual({ minPlays: 15, noLevelReq: true });
     expect(MASTERY_REQUIREMENTS['r_vending']).toEqual({ minPlays: 20, noLevelReq: true });
+    expect(MASTERY_REQUIREMENTS['r_labor']).toEqual({ minPlays: 10, minLevel: 2 });
+    expect(MASTERY_REQUIREMENTS['saas_mvp']).toEqual({ minPlays: 6, minLevel: 2 });
+    expect(MASTERY_REQUIREMENTS['real_estate_empire']).toEqual({ minPlays: 6, minLevel: 2 });
   });
 
   it('correctly calculates crown progress below threshold for all four hustles', () => {
@@ -100,7 +103,7 @@ describe('Crown Mastery Regression Suite for Core Four Hustles', () => {
     expect(vendingProgress?.progressPercent).toBe(100);
   });
 
-  it('derives actualLevel safely from active branch data even if hustleLevels is unpopulated', () => {
+  it('derives actualLevel safely from active branch data across multi-branch hustles', () => {
     const pl = useGameStore.getState().pl;
 
     // Branch l2 (Car Delivery) is level 2
@@ -109,9 +112,29 @@ describe('Crown Mastery Regression Suite for Core Four Hustles', () => {
     pl.hustlePlays['r_delivery'] = 10;
 
     expect(isHustleMastered(pl, 'r_delivery')).toBe(true);
-    const progress = getCrownProgress(pl, 'r_delivery');
-    expect(progress?.actualLevel).toBe(2);
-    expect(progress?.isMastered).toBe(true);
+    const progressDelivery = getCrownProgress(pl, 'r_delivery');
+    expect(progressDelivery?.actualLevel).toBe(2);
+    expect(progressDelivery?.isMastered).toBe(true);
+
+    // Branch l2a (House Flip) for r_labor is level 2
+    pl.hustleBranchIds['r_labor'] = 'l2a';
+    delete pl.hustleLevels['r_labor'];
+    pl.hustlePlays['r_labor'] = 10;
+
+    expect(isHustleMastered(pl, 'r_labor')).toBe(true);
+    const progressLabor = getCrownProgress(pl, 'r_labor');
+    expect(progressLabor?.actualLevel).toBe(2);
+    expect(progressLabor?.isMastered).toBe(true);
+
+    // Branch l2 (Series A) for saas_mvp is level 2
+    pl.hustleBranchIds['saas_mvp'] = 'l2';
+    delete pl.hustleLevels['saas_mvp'];
+    pl.hustlePlays['saas_mvp'] = 6;
+
+    expect(isHustleMastered(pl, 'saas_mvp')).toBe(true);
+    const progressSaaS = getCrownProgress(pl, 'saas_mvp');
+    expect(progressSaaS?.actualLevel).toBe(2);
+    expect(progressSaaS?.isMastered).toBe(true);
   });
 
   it('renders CrownProgress component for all four hustles in DOM', () => {
