@@ -1215,11 +1215,14 @@ export const createHustleSlice: StateCreator<GameState, [], [], HustleSlice> = (
     }
 
     let levelData: HustleLevel | undefined;
-    const currentLevel = state.pl.hustleLevels[hustleId] || 1;
+    let currentLevel = state.pl.hustleLevels[hustleId] || 1;
 
     if (hustle.branches) {
       const nodeId = state.pl.hustleBranchIds[hustleId] || hustle.startBranchId;
       levelData = nodeId ? hustle.branches[nodeId] : undefined;
+      if (levelData?.level) {
+        currentLevel = Math.max(currentLevel, levelData.level);
+      }
     } else if (hustle.levels) {
       levelData = hustle.levels.find(l => l.level === currentLevel);
     }
